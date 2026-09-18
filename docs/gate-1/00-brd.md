@@ -28,7 +28,7 @@ BRD mô tả **vì sao cần sản phẩm, cần đáp ứng nghiệp vụ nào 
 | S06 | [Tổng quan EDU-14 Campus 24/7](../reference/EDU-14-Campus-24-7.md) | Đề bài, nghiệp vụ đặt phòng, dữ liệu, đánh giá và phạm vi |
 | S07 | [Khác biệt với kỳ trước](../reference/EDU-14-KHAC-BIET-KY-TRUOC.md) | Yêu cầu vận hành ticket, hai vai trò, HITL và audit |
 | S08 | [Kế hoạch Gate 1](../reference/EDU-14-Gate-1-Plan.md) | Hồ sơ, phạm vi cốt lõi, cách phân quyền cán bộ chuyên trách |
-| S09 | [Phân công nhiệm vụ](Phan-cong-nhiem-vu.md) | Trách nhiệm của bốn thành viên trong giai đoạn Gate 1 |
+| S09 | [Phân công nhiệm vụ](../Phan-cong-nhiem-vu.md) | Trách nhiệm của bốn thành viên trong giai đoạn Gate 1 |
 
 Nguyên tắc biên soạn: dùng S01–S04 làm cơ sở mô tả phạm vi và hợp đồng Gate 1; dùng S05–S08 bổ sung bối cảnh và nhu cầu nghiệp vụ. Đây là cách tổng hợp của bản dự thảo, không phải quyết định thay thế tài liệu đã được nhóm phê duyệt. Những khác biệt ảnh hưởng triển khai được ghi tại mục 13; các lựa chọn bổ sung được gắn nhãn **Đề xuất** hoặc **Cần xác nhận**.
 
