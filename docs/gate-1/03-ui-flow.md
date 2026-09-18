@@ -70,11 +70,10 @@
 ---
 
 ## 3. Danh mục Hình ảnh Wireframe Export
-Các hình ảnh bản vẽ wireframe sau khi xuất từ Figma sẽ được lưu tại thư mục:
+Các hình ảnh bản vẽ wireframe đã được xuất từ Figma và lưu tại thư mục:
 `docs/gate-1/assets/`
-- [student-chat-view.png](assets/student-chat-view.png)
-- [student-confirmation-modal.png](assets/student-confirmation-modal.png)
-- [student-handover-notice.png](assets/student-handover-notice.png)
-- [staff-dashboard-tickets.png](assets/staff-dashboard-tickets.png)
-- [staff-ticket-detail.png](assets/staff-ticket-detail.png)
-
+- [01 • Student Chat View.png](<assets/01 • Student Chat View.png>)
+- [02 • Student Confirmation Modal.png](<assets/02 • Student Confirmation Modal.png>)
+- [03 • Student Handover Notice.png](<assets/03 • Student Handover Notice.png>)
+- [04 • Staff Dashboard Tickets.png](<assets/04 • Staff Dashboard Tickets.png>)
+- [05 • Staff Ticket Detail.png](<assets/05 • Staff Ticket Detail.png>)

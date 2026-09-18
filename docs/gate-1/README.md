@@ -10,6 +10,8 @@
 
 Dưới đây là danh mục 4 deliverables bắt buộc của Gate 1 cùng tài liệu phân công nhiệm vụ:
 
+Tài liệu nền tảng bổ sung: [BRD — Yêu cầu nghiệp vụ Campus 24/7](00-brd.md) (bản dự thảo tổng hợp từ hồ sơ hiện có; gồm mục tiêu, phạm vi, quy tắc nghiệp vụ, tiêu chí nghiệm thu và các điểm cần xác nhận).
+
 | STT | Deliverable | Tài liệu đính kèm | Người phụ trách chính | Trạng thái |
 |:---:|:---|:---|:---|:---:|
 | **1** | **Brief 1 trang** | [01-brief.md](01-brief.md) | Lê Trung Kiên | Sẵn sàng hoàn thiện |
@@ -31,4 +33,3 @@ Dưới đây là danh mục 4 deliverables bắt buộc của Gate 1 cùng tài
 - [ ] Wireframe/UI Flow thể hiện đủ 2 vai trò (Sinh viên & Cán bộ) kèm link xem công khai. *(Kiên xác minh lần cuối bằng Incognito.)*
 - [ ] AI Log có ít nhất 1–2 bản ghi thực tế trong quá trình chuẩn bị Gate 1.
 - [ ] Đại diện nhóm thực hiện gõ lệnh `/gate submit` đúng hạn.
-
