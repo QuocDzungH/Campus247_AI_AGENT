@@ -8,6 +8,15 @@
 # Exits 0 silently if no Python is found — hooks must never block the AI tool.
 set -u
 
+# Prefer the project's virtual environment. Besides matching the application
+# runtime, this ensures hook-only dependencies such as python-dotenv are
+# available when Git invokes the hook with a minimal PATH.
+if [ -x ".venv/Scripts/python.exe" ]; then
+  exec ".venv/Scripts/python.exe" "$@"
+elif [ -x ".venv/bin/python" ]; then
+  exec ".venv/bin/python" "$@"
+fi
+
 case "$(uname -s 2>/dev/null || true)" in
   MINGW*|MSYS*|CYGWIN*)
     # On Windows, python/python3 may be Microsoft Store aliases that exist on
