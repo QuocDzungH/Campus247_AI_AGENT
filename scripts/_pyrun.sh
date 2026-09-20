@@ -8,15 +8,35 @@
 # Exits 0 silently if no Python is found — hooks must never block the AI tool.
 set -u
 
-if command -v python3 >/dev/null 2>&1; then
-  PY=python3
-elif command -v python >/dev/null 2>&1; then
-  PY=python
-elif command -v py >/dev/null 2>&1; then
-  PY="py -3"
-else
+case "$(uname -s 2>/dev/null || true)" in
+  MINGW*|MSYS*|CYGWIN*)
+    # On Windows, python/python3 may be Microsoft Store aliases that exist on
+    # PATH but cannot run. Prefer the real Python Launcher used by Git Bash.
+    if command -v py >/dev/null 2>&1; then
+      PY="py -3"
+    elif command -v python3 >/dev/null 2>&1; then
+      PY=python3
+    elif command -v python >/dev/null 2>&1; then
+      PY=python
+    else
+      PY=""
+    fi
+    ;;
+  *)
+    if command -v python3 >/dev/null 2>&1; then
+      PY=python3
+    elif command -v python >/dev/null 2>&1; then
+      PY=python
+    elif command -v py >/dev/null 2>&1; then
+      PY="py -3"
+    else
+      PY=""
+    fi
+    ;;
+esac
+
+if [ -z "$PY" ]; then
   # PATH lookup failed — probe standard Windows install locations.
-  PY=""
   shopt -s nullglob 2>/dev/null || true
   for cand in \
     /c/Users/*/AppData/Local/Programs/Python/Python*/python.exe \
