@@ -3,7 +3,12 @@
 # Run once after cloning: bash scripts/setup_hooks.sh
 set -e
 
-HOOK_FILE=".git/hooks/pre-push"
+# A global core.hooksPath can silently bypass the repository hook. Pin this
+# repository to its own hook directory so the AI log hook is actually used.
+git config --local core.hooksPath .git/hooks
+HOOK_DIR="$(git rev-parse --git-path hooks)"
+mkdir -p "$HOOK_DIR"
+HOOK_FILE="$HOOK_DIR/pre-push"
 
 cat > "$HOOK_FILE" <<'EOF'
 #!/usr/bin/env bash
