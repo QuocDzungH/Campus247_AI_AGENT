@@ -14,11 +14,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className="dark" suppressHydrationWarning>
-      <body 
-        suppressHydrationWarning 
-        className="antialiased min-h-screen bg-[#0B0F17] text-slate-100 flex flex-col relative selection:bg-blue-500/30 selection:text-blue-200"
-      >
+    <html lang="vi" className="dark">
+      <body className="antialiased min-h-screen bg-[#0B0F17] text-slate-100 flex flex-col relative selection:bg-blue-500/30 selection:text-blue-200">
         {/* Layer 1: Ambient Mesh Light Sources (The backdrop that feeds the glass frost) */}
         <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
           {/* Subtle architectural dot grid */}
