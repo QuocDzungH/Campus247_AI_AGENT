@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   X,
   Sparkles,
-  Bot,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
 

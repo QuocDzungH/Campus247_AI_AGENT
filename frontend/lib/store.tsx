@@ -69,7 +69,7 @@ interface StoreContextType {
     }>
   >;
   lastUpdatedField: "reason" | "receiveMethod" | null;
-  updateGate1Field: (field: "reason" | "receiveMethod" | "destinationOrg", value: any) => void;
+  updateGate1Field: (field: "reason" | "receiveMethod" | "destinationOrg", value: string) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -157,7 +157,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const [lastUpdatedField, setLastUpdatedField] = useState<"reason" | "receiveMethod" | null>(null);
 
-  const updateGate1Field = (field: "reason" | "receiveMethod" | "destinationOrg", value: any) => {
+  const updateGate1Field = (field: "reason" | "receiveMethod" | "destinationOrg", value: string) => {
     setGate1FormData((prev) => ({
       ...prev,
       [field]: value,

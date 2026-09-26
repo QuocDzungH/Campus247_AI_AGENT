@@ -7,11 +7,9 @@ import {
   CheckCircle2,
   Clock,
   Sparkles,
-  ExternalLink,
   ShieldCheck,
   ChevronRight,
   Plus,
-  BookOpen,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
 
