@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-page: #F5F7FB;
+    --surface-card: #FFFFFF;
+    --surface-subtle: #F8FAFC;
+    --border-color: #E2E8F0;
+    --border-highlight: #CBD5E1;
+    --text-primary: #172033;
+    --text-secondary: #475569;
+    --text-muted: #64748B;
+    --accent-blue: #2457D6;
+    --accent-blue-hover: #1D46B0;
+    --accent-cyan: #0284C7;
+    --grid-dot: rgba(0, 0, 0, 0.05);
+  }
+
+  .dark {
+    --bg-page: #0B0F17;
+    --surface-card: #111827;
+    --surface-subtle: #161F30;
+    --border-color: #1F2937;
+    --border-highlight: #2C3B53;
+    --text-primary: #F1F5F9;
+    --text-secondary: #CBD5E1;
+    --text-muted: #94A3B8;
+    --accent-blue: #3B82F6;
+    --accent-blue-hover: #2563EB;
+    --accent-cyan: #38BDF8;
+    --grid-dot: rgba(255, 255, 255, 0.07);
+  }
+
+  * {
+    border-color: var(--border-color);
+  }
+
+  body {
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+.bg-dot-pattern {
+  background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Glassmorphism Classes */
+.glass-panel-light {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+}
+
+.dark .glass-panel-light {
+  background: rgba(17, 24, 39, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-banner-overlay {
+  background: linear-gradient(135deg, rgba(11, 15, 23, 0.88) 0%, rgba(15, 23, 42, 0.72) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+:root:not(.dark) .glass-banner-overlay {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.90) 0%, rgba(240, 244, 255, 0.75) 100%);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
+}
