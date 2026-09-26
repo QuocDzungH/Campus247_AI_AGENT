@@ -15,7 +15,7 @@ export function TicketSuccessCard({
   title = "Giấy xác nhận sinh viên",
 }: TicketSuccessCardProps) {
   return (
-    <div className="p-4 rounded-2xl bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/30 text-xs space-y-3 transition-all">
+    <div className="p-4 rounded-2xl bg-emerald-500/10 dark:bg-emerald-950/30 backdrop-blur-md border border-emerald-500/30 text-xs space-y-3 transition-all shadow-sm">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">

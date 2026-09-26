@@ -29,11 +29,11 @@ export function StudentWorkspaceHub({
   const studentTickets = tickets.filter((t) => t.studentId === currentUser.id);
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-[#111827] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden text-xs">
+    <div className="flex flex-col h-full min-h-0 glass-surface rounded-3xl shadow-2xl overflow-hidden text-xs">
       {/* Panel Top Header */}
-      <div className="p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+      <div className="shrink-0 p-4 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/80 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-blue-600/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-200 dark:border-blue-800 font-bold">
+          <div className="w-8 h-8 rounded-xl bg-blue-600/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-200/60 dark:border-blue-800/60 font-bold">
             <FileText className="w-4 h-4" />
           </div>
           <div>
@@ -46,15 +46,15 @@ export function StudentWorkspaceHub({
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-emerald-50/80 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-800">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
           <span>SẴN SÀNG KÊ KHAI</span>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
         {/* Card 1: Fast Service Launcher */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+        <div className="p-4 rounded-2xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200/60 dark:border-slate-800/70 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="font-bold text-slate-900 dark:text-white text-xs">
@@ -90,7 +90,7 @@ export function StudentWorkspaceHub({
                 onClick={() =>
                   onSelectPreset("Nộp Ngân hàng Chính sách Xã hội Chi nhánh Q. Thủ Đức (Học kỳ 2)")
                 }
-                className="p-2 text-left rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all text-[11px]"
+                className="p-2 text-left rounded-xl bg-white/60 dark:bg-slate-800/60 hover:bg-white/90 dark:hover:bg-slate-700/80 border border-slate-200/60 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all text-[11px] backdrop-blur-xs"
               >
                 <div className="font-semibold truncate">📝 Vay vốn NHCSXH</div>
                 <div className="text-[9px] text-slate-400 truncate">Học kỳ 2 / 2026</div>
@@ -103,7 +103,7 @@ export function StudentWorkspaceHub({
                     "Nộp Ban Chỉ huy Quân sự địa phương xin tạm hoãn gọi nhập ngũ năm 2026"
                   )
                 }
-                className="p-2 text-left rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all text-[11px]"
+                className="p-2 text-left rounded-xl bg-white/60 dark:bg-slate-800/60 hover:bg-white/90 dark:hover:bg-slate-700/80 border border-slate-200/60 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all text-[11px] backdrop-blur-xs"
               >
                 <div className="font-semibold truncate">🏛️ Tạm hoãn NVQS</div>
                 <div className="text-[9px] text-slate-400 truncate">Năm 2026</div>
@@ -114,7 +114,7 @@ export function StudentWorkspaceHub({
                 onClick={() =>
                   onSelectPreset("Nộp Đơn vị tiếp nhận Thực tập tốt nghiệp doanh nghiệp (Học kỳ 2)")
                 }
-                className="p-2 text-left rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all text-[11px]"
+                className="p-2 text-left rounded-xl bg-white/60 dark:bg-slate-800/60 hover:bg-white/90 dark:hover:bg-slate-700/80 border border-slate-200/60 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all text-[11px] backdrop-blur-xs"
               >
                 <div className="font-semibold truncate">💼 Thực tập DN</div>
                 <div className="text-[9px] text-slate-400 truncate">Kỳ tốt nghiệp</div>
@@ -152,7 +152,7 @@ export function StudentWorkspaceHub({
             {studentTickets.map((t) => (
               <div
                 key={t.id}
-                className="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-1.5 hover:border-blue-300 dark:hover:border-blue-700 transition-all"
+                className="p-3 rounded-2xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200/60 dark:border-slate-800/80 shadow-sm space-y-1.5 hover:border-blue-300 dark:hover:border-blue-700 transition-all"
               >
                 <div className="flex items-center justify-between">
                   <span className="font-mono font-bold text-slate-800 dark:text-slate-200 text-xs">
@@ -192,7 +192,7 @@ export function StudentWorkspaceHub({
         </div>
 
         {/* Card 3: Academic Qualifications & Tuition */}
-        <div className="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
+        <div className="p-3 rounded-2xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200/60 dark:border-slate-800/80 shadow-sm space-y-2">
           <div className="flex items-center justify-between text-[11px]">
             <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
               <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />

@@ -23,7 +23,7 @@ export function Navbar() {
   const isOfficer = currentUser.role === "officer";
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-slate-800/80 bg-white/90 dark:bg-[#0B0F17]/90 backdrop-blur-md transition-colors">
+    <header className="sticky top-0 z-40 w-full glass-nav transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Left: Brand */}
         <div className="flex items-center gap-3">

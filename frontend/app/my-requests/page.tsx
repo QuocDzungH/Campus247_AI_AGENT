@@ -52,11 +52,11 @@ export default function MyRequestsPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#0B0F17] bg-dot-pattern transition-colors">
+    <div className="min-h-screen flex flex-col bg-transparent transition-colors">
       <Navbar />
 
       {/* Header Banner */}
-      <div className="w-full border-b border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 backdrop-blur-md px-4 sm:px-6 lg:px-8 py-5">
+      <div className="w-full border-b border-white/50 dark:border-white/10 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md px-4 sm:px-6 lg:px-8 py-5">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
@@ -86,7 +86,7 @@ export default function MyRequestsPage() {
       <div className="max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex-1 flex flex-col lg:flex-row gap-6">
         {/* Left Column: Tickets List */}
         <div className="w-full lg:w-[380px] flex flex-col shrink-0 space-y-4">
-          <div className="p-4 rounded-2xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+          <div className="p-4 rounded-3xl glass-surface space-y-3">
             <div className="flex items-center justify-between">
               <span className="font-bold text-slate-900 dark:text-white text-xs">
                 HỒ SƠ ĐÃ GỬI ({myTickets.length})
@@ -98,13 +98,13 @@ export default function MyRequestsPage() {
             </div>
 
             {/* Filter Tabs */}
-            <div className="grid grid-cols-3 gap-1 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl text-xs">
+            <div className="grid grid-cols-3 gap-1 p-1 bg-white/50 dark:bg-slate-800/60 backdrop-blur-md rounded-xl text-xs border border-white/40 dark:border-white/10">
               <button
                 type="button"
                 onClick={() => setActiveTab("all")}
                 className={`py-1.5 rounded-lg font-medium transition-all ${
                   activeTab === "all"
-                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs"
+                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-semibold"
                     : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
@@ -115,7 +115,7 @@ export default function MyRequestsPage() {
                 onClick={() => setActiveTab("in_progress")}
                 className={`py-1.5 rounded-lg font-medium transition-all ${
                   activeTab === "in_progress"
-                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs"
+                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-semibold"
                     : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
@@ -126,7 +126,7 @@ export default function MyRequestsPage() {
                 onClick={() => setActiveTab("resolved")}
                 className={`py-1.5 rounded-lg font-medium transition-all ${
                   activeTab === "resolved"
-                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs"
+                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-semibold"
                     : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
@@ -143,10 +143,10 @@ export default function MyRequestsPage() {
                 <div
                   key={t.id}
                   onClick={() => setSelectedTicketId(t.id)}
-                  className={`p-4 rounded-2xl border cursor-pointer transition-all ${
+                  className={`p-4 rounded-2xl border cursor-pointer transition-all glass-card-interactive ${
                     isSelected
-                      ? "bg-blue-50/60 dark:bg-blue-950/30 border-blue-500 shadow-md shadow-blue-500/10 ring-1 ring-blue-500"
-                      : "bg-white dark:bg-[#111827] border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-sm"
+                      ? "bg-blue-50/80 dark:bg-blue-950/50 border-blue-500 shadow-md shadow-blue-500/10 ring-1 ring-blue-500"
+                      : "bg-white/65 dark:bg-[#111827]/65 backdrop-blur-md border-white/60 dark:border-white/10 hover:border-blue-300 dark:hover:border-blue-700/60 shadow-xs"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1.5">
@@ -226,9 +226,9 @@ export default function MyRequestsPage() {
 
         {/* Right Column: Ticket Detailed View */}
         {selectedTicket ? (
-          <div className="flex-1 flex flex-col bg-white dark:bg-[#111827] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
+          <div className="flex-1 flex flex-col glass-surface rounded-3xl overflow-hidden shadow-2xl">
             {/* Ticket Header */}
-            <div className="p-5 sm:p-6 bg-slate-50 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-start justify-between gap-4">
+            <div className="p-5 sm:p-6 bg-white/40 dark:bg-slate-900/60 backdrop-blur-md border-b border-white/40 dark:border-white/10 flex flex-wrap items-start justify-between gap-4">
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2">
                   <span className="font-mono font-bold text-sm sm:text-base text-slate-900 dark:text-white">
@@ -305,7 +305,7 @@ export default function MyRequestsPage() {
               </div>
 
               {/* 3-Step Progress Stepper */}
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+              <div className="p-4 rounded-2xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-xs">
                 <div className="grid grid-cols-3 gap-2 text-center text-xs">
                   <div className="space-y-1">
                     <div className="h-1.5 rounded-full bg-blue-600" />
@@ -358,7 +358,7 @@ export default function MyRequestsPage() {
               </div>
 
               {/* Declared Information Section */}
-              <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
+              <div className="p-4 rounded-2xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-xs space-y-3">
                 <div className="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-[11px] border-b border-slate-100 dark:border-slate-800 pb-2">
                   THÔNG TIN HỒ SƠ ĐÃ KÊ KHAI
                 </div>
@@ -422,7 +422,7 @@ export default function MyRequestsPage() {
               </div>
 
               {/* Communication & Officer Feedback Log */}
-              <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4">
+              <div className="p-4 rounded-2xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-xs space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                   <div className="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-[11px]">
                     NHẬT KÝ TRAO ĐỔI &amp; PHẢN HỒI TỪ CÁN BỘ

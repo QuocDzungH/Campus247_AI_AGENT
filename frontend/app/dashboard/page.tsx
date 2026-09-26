@@ -78,14 +78,14 @@ export default function OfficerDashboardPage() {
   const resolvedTodayCount = tickets.filter((t) => t.status === "resolved").length;
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#0B0F17] bg-dot-pattern transition-colors">
+    <div className="min-h-screen flex flex-col bg-transparent transition-colors">
       <Navbar />
 
       <div className="max-w-[1600px] w-full mx-auto p-4 sm:p-6 lg:p-8 flex-1 flex flex-col lg:flex-row gap-6">
         {/* Left Officer Sidebar (matching Image 6) */}
         <aside className="w-full lg:w-64 flex flex-col gap-6 shrink-0">
           {/* Officer identity block */}
-          <div className="p-4 rounded-2xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
+          <div className="p-4 rounded-2xl glass-surface space-y-2">
             <div className="flex items-center gap-2">
               <div className="w-9 h-9 rounded-xl bg-blue-600/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-bold flex items-center justify-center border border-blue-200 dark:border-blue-800">
                 0F
@@ -240,7 +240,7 @@ export default function OfficerDashboardPage() {
 
           {/* 4 Metric Cards (Matching Image 6) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-4 rounded-2xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm flex items-start justify-between">
+            <div className="p-4 rounded-2xl glass-surface glass-card-interactive flex items-start justify-between">
               <div className="space-y-1">
                 <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                   TỔNG SỐ HỒ SƠ TRONG CA
@@ -258,7 +258,7 @@ export default function OfficerDashboardPage() {
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm flex items-start justify-between">
+            <div className="p-4 rounded-2xl glass-surface glass-card-interactive flex items-start justify-between">
               <div className="space-y-1">
                 <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                   CHỜ CÁN BỘ THỤ LÝ
@@ -276,7 +276,7 @@ export default function OfficerDashboardPage() {
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm flex items-start justify-between">
+            <div className="p-4 rounded-2xl glass-surface glass-card-interactive flex items-start justify-between">
               <div className="space-y-1">
                 <div className="flex items-center gap-1.5">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
@@ -299,7 +299,7 @@ export default function OfficerDashboardPage() {
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm flex items-start justify-between">
+            <div className="p-4 rounded-2xl glass-surface glass-card-interactive flex items-start justify-between">
               <div className="space-y-1">
                 <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                   ĐÃ HOÀN TẤT TRONG NGÀY
@@ -319,7 +319,7 @@ export default function OfficerDashboardPage() {
           </div>
 
           {/* Search, Filter Bar & Quick Shortcut Chips */}
-          <div className="p-4 rounded-2xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+          <div className="p-4 rounded-2xl glass-surface space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
               {/* Search */}
               <div className="md:col-span-1 relative">
@@ -416,17 +416,17 @@ export default function OfficerDashboardPage() {
           </div>
 
           {/* Queue Table (matching Image 6 layout) */}
-          <div className="rounded-2xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div className="rounded-3xl glass-surface shadow-2xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    <th className="py-3 px-4">MÃ HỒ SƠ</th>
-                    <th className="py-3 px-4">SINH VIÊN</th>
-                    <th className="py-3 px-4">NỘI DUNG YÊU CẦU / TÓM TẮT AI</th>
-                    <th className="py-3 px-4">ƯU TIÊN</th>
-                    <th className="py-3 px-4">TRẠNG THÁI</th>
-                    <th className="py-3 px-4">THỜI GIAN / SLA</th>
+                  <tr className="border-b border-white/50 dark:border-white/10 bg-white/50 dark:bg-slate-900/60 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    <th className="py-3.5 px-4">MÃ HỒ SƠ</th>
+                    <th className="py-3.5 px-4">SINH VIÊN</th>
+                    <th className="py-3.5 px-4">NỘI DUNG YÊU CẦU / TÓM TẮT AI</th>
+                    <th className="py-3.5 px-4">ƯU TIÊN</th>
+                    <th className="py-3.5 px-4">TRẠNG THÁI</th>
+                    <th className="py-3.5 px-4">THỜI GIAN / SLA</th>
                   </tr>
                 </thead>
 
@@ -435,7 +435,7 @@ export default function OfficerDashboardPage() {
                     <tr
                       key={t.id}
                       onClick={() => router.push(`/tickets/${t.id}`)}
-                      className="hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors group"
+                      className="hover:bg-white/50 dark:hover:bg-slate-800/40 cursor-pointer transition-colors group"
                     >
                       {/* Code */}
                       <td className="py-4 px-4 align-top">

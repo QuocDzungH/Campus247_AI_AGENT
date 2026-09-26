@@ -325,14 +325,16 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#0B0F17] bg-dot-pattern transition-colors">
-      <Navbar />
+    <div className="h-screen max-h-screen flex flex-col bg-transparent transition-colors overflow-hidden">
+      <div className="shrink-0">
+        <Navbar />
+      </div>
 
       {/* Subheader: Student Info Bar */}
-      <div className="w-full border-b border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 backdrop-blur-md px-4 sm:px-6 lg:px-8 py-3">
+      <div className="shrink-0 w-full border-b border-white/50 dark:border-white/10 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md px-4 sm:px-6 lg:px-8 py-2.5">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-blue-600/10 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 font-bold flex items-center justify-center border border-blue-200 dark:border-blue-800 text-sm">
+            <div className="w-10 h-10 rounded-full bg-blue-600/10 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 font-bold flex items-center justify-center border border-blue-200/60 dark:border-blue-800/60 text-sm">
               NA
             </div>
             <div>
@@ -340,7 +342,7 @@ export default function ChatPage() {
                 <span className="font-bold text-slate-900 dark:text-white text-sm">
                   {currentUser.name}
                 </span>
-                <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-semibold">
+                <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-white/60 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border border-white/60 dark:border-slate-700 font-semibold backdrop-blur-xs">
                   {currentUser.id} · {currentUser.classYear || "K18 KTPM"}
                 </span>
                 <span className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -360,7 +362,7 @@ export default function ChatPage() {
           </div>
 
           <div className="flex items-center gap-2.5">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-blue-50/80 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800 backdrop-blur-xs">
               <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
               <span>Phân tích tự động: 3 Cấp độ (L1 / L2 / L4)</span>
             </div>
@@ -381,14 +383,14 @@ export default function ChatPage() {
       </div>
 
       {/* Mobile Screen Switcher (<1024px) */}
-      <div className="lg:hidden max-w-7xl w-full mx-auto px-4 pt-3 flex gap-2">
+      <div className="shrink-0 lg:hidden max-w-7xl w-full mx-auto px-4 pt-2.5 flex gap-2">
         <button
           type="button"
           onClick={() => setMobileTab("chat")}
           className={`flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
             mobileTab === "chat"
               ? "bg-blue-600 text-white shadow-sm"
-              : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800"
+              : "glass-surface text-slate-600 dark:text-slate-400"
           }`}
         >
           <Bot className="w-3.5 h-3.5" />
@@ -400,7 +402,7 @@ export default function ChatPage() {
           className={`flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
             mobileTab === "workspace"
               ? "bg-blue-600 text-white shadow-sm"
-              : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800"
+              : "glass-surface text-slate-600 dark:text-slate-400"
           }`}
         >
           <FileText className="w-3.5 h-3.5" />
@@ -409,15 +411,15 @@ export default function ChatPage() {
       </div>
 
       {/* Main Workspace Area: Consistent Two-Column Layout on Desktop */}
-      <div className="max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex-1 flex flex-col lg:flex-row gap-6">
+      <div className="flex-1 min-h-0 max-w-7xl w-full mx-auto p-3 sm:p-4 lg:p-5 flex flex-col lg:flex-row gap-4 lg:gap-6 overflow-hidden">
         {/* Left Column: Chat Workspace (Always 58% on Desktop) */}
         <div
-          className={`flex-col bg-white dark:bg-[#111827] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden transition-all duration-300 lg:w-[58%] w-full ${
+          className={`flex-col h-full min-h-0 glass-surface rounded-3xl shadow-2xl overflow-hidden transition-all duration-300 lg:w-[58%] w-full ${
             mobileTab === "workspace" ? "hidden lg:flex" : "flex"
           }`}
         >
           {/* Chat Protocol Top Header */}
-          <div className="p-4 bg-slate-50 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
+          <div className="shrink-0 p-3.5 sm:p-4 bg-white/30 dark:bg-slate-900/40 backdrop-blur-md border-b border-white/40 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20">
                 <Bot className="w-5 h-5" />
@@ -459,14 +461,14 @@ export default function ChatPage() {
           </div>
 
           {/* Quick Scenario Chips */}
-          <div className="px-4 py-2.5 bg-slate-50/60 dark:bg-slate-900/40 border-b border-slate-200/80 dark:border-slate-800 flex items-center gap-2 overflow-x-auto text-[11px]">
+          <div className="px-4 py-2.5 bg-white/20 dark:bg-slate-900/30 border-b border-white/30 dark:border-slate-800 flex items-center gap-2 overflow-x-auto text-[11px] backdrop-blur-xs">
             <span className="text-slate-400 dark:text-slate-500 font-bold shrink-0">
               KỊCH BẢN GỢI Ý:
             </span>
             <button
               type="button"
               onClick={handleTriggerL1}
-              className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-500 text-slate-700 dark:text-slate-300 transition-colors shadow-xs"
+              className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white/60 dark:bg-slate-800/60 border border-white/60 dark:border-slate-700 hover:border-blue-500 text-slate-700 dark:text-slate-300 transition-all shadow-xs backdrop-blur-xs hover:bg-white/90"
             >
               <BookOpen className="w-3.5 h-3.5 text-blue-500" />
               <span>Hỏi quy chế cấp giấy xác nhận (L1)</span>
@@ -475,7 +477,7 @@ export default function ChatPage() {
             <button
               type="button"
               onClick={handleTriggerL2}
-              className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-500 text-slate-700 dark:text-slate-300 transition-colors shadow-xs"
+              className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white/60 dark:bg-slate-800/60 border border-white/60 dark:border-slate-700 hover:border-blue-500 text-slate-700 dark:text-slate-300 transition-all shadow-xs backdrop-blur-xs hover:bg-white/90"
             >
               <FileText className="w-3.5 h-3.5 text-indigo-500" />
               <span>Tạo yêu cầu cấp Giấy xác nhận (L2)</span>
@@ -484,7 +486,7 @@ export default function ChatPage() {
             <button
               type="button"
               onClick={handleTriggerL4}
-              className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-900/60 hover:border-rose-500 text-rose-700 dark:text-rose-300 transition-colors shadow-xs"
+              className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white/60 dark:bg-slate-800/60 border border-rose-200/80 dark:border-rose-900/60 hover:border-rose-500 text-rose-700 dark:text-rose-300 transition-all shadow-xs backdrop-blur-xs hover:bg-rose-50/80"
             >
               <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
               <span>Khiếu nại điểm thi kết thúc HP (L4)</span>
@@ -494,7 +496,7 @@ export default function ChatPage() {
           {/* Chat Messages Feed */}
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 text-xs">
             <div className="text-center">
-              <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-widest px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/80">
+              <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-widest px-3 py-1 rounded-full bg-white/40 dark:bg-slate-800/40 border border-white/50 dark:border-slate-700/50 backdrop-blur-xs">
                 PHIÊN GIAO DỊCH HỌC VỤ: #SEC-2026-9041 · ĐỒNG BỘ QUY CHẾ ĐHQG
               </span>
             </div>
@@ -522,14 +524,14 @@ export default function ChatPage() {
                     className={`p-4 rounded-2xl leading-relaxed whitespace-pre-line text-xs ${
                       msg.sender === "user"
                         ? "bg-blue-600 text-white rounded-tr-none shadow-md shadow-blue-500/20"
-                        : "bg-slate-100 dark:bg-slate-800/90 text-slate-800 dark:text-slate-200 rounded-tl-none border border-slate-200/80 dark:border-slate-700/60"
+                        : "bg-white/70 dark:bg-slate-800/70 backdrop-blur-md text-slate-800 dark:text-slate-200 rounded-tl-none border border-white/60 dark:border-slate-700/60 shadow-sm"
                     }`}
                   >
                     {msg.text}
 
                     {/* Citation block for L1 */}
                     {msg.citation && (
-                      <div className="mt-3 p-3 rounded-xl bg-white/80 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700/80 text-slate-800 dark:text-slate-200 space-y-1.5 shadow-xs">
+                      <div className="mt-3 p-3 rounded-xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm border border-white/60 dark:border-slate-700/70 text-slate-800 dark:text-slate-200 space-y-1.5 shadow-xs">
                         <div className="flex items-center justify-between text-[11px] font-bold text-blue-700 dark:text-blue-300">
                           <span className="flex items-center gap-1.5">
                             <BookOpen className="w-3.5 h-3.5" />
@@ -556,13 +558,13 @@ export default function ChatPage() {
 
                     {/* Submit 1 Prompt Card with Live Form Editing Chips */}
                     {msg.actionCard === "submit1_prompt" && (
-                      <div className="mt-3 p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
+                      <div className="mt-3 p-3.5 rounded-2xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border border-white/70 dark:border-slate-700/70 shadow-sm space-y-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-xs">
                             <FileText className="w-4 h-4 text-blue-600" />
                             <span>Phiếu yêu cầu: Cấp Giấy xác nhận sinh viên</span>
                           </div>
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/60 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 border border-white/40 dark:border-slate-700">
                             Mẫu BM-03
                           </span>
                         </div>
@@ -572,7 +574,7 @@ export default function ChatPage() {
                         </p>
 
                         {/* Interactive Agent Quick Controls for Modifying the Form */}
-                        <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 space-y-1.5">
+                        <div className="p-2 rounded-xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-xs border border-white/50 dark:border-slate-700/60 space-y-1.5">
                           <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
                             <Sparkles className="w-3 h-3 text-blue-500" />
                             <span>Yêu cầu AI sửa nhanh biểu mẫu bên phải:</span>
@@ -688,9 +690,9 @@ export default function ChatPage() {
           </div>
 
           {/* Chat Composer */}
-          <div className="p-4 bg-slate-50 dark:bg-slate-900/90 border-t border-slate-200 dark:border-slate-800">
+          <div className="shrink-0 p-3 sm:p-4 bg-white/30 dark:bg-slate-900/40 backdrop-blur-md border-t border-white/40 dark:border-slate-800">
             {isL4HandoverActive && (
-              <div className="mb-2 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-[11px] flex items-center justify-between">
+              <div className="mb-2 p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-[11px] flex items-center justify-between backdrop-blur-xs">
                 <span className="flex items-center gap-1.5 font-medium">
                   <ShieldAlert className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                   Kênh đã bàn giao cho Cán bộ OF001. AI đã tạm dừng tư vấn tự động trên luồng này.
@@ -710,16 +712,16 @@ export default function ChatPage() {
                       ? "Gửi thông tin hoặc tài liệu bổ sung cho cán bộ phụ trách..."
                       : "Nhập câu hỏi, hoặc gõ 'đổi sang bản giấy', 'đổi lý do thành...' (Ctrl + K)"
                   }
-                  className="w-full pl-10 pr-20 py-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs text-slate-900 dark:text-white placeholder:text-slate-400"
+                  className="w-full pl-10 pr-20 py-2.5 sm:py-3 rounded-2xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm border border-white/60 dark:border-slate-700/60 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white/90 dark:focus:bg-slate-900/90 transition-all shadow-xs"
                 />
                 <button
                   type="button"
                   title="Đính kèm chứng từ/tài liệu"
-                  className="absolute left-3 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                  className="absolute left-3 top-2.5 sm:top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                 >
                   <Paperclip className="w-4 h-4" />
                 </button>
-                <span className="absolute right-3 top-3.5 text-[10px] font-mono text-slate-400 hidden sm:inline-block">
+                <span className="absolute right-3 top-3 sm:top-3.5 text-[10px] font-mono text-slate-400 hidden sm:inline-block">
                   Enter để gửi
                 </span>
               </div>
@@ -727,7 +729,7 @@ export default function ChatPage() {
               <button
                 type="submit"
                 disabled={!input.trim()}
-                className="py-3 px-5 rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold text-xs flex items-center gap-1.5 shadow-md shadow-blue-500/20 transition-all shrink-0"
+                className="py-2.5 sm:py-3 px-4 sm:px-5 rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold text-xs flex items-center gap-1.5 shadow-md shadow-blue-500/20 transition-all shrink-0"
               >
                 <span>Gửi</span>
                 <Send className="w-3.5 h-3.5" />
@@ -746,9 +748,9 @@ export default function ChatPage() {
 
         {/* Right Column: Student Workspace & Submit 1 (Always 42% on Desktop, NO layout shifts) */}
         <div
-          className={`lg:w-[42%] w-full shrink-0 transition-all duration-300 ${
+          className={`lg:w-[42%] w-full h-full min-h-0 shrink-0 transition-all duration-300 ${
             mobileTab === "chat" ? "hidden lg:flex" : "flex"
-          } flex-col`}
+          } flex-col overflow-hidden`}
         >
           {isGate1Open ? (
             <Submit1Modal

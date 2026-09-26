@@ -158,7 +158,7 @@ function LoginForm() {
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               placeholder="an.nv@campus.edu.vn hoặc SV001"
-              className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
+              className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-white/60 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700/60 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white backdrop-blur-sm transition-all"
             />
           </div>
         </div>
@@ -174,7 +174,7 @@ function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full pl-9 pr-10 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
+              className="w-full pl-9 pr-10 py-2 text-xs rounded-xl bg-white/60 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700/60 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white backdrop-blur-sm transition-all"
             />
             <button
               type="button"

@@ -53,9 +53,9 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-[#111827] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden text-xs">
+    <div className="flex flex-col h-full min-h-0 glass-surface rounded-3xl shadow-2xl overflow-hidden text-xs">
       {/* Header */}
-      <div className="p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+      <div className="shrink-0 p-4 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/80 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse" />
           <h3 className="font-bold text-slate-900 dark:text-white text-sm">
@@ -76,9 +76,9 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
         {/* Academic Verification Notice */}
-        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 space-y-1">
+        <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 space-y-1 backdrop-blur-sm">
           <div className="flex items-center gap-1.5 font-bold text-xs text-amber-700 dark:text-amber-300">
             <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
             <span>Nguyên tắc kiểm chứng học thuật:</span>
@@ -89,7 +89,7 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
         </div>
 
         {/* Form Preview */}
-        <div className="p-4 rounded-xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3.5">
+        <div className="p-4 rounded-2xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200/60 dark:border-slate-800/80 shadow-sm space-y-3.5">
           <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
             <span className="font-bold text-slate-900 dark:text-white text-xs">
               Xem lại thông tin: Giấy xác nhận SV vay vốn
@@ -150,10 +150,10 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
                 setGate1FormData((prev) => ({ ...prev, reason: e.target.value }))
               }
               placeholder="Nhập mục đích xin giấy (hoặc yêu cầu AI bên trái sửa giúp)..."
-              className={`w-full p-2.5 rounded-lg text-xs border transition-all duration-300 text-slate-900 dark:text-white ${
+              className={`w-full p-2.5 rounded-xl text-xs border transition-all duration-300 text-slate-900 dark:text-white backdrop-blur-sm ${
                 lastUpdatedField === "reason"
                   ? "bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-500 ring-2 ring-emerald-500/30"
-                  : "bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  : "bg-white/50 dark:bg-slate-800/60 border-slate-200/70 dark:border-slate-700/60 focus:outline-none focus:ring-2 focus:ring-blue-500"
               }`}
             />
           </div>
@@ -173,12 +173,12 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <label
-                className={`flex items-start gap-2 p-2.5 rounded-xl border cursor-pointer transition-all ${
+                className={`flex items-start gap-2 p-2.5 rounded-xl border cursor-pointer transition-all backdrop-blur-xs ${
                   gate1FormData.receiveMethod === "digital_pdf"
                     ? lastUpdatedField === "receiveMethod"
                       ? "bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-500 ring-2 ring-emerald-500/30 text-emerald-950 dark:text-emerald-200"
                       : "bg-blue-50/70 dark:bg-blue-950/40 border-blue-500 text-blue-900 dark:text-blue-200"
-                    : "bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                    : "bg-white/50 dark:bg-slate-800/40 border-slate-200/60 dark:border-slate-700/50 text-slate-700 dark:text-slate-300"
                 }`}
               >
                 <input
@@ -199,12 +199,12 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
               </label>
 
               <label
-                className={`flex items-start gap-2 p-2.5 rounded-xl border cursor-pointer transition-all ${
+                className={`flex items-start gap-2 p-2.5 rounded-xl border cursor-pointer transition-all backdrop-blur-xs ${
                   gate1FormData.receiveMethod === "paper_stamped"
                     ? lastUpdatedField === "receiveMethod"
                       ? "bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-500 ring-2 ring-emerald-500/30 text-emerald-950 dark:text-emerald-200"
                       : "bg-blue-50/70 dark:bg-blue-950/40 border-blue-500 text-blue-900 dark:text-blue-200"
-                    : "bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                    : "bg-white/50 dark:bg-slate-800/40 border-slate-200/60 dark:border-slate-700/50 text-slate-700 dark:text-slate-300"
                 }`}
               >
                 <input
@@ -244,7 +244,7 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
           </button>
 
           {/* Business rule disclaimer */}
-          <div className="flex items-start gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 text-[10px] text-slate-500 dark:text-slate-400">
+          <div className="flex items-start gap-2 p-2.5 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 text-[10px] text-slate-500 dark:text-slate-400">
             <Lock className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
             <span>
               <strong>Lưu ý nghiệp vụ:</strong> Chỉ khi bấm nút trên, yêu cầu mới chính thức được chuyển vào Hàng chờ trạng thái &ldquo;Mới tiếp nhận&rdquo; (Open) của Cán bộ. Hệ thống tuyệt đối chưa phát hành văn bản tại bước này.
@@ -253,7 +253,7 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
         </div>
 
         {/* Existing Tracked Tickets Mini List */}
-        <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+        <div className="space-y-2 pt-2 border-t border-slate-200/60 dark:border-slate-800">
           <div className="flex items-center justify-between text-xs">
             <span className="font-bold text-slate-900 dark:text-white">
               Hồ sơ cá nhân đang theo dõi ({tickets.filter((t) => t.studentId === currentUser.id).length} hồ sơ)
@@ -269,7 +269,7 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
               .map((t) => (
                 <div
                   key={t.id}
-                  className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1.5"
+                  className="p-3 rounded-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200/60 dark:border-slate-800 space-y-1.5"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
@@ -307,7 +307,7 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
           </div>
 
           {/* Tuition Status Banner */}
-          <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
+          <div className="p-2.5 rounded-xl bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
             <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
               <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
               <span>Học phí Học kỳ II: Đã quyết toán (Không nợ phí)</span>

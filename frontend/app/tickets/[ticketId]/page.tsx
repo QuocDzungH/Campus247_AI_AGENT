@@ -90,11 +90,11 @@ export default function TicketDetailPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#0B0F17] bg-dot-pattern transition-colors">
+    <div className="min-h-screen flex flex-col bg-transparent transition-colors">
       <Navbar />
 
       {/* Top Bar with Breadcrumb and Switchers */}
-      <div className="w-full border-b border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 backdrop-blur-md px-4 sm:px-6 lg:px-8 py-3.5">
+      <div className="w-full border-b border-white/50 dark:border-white/10 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md px-4 sm:px-6 lg:px-8 py-3.5">
         <div className="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3">
             <Link
@@ -181,7 +181,7 @@ export default function TicketDetailPage() {
         )}
 
         {/* Student Profile Banner */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="p-4 sm:p-5 rounded-3xl glass-surface shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-xl bg-blue-600/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-bold text-base flex items-center justify-center border border-blue-200 dark:border-blue-800">
               {ticket.studentName.charAt(0)}
@@ -258,8 +258,8 @@ export default function TicketDetailPage() {
           {/* Left Column (7 cols): Facts, Evidence, Checklist, Audit */}
           <div className="lg:col-span-7 space-y-5">
             {/* AI Copilot Brief */}
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3.5">
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+            <div className="p-5 rounded-3xl glass-surface space-y-3.5">
+              <div className="flex items-center justify-between border-b border-white/50 dark:border-white/10 pb-2">
                 <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-xs">
                   <Sparkles className="w-4 h-4 text-blue-500" />
                   <span>AI COPILOT TÓM TẮT CA XỬ LÝ</span>
@@ -301,7 +301,7 @@ export default function TicketDetailPage() {
 
             {/* Facts & Evidence Section (If L4: show 3 sources verification & grade diff scale; If L2: show Group A vs Group B) */}
             {isL4 && ticket.l4EvidenceVerification ? (
-              <div className="p-5 rounded-2xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+              <div className="p-5 rounded-2xl glass-surface space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                   <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-xs">
                     <ShieldCheck className="w-4 h-4 text-indigo-500" />
@@ -319,7 +319,7 @@ export default function TicketDetailPage() {
                 {/* 3 Sources */}
                 <div className="space-y-2.5">
                   {/* Source 1 */}
-                  <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex items-start justify-between gap-3 text-xs">
+                  <div className="p-3 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50 backdrop-blur-sm flex items-start justify-between gap-3 text-xs">
                     <div className="space-y-1">
                       <div className="font-bold text-slate-900 dark:text-white text-[11px]">
                         NGUỒN 1: DỮ LIỆU SINH VIÊN TỰ KHAI
@@ -334,7 +334,7 @@ export default function TicketDetailPage() {
                   </div>
 
                   {/* Source 2 */}
-                  <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex items-start justify-between gap-3 text-xs">
+                  <div className="p-3 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50 backdrop-blur-sm flex items-start justify-between gap-3 text-xs">
                     <div className="space-y-1">
                       <div className="font-bold text-slate-900 dark:text-white text-[11px]">
                         NGUỒN 2: ĐỒNG BỘ CSDL ĐÀO TẠO (DATABASE SYNC)
@@ -352,7 +352,7 @@ export default function TicketDetailPage() {
                   </div>
 
                   {/* Source 3 */}
-                  <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex items-start justify-between gap-3 text-xs">
+                  <div className="p-3 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50 backdrop-blur-sm flex items-start justify-between gap-3 text-xs">
                     <div className="space-y-1">
                       <div className="font-bold text-slate-900 dark:text-white text-[11px]">
                         NGUỒN 3: BIÊN BẢN PHÒNG THI &amp; PHIẾU CHẤM PHÚC KHẢO
@@ -371,7 +371,7 @@ export default function TicketDetailPage() {
                 </div>
 
                 {/* Grade Diff Visual Scale (Matching Image 1) */}
-                <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-2">
+                <div className="p-4 rounded-xl bg-white/50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/50 backdrop-blur-sm space-y-2">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-bold text-slate-900 dark:text-white">
                       ĐỐI CHIẾU CHÊNH LỆCH ĐIỂM SỐ
@@ -382,7 +382,7 @@ export default function TicketDetailPage() {
                   </div>
 
                   <div className="relative pt-4 pb-2">
-                    <div className="h-3 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden flex">
+                    <div className="h-3 w-full bg-slate-200/70 dark:bg-slate-700/70 rounded-full overflow-hidden flex">
                       <div style={{ width: "55%" }} className="bg-slate-400 dark:bg-slate-500" />
                       <div style={{ width: "20%" }} className="bg-gradient-to-r from-amber-500 to-emerald-500 animate-pulse" />
                     </div>
@@ -398,7 +398,7 @@ export default function TicketDetailPage() {
               </div>
             ) : (
               /* L2 Facts & Evidence (Matching Image 7) */
-              <div className="p-5 rounded-2xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+              <div className="p-5 rounded-2xl glass-surface space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                   <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-xs">
                     <FileText className="w-4 h-4 text-blue-500" />
@@ -502,7 +502,7 @@ export default function TicketDetailPage() {
             )}
 
             {/* Checklist Section */}
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3.5">
+            <div className="p-5 rounded-2xl glass-surface space-y-3.5">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                 <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-xs">
                   <CheckSquare className="w-4 h-4 text-emerald-500" />
@@ -524,8 +524,8 @@ export default function TicketDetailPage() {
                     onClick={() => toggleChecklistItem(ticket.id, item.id)}
                     className={`p-3 rounded-xl border cursor-pointer transition-all flex items-start gap-3 ${
                       item.checked
-                        ? "bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-500/40 text-emerald-950 dark:text-emerald-200"
-                        : "bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        ? "bg-emerald-500/10 dark:bg-emerald-950/30 border-emerald-500/40 text-emerald-950 dark:text-emerald-200"
+                        : "bg-white/40 dark:bg-slate-800/30 border-slate-200/60 dark:border-slate-700/50 text-slate-700 dark:text-slate-300 hover:bg-white/70 dark:hover:bg-slate-800/60"
                     }`}
                   >
                     <div className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400">
@@ -545,7 +545,7 @@ export default function TicketDetailPage() {
             </div>
 
             {/* Audit Log */}
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+            <div className="p-5 rounded-2xl glass-surface space-y-3">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                 <span className="font-bold text-slate-900 dark:text-white text-xs">
                   Nhật ký Trách nhiệm &amp; Audit Log
@@ -574,7 +574,7 @@ export default function TicketDetailPage() {
 
           {/* Right Column (5 cols): Submit 2 Gate Enforcement & Draft */}
           <div className="lg:col-span-5 space-y-5 sticky top-20">
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
+            <div className="p-5 rounded-2xl glass-surface shadow-2xl space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
                 <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-xs">
                   <ShieldCheck className="w-4 h-4 text-blue-600" />
@@ -609,7 +609,7 @@ export default function TicketDetailPage() {
                   rows={6}
                   value={draftContent}
                   onChange={handleDraftChange}
-                  className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans"
+                  className="w-full p-3 rounded-xl bg-white/60 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/70 text-xs text-slate-900 dark:text-white leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans backdrop-blur-sm"
                   placeholder="Nhập nội dung phản hồi chính thức cho sinh viên..."
                 />
 
@@ -659,7 +659,7 @@ export default function TicketDetailPage() {
               </div>
 
               {/* Pre-Flight Check Info Box */}
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 text-xs space-y-1.5">
+              <div className="p-3 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50 text-xs space-y-1.5">
                 <div className="flex items-center justify-between font-bold text-[11px] text-slate-900 dark:text-white">
                   <span>XEM TRƯỚC XÁC NHẬN CỔNG 2</span>
                   <span className="font-mono text-[9px] text-slate-400">Pre-Flight Check</span>
@@ -688,7 +688,7 @@ export default function TicketDetailPage() {
                   </span>
                 </div>
 
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 max-h-36 overflow-y-auto space-y-2 text-xs">
+                <div className="p-3 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50 max-h-36 overflow-y-auto space-y-2 text-xs">
                   {ticket.messages.slice(-3).map((m) => (
                     <div key={m.id} className="space-y-0.5">
                       <div className="flex items-center justify-between text-[10px]">
@@ -707,8 +707,8 @@ export default function TicketDetailPage() {
 
       {/* Pre-Flight Confirmation Modal */}
       {showPreflightModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-3xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 p-6 shadow-2xl space-y-4 text-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
+          <div className="w-full max-w-lg rounded-3xl glass-surface border border-slate-200/80 dark:border-slate-700/80 p-6 shadow-2xl space-y-4 text-xs">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2 text-slate-900 dark:text-white font-bold text-sm">
                 <ShieldCheck className="w-5 h-5 text-blue-600" />
@@ -730,7 +730,7 @@ export default function TicketDetailPage() {
             </div>
 
             <div className="space-y-3 text-slate-600 dark:text-slate-300">
-              <div className="p-3 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/60 text-[11px] space-y-1">
+              <div className="p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200/70 dark:border-blue-900/60 text-[11px] space-y-1">
                 <div>Người nhận: <strong>{ticket.studentName} ({ticket.studentMssv})</strong></div>
                 <div>Mã hồ sơ: <span className="font-mono font-bold text-blue-600">{ticket.code}</span></div>
                 <div>
@@ -747,7 +747,7 @@ export default function TicketDetailPage() {
                 <span className="font-bold text-[11px] text-slate-800 dark:text-slate-200 block mb-1">
                   Nội dung gửi:
                 </span>
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-[11px] leading-relaxed whitespace-pre-line max-h-40 overflow-y-auto">
+                <div className="p-3 rounded-xl bg-white/60 dark:bg-slate-800/80 border border-slate-200/70 dark:border-slate-700/60 text-[11px] leading-relaxed whitespace-pre-line max-h-40 overflow-y-auto">
                   {modalActionType === "request_info"
                     ? "Phòng Đào tạo & CTSV yêu cầu bạn gửi bổ sung ảnh chụp Thẻ sinh viên hoặc Giấy tờ chứng minh đối tượng chính sách để cán bộ hoàn tất hồ sơ."
                     : draftContent}
