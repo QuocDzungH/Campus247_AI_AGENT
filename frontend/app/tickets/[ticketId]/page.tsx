@@ -19,9 +19,23 @@ import {
   Square,
   RefreshCw,
   X,
+  Eye,
+  Printer,
+  Download,
+  AlertCircle,
+  FileCheck,
+  Edit3,
+  ExternalLink,
+  Info,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { useStore } from "@/lib/store";
+import { SystemVerificationItem, IssuedCertificateDocument } from "@/lib/types";
+import {
+  downloadCertificateFile,
+  openCertificatePrintWindow,
+  buildDefaultCertificate,
+} from "@/lib/certificate-service";
 
 export default function TicketDetailPage() {
   const params = useParams();
@@ -33,6 +47,11 @@ export default function TicketDetailPage() {
     resetOfficerDraft,
     toggleChecklistItem,
     submitGate2Response,
+    runTicketVerification,
+    retryCriterionVerification,
+    confirmCriterionReview,
+    updateCertificateDraft,
+    issueCertificate,
   } = useStore();
 
   const ticket = getTicket(ticketId) || getTicket("TKT-2026-0142");
@@ -40,10 +59,33 @@ export default function TicketDetailPage() {
   const [draftContent, setDraftContent] = useState(() =>
     ticket ? ticket.officerDraft || ticket.officerDraftDefault : ""
   );
+
+  // Right column view toggle: Certificate Draft vs Reply Message
+  const [activeRightTab, setActiveRightTab] = useState<"certificate" | "message">("certificate");
+
+  // Certificate edit fields state (synchronized with ticket.issuedCertificate)
+  const [certDestinationOrg, setCertDestinationOrg] = useState(
+    () => ticket?.issuedCertificate?.destinationOrg || ticket?.destinationOrg || "Ngân hàng Chính sách Xã hội Chi nhánh Q. Thủ Đức"
+  );
+  const [certPurpose, setCertPurpose] = useState(
+    () => ticket?.issuedCertificate?.purpose || ticket?.purpose || "Bổ sung hồ sơ vay vốn Ngân hàng Chính sách Xã hội kỳ 2 năm học 2025 - 2026"
+  );
+  const [certValidUntil, setCertValidUntil] = useState(
+    () => ticket?.issuedCertificate?.validUntil || "Có giá trị sử dụng trong 30 ngày kể từ ngày cấp"
+  );
+  const [certNotes, setCertNotes] = useState(
+    () => ticket?.issuedCertificate?.customOfficerNotes || "Sinh viên chấp hành tốt nội quy trường học và hoàn thành đầy đủ nghĩa vụ học kỳ."
+  );
+
+  // Modals
   const [showPreflightModal, setShowPreflightModal] = useState(false);
   const [modalActionType, setModalActionType] = useState<"respond" | "request_info" | "resolve">("respond");
+  const [viewingEvidenceItem, setViewingEvidenceItem] = useState<SystemVerificationItem | null>(null);
+
+  // Toast / notifications
   const [notificationDismissed, setNotificationDismissed] = useState(false);
   const [syncToast, setSyncToast] = useState(false);
+  const [downloadSuccessToast, setDownloadSuccessToast] = useState(false);
 
   if (!ticket) {
     return (
@@ -61,7 +103,21 @@ export default function TicketDetailPage() {
 
   const isL4 = ticket.isL4 || ticket.code === "TKT-2026-0098";
   const checkedCount = ticket.checklist.filter((c) => c.checked).length;
-  const allChecked = checkedCount === ticket.checklist.length;
+
+  // Active certificate representation
+  const activeCert: IssuedCertificateDocument = ticket.issuedCertificate || buildDefaultCertificate(ticket, {
+    destinationOrg: certDestinationOrg,
+    purpose: certPurpose,
+    validUntil: certValidUntil,
+    customOfficerNotes: certNotes,
+  });
+
+  // Pre-check verification items
+  const verifications = ticket.systemVerifications || [];
+  const hasErrorVerif = verifications.some((v) => v.status === "error");
+  const hasInsufficientVerif = verifications.some((v) => v.status === "insufficient");
+  const allVerifsPassed = verifications.length > 0 && verifications.every((v) => v.status === "passed");
+  const allOfficerConfirmed = verifications.length > 0 && verifications.every((v) => v.officerReviewStatus === "confirmed");
 
   const handleDraftChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;
@@ -74,7 +130,17 @@ export default function TicketDetailPage() {
     setDraftContent(ticket.officerDraftDefault);
   };
 
+  const handleCertFieldChange = (field: "destinationOrg" | "purpose" | "validUntil" | "customOfficerNotes", val: string) => {
+    if (field === "destinationOrg") setCertDestinationOrg(val);
+    if (field === "purpose") setCertPurpose(val);
+    if (field === "validUntil") setCertValidUntil(val);
+    if (field === "customOfficerNotes") setCertNotes(val);
+
+    updateCertificateDraft(ticket.id, { [field]: val });
+  };
+
   const handleAiSync = () => {
+    runTicketVerification(ticket.id);
     setSyncToast(true);
     setTimeout(() => setSyncToast(false), 2500);
   };
@@ -85,8 +151,23 @@ export default function TicketDetailPage() {
   };
 
   const confirmSubmitGate2 = () => {
-    submitGate2Response(ticket.id, modalActionType, draftContent);
+    if (modalActionType === "resolve" && ticket.type === "certificate") {
+      const issued = issueCertificate(ticket.id);
+      if (issued) {
+        downloadCertificateFile(issued);
+        setDownloadSuccessToast(true);
+        setTimeout(() => setDownloadSuccessToast(false), 4000);
+      }
+    } else {
+      submitGate2Response(ticket.id, modalActionType, draftContent);
+    }
     setShowPreflightModal(false);
+  };
+
+  const handleDirectDownload = () => {
+    downloadCertificateFile(activeCert);
+    setDownloadSuccessToast(true);
+    setTimeout(() => setDownloadSuccessToast(false), 3000);
   };
 
   return (
@@ -117,44 +198,77 @@ export default function TicketDetailPage() {
                     ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
                     : ticket.status === "pending_officer"
                     ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
-                    : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20"
+                    : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
                 }`}
               >
                 {ticket.status === "open"
                   ? "MỚI TIẾP NHẬN"
                   : ticket.status === "pending_officer"
                   ? "CHỜ CÁN BỘ"
-                  : "ĐÃ HOÀN TẤT"}
+                  : "ĐÃ HOÀN TẤT & CẤP GIẤY"}
               </span>
 
               <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-                {isL4 ? "ƯU TIÊN CAO (L4)" : "BÌNH THƯỜNG (L2)"}
+                {isL4 ? "ƯU TIÊN CAO (L4)" : "TIÊU CHUẨN (L2)"}
               </span>
+
+              {ticket.documentStatus === "issued" && (
+                <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                  <FileCheck className="w-3 h-3" />
+                  <span>Đã tạo file BM-03</span>
+                </span>
+              )}
             </div>
           </div>
 
-          {/* Quick Case Switchers */}
-          <div className="flex items-center gap-2 text-xs">
+          {/* Quick Case Switchers matching requirements */}
+          <div className="flex flex-wrap items-center gap-1.5 text-xs">
+            <span className="text-[11px] text-slate-400 mr-1 hidden lg:inline font-mono">Tình huống demo:</span>
             <Link
               href="/tickets/TKT-2026-0142"
-              className={`px-3 py-1.5 rounded-xl font-semibold transition-all ${
-                !isL4
-                  ? "bg-blue-600 text-white shadow-sm"
+              className={`px-2.5 py-1.5 rounded-xl font-semibold transition-all ${
+                ticket.code === "TKT-2026-0142"
+                  ? "bg-blue-600 text-white shadow-xs"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
               }`}
+              title="Hồ sơ đủ dữ liệu và đáp ứng điều kiện"
             >
-              📄 XEM CA CHUẨN L2 (TKT-2026-0142)
+              1. Ca Chuẩn Đạt (0142)
+            </Link>
+
+            <Link
+              href="/tickets/TKT-2026-0145"
+              className={`px-2.5 py-1.5 rounded-xl font-semibold transition-all ${
+                ticket.code === "TKT-2026-0145"
+                  ? "bg-amber-600 text-white shadow-xs"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+              }`}
+              title="Thiếu hoặc mâu thuẫn dữ liệu, cần xác minh"
+            >
+              2. Cảnh Báo Nợ HP (0145)
+            </Link>
+
+            <Link
+              href="/tickets/TKT-2026-0146"
+              className={`px-2.5 py-1.5 rounded-xl font-semibold transition-all ${
+                ticket.code === "TKT-2026-0146"
+                  ? "bg-rose-600 text-white shadow-xs"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+              }`}
+              title="Lỗi tra cứu CSDL Đào tạo, có thể thử lại"
+            >
+              3. Lỗi CSDL 504 / Thử lại (0146)
             </Link>
 
             <Link
               href="/tickets/TKT-2026-0098"
-              className={`px-3 py-1.5 rounded-xl font-semibold transition-all ${
+              className={`px-2.5 py-1.5 rounded-xl font-semibold transition-all ${
                 isL4
-                  ? "bg-rose-600 text-white shadow-sm"
+                  ? "bg-purple-600 text-white shadow-xs"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
               }`}
             >
-              🚨 XEM CA KHẨN CẤP L4 (TKT-2026-0098)
+              4. Ca L4 Điểm thi (0098)
             </Link>
           </div>
         </div>
@@ -175,8 +289,34 @@ export default function TicketDetailPage() {
             </div>
             <p className="text-xs leading-relaxed text-rose-200/90">
               {ticket.l4TriggerReason ||
-                "Hệ thống AI đã lập tức dừng đối thoại tự động lúc 09:15 sau khi phát hiện khiếu nại điểm môn Cấu trúc Dữ liệu. Toàn bộ lược sử tương tác và hồ sơ đối soát được đóng gói niêm phong chuyển sang Cán bộ OF001 kiểm duyệt độc lập. Mọi thay đổi điểm số bắt buộc phải có xác nhận số của Giảng viên và Trưởng bộ môn."}
+                "Hệ thống AI đã lập tức dừng đối thoại tự động sau khi phát hiện khiếu nại điểm môn Cấu trúc Dữ liệu. Toàn bộ lược sử tương tác và hồ sơ đối soát được đóng gói niêm phong chuyển sang Cán bộ OF001 kiểm duyệt độc lập."}
             </p>
+          </div>
+        )}
+
+        {/* Data Changed / Stale Banner */}
+        {ticket.dataChangedSinceLastCheck && (
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-transparent border border-amber-500/40 text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-md">
+            <div className="flex items-start gap-2.5">
+              <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="text-sm font-bold block text-slate-900 dark:text-white">
+                  Cảnh báo: Dữ liệu kê khai của sinh viên vừa có thay đổi!
+                </strong>
+                <p className="mt-0.5 text-slate-600 dark:text-slate-300 leading-relaxed">
+                  Sinh viên vừa cập nhật thông tin mục đích sử dụng hoặc cơ quan tiếp nhận. Bản đối soát tự động và bản thảo giấy cần được làm mới lại. Các ghi chú chỉnh sửa của cán bộ sẽ được giữ nguyên vẹn.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleAiSync}
+              className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs shadow-sm flex items-center gap-2 transition-colors shrink-0"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Chạy lại đối soát tự động</span>
+            </button>
           </div>
         )}
 
@@ -187,7 +327,7 @@ export default function TicketDetailPage() {
               {ticket.studentName.charAt(0)}
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
                   {ticket.studentName}
                 </span>
@@ -206,63 +346,52 @@ export default function TicketDetailPage() {
             </div>
           </div>
 
-          <div className="text-right sm:border-l sm:border-slate-200 sm:dark:border-slate-800 sm:pl-6">
+          <div className="text-left sm:text-right sm:border-l sm:border-slate-200 sm:dark:border-slate-800 sm:pl-6">
             <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
-              MỤC TIÊU YÊU CẦU
+              MỤC TIÊU YÊU CẦU &amp; BIỂU MẪU
             </div>
             <div className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">
               {ticket.title}
             </div>
+            <div className="text-[11px] text-blue-600 dark:text-blue-400 font-medium">
+              Biểu mẫu: BM-03/CTSV · Tiếp nhận: {ticket.receiveMethod === "digital_pdf" ? "Bản điện tử (PDF)" : "Bản giấy tại văn phòng"}
+            </div>
           </div>
         </div>
 
-        {/* Sync Alert Banner */}
-        {!notificationDismissed && (
-          <div className="p-3 sm:p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 flex items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-              <span>
-                <strong>Hồ sơ vừa có tin nhắn mới từ sinh viên [MỚI]</strong> – Bấm &ldquo;Cập nhật phân tích AI&rdquo; để nạp lại dữ liệu đồng bộ (Bản thảo bạn đang gõ bên phải sẽ được giữ nguyên tuyệt đối, không bị ghi đè).
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={handleAiSync}
-                className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs shadow-sm flex items-center gap-1.5 transition-colors"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-                <span>Cập nhật phân tích AI</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setNotificationDismissed(true)}
-                className="p-1 rounded-md text-amber-600 dark:text-amber-400 hover:text-amber-800"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
-
+        {/* Sync Toast */}
         {syncToast && (
           <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs flex items-center gap-2 animate-fade-in">
             <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-            <span>Dữ liệu AI đã được đồng bộ mới nhất. Bản thảo của cán bộ vẫn được giữ nguyên vẹn.</span>
+            <span>Đã đối soát lại toàn bộ dữ liệu CSDL. Bản thảo giấy xác nhận của cán bộ vẫn được bảo toàn.</span>
           </div>
         )}
 
-        {/* Two-Column Split Layout (Matching Image 7 & Image 1) */}
+        {/* Download Success Toast */}
+        {downloadSuccessToast && (
+          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/40 text-emerald-800 dark:text-emerald-300 text-xs flex items-center justify-between gap-2 shadow-sm animate-fade-in">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+              <span>
+                <strong>Đã tạo và tải file Giấy xác nhận thành công!</strong> Tệp <code>{activeCert.fileName}</code> đã được lưu về máy.
+              </span>
+            </div>
+            <span className="font-mono text-[10px] bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded text-emerald-700 dark:text-emerald-300">
+              BM-03 DEMO READY
+            </span>
+          </div>
+        )}
+
+        {/* Two-Column Split Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Left Column (7 cols): Facts, Evidence, Checklist, Audit */}
+          {/* Left Column (7 cols): System Automated Verification Pre-check, Facts, Audit */}
           <div className="lg:col-span-7 space-y-5">
             {/* AI Copilot Brief */}
             <div className="p-5 rounded-3xl glass-surface space-y-3.5">
               <div className="flex items-center justify-between border-b border-white/50 dark:border-white/10 pb-2">
                 <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-xs">
                   <Sparkles className="w-4 h-4 text-blue-500" />
-                  <span>AI COPILOT TÓM TẮT CA XỬ LÝ</span>
+                  <span>AI COPILOT TÓM TẮT &amp; CHUẨN BỊ CA XỬ LÝ</span>
                 </div>
                 <span className="font-mono text-[10px] text-slate-400">
                   Engine v4.2 · Conf. {ticket.aiSummary.confidence}
@@ -299,8 +428,176 @@ export default function TicketDetailPage() {
               </div>
             </div>
 
-            {/* Facts & Evidence Section (If L4: show 3 sources verification & grade diff scale; If L2: show Group A vs Group B) */}
-            {isL4 && ticket.l4EvidenceVerification ? (
+            {/* BẢNG KẾT QUẢ ĐỐI SOÁT TỰ ĐỘNG CỦA HỆ THỐNG (System Automated Pre-check) */}
+            {!isL4 && (
+              <div className="p-5 rounded-3xl glass-surface space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/60 dark:border-slate-800 pb-3">
+                  <div>
+                    <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-xs sm:text-sm">
+                      <ShieldCheck className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                      <span>KẾT QUẢ ĐỐI SOÁT TỰ ĐỘNG CỦA HỆ THỐNG</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Hệ thống tự động tra cứu CSDL Đào tạo &amp; KHTC. Cán bộ kiểm tra kết quả đã chuẩn bị sẵn, không phải tự đi tìm dữ liệu.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span
+                      className={`font-mono text-[10px] px-2.5 py-1 rounded-full font-bold flex items-center gap-1.5 ${
+                        hasErrorVerif
+                          ? "bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800"
+                          : hasInsufficientVerif
+                          ? "bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800"
+                          : "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800"
+                      }`}
+                    >
+                      {hasErrorVerif ? (
+                        <>
+                          <AlertCircle className="w-3.5 h-3.5" />
+                          <span>LỖI TRA CỨU CSDL</span>
+                        </>
+                      ) : hasInsufficientVerif ? (
+                        <>
+                          <AlertTriangle className="w-3.5 h-3.5" />
+                          <span>CẦN XÁC MINH (1 ĐIỀU KIỆN)</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>HỆ THỐNG: ĐẠT 3/3 ĐIỀU KIỆN</span>
+                        </>
+                      )}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Pre-check Conditions List */}
+                <div className="space-y-3">
+                  {verifications.map((item) => {
+                    const isPassed = item.status === "passed";
+                    const isError = item.status === "error";
+                    const isInsufficient = item.status === "insufficient";
+                    const isConfirmedByOfficer = item.officerReviewStatus === "confirmed";
+
+                    return (
+                      <div
+                        key={item.id}
+                        className={`p-3.5 rounded-2xl border transition-all space-y-2.5 ${
+                          isError
+                            ? "bg-rose-50/60 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/60"
+                            : isInsufficient
+                            ? "bg-amber-50/60 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/60"
+                            : "bg-white/50 dark:bg-slate-800/40 border-slate-200/80 dark:border-slate-700/60"
+                        }`}
+                      >
+                        {/* Item Header */}
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="space-y-0.5">
+                            <div className="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-2">
+                              <span>{item.criterionLabel}</span>
+                            </div>
+                            <div className="text-[10px] text-slate-500 font-mono">
+                              Nguồn: <strong>{item.sourceSystem}</strong> · Thời điểm: {item.lookupTimestamp}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {/* System Result Badge */}
+                            <span
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                                isPassed
+                                  ? "bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+                                  : isError
+                                  ? "bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800"
+                                  : "bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
+                              }`}
+                            >
+                              {isPassed ? "Đáp ứng" : isError ? "Lỗi kết nối" : "Cần xác minh"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Details Grid */}
+                        <div className="p-2.5 rounded-xl bg-white/70 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800 text-[11px] space-y-1.5 leading-relaxed">
+                          <div>
+                            <span className="text-slate-400 font-medium">Dữ liệu kiểm tra: </span>
+                            <span className="text-slate-800 dark:text-slate-200 font-semibold">{item.dataChecked}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 font-medium">Điều kiện áp dụng: </span>
+                            <span className="text-slate-700 dark:text-slate-300">{item.conditionApplied}</span>
+                          </div>
+                          <div className="pt-1 border-t border-slate-100 dark:border-slate-800">
+                            <span className="text-slate-400 font-medium">Lý do hệ thống: </span>
+                            <span
+                              className={`font-medium ${
+                                isPassed
+                                  ? "text-emerald-700 dark:text-emerald-300"
+                                  : isError
+                                  ? "text-rose-600 dark:text-rose-400"
+                                  : "text-amber-700 dark:text-amber-300"
+                              }`}
+                            >
+                              {item.reason}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Actions Row */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                          <div className="flex items-center gap-2">
+                            {item.evidenceDetails && (
+                              <button
+                                type="button"
+                                onClick={() => setViewingEvidenceItem(item)}
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-[11px] font-semibold text-slate-700 dark:text-slate-200 transition-colors shadow-2xs"
+                              >
+                                <Eye className="w-3.5 h-3.5 text-blue-500" />
+                                <span>Xem bằng chứng tra cứu</span>
+                              </button>
+                            )}
+
+                            {isError && (
+                              <button
+                                type="button"
+                                onClick={() => retryCriterionVerification(ticket.id, item.id)}
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-semibold transition-colors shadow-2xs"
+                              >
+                                <RefreshCw className="w-3 h-3" />
+                                <span>Thử lại tra cứu CSDL</span>
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Officer Review State */}
+                          <div className="flex items-center gap-2">
+                            {isConfirmedByOfficer ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                                <span>Cán bộ OF001 đã xác nhận</span>
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => confirmCriterionReview(ticket.id, item.id)}
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 text-white text-[11px] font-semibold transition-all shadow-2xs"
+                              >
+                                <CheckSquare className="w-3 h-3 text-emerald-400" />
+                                <span>Xác nhận kết quả này</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Facts & Evidence Section (If L4) */}
+            {isL4 && ticket.l4EvidenceVerification && (
               <div className="p-5 rounded-2xl glass-surface space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                   <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-xs">
@@ -312,13 +609,7 @@ export default function TicketDetailPage() {
                   </span>
                 </div>
 
-                <p className="text-[11px] text-slate-500 leading-relaxed">
-                  Hệ thống yêu cầu cán bộ kiểm tra tính xác thực chéo giữa 3 nguồn dữ liệu: lời khai sinh viên, máy chủ CSDL Đào tạo, và chứng từ ký tay gốc.
-                </p>
-
-                {/* 3 Sources */}
                 <div className="space-y-2.5">
-                  {/* Source 1 */}
                   <div className="p-3 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50 backdrop-blur-sm flex items-start justify-between gap-3 text-xs">
                     <div className="space-y-1">
                       <div className="font-bold text-slate-900 dark:text-white text-[11px]">
@@ -329,11 +620,10 @@ export default function TicketDetailPage() {
                       </p>
                     </div>
                     <span className="shrink-0 font-mono text-[9px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold border border-amber-500/20">
-                      CHƯA KIỂM CHỨNG (LỜI KHAI SV)
+                      CHƯA KIỂM CHỨNG
                     </span>
                   </div>
 
-                  {/* Source 2 */}
                   <div className="p-3 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50 backdrop-blur-sm flex items-start justify-between gap-3 text-xs">
                     <div className="space-y-1">
                       <div className="font-bold text-slate-900 dark:text-white text-[11px]">
@@ -351,7 +641,6 @@ export default function TicketDetailPage() {
                     </span>
                   </div>
 
-                  {/* Source 3 */}
                   <div className="p-3 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50 backdrop-blur-sm flex items-start justify-between gap-3 text-xs">
                     <div className="space-y-1">
                       <div className="font-bold text-slate-900 dark:text-white text-[11px]">
@@ -365,157 +654,24 @@ export default function TicketDetailPage() {
                       </p>
                     </div>
                     <span className="shrink-0 font-mono text-[9px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold border border-amber-500/20">
-                      CÁN BỘ CHƯA KIỂM TRA THỦ CÔNG
+                      CẦN DUYỆT HỘI ĐỒNG
                     </span>
-                  </div>
-                </div>
-
-                {/* Grade Diff Visual Scale (Matching Image 1) */}
-                <div className="p-4 rounded-xl bg-white/50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/50 backdrop-blur-sm space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-slate-900 dark:text-white">
-                      ĐỐI CHIẾU CHÊNH LỆCH ĐIỂM SỐ
-                    </span>
-                    <span className="font-mono font-bold text-amber-600 dark:text-amber-400">
-                      {ticket.l4EvidenceVerification.gradeDiff.diffText}
-                    </span>
-                  </div>
-
-                  <div className="relative pt-4 pb-2">
-                    <div className="h-3 w-full bg-slate-200/70 dark:bg-slate-700/70 rounded-full overflow-hidden flex">
-                      <div style={{ width: "55%" }} className="bg-slate-400 dark:bg-slate-500" />
-                      <div style={{ width: "20%" }} className="bg-gradient-to-r from-amber-500 to-emerald-500 animate-pulse" />
-                    </div>
-
-                    <div className="flex justify-between text-[10px] font-mono text-slate-400 mt-2">
-                      <span>0.0</span>
-                      <span className="text-slate-700 dark:text-slate-300 font-bold">5.5 (Điểm cũ)</span>
-                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">7.5 (Điểm đề xuất mới)</span>
-                      <span>10.0</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              /* L2 Facts & Evidence (Matching Image 7) */
-              <div className="p-5 rounded-2xl glass-surface space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-                  <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-xs">
-                    <FileText className="w-4 h-4 text-blue-500" />
-                    <span>Bảng Dữ kiện có Nguồn (Facts &amp; Evidence)</span>
-                  </div>
-                  <span className="font-mono text-[10px] text-slate-400">
-                    NGUYÊN TẮC: KHÔNG SUY ĐOÁN
-                  </span>
-                </div>
-
-                {/* Nhóm A */}
-                <div className="space-y-2">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    • NHÓM A: DỮ LIỆU DO SINH VIÊN TỰ KHAI (CHƯA KIỂM CHỨNG ĐỘC LẬP)
-                  </div>
-
-                  <div className="space-y-1.5">
-                    {ticket.facts
-                      .filter((f) => f.key.includes("Mục đích") || f.key.includes("Định danh"))
-                      .map((f) => (
-                        <div
-                          key={f.id}
-                          className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 flex items-center justify-between text-xs"
-                        >
-                          <div>
-                            <span className="font-mono text-[10px] text-slate-400 mr-2">
-                              {f.source}
-                            </span>
-                            <span className="text-slate-700 dark:text-slate-300">
-                              {f.key}: <strong>{f.value}</strong>
-                            </span>
-                          </div>
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
-                              f.status === "verified"
-                                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
-                                : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
-                            }`}
-                          >
-                            {f.statusText}
-                          </span>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-
-                {/* Nhóm B */}
-                <div className="space-y-2">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    • NHÓM B: DỮ KIỆN CÁN BỘ THẨM ĐỊNH NGHIỆP VỤ
-                  </div>
-
-                  <div className="space-y-1.5">
-                    {ticket.facts
-                      .filter((f) => !f.key.includes("Mục đích") && !f.key.includes("Định danh"))
-                      .map((f) => (
-                        <div
-                          key={f.id}
-                          className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 flex items-center justify-between text-xs"
-                        >
-                          <div>
-                            <span className="font-mono text-[10px] text-slate-400 mr-2">
-                              {f.source}
-                            </span>
-                            <span className="text-slate-700 dark:text-slate-300">
-                              {f.key}: <strong>{f.value}</strong>
-                            </span>
-                          </div>
-                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
-                            {f.statusText}
-                          </span>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-
-                {/* Attachments & SOP Reference */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                  <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 text-xs space-y-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      TÀI LIỆU HỒ SƠ ĐÍNH KÈM
-                    </span>
-                    <p className="text-[11px] text-slate-600 dark:text-slate-400">
-                      Không có tài liệu bắt buộc đối với yêu cầu cấp giấy BM-03 thông thường.
-                    </p>
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 text-xs space-y-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      QUY ĐỊNH THẨM ĐỊNH ÁP DỤNG
-                    </span>
-                    <div className="font-semibold text-slate-800 dark:text-slate-200 text-[11px]">
-                      {ticket.sopReference}
-                    </div>
-                    <div className="text-[10px] text-slate-500">
-                      {ticket.sopDeadline}
-                    </div>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Checklist Section */}
+            {/* Checklist Thẩm định Nghiệp vụ (với L4) hoặc Thông tin hồ sơ đính kèm */}
             <div className="p-5 rounded-2xl glass-surface space-y-3.5">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                 <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-xs">
                   <CheckSquare className="w-4 h-4 text-emerald-500" />
-                  <span>Checklist Thẩm định Nghiệp vụ (Cán bộ tick chọn)</span>
+                  <span>Quy định &amp; Checklist Thủ tục Áp dụng</span>
                 </div>
                 <span className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400">
-                  {checkedCount} / {ticket.checklist.length} hoàn tất
+                  {ticket.sopReference}
                 </span>
               </div>
-
-              <p className="text-[11px] text-slate-500 leading-relaxed">
-                Tất cả các mục mặc định ở trạng thái <strong>Chưa kiểm tra</strong>. Khi cán bộ tick xác nhận, hệ thống tự động ghi nhật ký trách nhiệm gắn mã cán bộ OF001.
-              </p>
 
               <div className="space-y-2">
                 {ticket.checklist.map((item) => (
@@ -555,7 +711,7 @@ export default function TicketDetailPage() {
                 </span>
               </div>
 
-              <div className="space-y-2.5 text-xs">
+              <div className="space-y-2.5 text-xs max-h-48 overflow-y-auto">
                 {ticket.auditLogs.map((log) => (
                   <div key={log.id} className="flex items-start gap-2.5">
                     <span className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0" />
@@ -572,116 +728,284 @@ export default function TicketDetailPage() {
             </div>
           </div>
 
-          {/* Right Column (5 cols): Submit 2 Gate Enforcement & Draft */}
+          {/* Right Column (5 cols): Submit 2 Gate - Certificate Draft Preview & Officer Review */}
           <div className="lg:col-span-5 space-y-5 sticky top-20">
-            <div className="p-5 rounded-2xl glass-surface shadow-2xl space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
+            <div className="p-5 rounded-3xl glass-surface shadow-2xl space-y-4">
+              {/* Header with Switcher Tabs */}
+              <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-3">
                 <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-xs">
                   <ShieldCheck className="w-4 h-4 text-blue-600" />
-                  <span>Cổng Kiểm duyệt Cán bộ</span>
+                  <span>BÀN DUYỆT PHÁT HÀNH CÁN BỘ</span>
                 </div>
                 <span className="font-mono text-[9px] px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-bold uppercase tracking-wider">
-                  SUBMIT 2 GATE ENFORCEMENT
+                  SUBMIT 2 GATE
                 </span>
               </div>
 
-              <p className="text-[11px] text-slate-500 leading-relaxed">
-                Mọi nội dung phản hồi chỉ được phát hành tới sinh viên khi cán bộ đã trực tiếp kiểm tra và bấm xác nhận.
-              </p>
-
-              {/* Draft Box */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px]">
-                    Dự thảo phản hồi AI soạn sẵn:
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleResetDraft}
-                    className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-                  >
-                    <RotateCcw className="w-3 h-3" />
-                    <span>Khôi phục mẫu</span>
-                  </button>
-                </div>
-
-                <textarea
-                  rows={6}
-                  value={draftContent}
-                  onChange={handleDraftChange}
-                  className="w-full p-3 rounded-xl bg-white/60 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/70 text-xs text-slate-900 dark:text-white leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans backdrop-blur-sm"
-                  placeholder="Nhập nội dung phản hồi chính thức cho sinh viên..."
-                />
-
-                <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
-                  <Lock className="w-3 h-3 text-amber-500 shrink-0" />
-                  <span>AI không tự động gửi nội dung này. Cán bộ toàn quyền chỉnh sửa và duyệt nội dung.</span>
-                </div>
+              {/* View Selector Tabs */}
+              <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setActiveRightTab("certificate")}
+                  className={`py-2 px-3 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                    activeRightTab === "certificate"
+                      ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-300 shadow-xs"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  }`}
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>1. Bản Giấy Xác Nhận (BM-03)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveRightTab("message")}
+                  className={`py-2 px-3 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                    activeRightTab === "message"
+                      ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-300 shadow-xs"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  }`}
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>2. Tin nhắn phản hồi</span>
+                </button>
               </div>
 
-              {/* Action Buttons (Submit 2 Gate Actions) */}
-              <div className="space-y-2 pt-1">
+              {/* TAB 1: BẢN GIẤY XÁC NHẬN CHÍNH THỨC DỰ KIẾN PHÁT HÀNH */}
+              {activeRightTab === "certificate" && (
+                <div className="space-y-3.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px] flex items-center gap-1.5">
+                      <span>Mẫu BM-03 dự kiến cấp cho sinh viên:</span>
+                    </span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                      BẢN MẪU DEMO — CHƯA KÝ SỐ
+                    </span>
+                  </div>
+
+                  {/* Visual Paper A4 Simulation */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#0c1220] border-2 border-slate-200/90 dark:border-slate-700/80 shadow-inner space-y-3.5 text-xs text-slate-800 dark:text-slate-200 relative overflow-hidden">
+                    {/* Watermark */}
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none opacity-5 dark:opacity-10 rotate-[-25deg]">
+                      <div className="text-3xl font-black border-4 border-dashed border-red-500 p-4 rounded-2xl text-red-500 uppercase tracking-widest text-center">
+                        BẢN MẪU DEMO<br />CHƯA KÝ SỐ
+                      </div>
+                    </div>
+
+                    {/* Paper Header */}
+                    <div className="text-center space-y-0.5 border-b border-slate-200 dark:border-slate-800 pb-3">
+                      <div className="text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">
+                        CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
+                      </div>
+                      <div className="text-[10px] font-bold text-slate-900 dark:text-white">
+                        Độc lập - Tự do - Hạnh phúc
+                      </div>
+                      <div className="w-16 h-0.5 bg-slate-300 dark:bg-slate-700 mx-auto my-1" />
+                      <div className="text-xs font-black uppercase text-indigo-700 dark:text-indigo-400 tracking-wide mt-1">
+                        GIẤY XÁC NHẬN SINH VIÊN
+                      </div>
+                      <div className="text-[10px] text-slate-400 font-mono">
+                        Số: {activeCert.docNumber} · {activeCert.templateVersion}
+                      </div>
+                    </div>
+
+                    {/* Immutable Student Details (Locked to source) */}
+                    <div className="space-y-1.5 text-[11px] bg-slate-50/80 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-800">
+                      <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400 pb-1 border-b border-slate-200 dark:border-slate-800">
+                        <span>THÔNG TIN ĐÀO TẠO</span>
+                        <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-mono">
+                          <Lock className="w-3 h-3" />
+                          Khóa cố định theo CSDL
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+                        <div>Họ tên: <strong>{ticket.studentName}</strong></div>
+                        <div>MSSV: <strong>{ticket.studentMssv}</strong></div>
+                        <div>Ngày sinh: <strong>{activeCert.studentDob}</strong></div>
+                        <div>Lớp: <strong>{ticket.studentClassYear}</strong></div>
+                        <div className="col-span-2">Ngành: <strong>{ticket.studentMajor}</strong> (Khoa CNPM)</div>
+                        <div className="col-span-2 text-emerald-700 dark:text-emerald-300">
+                          Tình trạng: <strong>{activeCert.studentAcademicStatus}</strong>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Editable Fields by Officer */}
+                    <div className="space-y-2.5 text-[11px]">
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1">
+                          <Edit3 className="w-3 h-3 text-blue-500" />
+                          <span>Cơ quan / Đơn vị tiếp nhận văn bản:</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={certDestinationOrg}
+                          onChange={(e) => handleCertFieldChange("destinationOrg", e.target.value)}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1">
+                          <Edit3 className="w-3 h-3 text-blue-500" />
+                          <span>Mục đích cấp giấy (Chuẩn hóa câu chữ):</span>
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={certPurpose}
+                          onChange={(e) => handleCertFieldChange("purpose", e.target.value)}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">
+                          Thời hạn có giá trị:
+                        </label>
+                        <input
+                          type="text"
+                          value={certValidUntil}
+                          onChange={(e) => handleCertFieldChange("validUntil", e.target.value)}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">
+                          Ghi chú bổ sung của Cán bộ:
+                        </label>
+                        <input
+                          type="text"
+                          value={certNotes}
+                          onChange={(e) => handleCertFieldChange("customOfficerNotes", e.target.value)}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Paper Footer Disclaimer */}
+                    <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[10px] text-slate-500">
+                      <span>Cán bộ thẩm định: <strong>{activeCert.issuedByOfficerName}</strong></span>
+                      <span className="font-mono text-rose-600 dark:text-rose-400 font-bold">Chưa ký số CA</span>
+                    </div>
+                  </div>
+
+                  {/* Fast Action Buttons on Paper */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => openCertificatePrintWindow(activeCert)}
+                      className="py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                    >
+                      <Printer className="w-3.5 h-3.5" />
+                      <span>Xem bản in A4 / In</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleDirectDownload}
+                      className="py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Tải bản nháp HTML</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2: TIN NHẮN PHẢN HỒI GỬI KÈM CHO SINH VIÊN */}
+              {activeRightTab === "message" && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px]">
+                      Dự thảo tin nhắn phản hồi sinh viên:
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleResetDraft}
+                      className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      <span>Khôi phục mẫu</span>
+                    </button>
+                  </div>
+
+                  <textarea
+                    rows={8}
+                    value={draftContent}
+                    onChange={handleDraftChange}
+                    className="w-full p-3 rounded-xl bg-white/60 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/70 text-xs text-slate-900 dark:text-white leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans backdrop-blur-sm"
+                    placeholder="Nhập nội dung phản hồi chính thức cho sinh viên..."
+                  />
+
+                  <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                    <Lock className="w-3 h-3 text-amber-500 shrink-0" />
+                    <span>Tin nhắn phản hồi sẽ được gửi vào Cổng Sinh viên sau khi cán bộ duyệt.</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons (Submit 2 Gate Enforcement) */}
+              <div className="space-y-2.5 pt-2 border-t border-slate-200/80 dark:border-slate-800">
+                {/* Warnings before submission if verifications have problems */}
+                {!isL4 && (hasErrorVerif || hasInsufficientVerif) && (
+                  <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-[11px] flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                    <span>
+                      {hasErrorVerif
+                        ? "Hệ thống gặp lỗi kết nối CSDL Đào tạo. Hãy bấm 'Thử lại tra cứu' trước khi phê duyệt."
+                        : "Hồ sơ có điều kiện tài chính hoặc cơ quan chưa đủ căn cứ. Hãy gửi phản hồi yêu cầu bổ sung thay vì cấp giấy."}
+                    </span>
+                  </div>
+                )}
+
                 {/* 1. Respond (transitions to pending_officer) */}
                 <button
                   type="button"
                   onClick={() => triggerAction("respond")}
-                  className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 transition-all"
+                  className="w-full py-2 px-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-xs flex items-center justify-center gap-2 transition-colors"
                 >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>Gửi phản hồi cho sinh viên</span>
+                  <Send className="w-3.5 h-3.5 text-blue-500" />
+                  <span>Gửi tin nhắn phản hồi (Chờ cán bộ)</span>
                 </button>
-                <div className="text-[10px] text-slate-400 text-center font-mono">
-                  Trạng thái sau gửi: <strong className="text-amber-600 dark:text-amber-400">CHỜ CÁN BỘ (PENDING_OFFICER)</strong>
-                </div>
 
                 {/* 2. Request additional info */}
                 <button
                   type="button"
                   onClick={() => triggerAction("request_info")}
-                  className="w-full py-2 px-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
+                  className="w-full py-2 px-4 rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/50 dark:bg-amber-950/20 hover:bg-amber-100 dark:hover:bg-amber-950/40 text-amber-800 dark:text-amber-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
                 >
-                  <HelpCircle className="w-3.5 h-3.5 text-amber-500" />
+                  <HelpCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                   <span>Yêu cầu sinh viên bổ sung hồ sơ</span>
                 </button>
 
-                {/* 3. Resolve ticket */}
+                {/* 3. Resolve & Issue Certificate */}
                 <button
                   type="button"
                   onClick={() => triggerAction("resolve")}
-                  className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-md shadow-indigo-500/20 transition-all"
+                  className={`w-full py-2.5 px-4 rounded-xl text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-md transition-all ${
+                    ticket.status === "resolved"
+                      ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20"
+                      : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/20"
+                  }`}
                 >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Hoàn tất xử lý yêu cầu (Resolved)</span>
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>
+                    {ticket.type === "certificate"
+                      ? "Phê duyệt & Phát hành Giấy xác nhận (BM-03)"
+                      : "Hoàn tất xử lý yêu cầu (Resolved)"}
+                  </span>
                 </button>
+
                 <div className="text-[10px] text-slate-400 text-center italic">
-                  * Chỉ bấm hoàn tất khi đã kết thúc toàn bộ thủ tục thẩm định hồ sơ.
+                  * Nhãn văn bản: &ldquo;BẢN MẪU DEMO — CHƯA KÝ SỐ&rdquo;. Tự động lưu và cho phép tải file.
                 </div>
               </div>
 
-              {/* Pre-Flight Check Info Box */}
-              <div className="p-3 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50 text-xs space-y-1.5">
-                <div className="flex items-center justify-between font-bold text-[11px] text-slate-900 dark:text-white">
-                  <span>XEM TRƯỚC XÁC NHẬN CỔNG 2</span>
-                  <span className="font-mono text-[9px] text-slate-400">Pre-Flight Check</span>
-                </div>
-                <div className="text-[11px] text-slate-600 dark:text-slate-400 flex justify-between">
-                  <span>Người nhận:</span>
-                  <strong className="text-slate-800 dark:text-slate-200">{ticket.studentName} ({ticket.studentMssv})</strong>
-                </div>
-                <div className="text-[11px] text-slate-600 dark:text-slate-400 flex justify-between">
-                  <span>Trạng thái sau khi gửi:</span>
-                  <span className="font-mono text-amber-600 dark:text-amber-400 font-semibold">pending_officer</span>
-                </div>
-                <p className="text-[10px] text-slate-400 leading-tight pt-1 border-t border-slate-200/50 dark:border-slate-700/50">
-                  Thao tác gửi phản hồi KHÔNG đóng hồ sơ. Hồ sơ vẫn được duy trì trong danh sách thụ lý của Cán bộ OF001.
-                </p>
-              </div>
-
-              {/* Student live conversation stream */}
+              {/* Live conversation stream with student */}
               <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-bold text-slate-900 dark:text-white text-[11px]">
-                    Trao đổi trực tiếp với Sinh viên
+                    Lịch sử trao đổi với Sinh viên
                   </span>
                   <span className="font-mono text-[10px] text-emerald-600 dark:text-emerald-400">
                     Cổng 1 Live Sync
@@ -705,77 +1029,144 @@ export default function TicketDetailPage() {
         </div>
       </div>
 
-      {/* Pre-Flight Confirmation Modal */}
+      {/* Modal: Bằng chứng Tra cứu CSDL (Evidence Viewer) */}
+      {viewingEvidenceItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fade-in">
+          <div className="max-w-xl w-full p-6 rounded-3xl glass-surface shadow-2xl border border-white/20 space-y-4">
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="font-bold text-slate-900 dark:text-white text-sm">
+                  Bằng chứng Tra cứu Hệ thống &amp; CSDL
+                </h3>
+                <p className="text-xs text-slate-500 font-mono mt-0.5">
+                  {viewingEvidenceItem.criterionLabel}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setViewingEvidenceItem(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 space-y-1">
+                <span className="text-[10px] text-slate-400 font-mono uppercase block">Hệ thống nguồn &amp; Thời điểm:</span>
+                <div className="font-semibold text-slate-800 dark:text-slate-200">
+                  {viewingEvidenceItem.sourceSystem} · {viewingEvidenceItem.lookupTimestamp}
+                </div>
+                {viewingEvidenceItem.evidenceDetails?.systemUrl && (
+                  <div className="text-[11px] text-blue-600 dark:text-blue-400 font-mono truncate">
+                    Endpoint: {viewingEvidenceItem.evidenceDetails.systemUrl}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <span className="text-[10px] text-slate-400 font-mono uppercase block mb-1">Câu lệnh đối soát / Dữ liệu truy vấn:</span>
+                <pre className="p-3 rounded-xl bg-slate-950 text-emerald-400 font-mono text-[11px] overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                  {viewingEvidenceItem.evidenceDetails?.rawSnippet || "Không có câu lệnh trích dẫn chi tiết."}
+                </pre>
+              </div>
+
+              {viewingEvidenceItem.evidenceDetails?.verifiedFields && (
+                <div>
+                  <span className="text-[10px] text-slate-400 font-mono uppercase block mb-1">Các trường đã thẩm định:</span>
+                  <div className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-900/50 space-y-1">
+                    {Object.entries(viewingEvidenceItem.evidenceDetails.verifiedFields).map(([k, v]) => (
+                      <div key={k} className="flex justify-between py-0.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
+                        <span className="text-slate-500">{k}:</span>
+                        <strong className="text-slate-800 dark:text-slate-200">{v}</strong>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setViewingEvidenceItem(null)}
+                className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 font-semibold text-xs text-slate-800 dark:text-slate-200 transition-colors"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Xác nhận Cổng Kiểm duyệt 2 (Pre-Flight Check) */}
       {showPreflightModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
-          <div className="w-full max-w-lg rounded-3xl glass-surface border border-slate-200/80 dark:border-slate-700/80 p-6 shadow-2xl space-y-4 text-xs">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <div className="flex items-center gap-2 text-slate-900 dark:text-white font-bold text-sm">
-                <ShieldCheck className="w-5 h-5 text-blue-600" />
-                <span>
-                  {modalActionType === "resolve"
-                    ? "Xác nhận Phê duyệt Hoàn tất Hồ sơ (Resolved)"
-                    : modalActionType === "request_info"
-                    ? "Xác nhận Gửi yêu cầu Bổ sung Hồ sơ"
-                    : "Xác nhận Phát hành Phản hồi Cổng 2"}
-                </span>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fade-in">
+          <div className="max-w-md w-full p-6 rounded-3xl glass-surface shadow-2xl border border-white/20 space-y-4">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-indigo-600" />
+                <h3 className="font-bold text-slate-900 dark:text-white text-sm">
+                  Xác nhận Phê duyệt Cổng Kiểm duyệt 2
+                </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowPreflightModal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-3 text-slate-600 dark:text-slate-300">
-              <div className="p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200/70 dark:border-blue-900/60 text-[11px] space-y-1">
-                <div>Người nhận: <strong>{ticket.studentName} ({ticket.studentMssv})</strong></div>
-                <div>Mã hồ sơ: <span className="font-mono font-bold text-blue-600">{ticket.code}</span></div>
-                <div>
-                  Hành động:{" "}
-                  <strong>
-                    {modalActionType === "resolve"
-                      ? "Chuyển trạng thái sang ĐÃ HOÀN TẤT và xuất kết quả"
-                      : "Gửi thông điệp nghiệp vụ sang Cổng Sinh viên (Trạng thái: Chờ cán bộ)"}
-                  </strong>
+            <div className="space-y-3 text-xs text-slate-600 dark:text-slate-300">
+              <p>
+                Bạn đang chuẩn bị thực hiện hành động:{" "}
+                <strong className="text-indigo-600 dark:text-indigo-400 font-bold">
+                  {modalActionType === "respond"
+                    ? "Gửi tin nhắn phản hồi nghiệp vụ"
+                    : modalActionType === "request_info"
+                    ? "Yêu cầu sinh viên bổ sung hồ sơ"
+                    : "Phê duyệt & Phát hành Giấy xác nhận (BM-03)"}
+                </strong>
+              </p>
+
+              <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 space-y-1.5 text-[11px]">
+                <div className="flex justify-between">
+                  <span>Hồ sơ thụ lý:</span>
+                  <strong>{ticket.code} ({ticket.title})</strong>
                 </div>
+                <div className="flex justify-between">
+                  <span>Sinh viên nhận:</span>
+                  <strong>{ticket.studentName} ({ticket.studentMssv})</strong>
+                </div>
+                {modalActionType === "resolve" && (
+                  <div className="flex justify-between text-indigo-600 dark:text-indigo-400 font-semibold">
+                    <span>Số giấy dự kiến:</span>
+                    <span>{activeCert.docNumber}</span>
+                  </div>
+                )}
               </div>
 
-              <div>
-                <span className="font-bold text-[11px] text-slate-800 dark:text-slate-200 block mb-1">
-                  Nội dung gửi:
-                </span>
-                <div className="p-3 rounded-xl bg-white/60 dark:bg-slate-800/80 border border-slate-200/70 dark:border-slate-700/60 text-[11px] leading-relaxed whitespace-pre-line max-h-40 overflow-y-auto">
-                  {modalActionType === "request_info"
-                    ? "Phòng Đào tạo & CTSV yêu cầu bạn gửi bổ sung ảnh chụp Thẻ sinh viên hoặc Giấy tờ chứng minh đối tượng chính sách để cán bộ hoàn tất hồ sơ."
-                    : draftContent}
-                </div>
-              </div>
-
-              {modalActionType === "resolve" && !allChecked && (
-                <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-[11px] flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
-                  <span>
-                    Lưu ý: Checklist thẩm định chưa được hoàn tất đầy đủ ({checkedCount}/{ticket.checklist.length}). Bạn vẫn có thể hoàn tất nếu đã đối soát thủ công ngoài hệ thống.
-                  </span>
+              {modalActionType === "resolve" && (
+                <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-[11px] leading-relaxed">
+                  <strong>Lưu ý:</strong> Văn bản sẽ được phát hành với nhãn <em>&ldquo;BẢN MẪU DEMO — CHƯA KÝ SỐ&rdquo;</em>, gắn trực tiếp vào hồ sơ sinh viên tại Cổng Sinh viên và tự động tải về máy.
                 </div>
               )}
             </div>
 
-            <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-end gap-2.5 pt-2">
               <button
                 type="button"
                 onClick={() => setShowPreflightModal(false)}
-                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 transition-colors"
               >
                 Hủy bỏ
               </button>
               <button
                 type="button"
                 onClick={confirmSubmitGate2}
-                className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md shadow-blue-500/20 transition-all"
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all"
               >
                 Xác nhận thực hiện
               </button>

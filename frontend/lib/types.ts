@@ -54,6 +54,55 @@ export interface ChecklistItem {
   checked: boolean;
 }
 
+export type VerificationResultStatus = "passed" | "failed" | "insufficient" | "error";
+
+export interface SystemVerificationItem {
+  id: string;
+  criterionKey: string;
+  criterionLabel: string;
+  conditionApplied: string;
+  dataChecked: string;
+  sourceSystem: string;
+  lookupTimestamp: string;
+  status: VerificationResultStatus;
+  reason: string;
+  evidenceDetails?: {
+    rawSnippet: string;
+    systemUrl?: string;
+    verifiedFields?: Record<string, string>;
+  };
+  officerReviewStatus: "pending" | "confirmed" | "overridden";
+  officerReviewNote?: string;
+}
+
+export interface IssuedCertificateDocument {
+  id: string; // e.g. "CERT-2026-00318"
+  docNumber: string; // e.g. "142/XNSV-ĐT-2026"
+  templateCode: string; // "BM-03"
+  templateName: string; // "Giấy xác nhận sinh viên chính quy"
+  templateVersion: string; // "v2.1"
+  issuedAt: string; // ISO string
+  issuedAtFormatted: string; // "14:30 · 26/09/2026"
+  issuedByOfficerId: string; // "OF001"
+  issuedByOfficerName: string; // "ThS. Trần Thu Hà"
+  studentId: string;
+  studentName: string;
+  studentMssv: string;
+  studentDob: string;
+  studentGender: string;
+  studentMajor: string;
+  studentClassYear: string;
+  studentFaculty: string;
+  studentAcademicStatus: string;
+  purpose: string;
+  destinationOrg: string;
+  validUntil: string;
+  customOfficerNotes?: string;
+  status: "draft" | "approved" | "issued";
+  fileName: string;
+  isDemoSample: boolean; // true ("BẢN MẪU DEMO — CHƯA KÝ SỐ")
+}
+
 export interface Ticket {
   id: string; // e.g. "TKT-2026-0142", "TKT-2026-0098", "TKT-2026-0139"
   code: string;
@@ -128,6 +177,12 @@ export interface Ticket {
 
   messages: TicketMessage[];
   auditLogs: AuditLogEntry[];
+
+  // Real Certificate Issuance & Pre-check Verification
+  systemVerifications?: SystemVerificationItem[];
+  issuedCertificate?: IssuedCertificateDocument;
+  documentStatus?: "not_generated" | "draft" | "approved" | "issued";
+  dataChangedSinceLastCheck?: boolean;
 }
 
 export interface ChatMessage {

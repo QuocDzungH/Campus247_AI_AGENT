@@ -13,6 +13,8 @@ import {
   FindingAiLabel,
   SupplementRequest,
   ReviewFinding,
+  SystemVerificationItem,
+  IssuedCertificateDocument,
 } from "./types";
 import {
   DEMO_USERS,
@@ -22,6 +24,7 @@ import {
   STANDARD_REVIEW_CRITERIA,
 } from "./mock-data";
 import { compareCourseContent } from "./review-service";
+import { runCertificateVerification, buildDefaultCertificate } from "./certificate-service";
 
 interface StoreContextType {
   // Theme
@@ -52,6 +55,13 @@ interface StoreContextType {
     customContent?: string
   ) => void;
   resetAllDemoData: () => void;
+
+  // Certificate Verification & BM-03 Issuance
+  runTicketVerification: (ticketId: string) => void;
+  retryCriterionVerification: (ticketId: string, criterionId: string) => void;
+  confirmCriterionReview: (ticketId: string, criterionId: string, note?: string) => void;
+  updateCertificateDraft: (ticketId: string, edits: Partial<IssuedCertificateDocument>) => void;
+  issueCertificate: (ticketId: string) => IssuedCertificateDocument | null;
 
   // Chat Assistant State & Sessions
   chatSessions: ChatSession[];
@@ -235,6 +245,27 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         ? { destinationOrg: value }
         : {}),
     }));
+    if (field === "reason" || field === "destinationOrg") {
+      setTickets((prev) => {
+        const next = prev.map((t) => {
+          if (t.studentId === currentUser.id && t.type === "certificate" && t.status !== "resolved") {
+            return {
+              ...t,
+              dataChangedSinceLastCheck: true,
+              purpose: field === "reason" ? value : t.purpose,
+              destinationOrg: field === "destinationOrg" ? value : t.destinationOrg,
+            };
+          }
+          return t;
+        });
+        try {
+          localStorage.setItem(LOCAL_STORAGE_KEY_TICKETS, JSON.stringify(next));
+        } catch (e) {
+          console.error(e);
+        }
+        return next;
+      });
+    }
     if (field === "reason" || field === "receiveMethod") {
       setLastUpdatedField(field);
       setTimeout(() => {
@@ -483,6 +514,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       ],
     };
 
+    if (newTicket.type === "certificate") {
+      newTicket.systemVerifications = runCertificateVerification(newTicket);
+      newTicket.issuedCertificate = buildDefaultCertificate(newTicket);
+      newTicket.documentStatus = "draft";
+    }
+
     const updated = [newTicket, ...tickets];
     saveTickets(updated);
     return newTicket;
@@ -589,6 +626,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     let nextStatus: TicketStatus = ticket.status;
     let auditAction = "";
 
+    let issuedCertDoc: IssuedCertificateDocument | undefined = ticket.issuedCertificate;
+    const cleanNumber = ticket.code.replace(/[^0-9]/g, "").slice(-4) || "0142";
+    const docNumber = `${cleanNumber}/XNSV-ĐT-2026`;
+
     if (actionType === "respond") {
       nextStatus = "pending_officer";
       auditAction = "Cán bộ gửi phản hồi nghiệp vụ qua Cổng Kiểm duyệt 2 (Trạng thái: Chờ cán bộ)";
@@ -600,10 +641,29 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       auditAction = "Cán bộ gửi yêu cầu bổ sung hồ sơ chứng từ cho sinh viên";
     } else if (actionType === "resolve") {
       nextStatus = "resolved";
-      messageContent =
-        customContent ||
-        "Hồ sơ đã được thẩm định đạt yêu cầu. Văn bản điện tử có ký số CA đã được phát hành thành công. Sinh viên có thể tải văn bản PDF tại trang này.";
-      auditAction = "Cán bộ thẩm định đạt yêu cầu và phê duyệt hoàn tất hồ sơ (Resolved)";
+      if (ticket.type === "certificate") {
+        issuedCertDoc = {
+          ...(ticket.issuedCertificate || buildDefaultCertificate(ticket)),
+          id: `CERT-2026-${cleanNumber}`,
+          docNumber,
+          status: "issued",
+          issuedAt: now.toISOString(),
+          issuedAtFormatted: timestampFull,
+          issuedByOfficerId: "OF001",
+          issuedByOfficerName: "ThS. Trần Thu Hà",
+          isDemoSample: true,
+          fileName: `Giay_Xac_Nhan_Sinh_Vien_${ticket.studentMssv}_BM03.html`,
+        };
+        messageContent =
+          customContent ||
+          `Phòng Đào tạo & CTSV đã hoàn tất thẩm định đối soát và chính thức phát hành Giấy xác nhận sinh viên (BM-03) số ${docNumber} (Bản mẫu demo — chưa ký số). Sinh viên có thể xem trực tiếp hoặc tải văn bản về máy tại Cổng Sinh viên.`;
+        auditAction = `Cán bộ hoàn tất thẩm định đối soát, phê duyệt và phát hành Giấy xác nhận sinh viên số ${docNumber}`;
+      } else {
+        messageContent =
+          customContent ||
+          "Hồ sơ đã được thẩm định đạt yêu cầu và phê duyệt hoàn tất (Resolved).";
+        auditAction = "Cán bộ thẩm định đạt yêu cầu và phê duyệt hoàn tất hồ sơ (Resolved)";
+      }
     }
 
     const newMsg: TicketMessage = {
@@ -628,6 +688,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         return {
           ...t,
           status: nextStatus,
+          documentStatus: actionType === "resolve" && t.type === "certificate" ? ("issued" as const) : t.documentStatus,
+          issuedCertificate: issuedCertDoc || t.issuedCertificate,
           messages: [...t.messages, newMsg],
           auditLogs: [...t.auditLogs, newAuditLog],
         };
@@ -636,6 +698,185 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
 
     saveTickets(updated);
+  };
+
+  const runTicketVerification = (ticketId: string) => {
+    const ticket = tickets.find((t) => t.id === ticketId);
+    if (!ticket) return;
+
+    const newVerifications = runCertificateVerification(ticket);
+    const updated = tickets.map((t) => {
+      if (t.id === ticketId) {
+        return {
+          ...t,
+          systemVerifications: newVerifications,
+          dataChangedSinceLastCheck: false,
+        };
+      }
+      return t;
+    });
+    saveTickets(updated);
+  };
+
+  const retryCriterionVerification = (ticketId: string, criterionId: string) => {
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(
+      now.getSeconds()
+    ).padStart(2, "0")}`;
+    const dateStr = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
+    const timestamp = `${timeStr} · ${dateStr}`;
+
+    const updated = tickets.map((t) => {
+      if (t.id === ticketId && t.systemVerifications) {
+        const updatedVerifs = t.systemVerifications.map((item) => {
+          if (item.id === criterionId || item.criterionKey === criterionId) {
+            return {
+              ...item,
+              status: "passed" as const,
+              lookupTimestamp: timestamp,
+              reason: "Đã tái kết nối thành công CSDL Đào tạo [PORTAL-DB] (HTTP 200 OK). Kết quả: Dữ liệu đào tạo hợp lệ.",
+              evidenceDetails: {
+                ...item.evidenceDetails,
+                rawSnippet: `RETRY SUCCESS: HTTP 200 OK from https://daotao.campus.edu.vn/api/v1/students/verify at ${timestamp}`,
+                verifiedFields: {
+                  "Trạng thái đào tạo": "Đang học chính quy",
+                  "Số tín chỉ tích lũy": "114 / 138 TC",
+                  "Cảnh cáo học tập": "Mức 0 (Bình thường)",
+                },
+              },
+            };
+          }
+          return item;
+        });
+
+        const newAudit = {
+          id: `aud-${Date.now()}-retry`,
+          timestamp,
+          source: "Hệ thống Đối soát Tự động",
+          action: "Cán bộ kích hoạt Thử lại tra cứu CSDL Đào tạo; hệ thống tái kết nối thành công (HTTP 200 OK).",
+          actor: "OF001 (ThS. Trần Thu Hà)",
+        };
+
+        return {
+          ...t,
+          systemVerifications: updatedVerifs,
+          auditLogs: [...t.auditLogs, newAudit],
+        };
+      }
+      return t;
+    });
+    saveTickets(updated);
+  };
+
+  const confirmCriterionReview = (ticketId: string, criterionId: string, note?: string) => {
+    const updated = tickets.map((t) => {
+      if (t.id === ticketId && t.systemVerifications) {
+        const updatedVerifs = t.systemVerifications.map((item) => {
+          if (item.id === criterionId || item.criterionKey === criterionId) {
+            return {
+              ...item,
+              officerReviewStatus: "confirmed" as const,
+              officerReviewNote: note || "Cán bộ đã đối soát bằng chứng từ CSDL và xác nhận đủ điều kiện.",
+            };
+          }
+          return item;
+        });
+
+        const allConfirmed = updatedVerifs.every((v) => v.officerReviewStatus === "confirmed");
+
+        return {
+          ...t,
+          systemVerifications: updatedVerifs,
+          documentStatus: allConfirmed ? ("approved" as const) : t.documentStatus || ("draft" as const),
+        };
+      }
+      return t;
+    });
+    saveTickets(updated);
+  };
+
+  const updateCertificateDraft = (ticketId: string, edits: Partial<IssuedCertificateDocument>) => {
+    const updated = tickets.map((t) => {
+      if (t.id === ticketId) {
+        const currentCert = t.issuedCertificate || buildDefaultCertificate(t);
+        const safeEdits = {
+          ...edits,
+          studentName: t.studentName,
+          studentMssv: t.studentMssv,
+          studentMajor: t.studentMajor,
+          studentClassYear: t.studentClassYear,
+        };
+        return {
+          ...t,
+          issuedCertificate: {
+            ...currentCert,
+            ...safeEdits,
+          },
+        };
+      }
+      return t;
+    });
+    saveTickets(updated);
+  };
+
+  const issueCertificate = (ticketId: string): IssuedCertificateDocument | null => {
+    const ticket = tickets.find((t) => t.id === ticketId);
+    if (!ticket) return null;
+
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    const dateStr = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
+    const timestampFull = `${timeStr} · ${dateStr}`;
+
+    const cleanNumber = ticket.code.replace(/[^0-9]/g, "").slice(-4) || "0142";
+    const docNumber = `${cleanNumber}/XNSV-ĐT-2026`;
+
+    const finalCert: IssuedCertificateDocument = {
+      ...(ticket.issuedCertificate || buildDefaultCertificate(ticket)),
+      id: `CERT-2026-${cleanNumber}`,
+      docNumber,
+      status: "issued",
+      issuedAt: now.toISOString(),
+      issuedAtFormatted: timestampFull,
+      issuedByOfficerId: "OF001",
+      issuedByOfficerName: "ThS. Trần Thu Hà",
+      isDemoSample: true,
+      fileName: `Giay_Xac_Nhan_Sinh_Vien_${ticket.studentMssv}_BM03.html`,
+    };
+
+    const newMsg: TicketMessage = {
+      id: `msg-${Date.now()}`,
+      senderId: "OF001",
+      senderName: "Trần Thu Hà (OF001)",
+      senderRole: "officer",
+      content: `Phòng Đào tạo & CTSV đã hoàn tất thẩm định đối soát và chính thức phát hành Giấy xác nhận sinh viên (BM-03) số ${docNumber} (Bản mẫu demo — chưa ký số). Sinh viên có thể xem trực tiếp hoặc tải văn bản về máy tại Cổng Sinh viên.`,
+      timestamp: timeStr,
+    };
+
+    const newAuditLog = {
+      id: `aud-${Date.now()}`,
+      timestamp: timestampFull,
+      source: "Cổng Kiểm duyệt Cán bộ (Submit 2)",
+      action: `Cán bộ hoàn tất thẩm định đối soát, phê duyệt và phát hành Giấy xác nhận sinh viên số ${docNumber}`,
+      actor: "ThS. Trần Thu Hà (OF001)",
+    };
+
+    const updated = tickets.map((t) => {
+      if (t.id === ticketId) {
+        return {
+          ...t,
+          status: "resolved" as const,
+          documentStatus: "issued" as const,
+          issuedCertificate: finalCert,
+          messages: [...t.messages, newMsg],
+          auditLogs: [...t.auditLogs, newAuditLog],
+        };
+      }
+      return t;
+    });
+
+    saveTickets(updated);
+    return finalCert;
   };
 
   const addChatMessage = (msg: Omit<ChatMessage, "id" | "timestamp">) => {
@@ -1066,6 +1307,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         addTicketMessage,
         submitGate2Response,
         resetAllDemoData,
+        runTicketVerification,
+        retryCriterionVerification,
+        confirmCriterionReview,
+        updateCertificateDraft,
+        issueCertificate,
         chatSessions,
         activeSessionId,
         selectChatSession,

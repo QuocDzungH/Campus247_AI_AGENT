@@ -21,11 +21,18 @@ import {
   Shield,
   FileCheck,
   AlertCircle,
-  HelpCircle,
   Check,
+  Eye,
+  X,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { useStore } from "@/lib/store";
+import { IssuedCertificateDocument } from "@/lib/types";
+import {
+  downloadCertificateFile,
+  openCertificatePrintWindow,
+  buildDefaultCertificate,
+} from "@/lib/certificate-service";
 
 export default function MyRequestsPage() {
   const { currentUser, tickets, addTicketMessage, reviewCases, submitStudentSupplement } = useStore();
@@ -48,6 +55,10 @@ export default function MyRequestsPage() {
   const [supplementNote, setSupplementNote] = useState("");
   const [supplementPreset, setSupplementPreset] = useState<"syllabus_v2" | "scan_clear" | "code_equiv">("syllabus_v2");
   const [supplementSuccess, setSupplementSuccess] = useState(false);
+
+  // Certificate view and download state
+  const [viewingCertificate, setViewingCertificate] = useState<IssuedCertificateDocument | null>(null);
+  const [downloadToast, setDownloadToast] = useState(false);
 
   const filteredTickets = myTickets.filter((t) => {
     if (activeTab === "in_progress") return t.status === "open" || t.status === "pending_officer";
@@ -369,6 +380,18 @@ export default function MyRequestsPage() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6 text-xs">
+              {downloadToast && (
+                <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/40 text-emerald-800 dark:text-emerald-300 flex items-center justify-between gap-2 shadow-xs animate-fade-in">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>Đã tải thành công tệp Giấy xác nhận sinh viên về máy của bạn!</span>
+                  </div>
+                  <span className="font-mono text-[10px] bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded text-emerald-700 dark:text-emerald-300 font-bold">
+                    BM-03 DEMO
+                  </span>
+                </div>
+              )}
+
               {/* Status Context Banner */}
               <div className="p-3.5 rounded-2xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-900/60 text-slate-700 dark:text-slate-300 flex items-start gap-3">
                 <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
@@ -381,7 +404,7 @@ export default function MyRequestsPage() {
                       ? "Yêu cầu đã được ghi nhận trên hệ thống và đang chờ cán bộ học vụ Phòng Đào tạo & CTSV tiếp nhận thụ lý chính thức."
                       : selectedTicket.status === "pending_officer"
                       ? "Cán bộ học vụ đang thụ lý đối soát bằng chứng và văn bản. Mọi cập nhật bổ sung sẽ hiển thị tức thời."
-                      : "Hồ sơ đã được phê duyệt và hoàn tất. Bạn có thể tải trực tiếp file văn bản có chữ ký số CA hợp lệ."}
+                      : "Hồ sơ đã được phê duyệt và hoàn tất. Bạn có thể xem trực tiếp hoặc tải file Giấy xác nhận sinh viên (Bản mẫu demo — chưa ký số)."}
                   </p>
                 </div>
               </div>
@@ -486,19 +509,53 @@ export default function MyRequestsPage() {
                   </div>
                 </div>
 
-                {selectedTicket.status === "resolved" && (
-                  <div className="mt-2 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-500/30 flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>Văn bản điện tử ký số CA sẵn sàng tải xuống.</span>
+                {(selectedTicket.status === "resolved" || selectedTicket.issuedCertificate) && (
+                  <div className="mt-3 p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-transparent border border-emerald-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span className="font-bold text-slate-900 dark:text-white text-xs">
+                          {selectedTicket.issuedCertificate?.templateName || selectedTicket.certificateType}
+                        </span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-300 dark:border-emerald-800">
+                          {selectedTicket.issuedCertificate?.docNumber || "Số: 142/XNSV-ĐT-2026"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
+                        Phát hành lúc: <strong>{selectedTicket.issuedCertificate?.issuedAtFormatted || "09:42 · 24/10/2026"}</strong> · Cán bộ duyệt: <strong>{selectedTicket.issuedCertificate?.issuedByOfficerName || "ThS. Trần Thu Hà"}</strong>
+                      </p>
+                      <div className="text-[10px] text-rose-600 dark:text-rose-400 font-medium">
+                        * Nhãn văn bản: BẢN MẪU DEMO — CHƯA KÝ SỐ (Mô phỏng quy trình cấp giấy)
+                      </div>
                     </div>
-                    <button
-                      type="button"
-                      className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center gap-1.5 shadow-sm"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>Tải bản PDF</span>
-                    </button>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const cert = selectedTicket.issuedCertificate || buildDefaultCertificate(selectedTicket);
+                          setViewingCertificate(cert);
+                        }}
+                        className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs flex items-center gap-1.5 shadow-2xs transition-colors"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-blue-500" />
+                        <span>Xem trực tiếp (A4)</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const cert = selectedTicket.issuedCertificate || buildDefaultCertificate(selectedTicket);
+                          downloadCertificateFile(cert);
+                          setDownloadToast(true);
+                          setTimeout(() => setDownloadToast(false), 3500);
+                        }}
+                        className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center gap-1.5 shadow-sm shadow-emerald-500/20 transition-all"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Tải file văn bản</span>
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -931,6 +988,196 @@ export default function MyRequestsPage() {
               Chọn một hồ sơ rà soát bên trái để xem tiến độ.
             </div>
           )}
+        </div>
+      )}
+
+      {/* Modal: Xem trực tiếp Giấy Xác Nhận Sinh Viên A4 */}
+      {viewingCertificate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fade-in">
+          <div className="max-w-3xl w-full max-h-[90vh] flex flex-col p-6 rounded-3xl glass-surface shadow-2xl border border-white/20">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 shrink-0">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-indigo-600" />
+                <h3 className="font-bold text-slate-900 dark:text-white text-sm">
+                  Văn bản Giấy xác nhận sinh viên (BM-03)
+                </h3>
+                <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 font-bold border border-rose-300 dark:border-rose-800">
+                  BẢN MẪU DEMO — CHƯA KÝ SỐ
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setViewingCertificate(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* A4 Paper Content Container */}
+            <div className="flex-1 overflow-y-auto my-4 p-6 sm:p-8 bg-white dark:bg-[#0c1220] rounded-2xl border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-xs space-y-4 shadow-inner relative">
+              {/* Diagonal Watermark */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none opacity-5 dark:opacity-10 rotate-[-25deg]">
+                <div className="text-4xl font-black border-4 border-dashed border-red-500 p-6 rounded-3xl text-red-500 uppercase tracking-widest text-center">
+                  BẢN MẪU DEMO<br />CHƯA KÝ SỐ
+                </div>
+              </div>
+
+              {/* Header */}
+              <div className="grid grid-cols-2 gap-4 pb-4 border-b border-slate-200 dark:border-slate-800 text-center">
+                <div>
+                  <div className="font-bold uppercase text-[11px]">TRƯỜNG ĐẠI HỌC CAMPUS</div>
+                  <div className="text-[10px] uppercase font-semibold text-slate-500">PHÒNG ĐÀO TẠO &amp; CTSV</div>
+                  <div className="w-16 h-px bg-slate-300 dark:bg-slate-700 mx-auto my-1" />
+                  <div className="text-[10px] font-mono italic">Số: {viewingCertificate.docNumber}</div>
+                </div>
+
+                <div>
+                  <div className="font-bold uppercase text-[11px]">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+                  <div className="font-semibold text-[10px]">Độc lập - Tự do - Hạnh phúc</div>
+                  <div className="w-20 h-px bg-slate-300 dark:bg-slate-700 mx-auto my-1" />
+                  <div className="text-[10px] italic text-slate-500">
+                    TP. Hồ Chí Minh, {viewingCertificate.issuedAtFormatted}
+                  </div>
+                </div>
+              </div>
+
+              {/* Title */}
+              <div className="text-center py-2 space-y-1">
+                <h2 className="text-base sm:text-lg font-black uppercase text-indigo-700 dark:text-indigo-400 tracking-wide">
+                  GIẤY XÁC NHẬN SINH VIÊN
+                </h2>
+                <div className="text-[10px] text-slate-400 italic">
+                  (Mẫu số: {viewingCertificate.templateCode} · Phiên bản: {viewingCertificate.templateVersion})
+                </div>
+              </div>
+
+              <p className="text-[11px] leading-relaxed">
+                Phòng Đào tạo &amp; Công tác Sinh viên Trường Đại học Campus University xác nhận:
+              </p>
+
+              {/* Student Details Grid */}
+              <div className="space-y-1.5 text-[11px] bg-slate-50/70 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 leading-relaxed">
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-slate-500">Họ và tên sinh viên:</span>
+                  <strong className="col-span-2 text-slate-900 dark:text-white">{viewingCertificate.studentName}</strong>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-slate-500">Ngày sinh / Giới tính:</span>
+                  <span className="col-span-2">{viewingCertificate.studentDob} · Giới tính: {viewingCertificate.studentGender}</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-slate-500">Mã số sinh viên (MSSV):</span>
+                  <strong className="col-span-2 font-mono text-indigo-600 dark:text-indigo-400">{viewingCertificate.studentMssv}</strong>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-slate-500">Khóa học / Niên khóa:</span>
+                  <span className="col-span-2">{viewingCertificate.studentClassYear}</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-slate-500">Ngành đào tạo:</span>
+                  <span className="col-span-2">{viewingCertificate.studentMajor}</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-slate-500">Khoa / Bộ môn:</span>
+                  <span className="col-span-2">{viewingCertificate.studentFaculty}</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-slate-500">Hệ đào tạo:</span>
+                  <span className="col-span-2">Chính quy tập trung</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-slate-500">Tình trạng học tập:</span>
+                  <strong className="col-span-2 text-emerald-700 dark:text-emerald-400">{viewingCertificate.studentAcademicStatus}</strong>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-slate-500">Nơi nhận văn bản:</span>
+                  <strong className="col-span-2 text-slate-900 dark:text-white">{viewingCertificate.destinationOrg}</strong>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-slate-500">Mục đích cấp giấy:</span>
+                  <span className="col-span-2 font-medium">{viewingCertificate.purpose}</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-slate-500">Thời hạn có giá trị:</span>
+                  <span className="col-span-2 italic text-slate-600 dark:text-slate-300">{viewingCertificate.validUntil}</span>
+                </div>
+              </div>
+
+              <p className="text-[11px] italic text-slate-600 dark:text-slate-400">
+                {viewingCertificate.customOfficerNotes || "Giấy xác nhận được cấp trên cơ sở dữ liệu học vụ đồng bộ tại thời điểm thẩm định. Đề nghị cơ quan tiếp nhận phối hợp hỗ trợ sinh viên."}
+              </p>
+
+              {/* Signatures */}
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200 dark:border-slate-800 text-[11px]">
+                <div>
+                  <strong>Nơi nhận:</strong><br />
+                  - Như trên;<br />
+                  - Lưu VP Đào tạo, Hồ sơ SV.<br />
+                  <div className="mt-2 text-[10px] text-slate-400 font-mono">
+                    Mã văn bản: {viewingCertificate.id}<br />
+                    Cán bộ: {viewingCertificate.issuedByOfficerName}
+                  </div>
+                </div>
+
+                <div className="text-center">
+                  <strong>TL. HIỆU TRƯỞNG</strong><br />
+                  <strong>KT. TRƯỞNG PHÒNG ĐÀO TẠO &amp; CTSV</strong><br />
+                  <span className="italic">PHÓ TRƯỞNG PHÒNG</span>
+
+                  <div className="my-2 p-2 border border-dashed border-red-400 text-red-600 font-bold text-[10px] rounded-lg inline-block">
+                    [BẢN MẪU DEMO]<br />CHƯA KÝ SỐ
+                  </div>
+
+                  <div className="font-bold text-[11px]">{viewingCertificate.issuedByOfficerName}</div>
+                </div>
+              </div>
+
+              {/* Disclaimer */}
+              <div className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 text-[10px] text-rose-700 dark:text-rose-300 leading-normal">
+                <strong>LƯU Ý:</strong> Văn bản là sản phẩm mô phỏng thuộc phân hệ Prototype Campus 24/7. Không có giá trị pháp lý ngoài đời thực. Không giả chữ ký số CA.
+              </div>
+            </div>
+
+            {/* Modal Bottom Actions */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 shrink-0">
+              <span className="text-[11px] text-slate-400 font-mono">
+                Tệp: {viewingCertificate.fileName}
+              </span>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => openCertificatePrintWindow(viewingCertificate)}
+                  className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs flex items-center gap-1.5 transition-colors shadow-2xs"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>In / Lưu PDF (Ctrl+P)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    downloadCertificateFile(viewingCertificate);
+                    setDownloadToast(true);
+                    setTimeout(() => setDownloadToast(false), 3500);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs flex items-center gap-1.5 shadow-md shadow-indigo-500/20 transition-all"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Tải file về máy</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setViewingCertificate(null)}
+                  className="px-3 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-semibold text-xs transition-colors"
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
