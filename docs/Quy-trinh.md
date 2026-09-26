@@ -1,8 +1,8 @@
 # Quy trình Campus 24/7 (chốt)
 
-**Dự án:** EDU-14 / P-120  
-**Phạm vi demo:** giấy xác nhận sinh viên (E2E hai giai đoạn) + L4 khiếu nại/handover.  
-**Prototype UI:** React (không dùng Stitch).  
+**Dự án:** EDU-14 / P-120
+**Phạm vi demo:** giấy xác nhận sinh viên (E2E hai giai đoạn) + L4 khiếu nại/handover.
+**Prototype UI:** dựng mới React/Next.js bằng Antigravity từ bộ ảnh Stitch do người dùng cung cấp; có chế độ sáng/tối.
 Chi tiết checklist: [Pipeline L2 · L3 · L4](Pipeline-L2-L3-L4.md)
 
 Demo: `SV001` Nguyễn Văn An · `OF001` Cán bộ hỗ trợ học vụ.
@@ -39,16 +39,18 @@ Trạng thái ticket: `open` Mới tiếp nhận → `pending_officer` Chờ cá
 
 ## 2. Thứ tự làm kỹ thuật
 
-Prototype React **chính là nền frontend**. Sau schema + API thì nối, không dựng UI lần hai.
+Prototype cũ đã được xóa. Dựng mới project trong `frontend/` từ bộ ảnh Stitch được người dùng chọn, theo [prompt Antigravity](Prompt-prototype-antigravity.md). Giữ asset tại `frontend/public/assets/`; không khôi phục component, CSS hoặc mock store cũ từ Git history.
+
+Prototype React **mới** sẽ trở thành nền frontend cho giai đoạn nối API. Đợt dựng giao diện dùng mock để kiểm chứng thiết kế và tương tác; việc nghiệm thu backend thật vẫn theo pipeline/plan.
 
 ```text
-1. Prototype React (màn + data giả)
+1. Ảnh Stitch được cung cấp → prototype React mới (sáng/tối + data giả)
         ↓
 2. Database (schema ticket / user / message / log)
         ↓
 3. API contract (Pydantic / OpenAPI)
         ↓
-4. Cùng app React: thay mock bằng gọi API
+4. App React mới: thay mock bằng gọi API
         ↓
 5. Backend FastAPI + LangGraph (+ Chroma L1)
         ↓
@@ -59,14 +61,15 @@ Frontend và agent có thể song song **sau khi** đã có schema + contract.
 
 ### Màn React tối thiểu
 
-1. Login 2 vai  
-2. Chat SV (hỏi ≠ nộp + CTA xin giấy)  
-3. Modal Submit 1 (preview giấy)  
-4. Chat có mã ticket  
-5. Handover L4 (AI câm)  
-6. Yêu cầu của tôi  
-7. Dashboard CB (ưu tiên AI)  
-8. Chi tiết ticket (hồ sơ AI + Submit 2)
+1. Welcome (`/`) — giới thiệu/chọn cổng, ảnh nền và lớp kính bán trong suốt
+2. Login (`/login`) — đăng nhập demo theo vai trò, cùng phong cách kính
+3. Chat SV (hỏi ≠ nộp + CTA xin giấy)
+4. Modal Submit 1 (preview giấy)
+5. Chat có mã ticket
+6. Handover L4 (AI dừng trả lời conversation đã bàn giao)
+7. Yêu cầu của tôi
+8. Dashboard CB (ưu tiên có lý do)
+9. Chi tiết ticket (OfficerBrief + Submit 2)
 
 ---
 
@@ -74,14 +77,14 @@ Frontend và agent có thể song song **sau khi** đã có schema + contract.
 
 | Lớp | Công nghệ |
 |---|---|
-| Prototype / frontend | **Next.js** (App Router) + TypeScript, hoặc Vite + React |
+| Prototype / frontend | **Next.js** (App Router) + TypeScript + Tailwind |
 | Backend API | **FastAPI** + Uvicorn + Pydantic |
 | Agent | **LangGraph** + LangChain + LLM (OpenAI hoặc Groq) |
 | RAG (L1) | **ChromaDB** + embedding |
 | Database | **Postgres** (Supabase) hoặc SQLite lúc dev + SQLAlchemy |
 | Deploy | Docker + Render (API) + Vercel (Next) |
 
-Design: Inter, nền `#F5F7FB`, primary `#2457D6`, sidebar 248px, badge có chữ.
+Design: bám bộ ảnh Stitch mới, hỗ trợ cả sáng/tối qua semantic tokens; welcome/login dùng ảnh nền campus và kính bán trong suốt. Các màn nghiệp vụ ưu tiên đọc dữ liệu, badge có chữ; bố cục/typography theo ảnh tham chiếu và prompt hiện hành.
 
 ---
 

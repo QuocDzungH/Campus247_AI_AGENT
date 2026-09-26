@@ -525,7 +525,7 @@ Retry cùng handover key trả lại ticket đã commit; khóa phản hồi thu�
 
 ### Nền tảng dữ liệu P0
 
-Code hiện tại có frontend prototype dùng mock state và backend graph/chat mẫu. P0 cần bổ sung lưu trữ thật trước khi nối Officer Copilot:
+Frontend prototype cũ đã được xóa; dựng mới từ bộ ảnh Stitch do người dùng cung cấp theo [prompt Antigravity](docs/Prompt-prototype-antigravity.md). Asset ảnh trong `frontend/public/assets/` được giữ lại. Backend hiện có graph/chat mẫu. Đợt dựng prototype chỉ mô phỏng giao diện bằng mock; P0 vẫn cần bổ sung lưu trữ thật trước khi nối Officer Copilot:
 
 - `User`/role/phạm vi truy cập; danh tính lấy từ session đã xác thực.
 - `Conversation`, `Message`, `Ticket`, `OfficerLog`; liên kết conversation/ticket/student, phân biệt message gửi SV với artifact nội bộ.
@@ -706,7 +706,7 @@ Mọi API kiểm tra authentication/authorization ở backend. API ghi có audit
 
 P1 thêm diff/version navigation, feedback, evidence mở rộng và gợi ý owner. P2 thêm Shift Brief/saved views/analytics.
 
-Prototype hiện tại đã có các màn trong `frontend/`; giữ và nối chúng vào API thay cho mock state. Summary/checklist/draft mẫu không được coi là dữ kiện đã kiểm chứng hoặc kết quả nghiệp vụ thật. Nền tảng backend, source links, version và kiểm tra trước gửi là phần phải làm rõ trong P0, không chỉ nâng cấp giao diện.
+Dựng mới các màn trong `frontend/` từ bộ ảnh Stitch được cung cấp, có sáng/tối và welcome/login bán trong suốt. Không tái sử dụng code prototype cũ. Khi nối backend, thay mock service của prototype mới bằng API. Summary/checklist/draft mẫu không được coi là dữ kiện đã kiểm chứng hoặc kết quả nghiệp vụ thật. Nền tảng backend, source links, version và kiểm tra trước gửi vẫn phải hoàn thành trong P0.
 
 ---
 
@@ -764,7 +764,7 @@ P0 hoàn thành ở cuối Sprint 2; P1 ở cuối Sprint 3. Sprint 4 là tối 
 - Database/migration, session/role, seed demo, message/audit và idempotency.
 - API nền tảng mục 7, gồm tạo ticket L2 sau preview đã xác nhận và service handover L4 có lock/routing/high.
 - Transaction nghiệp vụ và phát sự kiện chuẩn bị brief có retry; API ghi kiểm tra quyền và transition.
-- Nối frontend hiện có vào API: preview/Submit 1, hàng chờ, chi tiết, Submit 2 và “Yêu cầu của tôi”.
+- Nối frontend được dựng mới từ ảnh Stitch vào API: preview/Submit 1, hàng chờ, chi tiết, Submit 2 và “Yêu cầu của tôi”.
 - Hoàn thành vòng CB hỏi bổ sung → SV gửi trên cùng ticket → CB thấy message; hai cổng đồng bộ trạng thái.
 
 **Exit:** thao tác nghiệp vụ lưu bền vững; tải lại trang vẫn thấy dữ liệu đúng quyền; cán bộ gửi/hoàn tất thủ công được; retry không tạo bản sao và lỗi lưu giữ nội dung. Service L4 kiểm tra được transaction/lock/team trong test; chưa công bố đạt toàn bộ pipeline AI trước Sprint 2.
@@ -817,7 +817,7 @@ P0 hoàn thành ở cuối Sprint 2; P1 ở cuối Sprint 3. Sprint 4 là tối 
 ### P0 — Hai luồng E2E hoạt động và chứng minh giá trị cho cán bộ
 
 - [ ] Database/migration, authentication/authorization, conversation/ticket/message/audit và idempotency.
-- [ ] API nghiệp vụ và frontend dùng dữ liệu thật; giữ lại các màn prototype.
+- [ ] API nghiệp vụ và frontend mới từ ảnh Stitch dùng dữ liệu thật sau giai đoạn prototype mock.
 - [ ] L2 prefill/hỏi thiếu, preview có version; hủy/đổi/review/Submit 1 đúng baseline.
 - [ ] Safety Router phân biệt L1/L2/L4; yêu cầu sửa điểm/xóa môn và ca nhạy cảm bắt buộc L4.
 - [ ] L4 tạo/nâng ticket complaint/pending_officer/high, HandoverPacket, khóa conversation, team đúng quyền và retry an toàn.
