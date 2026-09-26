@@ -16,6 +16,11 @@ import {
   Sparkles,
   CheckCircle2,
   RefreshCw,
+  History,
+  Trash2,
+  Search,
+  X,
+  MessageSquare,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Submit1Modal } from "@/components/student/Submit1Modal";
@@ -26,6 +31,11 @@ import { useStore } from "@/lib/store";
 export default function ChatPage() {
   const {
     currentUser,
+    chatSessions,
+    activeSessionId,
+    selectChatSession,
+    createNewChatSession,
+    deleteChatSession,
     chatMessages,
     addChatMessage,
     isL4HandoverActive,
@@ -40,11 +50,34 @@ export default function ChatPage() {
 
   const [input, setInput] = useState("");
   const [mobileTab, setMobileTab] = useState<"chat" | "workspace">("chat");
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [historySearch, setHistorySearch] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages, isGate1Open]);
+
+  const sessions = chatSessions || [];
+  const filteredSessions = sessions.filter((s) => {
+    if (!historySearch.trim()) return true;
+    const query = historySearch.toLowerCase();
+    return (
+      s.title?.toLowerCase().includes(query) ||
+      s.preview?.toLowerCase().includes(query) ||
+      (s.tag && s.tag.toLowerCase().includes(query))
+    );
+  });
+
+  const handleSelectSession = (sessionId: string) => {
+    selectChatSession(sessionId);
+    setIsHistoryOpen(false);
+  };
+
+  const handleNewChat = () => {
+    createNewChatSession();
+    setIsHistoryOpen(false);
+  };
 
   // Handle Scenario Chips
   const handleTriggerL1 = () => {
@@ -414,13 +447,194 @@ export default function ChatPage() {
       <div className="flex-1 min-h-0 max-w-7xl w-full mx-auto p-3 sm:p-4 lg:p-5 flex flex-col lg:flex-row gap-4 lg:gap-6 overflow-hidden">
         {/* Left Column: Chat Workspace (Always 58% on Desktop) */}
         <div
-          className={`flex-col h-full min-h-0 glass-surface rounded-3xl shadow-2xl overflow-hidden transition-all duration-300 lg:w-[58%] w-full ${
+          className={`relative flex flex-col h-full min-h-0 glass-surface rounded-3xl shadow-2xl overflow-hidden transition-all duration-300 lg:w-[58%] w-full ${
             mobileTab === "workspace" ? "hidden lg:flex" : "flex"
           }`}
         >
+          {/* Collapsible History Drawer Backdrop */}
+          {isHistoryOpen && (
+            <div
+              className="absolute inset-0 bg-slate-950/20 backdrop-blur-[2px] z-30 transition-opacity"
+              onClick={() => setIsHistoryOpen(false)}
+            />
+          )}
+
+          {/* Collapsible Chat History Drawer */}
+          <div
+            className={`absolute inset-y-0 left-0 z-40 w-72 sm:w-80 flex flex-col bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-r border-white/60 dark:border-slate-800 shadow-2xl transition-transform duration-300 ease-out ${
+              isHistoryOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
+            }`}
+          >
+            {/* Drawer Header */}
+            <div className="p-3.5 border-b border-white/40 dark:border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                  <History className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-xs text-slate-900 dark:text-white">Lịch sử chat</h3>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">Các phiên tư vấn AI</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsHistoryOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                title="Đóng lịch sử"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Actions: New Chat & Search */}
+            <div className="p-3 border-b border-white/30 dark:border-slate-800/80 space-y-2.5">
+              <button
+                type="button"
+                onClick={handleNewChat}
+                className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-sm shadow-blue-500/20 transition-all cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Cuộc trò chuyện mới</span>
+              </button>
+
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
+                <input
+                  type="text"
+                  value={historySearch}
+                  onChange={(e) => setHistorySearch(e.target.value)}
+                  placeholder="Tìm kiếm phiên chat..."
+                  className="w-full pl-8 pr-7 py-1.5 text-xs rounded-lg bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-900 dark:text-white placeholder:text-slate-400"
+                />
+                {historySearch && (
+                  <button
+                    type="button"
+                    onClick={() => setHistorySearch("")}
+                    className="absolute right-2 top-2 text-slate-400 hover:text-slate-600 text-xs"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Session List */}
+            <div className="flex-1 overflow-y-auto p-2.5 space-y-1 text-xs">
+              {filteredSessions.length === 0 ? (
+                <div className="text-center py-8 text-slate-400 text-xs">
+                  Không tìm thấy cuộc trò chuyện nào
+                </div>
+              ) : (
+                filteredSessions.map((sess) => {
+                  const isActive = sess.id === activeSessionId;
+                  const tagColors: Record<string, string> = {
+                    L1: "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800",
+                    L2: "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800",
+                    L4: "bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800",
+                    Chung: "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700",
+                  };
+                  const badgeClass = tagColors[sess.tag || "Chung"] || tagColors.Chung;
+
+                  return (
+                    <div
+                      key={sess.id}
+                      onClick={() => handleSelectSession(sess.id)}
+                      className={`group relative p-2.5 rounded-xl border transition-all cursor-pointer ${
+                        isActive
+                          ? "bg-blue-50/90 dark:bg-blue-950/50 border-blue-300 dark:border-blue-700 shadow-xs"
+                          : "bg-transparent hover:bg-white/60 dark:hover:bg-slate-800/60 border-transparent hover:border-slate-200 dark:hover:border-slate-700"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-1.5 mb-1">
+                        <span className={`text-[9px] font-mono px-1.5 py-0.2 rounded border font-semibold ${badgeClass}`}>
+                          {sess.tag || "Chung"}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] text-slate-400">{sess.updatedAt}</span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteChatSession(sess.id);
+                            }}
+                            className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded transition-all"
+                            title="Xoá phiên chat"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className={`font-medium truncate text-xs ${isActive ? "text-blue-700 dark:text-blue-300" : "text-slate-900 dark:text-white"}`}>
+                        {sess.title}
+                      </div>
+
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">
+                        {sess.preview}
+                      </div>
+
+                      <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-400">
+                        <span className="flex items-center gap-1">
+                          <MessageSquare className="w-3 h-3 text-slate-400" />
+                          {sess.messages.length} tin nhắn
+                        </span>
+                        {sess.isL4HandoverActive && (
+                          <span className="text-rose-600 dark:text-rose-400 font-medium">L4 Đã bàn giao</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Drawer Footer: Explain Difference with Lịch Sử Học Vụ */}
+            <div className="p-3 border-t border-white/40 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 space-y-2">
+              <div className="flex items-start gap-2 text-[11px] text-slate-600 dark:text-slate-400">
+                <BookOpen className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">
+                    Khác gì với Lịch sử học vụ?
+                  </span>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
+                    Lịch sử chat là trao đổi thử nghiệm với AI. Để xem hồ sơ, đơn từ và ticket đã nộp chính thức kèm chữ ký số:
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/my-requests"
+                className="w-full py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold flex items-center justify-between transition-colors shadow-xs"
+              >
+                <span className="flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Mở Lịch sử học vụ</span>
+                </span>
+                <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+              </Link>
+            </div>
+          </div>
+
           {/* Chat Protocol Top Header */}
           <div className="shrink-0 p-3.5 sm:p-4 bg-white/30 dark:bg-slate-900/40 backdrop-blur-md border-b border-white/40 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
+              {/* History Drawer Toggle Button */}
+              <button
+                type="button"
+                onClick={() => setIsHistoryOpen(!isHistoryOpen)}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
+                  isHistoryOpen
+                    ? "bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-500/20"
+                    : "bg-white/60 dark:bg-slate-800/60 border-white/60 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:border-blue-400"
+                }`}
+                title="Mở lịch sử các đoạn chat"
+              >
+                <History className="w-4 h-4 text-blue-500" />
+                <span className="hidden sm:inline">Lịch sử chat</span>
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-semibold">
+                  {(chatSessions || []).length}
+                </span>
+              </button>
+
               <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20">
                 <Bot className="w-5 h-5" />
               </div>
@@ -441,9 +655,19 @@ export default function ChatPage() {
 
             {/* Status Pills & Fast Switchers */}
             <div className="flex items-center gap-1.5 text-xs">
-              <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-mono">
+              <button
+                type="button"
+                onClick={handleNewChat}
+                className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white/60 dark:bg-slate-800/60 border border-white/60 dark:border-slate-700 hover:border-blue-400 text-slate-700 dark:text-slate-300 transition-all shadow-xs cursor-pointer"
+                title="Tạo cuộc trò chuyện mới"
+              >
+                <Plus className="w-3.5 h-3.5 text-blue-500" />
+                <span>Chat mới</span>
+              </button>
+
+              <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-mono">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                AI Sẵn sàng 24/7
+                AI Sẵn sàng
               </span>
 
               <button

@@ -1,8 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState } from "react";
-import { User, Ticket, TicketStatus, TicketMessage, ChatMessage } from "./types";
-import { DEMO_USERS, INITIAL_TICKETS } from "./mock-data";
+import { User, Ticket, TicketStatus, TicketMessage, ChatMessage, ChatSession } from "./types";
+import { DEMO_USERS, INITIAL_TICKETS, INITIAL_CHAT_SESSIONS } from "./mock-data";
 
 interface StoreContextType {
   // Theme
@@ -34,7 +34,12 @@ interface StoreContextType {
   ) => void;
   resetAllDemoData: () => void;
 
-  // Chat Assistant State
+  // Chat Assistant State & Sessions
+  chatSessions: ChatSession[];
+  activeSessionId: string;
+  selectChatSession: (sessionId: string) => void;
+  createNewChatSession: () => void;
+  deleteChatSession: (sessionId: string) => void;
   chatMessages: ChatMessage[];
   addChatMessage: (msg: Omit<ChatMessage, "id" | "timestamp">) => void;
   isL4HandoverActive: boolean;
@@ -123,19 +128,33 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     return INITIAL_TICKETS;
   });
 
-  // Chat Assistant state
-  const [isL4HandoverActive, setL4HandoverActive] = useState(false);
-  const [isGate1Open, setGate1Open] = useState(false);
-  const [gate1FormData, setGate1FormData] = useState({
-    fullName: "Nguyễn Văn An",
-    mssv: "20210018",
-    classYear: "Khóa 18 (2021 - 2025) · K18 KTPM",
-    department: "Khoa Công nghệ Phần mềm",
-    reason: "Nộp Ngân hàng Chính sách Xã hội Chi nhánh Q. Thủ Đức (Học kỳ 2)",
-    destinationOrg: "Ngân hàng Chính sách Xã hội Chi nhánh Q. Thủ Đức",
-    receiveMethod: "digital_pdf" as "digital_pdf" | "paper_stamped",
-    academicStatus: "Bình thường",
+  // Chat Assistant & Sessions state
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>(() => {
+    return INITIAL_CHAT_SESSIONS || [];
   });
+  const [activeSessionId, setActiveSessionId] = useState<string>(() => {
+    return INITIAL_CHAT_SESSIONS?.[0]?.id || "sess-bm03-vayvon";
+  });
+
+  const [isL4HandoverActive, setL4HandoverActive] = useState<boolean>(() => {
+    return !!INITIAL_CHAT_SESSIONS?.[0]?.isL4HandoverActive;
+  });
+  const [isGate1Open, setGate1Open] = useState(false);
+  const [gate1FormData, setGate1FormData] = useState(() => {
+    return (
+      INITIAL_CHAT_SESSIONS?.[0]?.gate1FormData || {
+        fullName: "Nguyễn Văn An",
+        mssv: "20210018",
+        classYear: "Khóa 18 (2021 - 2025) · K18 KTPM",
+        department: "Khoa Công nghệ Phần mềm",
+        reason: "Nộp Ngân hàng Chính sách Xã hội Chi nhánh Q. Thủ Đức (Học kỳ 2)",
+        destinationOrg: "Ngân hàng Chính sách Xã hội Chi nhánh Q. Thủ Đức",
+        receiveMethod: "digital_pdf" as "digital_pdf" | "paper_stamped",
+        academicStatus: "Bình thường",
+      }
+    );
+  });
+
   const [lastUpdatedField, setLastUpdatedField] = useState<"reason" | "receiveMethod" | null>(null);
 
   const updateGate1Field = (field: "reason" | "receiveMethod" | "destinationOrg", value: any) => {
@@ -154,42 +173,63 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    {
-      id: "cm-1",
-      sender: "user",
-      text: "Trợ lý cho mình hỏi: Thủ tục xin cấp Giấy xác nhận sinh viên để vay vốn ngân hàng chính sách cần những điều kiện gì và mất bao lâu thì nhận được bản cứng?",
-      timestamp: "09:14 SA",
-    },
-    {
-      id: "cm-2",
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>(() => {
+    return INITIAL_CHAT_SESSIONS?.[0]?.messages || [];
+  });
+
+  const selectChatSession = (sessionId: string) => {
+    const session = chatSessions.find((s) => s.id === sessionId);
+    if (!session) return;
+    setActiveSessionId(sessionId);
+    setChatMessages(session.messages || []);
+    setL4HandoverActive(!!session.isL4HandoverActive);
+    if (session.gate1FormData) {
+      setGate1FormData(session.gate1FormData);
+    }
+  };
+
+  const createNewChatSession = () => {
+    const newId = `sess-${Date.now()}`;
+    const initialMsg: ChatMessage = {
+      id: `cm-${Date.now()}`,
       sender: "bot",
-      text: "Chào bạn Nguyễn Văn An! Theo Quy chế Đào tạo và Công tác Sinh viên hiện hành, sinh viên chính quy chưa bị kỷ luật từ mức cảnh cáo trở lên và không nợ học phí kỳ trước đủ điều kiện nhận cấp Giấy xác nhận học tập.\n\n• Bản điện tử (PDF ký số hợp lệ): Tự động xuất sau khi Cán bộ đối soát CSDL đào tạo (tối đa 4 giờ làm việc).\n• Bản giấy (Đóng dấu mộc đỏ): Nhận tại Bộ phận Một Cửa - Phòng Đào tạo (Bàn số 3, Tòa A1) sau 24h kể từ khi cán bộ duyệt.",
-      timestamp: "09:14 SA",
-      level: "L1",
-      citation: {
-        code: "Điều 14",
-        title: "Quy Chế Đào tạo Đại học số 245/QĐ-ĐH (Minh họa)",
-        quote:
-          "Sinh viên nộp yêu cầu trực tuyến qua Cổng dịch vụ Campus 24/7. Thời gian xử lý dự kiến: 24–48 giờ làm việc (theo quy định chuẩn mẫu). Phòng Đào tạo & CTSV sẽ thực hiện đối soát tự động tình trạng hồ sơ trước khi ký điện tử.",
-        source: "Trích xuất từ Cơ sở tri thức Học vụ V5.2",
-      },
-    },
-    {
-      id: "cm-3",
-      sender: "user",
-      text: "Mình đáp ứng đủ điều kiện trên rồi. Hướng dẫn mình tạo yêu cầu cấp Giấy xác nhận sinh viên ngay bây giờ luôn nhé.",
-      timestamp: "09:41 SA",
-    },
-    {
-      id: "cm-4",
-      sender: "bot",
-      text: "Tuyệt vời! Tôi đã trích xuất sẵn thông tin sinh viên từ cơ sở dữ liệu đào tạo. Vui lòng bấm nút bên dưới để mở giao diện kiểm tra thông tin (Cổng 1) trước khi gửi vào hệ thống xét duyệt của Nhà trường.",
-      timestamp: "09:41 SA",
-      level: "L2",
-      actionCard: "submit1_prompt",
-    },
-  ]);
+      text: "Xin chào! Tôi là Trợ lý Học vụ Campus 24/7. Tôi có thể hỗ trợ bạn tra cứu quy chế học vụ (L1), tự động soạn thảo biểu mẫu BM-03 (L2), hoặc tiếp nhận chuyển tiếp khiếu nại đào tạo (L4). Bạn đang cần hỗ trợ vấn đề gì hôm nay?",
+      timestamp: "Vừa xong",
+    };
+    const newSession: ChatSession = {
+      id: newId,
+      title: "Cuộc hội thoại mới",
+      preview: "Bắt đầu cuộc trao đổi mới với Trợ lý AI...",
+      updatedAt: "Vừa xong",
+      tag: "Chung",
+      messages: [initialMsg],
+      isL4HandoverActive: false,
+    };
+    setChatSessions((prev) => [newSession, ...prev]);
+    setActiveSessionId(newId);
+    setChatMessages([initialMsg]);
+    setL4HandoverActive(false);
+    setGate1Open(false);
+  };
+
+  const deleteChatSession = (sessionId: string) => {
+    setChatSessions((prev) => {
+      const remaining = prev.filter((s) => s.id !== sessionId);
+      if (activeSessionId === sessionId) {
+        if (remaining.length > 0) {
+          setActiveSessionId(remaining[0].id);
+          setChatMessages(remaining[0].messages || []);
+          setL4HandoverActive(!!remaining[0].isL4HandoverActive);
+          if (remaining[0].gate1FormData) {
+            setGate1FormData(remaining[0].gate1FormData);
+          }
+        } else {
+          createNewChatSession();
+        }
+      }
+      return remaining;
+    });
+  };
 
   const toggleTheme = () => {
     setTheme((prev) => {
@@ -538,7 +578,38 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       timestamp: timeStr,
       ...msg,
     };
-    setChatMessages((prev) => [...prev, newMsg]);
+
+    setChatMessages((prev) => {
+      const updatedMessages = [...prev, newMsg];
+
+      // Sync into active chat session
+      setChatSessions((prevSessions) => {
+        return prevSessions.map((session) => {
+          if (session.id === activeSessionId) {
+            let sessionTag = session.tag;
+            if (msg.level) {
+              sessionTag = msg.level;
+            }
+            let updatedTitle = session.title;
+            if (session.title === "Cuộc hội thoại mới" && msg.sender === "user") {
+              updatedTitle = msg.text.slice(0, 38) + (msg.text.length > 38 ? "..." : "");
+            }
+            return {
+              ...session,
+              title: updatedTitle,
+              tag: sessionTag,
+              preview: msg.text.slice(0, 60),
+              updatedAt: "Vừa xong",
+              messages: updatedMessages,
+              isL4HandoverActive: msg.actionCard === "l4_handover" ? true : session.isL4HandoverActive,
+            };
+          }
+          return session;
+        });
+      });
+
+      return updatedMessages;
+    });
   };
 
   const resetAllDemoData = () => {
@@ -549,42 +620,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setCurrentUser(DEMO_USERS.SV001);
       setL4HandoverActive(false);
       setGate1Open(false);
-      setChatMessages([
-        {
-          id: "cm-1",
-          sender: "user",
-          text: "Trợ lý cho mình hỏi: Thủ tục xin cấp Giấy xác nhận sinh viên để vay vốn ngân hàng chính sách cần những điều kiện gì và mất bao lâu thì nhận được bản cứng?",
-          timestamp: "09:14 SA",
-        },
-        {
-          id: "cm-2",
-          sender: "bot",
-          text: "Chào bạn Nguyễn Văn An! Theo Quy chế Đào tạo và Công tác Sinh viên hiện hành, sinh viên chính quy chưa bị kỷ luật từ mức cảnh cáo trở lên và không nợ học phí kỳ trước đủ điều kiện nhận cấp Giấy xác nhận học tập.\n\n• Bản điện tử (PDF ký số hợp lệ): Tự động xuất sau khi Cán bộ đối soát CSDL đào tạo (tối đa 4 giờ làm việc).\n• Bản giấy (Đóng dấu mộc đỏ): Nhận tại Bộ phận Một Cửa - Phòng Đào tạo (Bàn số 3, Tòa A1) sau 24h kể từ khi cán bộ duyệt.",
-          timestamp: "09:14 SA",
-          level: "L1",
-          citation: {
-            code: "Điều 14",
-            title: "Quy Chế Đào tạo Đại học số 245/QĐ-ĐH (Minh họa)",
-            quote:
-              "Sinh viên nộp yêu cầu trực tuyến qua Cổng dịch vụ Campus 24/7. Thời gian xử lý dự kiến: 24–48 giờ làm việc (theo quy định chuẩn mẫu). Phòng Đào tạo & CTSV sẽ thực hiện đối soát tự động tình trạng hồ sơ trước khi ký điện tử.",
-            source: "Trích xuất từ Cơ sở tri thức Học vụ V5.2",
-          },
-        },
-        {
-          id: "cm-3",
-          sender: "user",
-          text: "Mình đáp ứng đủ điều kiện trên rồi. Hướng dẫn mình tạo yêu cầu cấp Giấy xác nhận sinh viên ngay bây giờ luôn nhé.",
-          timestamp: "09:41 SA",
-        },
-        {
-          id: "cm-4",
-          sender: "bot",
-          text: "Tuyệt vời! Tôi đã trích xuất sẵn thông tin sinh viên từ cơ sở dữ liệu đào tạo. Vui lòng bấm nút bên dưới để mở giao diện kiểm tra thông tin (Cổng 1) trước khi gửi vào hệ thống xét duyệt của Nhà trường.",
-          timestamp: "09:41 SA",
-          level: "L2",
-          actionCard: "submit1_prompt",
-        },
-      ]);
+      setChatSessions(INITIAL_CHAT_SESSIONS);
+      setActiveSessionId(INITIAL_CHAT_SESSIONS[0].id);
+      setChatMessages(INITIAL_CHAT_SESSIONS[0].messages || []);
     } catch (e) {
       console.error(e);
     }
@@ -609,6 +647,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         addTicketMessage,
         submitGate2Response,
         resetAllDemoData,
+        chatSessions,
+        activeSessionId,
+        selectChatSession,
+        createNewChatSession,
+        deleteChatSession,
         chatMessages,
         addChatMessage,
         isL4HandoverActive,

@@ -1,4 +1,4 @@
-import { User, Ticket } from "./types";
+import { User, Ticket, ChatSession } from "./types";
 
 export const DEMO_USERS: Record<string, User> = {
   SV001: {
@@ -439,3 +439,148 @@ export const INITIAL_TICKETS: Ticket[] = [
     ],
   },
 ];
+
+export const INITIAL_CHAT_SESSIONS: ChatSession[] = [
+  {
+    id: "sess-bm03-vayvon",
+    title: "Cấp Giấy xác nhận sinh viên (BM-03)",
+    preview: "Thủ tục xin cấp Giấy xác nhận sinh viên để vay vốn ngân hàng chính sách...",
+    updatedAt: "09:41 Hôm nay",
+    tag: "L2",
+    isL4HandoverActive: false,
+    gate1FormData: {
+      fullName: "Nguyễn Văn An",
+      mssv: "20210018",
+      classYear: "Khóa 18 (2021 - 2025) · K18 KTPM",
+      department: "Khoa Công nghệ Phần mềm",
+      reason: "Nộp Ngân hàng Chính sách Xã hội Chi nhánh Q. Thủ Đức (Học kỳ 2)",
+      destinationOrg: "Ngân hàng Chính sách Xã hội Chi nhánh Q. Thủ Đức",
+      receiveMethod: "digital_pdf",
+      academicStatus: "Bình thường",
+    },
+    messages: [
+      {
+        id: "cm-1",
+        sender: "user",
+        text: "Trợ lý cho mình hỏi: Thủ tục xin cấp Giấy xác nhận sinh viên để vay vốn ngân hàng chính sách cần những điều kiện gì và mất bao lâu thì nhận được bản cứng?",
+        timestamp: "09:14 SA",
+      },
+      {
+        id: "cm-2",
+        sender: "bot",
+        text: "Chào bạn Nguyễn Văn An! Theo Quy chế Đào tạo và Công tác Sinh viên hiện hành, sinh viên chính quy chưa bị kỷ luật từ mức cảnh cáo trở lên và không nợ học phí kỳ trước đủ điều kiện nhận cấp Giấy xác nhận học tập.\n\n• Bản điện tử (PDF ký số hợp lệ): Tự động xuất sau khi Cán bộ đối soát CSDL đào tạo (tối đa 4 giờ làm việc).\n• Bản giấy (Đóng dấu mộc đỏ): Nhận tại Bộ phận Một Cửa - Phòng Đào tạo (Bàn số 3, Tòa A1) sau 24h kể từ khi cán bộ duyệt.",
+        timestamp: "09:14 SA",
+        level: "L1",
+        citation: {
+          code: "Điều 14",
+          title: "Quy Chế Đào tạo Đại học số 245/QĐ-ĐH (Minh họa)",
+          quote:
+            "Sinh viên nộp yêu cầu trực tuyến qua Cổng dịch vụ Campus 24/7. Thời gian xử lý dự kiến: 24–48 giờ làm việc (theo quy định chuẩn mẫu). Phòng Đào tạo & CTSV sẽ thực hiện đối soát tự động tình trạng hồ sơ trước khi ký điện tử.",
+          source: "Trích xuất từ Cơ sở tri thức Học vụ V5.2",
+        },
+      },
+      {
+        id: "cm-3",
+        sender: "user",
+        text: "Mình đáp ứng đủ điều kiện trên rồi. Hướng dẫn mình tạo yêu cầu cấp Giấy xác nhận sinh viên ngay bây giờ luôn nhé.",
+        timestamp: "09:41 SA",
+      },
+      {
+        id: "cm-4",
+        sender: "bot",
+        text: "Tuyệt vời! Tôi đã trích xuất sẵn thông tin sinh viên từ cơ sở dữ liệu đào tạo. Vui lòng bấm nút bên dưới để mở giao diện kiểm tra thông tin (Cổng 1) trước khi gửi vào hệ thống xét duyệt của Nhà trường.",
+        timestamp: "09:41 SA",
+        level: "L2",
+        actionCard: "submit1_prompt",
+      },
+    ],
+  },
+  {
+    id: "sess-khieunai-it3011",
+    title: "Khiếu nại điểm thi môn IT3011",
+    preview: "Phát hiện sai lệch 2.0 điểm môn Cấu trúc Dữ liệu giữa CSDL và bài thi gốc...",
+    updatedAt: "09:15 Hôm nay",
+    tag: "L4",
+    isL4HandoverActive: true,
+    messages: [
+      {
+        id: "cm-l4-1",
+        sender: "user",
+        text: "Em muốn khiếu nại điểm thi môn Cấu trúc Dữ liệu (IT3011). Điểm trên cổng hiện 5.5 nhưng bài phúc khảo trực tiếp của em được 7.5 và thầy Thắng đã ký xác nhận tại phòng thi!",
+        timestamp: "09:12 SA",
+      },
+      {
+        id: "cm-l4-2",
+        sender: "bot",
+        text: "HỆ THỐNG AI ĐÃ KÍCH HOẠT CHẾ ĐỘ NGẮT TỰ ĐỘNG (L4 HANDOVER) THEO QUY CHẾ AN TOÀN HỌC THUẬT.\n\nNhận diện yêu cầu khiếu nại điểm thi môn IT3011 (trigger: DISPUTED_GRADE_EVENT). Theo nguyên tắc an toàn, Trợ lý AI không được phép can thiệp hoặc kết luận điểm số. Toàn bộ hồ sơ kèm biên bản và lịch sử đối thoại đã được niêm phong chuyển thẳng sang Bàn làm việc Cán bộ OF001 (ThS. Trần Thu Hà) để giải quyết.",
+        timestamp: "09:15 SA",
+        level: "L4",
+        actionCard: "l4_handover",
+        ticketId: "TKT-2026-0098",
+      },
+    ],
+  },
+  {
+    id: "sess-nvqs-hoanthi",
+    title: "Tra cứu quy chế hoãn NVQS năm 2026",
+    preview: "Điều kiện cấp giấy hoãn nghĩa vụ quân sự và thời hạn nộp BCH Quân sự địa phương...",
+    updatedAt: "16:20 Hôm qua",
+    tag: "L1",
+    isL4HandoverActive: false,
+    gate1FormData: {
+      fullName: "Nguyễn Văn An",
+      mssv: "20210018",
+      classYear: "Khóa 18 (2021 - 2025) · K18 KTPM",
+      department: "Khoa Công nghệ Phần mềm",
+      reason: "Nộp Ban Chỉ huy Quân sự địa phương xin tạm hoãn gọi nhập ngũ năm 2026",
+      destinationOrg: "Ban Chỉ huy Quân sự Quận Thủ Đức",
+      receiveMethod: "paper_stamped",
+      academicStatus: "Bình thường",
+    },
+    messages: [
+      {
+        id: "cm-nvqs-1",
+        sender: "user",
+        text: "Xin hỏi nhà trường: Mình muốn xin giấy xác nhận để nộp Ban chỉ huy Quân sự phường xin tạm hoãn nghĩa vụ quân sự đợt đầu năm 2026 thì cần giấy tờ gì?",
+        timestamp: "16:18 CH",
+      },
+      {
+        id: "cm-nvqs-2",
+        sender: "bot",
+        text: "Chào bạn An! Căn cứ Thông tư liên tịch số 13/2013/TTLT-BQP-BGDĐT và Quy chế Công tác Sinh viên:\n\n• Sinh viên đang theo học chương trình đào tạo chính quy trong thời gian tiêu chuẩn (K18: 2021–2025) được cấp Giấy xác nhận tạm hoãn NVQS (Mẫu BM-03 bản giấy đóng dấu mộc đỏ).\n• Bạn chỉ cần điền biểu mẫu trực tuyến tại Cổng 1, chọn nhận Bản giấy, cán bộ sẽ in và đóng dấu mộc trường trong vòng 24 giờ làm việc.",
+        timestamp: "16:20 CH",
+        level: "L1",
+        citation: {
+          code: "Mục 4 - TTLT 13",
+          title: "Thông tư liên tịch Quy định tạm hoãn gọi nhập ngũ đối với sinh viên ĐH chính quy",
+          quote: "Công dân đang theo học tại các cơ sở giáo dục đại học thuộc hệ thống giáo dục quốc dân được tạm hoãn gọi nhập ngũ trong thời gian một khóa đào tạo của một trình độ đào tạo.",
+          source: "Hệ thống Văn bản Pháp quy ĐHQG-HCM",
+        },
+      },
+    ],
+  },
+  {
+    id: "sess-totnghiep-hocphi",
+    title: "Tư vấn điều kiện tốt nghiệp & học phí",
+    preview: "Kiểm tra số tín chỉ tích lũy hiện tại (114/138 TC) và học phí học kỳ II...",
+    updatedAt: "24/10/2026",
+    tag: "Chung",
+    isL4HandoverActive: false,
+    messages: [
+      {
+        id: "cm-tn-1",
+        sender: "user",
+        text: "Kiểm tra giúp mình số tín chỉ tích lũy và tình trạng học phí hiện tại xem đã đủ điều kiện đăng ký đồ án tốt nghiệp chưa nhé.",
+        timestamp: "10:30 SA",
+      },
+      {
+        id: "cm-tn-2",
+        sender: "bot",
+        text: "Thông tin học tập của sinh viên Nguyễn Văn An (MSSV: 20210018):\n\n• Số tín chỉ tích lũy: **114 / 138 TC** (Đã hoàn thành 82.6% lộ trình đào tạo KTPM).\n• Tình trạng tư cách học thuật: **Bình thường**.\n• Tình trạng học phí HK2: **0 VNĐ nợ (Đã quyết toán hoàn tất)**.\n\nTheo quy chế, bạn cần tích lũy tối thiểu 110 TC để đủ điều kiện đăng ký Đồ án tốt nghiệp / Thực tập tốt nghiệp. Bạn đã đủ điều kiện cần về tín chỉ và học phí!",
+        timestamp: "10:31 SA",
+        level: "L1",
+      },
+    ],
+  },
+];
+

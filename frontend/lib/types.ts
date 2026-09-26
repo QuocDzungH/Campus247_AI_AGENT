@@ -146,3 +146,24 @@ export interface ChatMessage {
   ticketId?: string;
   ticketData?: Partial<Ticket>;
 }
+
+export interface ChatSession {
+  id: string;
+  title: string;
+  preview: string;
+  updatedAt: string;
+  tag: "L1" | "L2" | "L4" | "Chung";
+  messages: ChatMessage[];
+  isL4HandoverActive?: boolean;
+  gate1FormData?: {
+    fullName: string;
+    mssv: string;
+    classYear: string;
+    department: string;
+    reason: string;
+    destinationOrg: string;
+    receiveMethod: "digital_pdf" | "paper_stamped";
+    academicStatus: string;
+  };
+}
+
