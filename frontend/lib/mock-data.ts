@@ -1,4 +1,4 @@
-import { User, Ticket, ChatSession } from "./types";
+import { User, Ticket, ChatSession, ReviewCase, ReviewCriterion } from "./types";
 
 export const DEMO_USERS: Record<string, User> = {
   SV001: {
@@ -583,4 +583,966 @@ export const INITIAL_CHAT_SESSIONS: ChatSession[] = [
     ],
   },
 ];
+
+// ========================================================
+// STANDARD REVIEW CRITERIA (BỘ TIÊU CHÍ MINH HỌA)
+// ========================================================
+
+export const STANDARD_REVIEW_CRITERIA: ReviewCriterion[] = [
+  {
+    id: "crit-1",
+    code: "C1_CREDITS",
+    category: "credit",
+    title: "Số tín chỉ và thời lượng học phần",
+    description: "Học phần tích lũy ở trường cũ phải có số tín chỉ tối thiểu bằng hoặc lớn hơn số tín chỉ học phần tại trường tiếp nhận.",
+    targetRequirement: "Tối thiểu 3 tín chỉ (45 tiết chuẩn: 30 lý thuyết + 15 thực hành/bài tập).",
+    isMandatory: true,
+  },
+  {
+    id: "crit-2",
+    code: "C2_CODE_CONSISTENCY",
+    category: "prerequisite",
+    title: "Tính nhất quán mã & tên học phần",
+    description: "Mã học phần và tên môn học trên Bảng điểm kết quả phải đồng nhất và quy chiếu đúng với Đề cương chi tiết đính kèm.",
+    targetRequirement: "Chứng từ bảng điểm và đề cương chi tiết phải trỏ cùng một mã định danh học phần hoặc có văn bản xác nhận tương đương từ trường cấp.",
+    isMandatory: true,
+  },
+  {
+    id: "crit-3",
+    code: "C3_CORE_DATA_STRUCT",
+    category: "core_content",
+    title: "Cấu trúc dữ liệu tuyến tính và cây",
+    description: "Nội dung học phần phải bao phủ các cấu trúc dữ liệu nền tảng: Danh sách liên kết, Ngăn xếp, Hàng đợi, Cây nhị phân tìm kiếm.",
+    targetRequirement: "Trang bị đầy đủ kiến thức về Danh sách liên kết đơn/kép, Stack, Queue, Binary Search Tree (BST) và thuật toán sắp xếp (Quick/Merge).",
+    isMandatory: true,
+  },
+  {
+    id: "crit-4",
+    code: "C4_GRAPH_ALGORITHMS",
+    category: "core_content",
+    title: "Đồ thị và giải thuật duyệt đồ thị",
+    description: "Học phần phải có phần kiến thức về đồ thị: Biểu diễn đồ thị, Thuật toán duyệt BFS/DFS, Cây khung nhỏ nhất và Đường đi ngắn nhất Dijkstra.",
+    targetRequirement: "Bắt buộc có tối thiểu 6-12 tiết giảng dạy và bài tập về Đồ thị, duyệt BFS, DFS, thuật toán tìm đường đi ngắn nhất Dijkstra.",
+    isMandatory: true,
+  },
+  {
+    id: "crit-5",
+    code: "C5_LAB_PRACTICE",
+    category: "lab_practice",
+    title: "Thời lượng thực hành phòng Lab & Bài tập lớn",
+    description: "Học phần phải có cấu phần thực hành lập trình trực tiếp trên máy tính trên các ngôn ngữ tiêu chuẩn (C++/Java/Python).",
+    targetRequirement: "Có giờ thực hành phòng máy (tối thiểu 15 tiết hoặc 02 bài tập lớn chiếm >= 30% trọng số đánh giá).",
+    isMandatory: true,
+  },
+  {
+    id: "crit-6",
+    code: "C6_LEARNING_OUTCOMES",
+    category: "learning_outcomes",
+    title: "Mức độ tương thích Chuẩn đầu ra (CLO)",
+    description: "Chuẩn đầu ra môn học phải đạt mức độ tương đồng tối thiểu 80% so với chuẩn đầu ra CTĐT ngành Công nghệ Phần mềm / Kỹ thuật.",
+    targetRequirement: "Sinh viên có khả năng phân tích độ phức tạp thuật toán O(n), thiết kế và cài đặt giải thuật tối ưu trên thực tế.",
+    isMandatory: false,
+  },
+];
+
+// ========================================================
+// MOCK DOSSIERS (3 HỒ SƠ RÀ SOÁT CHUẨN)
+// ========================================================
+
+export const INITIAL_REVIEW_CASES: ReviewCase[] = [
+  // --------------------------------------------------------
+  // HỒ SƠ A: REV-2026-001 (Tên môn khác nhau; v1 thiếu Đồ thị -> v2 bổ sung)
+  // --------------------------------------------------------
+  {
+    id: "REV-2026-001",
+    code: "REV-2026-001",
+    createdAt: "2026-10-24T08:30:00",
+    updatedAt: "2026-10-24T09:40:00",
+    status: "in_review",
+    studentId: "SV001",
+    studentName: "Nguyễn Văn An",
+    studentMssv: "20210018",
+    studentMajor: "Kỹ thuật Phần mềm",
+    studentClassYear: "Khóa 18 (2021 - 2025) · K18 KTPM",
+    studentEmail: "an.nv@campus.edu.vn",
+
+    // Target course at Receiving University
+    targetCourseCode: "IT3011",
+    targetCourseName: "Cấu trúc dữ liệu và giải thuật",
+    targetCourseCredits: 3,
+    targetDepartment: "Khoa Công nghệ Phần mềm",
+
+    // Prior course at previous institution
+    priorCourseCode: "IT2020",
+    priorCourseName: "Cấu trúc dữ liệu",
+    priorCourseCredits: 3,
+    priorInstitution: "Trường Đại học Bách Khoa TP.HCM (Minh họa)",
+    priorAcademicYear: "2022 - 2023 (Học kỳ 1)",
+    priorGrade: "8.5 (Hệ 10) / A (Hệ 4)",
+
+    criteriaSetId: "set-std-it",
+    criteriaSetName: "Bộ tiêu chí công nhận học phần Khối ngành Công nghệ Thông tin (Minh họa)",
+    criteria: STANDARD_REVIEW_CRITERIA,
+
+    documents: [
+      {
+        id: "DOC-APP-01",
+        type: "application",
+        title: "Đơn đề nghị công nhận học phần (Mẫu BM-CN-01)",
+        institution: "Trường Đại học Bách Khoa (chuyển tiếp)",
+        currentVersion: 1,
+        required: true,
+        versions: [
+          {
+            version: 1,
+            uploadedAt: "24/10/2026 08:30",
+            uploadedBy: "student",
+            fileName: "Don_de_nghi_cong_nhan_hoc_phan_SV001.pdf",
+            fileSize: "185 KB",
+            legibility: "good",
+            isLatest: true,
+            sections: [
+              {
+                id: "app-s1",
+                pageNumber: 1,
+                title: "1. Thông tin sinh viên & đề nghị",
+                content:
+                  "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM\nĐộc lập - Tự do - Hạnh phúc\n\nĐƠN ĐỀ NGHỊ CÔNG NHẬN HỌC PHẦN TƯƠNG ĐƯƠNG\nKính gửi: Ban Giám hiệu, Phòng Đào tạo & CTSV, Ban Chủ nhiệm Khoa CNPM.\n\nTôi tên là: Nguyễn Văn An, MSSV: 20210018, Lớp K18 KTPM.\nTôi làm đơn này kính đề nghị Nhà trường xem xét công nhận kết quả học phần:\n- Học phần tại trường cũ: Cấu trúc dữ liệu (Mã môn: IT2020), Số tín chỉ: 3, Điểm đạt: 8.5/10, tại Trường ĐH Bách Khoa TP.HCM.\n- Học phần đề nghị công nhận tại trường tiếp nhận: Cấu trúc dữ liệu và giải thuật (Mã môn: IT3011), Số tín chỉ: 3.\nTôi cam kết toàn bộ hồ sơ bảng điểm và đề cương chi tiết đính kèm là chính xác và hoàn toàn chịu trách nhiệm trước pháp luật.",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "DOC-TRANS-01",
+        type: "transcript",
+        title: "Bảng điểm kết quả học tập chính thức",
+        institution: "Trường Đại học Bách Khoa TP.HCM",
+        currentVersion: 1,
+        required: true,
+        versions: [
+          {
+            version: 1,
+            uploadedAt: "24/10/2026 08:32",
+            uploadedBy: "student",
+            fileName: "Bang_diem_BK_NguyenVanAn_chinhthuc.pdf",
+            fileSize: "420 KB",
+            legibility: "good",
+            isLatest: true,
+            sections: [
+              {
+                id: "tr-s1",
+                pageNumber: 1,
+                title: "Bảng kết quả học tập chính thức (Trích lục)",
+                content:
+                  "TRƯỜNG ĐẠI HỌC BÁCH KHOA TP.HCM\nPHÒNG ĐÀO TẠO\n\nTRÍCH LỤC BẢNG ĐIỂM CHÍNH THỨC\nHọ và tên: NGUYỄN VĂN AN · Mã SV: 2018892\nNgành: Kỹ thuật Máy tính & Phần mềm\n\n[DÒNG 14] Học kỳ 1 / 2022-2023:\n- Mã học phần: IT2020\n- Tên môn học: Cấu trúc dữ liệu\n- Số tín chỉ: 3 (Lý thuyết: 2.0, Thực hành: 1.0)\n- Điểm kết thúc: 8.5 (Hệ 10) · Điểm chữ: A · Điểm hệ 4: 4.0\n- Trạng thái: Đạt (Passed)\n\nXác nhận của Trưởng phòng Đào tạo (Ký và đóng dấu đỏ ngày 15/01/2023).",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "DOC-SYLLABUS-OLD",
+        type: "syllabus_old",
+        title: "Đề cương chi tiết học phần đã học (Trường cũ)",
+        institution: "Trường Đại học Bách Khoa TP.HCM",
+        currentVersion: 1, // Ban đầu là version 1; khi sinh viên nộp bổ sung sẽ nâng lên version 2
+        required: true,
+        versions: [
+          {
+            version: 1,
+            uploadedAt: "24/10/2026 08:35",
+            uploadedBy: "student",
+            fileName: "De_cuong_IT2020_Cau_truc_du_lieu_v1.pdf",
+            fileSize: "612 KB",
+            legibility: "good",
+            legibilityNote: "Tài liệu rõ nét; bản v1 thiếu nội dung chi tiết duyệt đồ thị tại Chương 4.",
+            isLatest: true,
+            sections: [
+              {
+                id: "syl-v1-s1",
+                pageNumber: 1,
+                title: "Trang 1: Thông tin chung & Mục tiêu học phần",
+                content:
+                  "TRƯỜNG ĐẠI HỌC BÁCH KHOA - KHOA KHOA HỌC & KỸ THUẬT MÁY TÍNH\nĐỀ CƯƠNG CHI TIẾT HỌC PHẦN\n1. Tên học phần: CẤU TRÚC DỮ LIỆU (DATA STRUCTURES)\n2. Mã học phần: IT2020\n3. Số tín chỉ: 3 TC (30 tiết lý thuyết, 15 tiết bài tập thực hành trên máy)\n4. Mô tả tóm tắt: Môn học trang bị các cấu trúc dữ liệu nền tảng trong khoa học máy tính, kỹ thuật cài đặt trên bộ nhớ động, đánh giá độ phức tạp thuật toán và kỹ năng lập trình giải quyết vấn đề bằng C++.",
+              },
+              {
+                id: "syl-v1-s2",
+                pageNumber: 2,
+                title: "Trang 2: Cấu trúc dữ liệu tuyến tính và cây",
+                content:
+                  "Chương 2: Danh sách liên kết đơn, kép. Ngăn xếp và Hàng đợi ứng dụng trong quản lý tiến trình.\nChương 3: Cây nhị phân và Cây nhị phân tìm kiếm (BST).\n3.1 Khái niệm cây nhị phân, duyệt cây theo thứ tự trước, giữa, sau (NLR, LNR, LRN).\n3.2 Cây tìm kiếm nhị phân (BST): Thao tác chèn, xóa, tìm kiếm khóa.\n3.3 Giới thiệu cây cân bằng AVL (khái niệm và phép quay cơ bản).",
+              },
+              {
+                id: "syl-v1-s3",
+                pageNumber: 3,
+                title: "Trang 3: Thuật toán sắp xếp & Các cấu trúc khác",
+                content:
+                  "Chương 4: Các thuật toán sắp xếp và tìm kiếm:\n4.1 Sắp xếp cơ bản: Bubble Sort, Selection Sort, Insertion Sort.\n4.2 Sắp xếp nâng cao: MergeSort, QuickSort, HeapSort. Đánh giá độ phức tạp O(n log n).\nMục 4.3: Khái quát các dạng cấu trúc dữ liệu nâng cao khác (3 tiết) - không liệt kê chi tiết nội dung đồ thị hoặc giải thuật tìm kiếm trên đồ thị.\nPhần 5: Đánh giá: Chuyên cần 10%, Thực hành phòng máy 30%, Thi kết thúc 60%.",
+              },
+            ],
+          },
+          {
+            version: 2,
+            uploadedAt: "24/10/2026 10:15",
+            uploadedBy: "student",
+            fileName: "De_cuong_IT2020_Co_xac_nhan_Khoa_CNTT_v2.pdf",
+            fileSize: "850 KB",
+            legibility: "good",
+            legibilityNote: "Bản v2 cập nhật bổ sung Chương 5 có dấu mộc và chữ ký Phó Trưởng Khoa CNTT.",
+            isLatest: false,
+            sections: [
+              {
+                id: "syl-v2-s1",
+                pageNumber: 1,
+                title: "Trang 1: Thông tin chung & Quyết định ban hành đề cương",
+                content:
+                  "TRƯỜNG ĐẠI HỌC BÁCH KHOA - KHOA KHOA HỌC & KỸ THUẬT MÁY TÍNH\nĐỀ CƯƠNG CHI TIẾT HỌC PHẦN (BẢN CẬP NHẬT CHUẨN ĐẦU RA 2023)\nMã học phần: IT2020 - Tên: Cấu trúc dữ liệu\nSố tín chỉ: 3 tín chỉ (30 tiết lý thuyết + 15 tiết bài tập lớn & thực hành lab C++).\nĐã được Hội đồng Khoa học Khoa phê duyệt theo Quyết định số 188/QĐ-KHMT.",
+              },
+              {
+                id: "syl-v2-s2",
+                pageNumber: 2,
+                title: "Trang 2: Cấu trúc dữ liệu tuyến tính và cây",
+                content:
+                  "Chương 2: Danh sách liên kết đơn, kép. Ngăn xếp và Hàng đợi ứng dụng trong quản lý tiến trình.\nChương 3: Cây nhị phân và Cây nhị phân tìm kiếm (BST).\n3.1 Khái niệm cây nhị phân, duyệt cây theo thứ tự trước, giữa, sau (NLR, LNR, LRN).\n3.2 Cây tìm kiếm nhị phân (BST): Thao tác chèn, xóa, tìm kiếm khóa.\n3.3 Cây cân bằng AVL và B-Tree tổng quan.",
+              },
+              {
+                id: "syl-v2-s3",
+                pageNumber: 3,
+                title: "Trang 3: Thuật toán sắp xếp và phân tích giải thuật",
+                content:
+                  "Chương 4: Thuật toán sắp xếp và tìm kiếm:\n4.1 Phân tích độ phức tạp không gian và thời gian O(1), O(n), O(n log n).\n4.2 Cài đặt QuickSort, MergeSort và HeapSort bằng ngôn ngữ C++.\n4.3 Bảng băm (Hash Table) và xử lý đụng độ bằng phương pháp nối kết (Chaining).",
+              },
+              {
+                id: "syl-v2-s4",
+                pageNumber: 4,
+                title: "Trang 4: Chương 5: Đồ thị và các thuật toán trên đồ thị (Bổ sung v2)",
+                content:
+                  "Chương 5: ĐỒ THỊ VÀ CÁC THUẬT TOÁN TRÊN ĐỒ THỊ (12 TIẾT):\nMục 5.1: Định nghĩa đồ thị, đồ thị vô hướng, có hướng; biểu diễn ma trận kề, danh sách cạnh, danh sách kề.\nMục 5.2: Thuật toán duyệt đồ thị BFS, DFS và ứng dụng kiểm tra tính liên thông, chu trình.\nMục 5.3: Cây khung nhỏ nhất: Thuật toán Kruskal và thuật toán Prim.\nMục 5.4: Tìm đường đi ngắn nhất đồ thị có trọng số với thuật toán Dijkstra và Bellman-Ford.\n\nXác nhận của Ban Chủ nhiệm Khoa: Đã ký số và đóng dấu đỏ ngày 12/03/2023.",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "DOC-SYLLABUS-TARGET",
+        type: "syllabus_target",
+        title: "Đề cương học phần tại trường tiếp nhận (IT3011)",
+        institution: "Trường Đại học Tiếp nhận (Campus 24/7)",
+        currentVersion: 1,
+        required: true,
+        versions: [
+          {
+            version: 1,
+            uploadedAt: "01/09/2026",
+            uploadedBy: "officer",
+            fileName: "IT3011_De_cuong_chuan_truong_tiep_nhan.pdf",
+            fileSize: "550 KB",
+            legibility: "good",
+            isLatest: true,
+            sections: [
+              {
+                id: "tgt-s1",
+                pageNumber: 1,
+                title: "Đề cương chi tiết học phần IT3011 chuẩn",
+                content:
+                  "TRƯỜNG ĐẠI HỌC TIẾP NHẬN - PHÒNG ĐÀO TẠO & CTSV\nKHOA CÔNG NGHỆ PHẦN MỀM\n\nHọc phần: CẤU TRÚC DỮ LIỆU VÀ GIẢI THUẬT (IT3011)\n- Số tín chỉ: 3 TC (Lý thuyết: 2, Thực hành: 1)\n- Chuẩn đầu ra:\n  + CLO1: Hiểu và cài đặt thành thạo danh sách liên kết, ngăn xếp, hàng đợi, cây nhị phân tìm kiếm.\n  + CLO2: Nắm vững lý thuyết đồ thị; cài đặt được các thuật toán duyệt đồ thị BFS, DFS, thuật toán tìm đường đi ngắn nhất Dijkstra và cây khung nhỏ nhất.\n  + CLO3: Phân tích được độ phức tạp thuật toán O(n), tối ưu hóa mã nguồn lập trình.\n- Điều kiện tiên quyết: Lập trình nâng cao / Cơ sở lập trình.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+
+    aiStatus: "ready",
+    aiLastRunAt: "24/10/2026 09:15",
+    aiSummary: {
+      overallRecommendation:
+        "Hồ sơ cơ bản tương đồng về số tín chỉ (3 TC) và cấu trúc dữ liệu nền tảng. Tuy nhiên, Đề cương ban đầu (v1) chưa đủ căn cứ chứng minh nội dung đồ thị (BFS/DFS/Dijkstra). Đề xuất gửi yêu cầu sinh viên bổ sung đề cương chi tiết có xác nhận của Khoa/Bộ môn trường cũ.",
+      totalCriteria: 6,
+      matchCount: 4,
+      differenceCount: 1,
+      insufficientCount: 1,
+      contradictionCount: 0,
+      isStale: false,
+    },
+
+    findings: [
+      {
+        id: "find-A-1",
+        criterionId: "crit-1",
+        criterionTitle: "Số tín chỉ và thời lượng học phần",
+        category: "credit",
+        targetRequirement: "Tối thiểu 3 tín chỉ (45 tiết chuẩn: 30 lý thuyết + 15 thực hành/bài tập).",
+        extractedEvidence: "Bảng điểm Bách Khoa ghi nhận môn IT2020: 3 tín chỉ (30 tiết lý thuyết + 15 tiết thực hành lab). Điểm kết thúc: 8.5/10.",
+        citations: [
+          {
+            documentId: "DOC-TRANS-01",
+            documentTitle: "Bảng điểm kết quả học tập chính thức",
+            version: 1,
+            pageNumber: 1,
+            sectionTitle: "Bảng kết quả học tập chính thức (Trích lục)",
+            snippet: "Mã học phần: IT2020 - Tên môn học: Cấu trúc dữ liệu - Số tín chỉ: 3 (Lý thuyết: 2.0, Thực hành: 1.0) - Điểm kết thúc: 8.5",
+          },
+        ],
+        aiLabel: "has_evidence",
+        aiExplanation: "Số tín chỉ môn đã học (3 TC) hoàn toàn đáp ứng yêu cầu tối thiểu so với học phần trường tiếp nhận IT3011 (3 TC).",
+        officerStatus: "unverified",
+      },
+      {
+        id: "find-A-2",
+        criterionId: "crit-2",
+        criterionTitle: "Tính nhất quán mã & tên học phần",
+        category: "prerequisite",
+        targetRequirement: "Chứng từ bảng điểm và đề cương chi tiết phải trỏ cùng một mã định danh học phần hoặc có văn bản xác nhận tương đương từ trường cấp.",
+        extractedEvidence: "Mã môn IT2020 đồng nhất giữa bảng điểm gốc và đề cương chi tiết đính kèm.",
+        citations: [
+          {
+            documentId: "DOC-TRANS-01",
+            documentTitle: "Bảng điểm kết quả học tập chính thức",
+            version: 1,
+            pageNumber: 1,
+            snippet: "Mã học phần: IT2020",
+          },
+          {
+            documentId: "DOC-SYLLABUS-OLD",
+            documentTitle: "Đề cương chi tiết học phần đã học (Trường cũ)",
+            version: 1,
+            pageNumber: 1,
+            snippet: "2. Mã học phần: IT2020",
+          },
+        ],
+        aiLabel: "has_evidence",
+        aiExplanation: "Thông tin mã môn học đồng nhất và chính xác giữa hai chứng từ hợp lệ.",
+        officerStatus: "confirmed",
+        officerReviewedAt: "24/10/2026 09:20",
+        officerReviewedBy: "ThS. Trần Thu Hà (OF001)",
+        officerNote: "Đã kiểm tra đối soát, mã IT2020 hoàn toàn khớp giữa bảng điểm có chữ ký số và đề cương.",
+      },
+      {
+        id: "find-A-3",
+        criterionId: "crit-3",
+        criterionTitle: "Cấu trúc dữ liệu tuyến tính và cây",
+        category: "core_content",
+        targetRequirement: "Trang bị đầy đủ kiến thức về Danh sách liên kết đơn/kép, Stack, Queue, Binary Search Tree (BST) và thuật toán sắp xếp (Quick/Merge).",
+        extractedEvidence: "Đề cương v1 ghi nhận đầy đủ tại Chương 2 (Danh sách liên kết đơn, kép, Ngăn xếp, Hàng đợi) và Chương 3 (Cây nhị phân tìm kiếm BST).",
+        citations: [
+          {
+            documentId: "DOC-SYLLABUS-OLD",
+            documentTitle: "Đề cương chi tiết học phần đã học (Trường cũ)",
+            version: 1,
+            pageNumber: 2,
+            sectionTitle: "Trang 2: Cấu trúc dữ liệu tuyến tính và cây",
+            snippet: "Chương 2: Danh sách liên kết đơn, kép. Ngăn xếp và Hàng đợi ứng dụng trong quản lý tiến trình. Chương 3: Cây nhị phân và Cây nhị phân tìm kiếm (BST).",
+          },
+        ],
+        aiLabel: "has_evidence",
+        aiExplanation: "Các cấu trúc dữ liệu tuyến tính và cây hoàn toàn tương đương chuẩn đào tạo học phần IT3011.",
+        officerStatus: "confirmed",
+        officerReviewedAt: "24/10/2026 09:22",
+        officerReviewedBy: "ThS. Trần Thu Hà (OF001)",
+      },
+      {
+        id: "find-A-4",
+        criterionId: "crit-4",
+        criterionTitle: "Đồ thị và giải thuật duyệt đồ thị",
+        category: "core_content",
+        targetRequirement: "Bắt buộc có tối thiểu 6-12 tiết giảng dạy và bài tập về Đồ thị, duyệt BFS, DFS, thuật toán tìm đường đi ngắn nhất Dijkstra.",
+        extractedEvidence: "Đề cương ban đầu (v1) tại Mục 4.3 chỉ ghi chung: 'Khái quát các dạng cấu trúc dữ liệu nâng cao khác (3 tiết)' mà không có nội dung đồ thị hay thuật toán duyệt BFS/DFS.",
+        citations: [
+          {
+            documentId: "DOC-SYLLABUS-OLD",
+            documentTitle: "Đề cương chi tiết học phần đã học (Trường cũ)",
+            version: 1,
+            pageNumber: 3,
+            sectionTitle: "Trang 3: Thuật toán sắp xếp & Các cấu trúc khác",
+            snippet: "Mục 4.3: Khái quát các dạng cấu trúc dữ liệu nâng cao khác (3 tiết) - không liệt kê chi tiết nội dung đồ thị hoặc giải thuật tìm kiếm trên đồ thị.",
+          },
+        ],
+        aiLabel: "insufficient_evidence",
+        aiExplanation: "CHƯA ĐỦ CĂN CỨ: Nội dung đồ thị và duyệt đồ thị (BFS, DFS, Dijkstra) là chuẩn đầu ra bắt buộc của IT3011. Đề cương v1 chưa thể hiện rõ.",
+        aiSuggestedAction: "Đề nghị sinh viên cung cấp Đề cương chi tiết học phần có xác nhận của Khoa/Bộ môn trường cũ làm rõ nội dung giảng dạy về Đồ thị.",
+        officerStatus: "unverified",
+      },
+      {
+        id: "find-A-5",
+        criterionId: "crit-5",
+        criterionTitle: "Thời lượng thực hành phòng Lab & Bài tập lớn",
+        category: "lab_practice",
+        targetRequirement: "Có giờ thực hành phòng máy (tối thiểu 15 tiết hoặc 02 bài tập lớn chiếm >= 30% trọng số đánh giá).",
+        extractedEvidence: "Đề cương v1 quy định 15 tiết bài tập thực hành trên phòng máy bằng C++; điểm thực hành chiếm 30% tổng điểm học phần.",
+        citations: [
+          {
+            documentId: "DOC-SYLLABUS-OLD",
+            documentTitle: "Đề cương chi tiết học phần đã học (Trường cũ)",
+            version: 1,
+            pageNumber: 1,
+            snippet: "3. Số tín chỉ: 3 TC (30 tiết lý thuyết, 15 tiết bài tập thực hành trên máy)",
+          },
+        ],
+        aiLabel: "has_evidence",
+        aiExplanation: "Đạt điều kiện về thời lượng thực hành lập trình trong môi trường lab.",
+        officerStatus: "unverified",
+      },
+      {
+        id: "find-A-6",
+        criterionId: "crit-6",
+        criterionTitle: "Mức độ tương thích Chuẩn đầu ra (CLO)",
+        category: "learning_outcomes",
+        targetRequirement: "Sinh viên có khả năng phân tích độ phức tạp thuật toán O(n), thiết kế và cài đặt giải thuật tối ưu trên thực tế.",
+        extractedEvidence: "Chuẩn đầu ra môn học bao gồm kỹ năng cài đặt trên bộ nhớ động và phân tích độ phức tạp thời gian/không gian.",
+        citations: [
+          {
+            documentId: "DOC-SYLLABUS-OLD",
+            documentTitle: "Đề cương chi tiết học phần đã học (Trường cũ)",
+            version: 1,
+            pageNumber: 1,
+            snippet: "Mô tả tóm tắt: Môn học trang bị các cấu trúc dữ liệu nền tảng trong khoa học máy tính, kỹ thuật cài đặt trên bộ nhớ động, đánh giá độ phức tạp thuật toán và kỹ năng lập trình giải quyết vấn đề bằng C++.",
+          },
+        ],
+        aiLabel: "has_evidence",
+        aiExplanation: "Chuẩn đầu ra tương thích trên 85% so với yêu cầu chuẩn đầu ra của IT3011.",
+        officerStatus: "unverified",
+      },
+    ],
+
+    supplementRequests: [],
+
+    auditLogs: [
+      {
+        id: "aud-rev-1",
+        timestamp: "08:30:00 · 24/10/2026",
+        actorName: "Nguyễn Văn An (SV001)",
+        actorRole: "student",
+        action: "Khởi tạo hồ sơ đề nghị công nhận học phần IT3011",
+        details: "Nộp hồ sơ trực tuyến, đính kèm Đơn BM-CN-01, Bảng điểm Bách Khoa và Đề cương v1.",
+      },
+      {
+        id: "aud-rev-2",
+        timestamp: "09:15:00 · 24/10/2026",
+        actorName: "Campus Review AI Engine v4.2",
+        actorRole: "ai",
+        action: "Hoàn tất rà soát mô phỏng đối chiếu 6 tiêu chí",
+        details: "Phát hiện 4 tiêu chí đạt, 1 khác biệt, 1 chưa đủ căn cứ (nội dung đồ thị BFS/DFS).",
+      },
+      {
+        id: "aud-rev-3",
+        timestamp: "09:20:10 · 24/10/2026",
+        actorName: "ThS. Trần Thu Hà (OF001)",
+        actorRole: "officer",
+        action: "Cán bộ xác nhận tiêu chí C2 (Tính nhất quán mã môn) và C3 (Cấu trúc dữ liệu tuyến tính)",
+      },
+    ],
+  },
+
+  // --------------------------------------------------------
+  // HỒ SƠ B: REV-2026-002 (Mâu thuẫn dữ liệu: Mã trên bảng điểm khác đề cương)
+  // --------------------------------------------------------
+  {
+    id: "REV-2026-002",
+    code: "REV-2026-002",
+    createdAt: "2026-10-24T09:00:00",
+    updatedAt: "2026-10-24T09:30:00",
+    status: "in_review",
+    studentId: "SV024",
+    studentName: "Lê Bảo Trâm",
+    studentMssv: "20240019",
+    studentMajor: "Tài chính Ngân hàng",
+    studentClassYear: "Khóa 19 · K19 Ngân hàng",
+    studentEmail: "tram.lb@campus.edu.vn",
+
+    targetCourseCode: "MATH101",
+    targetCourseName: "Giải tích 1",
+    targetCourseCredits: 3,
+    targetDepartment: "Khoa Khoa học Cơ bản",
+
+    priorCourseCode: "TCC-A1-2023",
+    priorCourseName: "Toán cao cấp A1",
+    priorCourseCredits: 3,
+    priorInstitution: "Trường Đại học Kinh tế TP.HCM (Minh họa)",
+    priorAcademicYear: "2023 - 2024 (Học kỳ 1)",
+    priorGrade: "8.0 (Điểm B+)",
+
+    criteriaSetId: "set-std-math",
+    criteriaSetName: "Bộ tiêu chí công nhận học phần Toán & Khoa học Cơ bản (Minh họa)",
+    criteria: [
+      STANDARD_REVIEW_CRITERIA[0],
+      STANDARD_REVIEW_CRITERIA[1],
+      {
+        id: "crit-math-3",
+        code: "C3_CORE_CALCULUS",
+        category: "core_content",
+        title: "Nội dung phép tính vi phân và tích phân 1 biến",
+        description: "Học phần phải bao gồm: Giới hạn dãy số, Hàm số một biến, Đạo hàm & Vi phân, Ứng dụng cực trị, Tích phân bất định và tích phân xác định.",
+        targetRequirement: "Trang bị đầy đủ lý thuyết và kỹ năng giải tích 1 biến số theo chuẩn chương trình đại học.",
+        isMandatory: true,
+      },
+      STANDARD_REVIEW_CRITERIA[5],
+    ],
+
+    documents: [
+      {
+        id: "DOC-APP-02",
+        type: "application",
+        title: "Đơn đề nghị công nhận học phần Toán",
+        institution: "Trường Đại học Kinh tế (chuyển tiếp)",
+        currentVersion: 1,
+        required: true,
+        versions: [
+          {
+            version: 1,
+            uploadedAt: "24/10/2026 09:00",
+            uploadedBy: "student",
+            fileName: "Don_de_nghi_MATH101_LeBaoTram.pdf",
+            legibility: "good",
+            isLatest: true,
+            sections: [
+              {
+                id: "app-b1",
+                pageNumber: 1,
+                title: "Đơn xin công nhận học phần",
+                content:
+                  "ĐƠN XIN CÔNG NHẬN HỌC PHẦN\nSinh viên: Lê Bảo Trâm, MSSV: 20240019.\nKính đề nghị công nhận học phần MATH101 (Giải tích 1) tương đương với môn Toán cao cấp A1 (TCC-A1-2023) đã học tại ĐH Kinh tế TP.HCM với kết quả 8.0/10.",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "DOC-TRANS-02",
+        type: "transcript",
+        title: "Bảng điểm kết quả học tập trường cũ",
+        institution: "Trường Đại học Kinh tế TP.HCM",
+        currentVersion: 1,
+        required: true,
+        versions: [
+          {
+            version: 1,
+            uploadedAt: "24/10/2026 09:05",
+            uploadedBy: "student",
+            fileName: "Bang_diem_UEH_LeBaoTram.pdf",
+            legibility: "good",
+            isLatest: true,
+            sections: [
+              {
+                id: "tr-b1",
+                pageNumber: 1,
+                title: "Bảng điểm chính thức",
+                content:
+                  "TRƯỜNG ĐẠI HỌC KINH TẾ TP.HCM\nBẢNG ĐIỂM CHÍNH THỨC HỌC TẬP\nSinh viên: Lê Bảo Trâm · MSSV: 312110245\n\n[DÒNG 03] Năm học 2023-2024:\n- Mã học phần: TCC-A1-2023\n- Tên học phần: Toán cao cấp A1\n- Số tín chỉ: 3\n- Điểm kết thúc: 8.0 (B+)\n- Đạt yêu cầu.",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "DOC-SYLLABUS-OLD-B",
+        type: "syllabus_old",
+        title: "Đề cương chi tiết học phần đính kèm",
+        institution: "Trường Đại học Kinh tế TP.HCM",
+        currentVersion: 1,
+        required: true,
+        versions: [
+          {
+            version: 1,
+            uploadedAt: "24/10/2026 09:08",
+            uploadedBy: "student",
+            fileName: "De_cuong_chi_tiet_Toan_sinhvien_nop.pdf",
+            legibility: "good",
+            isLatest: true,
+            sections: [
+              {
+                id: "syl-b1",
+                pageNumber: 1,
+                title: "Thông tin chung đề cương chi tiết",
+                content:
+                  "TRƯỜNG ĐẠI HỌC KINH TẾ TP.HCM - KHOA TOÁN THỐNG KÊ\nĐỀ CƯƠNG CHI TIẾT HỌC PHẦN\n1. Mã học phần: MAT-102-K45\n2. Tên học phần: Toán giải tích ứng dụng (Applied Calculus)\n3. Số tín chỉ: 3\n4. Đối tượng áp dụng: Sinh viên chính quy từ Khóa K45.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+
+    aiStatus: "ready",
+    aiLastRunAt: "24/10/2026 09:12",
+    aiSummary: {
+      overallRecommendation:
+        "CẢNH BÁO MÂU THUẪN DỮ LIỆU: Bảng điểm chính thức ghi nhận mã học phần 'TCC-A1-2023' (Toán cao cấp A1), nhưng Đề cương sinh viên nộp lại ghi mã 'MAT-102-K45' (Toán giải tích ứng dụng). AI không tự ý suy luận hai học phần là một. Cần cán bộ kiểm tra hoặc gửi yêu cầu xác minh mã môn.",
+      totalCriteria: 4,
+      matchCount: 1,
+      differenceCount: 1,
+      insufficientCount: 1,
+      contradictionCount: 1,
+      isStale: false,
+    },
+
+    findings: [
+      {
+        id: "find-B-1",
+        criterionId: "crit-1",
+        criterionTitle: "Số tín chỉ và thời lượng học phần",
+        category: "credit",
+        targetRequirement: "Tối thiểu 3 tín chỉ (45 tiết chuẩn).",
+        extractedEvidence: "Bảng điểm ghi: Môn Toán cao cấp A1 có 3 tín chỉ, đạt điểm 8.0.",
+        citations: [
+          {
+            documentId: "DOC-TRANS-02",
+            documentTitle: "Bảng điểm kết quả học tập trường cũ",
+            version: 1,
+            pageNumber: 1,
+            snippet: "Số tín chỉ: 3 - Điểm kết thúc: 8.0 (B+)",
+          },
+        ],
+        aiLabel: "has_evidence",
+        aiExplanation: "Đạt điều kiện về số tín chỉ (3 TC = 3 TC).",
+        officerStatus: "unverified",
+      },
+      {
+        id: "find-B-2",
+        criterionId: "crit-2",
+        criterionTitle: "Tính nhất quán mã & tên học phần",
+        category: "prerequisite",
+        targetRequirement: "Chứng từ bảng điểm và đề cương chi tiết phải trỏ cùng một mã định danh học phần hoặc có văn bản xác nhận tương đương từ trường cấp.",
+        extractedEvidence: "Bảng điểm ghi mã: 'TCC-A1-2023' (Toán cao cấp A1). Trong khi Đề cương nộp ghi mã: 'MAT-102-K45' (Toán giải tích ứng dụng).",
+        citations: [
+          {
+            documentId: "DOC-TRANS-02",
+            documentTitle: "Bảng điểm kết quả học tập trường cũ",
+            version: 1,
+            pageNumber: 1,
+            snippet: "- Mã học phần: TCC-A1-2023\n- Tên học phần: Toán cao cấp A1",
+          },
+          {
+            documentId: "DOC-SYLLABUS-OLD-B",
+            documentTitle: "Đề cương chi tiết học phần đính kèm",
+            version: 1,
+            pageNumber: 1,
+            snippet: "1. Mã học phần: MAT-102-K45\n2. Tên học phần: Toán giải tích ứng dụng",
+          },
+        ],
+        aiLabel: "contradiction",
+        aiExplanation: "DỮ LIỆU MÂU THUẪN: Có sự sai lệch giữa mã học phần trên Bảng điểm chính thức (TCC-A1-2023) và mã trên Đề cương chi tiết (MAT-102-K45). Không thể tự ý suy luận hai học phần này là một mà cần xác nhận từ trường cấp bảng điểm.",
+        aiSuggestedAction: "Yêu cầu sinh viên xin giấy xác nhận tương đương mã môn của Phòng Đào tạo trường cũ.",
+        officerStatus: "unverified",
+      },
+      {
+        id: "find-B-3",
+        criterionId: "crit-math-3",
+        criterionTitle: "Nội dung phép tính vi phân và tích phân 1 biến",
+        category: "core_content",
+        targetRequirement: "Trang bị đầy đủ lý thuyết và kỹ năng giải tích 1 biến số theo chuẩn chương trình đại học.",
+        extractedEvidence: "Đề cương MAT-102-K45 tập trung vào ứng dụng vi phân trong mô hình kinh tế; thiếu các định lý giải tích thuần túy (Định lý Rolle, Lagrange, Cauchy).",
+        citations: [],
+        aiLabel: "has_difference",
+        aiExplanation: "Có sự khác biệt đáng kể về trọng tâm nội dung giữa Giải tích kỹ thuật (MATH101) và Toán giải tích ứng dụng kinh tế (MAT-102-K45).",
+        officerStatus: "unverified",
+      },
+    ],
+
+    supplementRequests: [],
+    auditLogs: [
+      {
+        id: "aud-b-1",
+        timestamp: "09:00:00 · 24/10/2026",
+        actorName: "Lê Bảo Trâm (SV024)",
+        actorRole: "student",
+        action: "Nộp hồ sơ rà soát học phần MATH101",
+      },
+      {
+        id: "aud-b-2",
+        timestamp: "09:12:00 · 24/10/2026",
+        actorName: "Campus Review AI Engine v4.2",
+        actorRole: "ai",
+        action: "Phát hiện mâu thuẫn mã học phần TCC-A1-2023 vs MAT-102-K45",
+      },
+    ],
+  },
+
+  // --------------------------------------------------------
+  // HỒ SƠ C: REV-2026-003 (Tài liệu chưa đọc được: Bản scan mờ trang 2-3)
+  // --------------------------------------------------------
+  {
+    id: "REV-2026-003",
+    code: "REV-2026-003",
+    createdAt: "2026-10-24T09:10:00",
+    updatedAt: "2026-10-24T09:25:00",
+    status: "waiting_supplement",
+    studentId: "SV001",
+    studentName: "Nguyễn Văn An",
+    studentMssv: "20210018",
+    studentMajor: "Kỹ thuật Phần mềm",
+    studentClassYear: "Khóa 18 (2021 - 2025) · K18 KTPM",
+    studentEmail: "an.nv@campus.edu.vn",
+
+    targetCourseCode: "PHY102",
+    targetCourseName: "Vật lý đại cương 1",
+    targetCourseCredits: 3,
+    targetDepartment: "Khoa Khoa học Cơ bản",
+
+    priorCourseCode: "VLDC-A",
+    priorCourseName: "Vật lý đại cương A",
+    priorCourseCredits: 3,
+    priorInstitution: "Trường Đại học Khoa học Tự nhiên (Minh họa)",
+    priorAcademicYear: "2022 - 2023",
+    priorGrade: "7.5 (Khá)",
+
+    criteriaSetId: "set-std-phy",
+    criteriaSetName: "Bộ tiêu chí môn Vật lý đại cương (Minh họa)",
+    criteria: [
+      STANDARD_REVIEW_CRITERIA[0],
+      {
+        id: "crit-phy-1",
+        code: "C_PHY_MECHANICS",
+        category: "core_content",
+        title: "Cơ học cổ điển & Động học chất điểm",
+        description: "Học phần phải có phần Cơ học chất điểm, Động lực học chất điểm, Các định luật Newton, Định luật bảo toàn công và năng lượng.",
+        targetRequirement: "Trang bị đầy đủ kiến thức cơ học chất điểm và vật rắn.",
+        isMandatory: true,
+      },
+      STANDARD_REVIEW_CRITERIA[4],
+      STANDARD_REVIEW_CRITERIA[5],
+    ],
+
+    documents: [
+      {
+        id: "DOC-APP-03",
+        type: "application",
+        title: "Đơn đề nghị công nhận học phần Vật lý",
+        institution: "Trường Đại học Khoa học Tự nhiên",
+        currentVersion: 1,
+        required: true,
+        versions: [
+          {
+            version: 1,
+            uploadedAt: "24/10/2026 09:10",
+            uploadedBy: "student",
+            fileName: "Don_cong_nhan_PHY102_SV001.pdf",
+            legibility: "good",
+            isLatest: true,
+            sections: [
+              {
+                id: "app-c1",
+                pageNumber: 1,
+                title: "Đơn xin công nhận",
+                content:
+                  "ĐƠN ĐỀ NGHỊ CÔNG NHẬN HỌC PHẦN\nKính gửi Phòng Đào tạo: Đề nghị công nhận học phần PHY102 (Vật lý đại cương 1) tương đương với học phần Vật lý đại cương A đã tích lũy 7.5 điểm tại ĐH KHTN.",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "DOC-TRANS-03",
+        type: "transcript",
+        title: "Bảng điểm gốc môn Vật lý",
+        institution: "Trường Đại học Khoa học Tự nhiên",
+        currentVersion: 1,
+        required: true,
+        versions: [
+          {
+            version: 1,
+            uploadedAt: "24/10/2026 09:12",
+            uploadedBy: "student",
+            fileName: "Bang_diem_KHTN_SV001.pdf",
+            legibility: "good",
+            isLatest: true,
+            sections: [
+              {
+                id: "tr-c1",
+                pageNumber: 1,
+                title: "Bảng kết quả học tập",
+                content: "Mã môn: VLDC-A | Tên: Vật lý đại cương A | Số tín chỉ: 3 | Điểm: 7.5 | Kết quả: Đạt.",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "DOC-SYLLABUS-BLURRY",
+        type: "syllabus_old",
+        title: "Đề cương chi tiết học phần (Bản scan bị mờ)",
+        institution: "Trường Đại học Khoa học Tự nhiên",
+        currentVersion: 1,
+        required: true,
+        versions: [
+          {
+            version: 1,
+            uploadedAt: "24/10/2026 09:15",
+            uploadedBy: "student",
+            fileName: "De_cuong_VLDC_Scan_BiMo_Trang2_3.pdf",
+            fileSize: "1.4 MB",
+            legibility: "partial_blurry",
+            legibilityNote: "Trang 2 và Trang 3 bị mất nét scan, độ phân giải thấp (bóng đen và hạt nhiễu nặng), không thể nhận diện tự động văn bản.",
+            isLatest: true,
+            sections: [
+              {
+                id: "syl-c1",
+                pageNumber: 1,
+                title: "Trang 1: Cơ học cổ điển [Đọc rõ]",
+                content:
+                  "TRƯỜNG ĐẠI HỌC KHOA HỌC TỰ NHIÊN - KHOA VẬT LÝ\nĐỀ CƯƠNG CHI TIẾT HỌC PHẦN: VẬT LÝ ĐẠI CƯƠNG A (3 TÍN CHỈ)\nChương 1: Động học chất điểm, chuyển động thẳng, chuyển động cong.\nChương 2: Động lực học chất điểm: Các định luật Newton, Lực ma sát, Lực đàn hồi, Định luật vạn vật hấp dẫn.\nChương 3: Năng lượng và công: Định lý động năng, Thế năng, Định luật bảo toàn cơ năng.",
+              },
+              {
+                id: "syl-c2",
+                pageNumber: 2,
+                title: "Trang 2: Nhiệt học & Thực hành thí nghiệm [SCAN MỜ / KHÔNG ĐỌC ĐƯỢC]",
+                content:
+                  "[CẢNH BÁO TÀI LIỆU SCAN BỊ MỜ]\nĐộ phân giải bản scan < 100 DPI kèm bóng vệt đen ngang trang.\nVăn bản Mục 2.3 và Bảng phân bổ bài thí nghiệm vật lý phòng Lab không thể nhận diện OCR.\nAI bảo lưu trạng thái và từ chối suy đoán nội dung.",
+              },
+              {
+                id: "syl-c3",
+                pageNumber: 3,
+                title: "Trang 3: Chuẩn đầu ra và Tiêu chí đánh giá [MẤT NÉT]",
+                content:
+                  "[CẢNH BÁO TÀI LIỆU SCAN BỊ MẤT NÉT]\nBảng chuẩn đầu ra CLO và phương pháp kiểm tra kết thúc học phần bị lóa sáng và nhòe chữ.\nYêu cầu bản quét rõ nét có chứng thực.",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+
+    aiStatus: "ready",
+    aiLastRunAt: "24/10/2026 09:20",
+    aiSummary: {
+      overallRecommendation:
+        "TÀI LIỆU CHƯA ĐỌC ĐƯỢC ĐẦY ĐỦ: Bản scan Đề cương chi tiết có trang 2 và trang 3 bị mờ nét, độ phân giải thấp. AI chỉ phân tích được phần Cơ học cổ điển (trang 1). Cần yêu cầu sinh viên cung cấp bản scan màu chất lượng cao trước khi tiếp tục thẩm định.",
+      totalCriteria: 4,
+      matchCount: 2,
+      differenceCount: 0,
+      insufficientCount: 2,
+      contradictionCount: 0,
+      isStale: false,
+    },
+
+    findings: [
+      {
+        id: "find-C-1",
+        criterionId: "crit-1",
+        criterionTitle: "Số tín chỉ và thời lượng học phần",
+        category: "credit",
+        targetRequirement: "Tối thiểu 3 tín chỉ (45 tiết chuẩn).",
+        extractedEvidence: "Bảng điểm ghi: Môn Vật lý đại cương A có 3 tín chỉ, kết quả 7.5.",
+        citations: [
+          {
+            documentId: "DOC-TRANS-03",
+            documentTitle: "Bảng điểm gốc môn Vật lý",
+            version: 1,
+            pageNumber: 1,
+            snippet: "Mã môn: VLDC-A | Tên: Vật lý đại cương A | Số tín chỉ: 3 | Điểm: 7.5",
+          },
+        ],
+        aiLabel: "has_evidence",
+        aiExplanation: "Đạt điều kiện về số tín chỉ (3 TC = 3 TC).",
+        officerStatus: "unverified",
+      },
+      {
+        id: "find-C-2",
+        criterionId: "crit-phy-1",
+        criterionTitle: "Cơ học cổ điển & Động học chất điểm",
+        category: "core_content",
+        targetRequirement: "Trang bị đầy đủ kiến thức cơ học chất điểm và vật rắn.",
+        extractedEvidence: "Đề cương trang 1 thể hiện rõ Chương 1 (Động học chất điểm), Chương 2 (Động lực học chất điểm) và Chương 3 (Công và Năng lượng).",
+        citations: [
+          {
+            documentId: "DOC-SYLLABUS-BLURRY",
+            documentTitle: "Đề cương chi tiết học phần (Bản scan bị mờ)",
+            version: 1,
+            pageNumber: 1,
+            sectionTitle: "Trang 1: Cơ học cổ điển [Đọc rõ]",
+            snippet: "Chương 1: Động học chất điểm... Chương 2: Động lực học chất điểm... Chương 3: Năng lượng và công",
+          },
+        ],
+        aiLabel: "has_evidence",
+        aiExplanation: "Phần Cơ học cổ điển tương thích 100% với học phần PHY102.",
+        officerStatus: "unverified",
+      },
+      {
+        id: "find-C-3",
+        criterionId: "crit-5",
+        criterionTitle: "Thời lượng thực hành phòng Lab & Bài tập lớn",
+        category: "lab_practice",
+        targetRequirement: "Có giờ thực hành phòng máy hoặc thí nghiệm vật lý.",
+        extractedEvidence: "Trang 2 đề cương bị mờ scan không đọc được bài thí nghiệm vật lý.",
+        citations: [
+          {
+            documentId: "DOC-SYLLABUS-BLURRY",
+            documentTitle: "Đề cương chi tiết học phần (Bản scan bị mờ)",
+            version: 1,
+            pageNumber: 2,
+            sectionTitle: "Trang 2: Nhiệt học & Thực hành thí nghiệm [SCAN MỜ / KHÔNG ĐỌC ĐƯỢC]",
+            snippet: "[CẢNH BÁO TÀI LIỆU SCAN BỊ MỜ]\nĐộ phân giải bản scan < 100 DPI kèm bóng vệt đen ngang trang.",
+          },
+        ],
+        aiLabel: "insufficient_evidence",
+        aiExplanation: "TÀI LIỆU CHƯA ĐỌC ĐƯỢC: Trang 2 bị mờ nét, không thể trích xuất điều kiện thí nghiệm phòng Lab. AI không tạo kết luận giả định.",
+        aiSuggestedAction: "Yêu cầu sinh viên bổ sung bản scan rõ nét trang 2-3.",
+        officerStatus: "unverified",
+      },
+      {
+        id: "find-C-4",
+        criterionId: "crit-6",
+        criterionTitle: "Mức độ tương thích Chuẩn đầu ra (CLO)",
+        category: "learning_outcomes",
+        targetRequirement: "Sinh viên có khả năng vận dụng quy luật vật lý vào kỹ thuật.",
+        extractedEvidence: "Trang 3 đề cương bị mất nét, không đọc được bảng chuẩn đầu ra CLO.",
+        citations: [
+          {
+            documentId: "DOC-SYLLABUS-BLURRY",
+            documentTitle: "Đề cương chi tiết học phần (Bản scan bị mờ)",
+            version: 1,
+            pageNumber: 3,
+            sectionTitle: "Trang 3: Chuẩn đầu ra và Tiêu chí đánh giá [MẤT NÉT]",
+            snippet: "[CẢNH BÁO TÀI LIỆU SCAN BỊ MẤT NÉT]\nBảng chuẩn đầu ra CLO và phương pháp kiểm tra kết thúc học phần bị lóa sáng và nhòe chữ.",
+          },
+        ],
+        aiLabel: "insufficient_evidence",
+        aiExplanation: "Chưa đủ dữ liệu để kết luận chuẩn đầu ra.",
+        officerStatus: "unverified",
+      },
+    ],
+
+    supplementRequests: [
+      {
+        id: "sup-003-1",
+        createdAt: "24/10/2026 09:22",
+        sentAt: "24/10/2026 09:25",
+        sentBy: "OF001",
+        targetStudentId: "SV001",
+        status: "sent",
+        subject: "[Campus 24/7] Yêu cầu bổ sung bản scan rõ nét Đề cương môn Vật lý đại cương A",
+        messageBody:
+          "Chào bạn Nguyễn Văn An, Phòng Đào tạo đã thực hiện quét sơ bộ đề cương môn Vật lý đại cương A của bạn. Do trang 2 và trang 3 của tài liệu bị mờ nét và mất chữ, AI không thể trích xuất phần thí nghiệm và chuẩn đầu ra. Đề nghị bạn gửi lại bản scan màu độ phân giải cao để cán bộ hoàn tất rà soát.",
+        requestedDocuments: ["Bản scan màu độ phân giải cao của Đề cương chi tiết Vật lý đại cương A (đặc biệt trang 2 và 3)"],
+        findingsInvolved: ["find-C-3", "find-C-4"],
+      },
+    ],
+
+    auditLogs: [
+      {
+        id: "aud-c-1",
+        timestamp: "09:10:00 · 24/10/2026",
+        actorName: "Nguyễn Văn An (SV001)",
+        actorRole: "student",
+        action: "Tạo hồ sơ rà soát môn PHY102",
+      },
+      {
+        id: "aud-c-2",
+        timestamp: "09:20:00 · 24/10/2026",
+        actorName: "Campus Review AI Engine v4.2",
+        actorRole: "ai",
+        action: "Gắn cờ tài liệu scan bị mờ trang 2-3, chỉ phân tích phần đọc được",
+      },
+      {
+        id: "aud-c-3",
+        timestamp: "09:25:00 · 24/10/2026",
+        actorName: "ThS. Trần Thu Hà (OF001)",
+        actorRole: "officer",
+        action: "Cán bộ gửi yêu cầu bổ sung bản scan rõ nét đến sinh viên",
+      },
+    ],
+  },
+];
+
 

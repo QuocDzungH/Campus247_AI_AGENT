@@ -1,8 +1,27 @@
 "use client";
 
 import React, { createContext, useContext, useState } from "react";
-import { User, Ticket, TicketStatus, TicketMessage, ChatMessage, ChatSession } from "./types";
-import { DEMO_USERS, INITIAL_TICKETS, INITIAL_CHAT_SESSIONS } from "./mock-data";
+import {
+  User,
+  Ticket,
+  TicketStatus,
+  TicketMessage,
+  ChatMessage,
+  ChatSession,
+  ReviewCase,
+  FindingOfficerStatus,
+  FindingAiLabel,
+  SupplementRequest,
+  ReviewFinding,
+} from "./types";
+import {
+  DEMO_USERS,
+  INITIAL_TICKETS,
+  INITIAL_CHAT_SESSIONS,
+  INITIAL_REVIEW_CASES,
+  STANDARD_REVIEW_CRITERIA,
+} from "./mock-data";
+import { compareCourseContent } from "./review-service";
 
 interface StoreContextType {
   // Theme
@@ -69,7 +88,36 @@ interface StoreContextType {
     }>
   >;
   lastUpdatedField: "reason" | "receiveMethod" | null;
-  updateGate1Field: (field: "reason" | "receiveMethod" | "destinationOrg", value: string) => void;
+  updateGate1Field: (field: "reason" | "receiveMethod" | "destinationOrg", value: any) => void;
+
+  // Academic Review Cases (Rà soát học phần)
+  reviewCases: ReviewCase[];
+  getReviewCase: (id: string) => ReviewCase | undefined;
+  createReviewCase: (data: Partial<ReviewCase>) => ReviewCase;
+  runAiReview: (caseId: string) => Promise<void>;
+  updateFindingReview: (
+    caseId: string,
+    findingId: string,
+    updates: {
+      officerStatus: FindingOfficerStatus;
+      officerAdjustedLabel?: FindingAiLabel;
+      officerNote?: string;
+    }
+  ) => void;
+  sendSupplementRequest: (caseId: string, request: SupplementRequest) => void;
+  submitStudentSupplement: (
+    caseId: string,
+    payload: {
+      note: string;
+      docTitle?: string;
+      fileName?: string;
+      versionToActivate?: number;
+    }
+  ) => void;
+  finalizeReviewCase: (caseId: string, report: NonNullable<ReviewCase["finalReport"]>) => void;
+  resetReviewDemo: () => void;
+  isAiAnalyzing: boolean;
+  aiAnalyzingStep: number;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -77,6 +125,7 @@ const StoreContext = createContext<StoreContextType | undefined>(undefined);
 const LOCAL_STORAGE_KEY_TICKETS = "campus247_tickets_v2";
 const LOCAL_STORAGE_KEY_THEME = "campus247_theme_v2";
 const LOCAL_STORAGE_KEY_USER = "campus247_user_v2";
+const LOCAL_STORAGE_KEY_REVIEWS = "campus247_reviews_v2";
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   // Theme state: Default Light as required
@@ -128,6 +177,27 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     return INITIAL_TICKETS;
   });
 
+  // Academic Review Cases state
+  const [reviewCases, setReviewCases] = useState<ReviewCase[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem(LOCAL_STORAGE_KEY_REVIEWS);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return INITIAL_REVIEW_CASES;
+  });
+
+  const [isAiAnalyzing, setIsAiAnalyzing] = useState(false);
+  const [aiAnalyzingStep, setAiAnalyzingStep] = useState(1);
+
   // Chat Assistant & Sessions state
   const [chatSessions, setChatSessions] = useState<ChatSession[]>(() => {
     return INITIAL_CHAT_SESSIONS || [];
@@ -157,7 +227,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const [lastUpdatedField, setLastUpdatedField] = useState<"reason" | "receiveMethod" | null>(null);
 
-  const updateGate1Field = (field: "reason" | "receiveMethod" | "destinationOrg", value: string) => {
+  const updateGate1Field = (field: "reason" | "receiveMethod" | "destinationOrg", value: any) => {
     setGate1FormData((prev) => ({
       ...prev,
       [field]: value,
@@ -263,7 +333,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
-    // Keep tickets intact!
     setCurrentUser(DEMO_USERS.SV001);
     try {
       localStorage.removeItem(LOCAL_STORAGE_KEY_USER);
@@ -521,7 +590,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     let auditAction = "";
 
     if (actionType === "respond") {
-      // Rule: Gửi phản hồi KHÔNG tự động chuyển sang resolved! Chuyển sang pending_officer
       nextStatus = "pending_officer";
       auditAction = "Cán bộ gửi phản hồi nghiệp vụ qua Cổng Kiểm duyệt 2 (Trạng thái: Chờ cán bộ)";
     } else if (actionType === "request_info") {
@@ -582,7 +650,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setChatMessages((prev) => {
       const updatedMessages = [...prev, newMsg];
 
-      // Sync into active chat session
       setChatSessions((prevSessions) => {
         return prevSessions.map((session) => {
           if (session.id === activeSessionId) {
@@ -612,11 +679,363 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  // ========================================================
+  // ACADEMIC REVIEW ASSISTANT ACTIONS & METHODS
+  // ========================================================
+
+  const saveReviewCases = (newCases: ReviewCase[]) => {
+    setReviewCases(newCases);
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY_REVIEWS, JSON.stringify(newCases));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const getReviewCase = (id: string) => {
+    return reviewCases.find((c) => c.id === id || c.code === id);
+  };
+
+  const createReviewCase = (data: Partial<ReviewCase>): ReviewCase => {
+    const newId = `REV-2026-0${Math.floor(10 + Math.random() * 89)}`;
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    const dateStr = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
+    const timestamp = `${timeStr} · ${dateStr}`;
+
+    const student = data.studentId && DEMO_USERS[data.studentId] ? DEMO_USERS[data.studentId] : currentUser;
+
+    const baseCase: ReviewCase = {
+      id: newId,
+      code: newId,
+      createdAt: now.toISOString(),
+      updatedAt: timestamp,
+      status: "in_review",
+      studentId: student.id,
+      studentName: student.name,
+      studentMssv: student.mssv || student.id,
+      studentMajor: student.major || "Kỹ thuật Phần mềm",
+      studentClassYear: student.classYear || "Khóa 18",
+      studentEmail: student.email,
+      targetCourseCode: data.targetCourseCode || "IT3011",
+      targetCourseName: data.targetCourseName || "Cấu trúc dữ liệu và giải thuật",
+      targetCourseCredits: data.targetCourseCredits || 3,
+      targetDepartment: data.targetDepartment || "Khoa Công nghệ Phần mềm",
+      priorCourseCode: data.priorCourseCode || "IT2020",
+      priorCourseName: data.priorCourseName || "Cấu trúc dữ liệu",
+      priorCourseCredits: data.priorCourseCredits || 3,
+      priorInstitution: data.priorInstitution || "Trường Đại học Bách Khoa TP.HCM (Minh họa)",
+      priorAcademicYear: data.priorAcademicYear || "2023 - 2024",
+      priorGrade: data.priorGrade || "8.0 / 10",
+      criteriaSetId: data.criteriaSetId || "set-std-it",
+      criteriaSetName: data.criteriaSetName || "Bộ tiêu chí công nhận học phần Khối ngành CNTT (Minh họa)",
+      criteria: data.criteria || STANDARD_REVIEW_CRITERIA,
+      documents: data.documents || INITIAL_REVIEW_CASES[0].documents,
+      aiStatus: "ready",
+      aiLastRunAt: timestamp,
+      aiSummary: {
+        overallRecommendation: "Đã khởi tạo hồ sơ rà soát và đối chiếu ban đầu với bộ tiêu chí minh họa.",
+        totalCriteria: (data.criteria || STANDARD_REVIEW_CRITERIA).length,
+        matchCount: 4,
+        differenceCount: 1,
+        insufficientCount: 1,
+        contradictionCount: 0,
+        isStale: false,
+      },
+      findings: [],
+      supplementRequests: [],
+      auditLogs: [
+        {
+          id: `aud-${Date.now()}-init`,
+          timestamp,
+          actorName: currentUser.name,
+          actorRole: currentUser.role,
+          action: `Khởi tạo hồ sơ rà soát đề nghị công nhận học phần ${data.targetCourseName || "IT3011"}`,
+          details: `Cặp học phần: ${data.priorCourseName || "Cấu trúc dữ liệu"} (${data.priorInstitution || "ĐH Bách Khoa"}) ➜ ${data.targetCourseName || "Cấu trúc dữ liệu và giải thuật"}`,
+        },
+      ],
+    };
+
+    const { findings, summary } = compareCourseContent(baseCase, baseCase.documents);
+    baseCase.findings = findings;
+    baseCase.aiSummary = summary;
+
+    const updated = [baseCase, ...reviewCases];
+    saveReviewCases(updated);
+    return baseCase;
+  };
+
+  const runAiReview = async (caseId: string) => {
+    const caseItem = reviewCases.find((c) => c.id === caseId || c.code === caseId);
+    if (!caseItem) return;
+
+    setIsAiAnalyzing(true);
+    setAiAnalyzingStep(1);
+
+    await new Promise((r) => setTimeout(r, 220));
+    setAiAnalyzingStep(2);
+    await new Promise((r) => setTimeout(r, 220));
+    setAiAnalyzingStep(3);
+    await new Promise((r) => setTimeout(r, 220));
+    setAiAnalyzingStep(4);
+    await new Promise((r) => setTimeout(r, 220));
+
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    const dateStr = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const timestamp = `${timeStr} · ${dateStr}`;
+
+    const { findings, summary } = compareCourseContent(caseItem, caseItem.documents);
+
+    const updatedCases = reviewCases.map((c) => {
+      if (c.id === caseId || c.code === caseId) {
+        return {
+          ...c,
+          aiStatus: "ready" as const,
+          aiLastRunAt: timestamp,
+          findings,
+          aiSummary: {
+            ...summary,
+            isStale: false,
+          },
+          auditLogs: [
+            ...c.auditLogs,
+            {
+              id: `aud-${Date.now()}-ai`,
+              timestamp,
+              actorName: "Campus Review AI Engine v4.2",
+              actorRole: "ai" as const,
+              action: "Chạy lại AI rà soát đối chiếu hồ sơ với các phiên bản tài liệu mới nhất",
+              details: `Kết quả: ${summary.matchCount} tiêu chí có bằng chứng, ${summary.differenceCount} có khác biệt, ${summary.insufficientCount} chưa đủ căn cứ, ${summary.contradictionCount} mâu thuẫn.`,
+            },
+          ],
+        };
+      }
+      return c;
+    });
+
+    saveReviewCases(updatedCases);
+    setIsAiAnalyzing(false);
+    setAiAnalyzingStep(1);
+  };
+
+  const updateFindingReview = (
+    caseId: string,
+    findingId: string,
+    updates: {
+      officerStatus: FindingOfficerStatus;
+      officerAdjustedLabel?: FindingAiLabel;
+      officerNote?: string;
+    }
+  ) => {
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    const dateStr = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const timestamp = `${timeStr} · ${dateStr}`;
+
+    const updatedCases = reviewCases.map((c) => {
+      if (c.id === caseId || c.code === caseId) {
+        let changedFindingTitle = "";
+        const updatedFindings = c.findings.map((f) => {
+          if (f.id === findingId) {
+            changedFindingTitle = f.criterionTitle;
+            return {
+              ...f,
+              officerStatus: updates.officerStatus,
+              officerAdjustedLabel: updates.officerAdjustedLabel ?? f.officerAdjustedLabel,
+              officerNote: updates.officerNote ?? f.officerNote,
+              officerReviewedAt: timestamp,
+              officerReviewedBy: `${currentUser.name} (${currentUser.id})`,
+            };
+          }
+          return f;
+        });
+
+        const newAudit = {
+          id: `aud-${Date.now()}`,
+          timestamp,
+          actorName: currentUser.name,
+          actorRole: currentUser.role,
+          action: `Cán bộ ${updates.officerStatus === "confirmed" ? "xác nhận" : "chỉnh sửa"} nhận định cho tiêu chí "${changedFindingTitle}"`,
+          details: updates.officerNote ? `Ghi chú cán bộ: "${updates.officerNote}"` : undefined,
+        };
+
+        return {
+          ...c,
+          updatedAt: timestamp,
+          findings: updatedFindings,
+          auditLogs: [...c.auditLogs, newAudit],
+        };
+      }
+      return c;
+    });
+
+    saveReviewCases(updatedCases);
+  };
+
+  const sendSupplementRequest = (caseId: string, request: SupplementRequest) => {
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    const dateStr = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const timestamp = `${timeStr} · ${dateStr}`;
+
+    const finalizedReq: SupplementRequest = {
+      ...request,
+      sentAt: timestamp,
+      status: "sent",
+    };
+
+    const updatedCases = reviewCases.map((c) => {
+      if (c.id === caseId || c.code === caseId) {
+        return {
+          ...c,
+          status: "waiting_supplement" as const,
+          updatedAt: timestamp,
+          supplementRequests: [...c.supplementRequests.filter((r) => r.id !== request.id), finalizedReq],
+          auditLogs: [
+            ...c.auditLogs,
+            {
+              id: `aud-${Date.now()}-sup`,
+              timestamp,
+              actorName: currentUser.name,
+              actorRole: "officer" as const,
+              action: `Cán bộ gửi yêu cầu bổ sung hồ sơ tới sinh viên ${c.studentName}`,
+              details: `Yêu cầu bổ sung: ${request.requestedDocuments.join(", ")}`,
+            },
+          ],
+        };
+      }
+      return c;
+    });
+
+    saveReviewCases(updatedCases);
+  };
+
+  const submitStudentSupplement = (
+    caseId: string,
+    payload: {
+      note: string;
+      docTitle?: string;
+      fileName?: string;
+      versionToActivate?: number;
+    }
+  ) => {
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    const dateStr = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const timestamp = `${timeStr} · ${dateStr}`;
+
+    const updatedCases = reviewCases.map((c) => {
+      if (c.id === caseId || c.code === caseId) {
+        const updatedDocs = c.documents.map((doc) => {
+          if (doc.type === "syllabus_old" && (payload.versionToActivate === 2 || doc.versions.length >= 2)) {
+            return {
+              ...doc,
+              currentVersion: 2,
+              versions: doc.versions.map((v) => ({
+                ...v,
+                isLatest: v.version === 2,
+              })),
+            };
+          }
+          return doc;
+        });
+
+        const updatedReqs = c.supplementRequests.map((r) => ({
+          ...r,
+          status: "responded" as const,
+          studentReply: {
+            submittedAt: timestamp,
+            note: payload.note,
+            supplementedDocumentIds: ["DOC-SYLLABUS-OLD-v2"],
+          },
+        }));
+
+        return {
+          ...c,
+          status: "in_review" as const,
+          documents: updatedDocs,
+          supplementRequests: updatedReqs,
+          updatedAt: timestamp,
+          aiStatus: "stale_needs_update" as const,
+          aiSummary: {
+            ...c.aiSummary,
+            isStale: true,
+            staleReason: "Sinh viên vừa bổ sung tài liệu mới (Đề cương v2). Cần chạy lại AI rà soát để cập nhật nhận định.",
+          },
+          auditLogs: [
+            ...c.auditLogs,
+            {
+              id: `aud-${Date.now()}-stusup`,
+              timestamp,
+              actorName: `${c.studentName} (${c.studentMssv})`,
+              actorRole: "student" as const,
+              action: `Sinh viên nộp bổ sung tài liệu: ${payload.fileName || "Đề cương chi tiết v2 (có xác nhận Khoa)"}`,
+              details: `Lời giải trình: "${payload.note}". Trạng thái AI đánh dấu Cần cập nhật.`,
+            },
+          ],
+        };
+      }
+      return c;
+    });
+
+    saveReviewCases(updatedCases);
+  };
+
+  const finalizeReviewCase = (caseId: string, report: NonNullable<ReviewCase["finalReport"]>) => {
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    const dateStr = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const timestamp = `${timeStr} · ${dateStr}`;
+
+    const updatedCases = reviewCases.map((c) => {
+      if (c.id === caseId || c.code === caseId) {
+        return {
+          ...c,
+          status: "completed" as const,
+          updatedAt: timestamp,
+          finalReport: report,
+          auditLogs: [
+            ...c.auditLogs,
+            {
+              id: `aud-${Date.now()}-fin`,
+              timestamp,
+              actorName: currentUser.name,
+              actorRole: "officer" as const,
+              action: `Cán bộ hoàn tất bản rà soát sơ bộ (BM-RS-01) để trình Hội đồng Chuyên môn`,
+              details: `Đề xuất: ${
+                report.decisionRecommendation === "propose_recognition"
+                  ? "Đề nghị công nhận học phần"
+                  : report.decisionRecommendation === "propose_conditional"
+                  ? "Đề nghị công nhận có điều kiện"
+                  : "Đề nghị từ chối"
+              }. Ghi chú: ${report.conclusionSummary}`,
+            },
+          ],
+        };
+      }
+      return c;
+    });
+
+    saveReviewCases(updatedCases);
+  };
+
+  const resetReviewDemo = () => {
+    try {
+      localStorage.removeItem(LOCAL_STORAGE_KEY_REVIEWS);
+      setReviewCases(INITIAL_REVIEW_CASES);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const resetAllDemoData = () => {
     try {
       localStorage.removeItem(LOCAL_STORAGE_KEY_TICKETS);
       localStorage.removeItem(LOCAL_STORAGE_KEY_USER);
+      localStorage.removeItem(LOCAL_STORAGE_KEY_REVIEWS);
       setTickets(INITIAL_TICKETS);
+      setReviewCases(INITIAL_REVIEW_CASES);
       setCurrentUser(DEMO_USERS.SV001);
       setL4HandoverActive(false);
       setGate1Open(false);
@@ -662,6 +1081,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         setGate1FormData,
         lastUpdatedField,
         updateGate1Field,
+        reviewCases,
+        getReviewCase,
+        createReviewCase,
+        runAiReview,
+        updateFindingReview,
+        sendSupplementRequest,
+        submitStudentSupplement,
+        finalizeReviewCase,
+        resetReviewDemo,
+        isAiAnalyzing,
+        aiAnalyzingStep,
       }}
     >
       {children}

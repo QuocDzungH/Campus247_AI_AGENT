@@ -18,13 +18,14 @@ import {
   Flame,
   ArrowUpRight,
   Monitor,
+  FileSearch,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { useStore } from "@/lib/store";
 
 export default function OfficerDashboardPage() {
   const router = useRouter();
-  const { tickets, currentUser, login } = useStore();
+  const { tickets, currentUser, login, reviewCases } = useStore();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -126,6 +127,19 @@ export default function OfficerDashboardPage() {
             </button>
 
             <Link
+              href="/reviews"
+              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800/80 text-indigo-700 dark:text-indigo-300 font-semibold text-xs text-left transition-all"
+            >
+              <div className="flex items-center gap-2">
+                <FileSearch className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                <span>AI rà soát học phần</span>
+              </div>
+              <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-indigo-600 text-white font-bold">
+                {reviewCases.filter((r) => r.status !== "completed").length}
+              </span>
+            </Link>
+
+            <Link
               href="/tickets/TKT-2026-0142"
               className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-700 dark:text-slate-300 font-medium text-xs text-left transition-colors"
             >
@@ -135,6 +149,7 @@ export default function OfficerDashboardPage() {
               </div>
               <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             </Link>
+
 
             <button
               type="button"
@@ -317,6 +332,43 @@ export default function OfficerDashboardPage() {
               </div>
             </div>
           </div>
+
+          {/* Featured Module: Trợ lý AI rà soát hồ sơ công nhận học phần */}
+          <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-indigo-900/10 via-blue-900/10 to-purple-900/10 border border-indigo-200/80 dark:border-indigo-800/80 glass-surface flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 shrink-0">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="font-bold text-slate-900 dark:text-white text-sm">
+                    Phân hệ Mới: Trợ lý AI Rà soát Hồ sơ Công nhận Học phần
+                  </h2>
+                  <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700">
+                    Bàn rà soát 3 vùng
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-2xl leading-relaxed">
+                  Tự động đọc cấu trúc đề cương, đối chiếu tiêu chí tín chỉ và nội dung môn học, chỉ ra bằng chứng, phát hiện mâu thuẫn dữ liệu và soạn thảo phiếu rà soát cho cán bộ kiểm tra trước khi chuyển Hội đồng.
+                </p>
+                <div className="flex items-center gap-3 mt-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                  <span>• {(reviewCases || []).filter((r) => r.status === "in_review").length} hồ sơ đang thẩm định</span>
+                  <span>• {(reviewCases || []).filter((r) => r.status === "waiting_supplement").length} hồ sơ chờ sinh viên bổ sung</span>
+                  <span>• {(reviewCases || []).filter((r) => r.status === "completed").length} hồ sơ đã hoàn tất</span>
+                </div>
+              </div>
+            </div>
+
+            <Link
+              href="/reviews"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-md shadow-indigo-500/20 transition-all shrink-0 self-stretch md:self-auto justify-center"
+            >
+              <FileSearch className="w-4 h-4" />
+              <span>Mở Bàn rà soát AI ({(reviewCases || []).length})</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+
 
           {/* Search, Filter Bar & Quick Shortcut Chips */}
           <div className="p-4 rounded-2xl glass-surface space-y-3">

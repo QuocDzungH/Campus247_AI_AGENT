@@ -167,3 +167,170 @@ export interface ChatSession {
   };
 }
 
+// ========================================================
+// ACADEMIC REVIEW ASSISTANT TYPES (Rà soát công nhận học phần)
+// ========================================================
+
+export type ReviewCaseStatus = "draft" | "in_review" | "waiting_supplement" | "completed";
+export type AiTaskStatus = "idle" | "running" | "ready" | "stale_needs_update" | "error";
+
+export type FindingAiLabel =
+  | "has_evidence"          // Có bằng chứng tương ứng
+  | "has_difference"        // Có khác biệt cần xem xét
+  | "insufficient_evidence" // Chưa đủ căn cứ
+  | "contradiction";        // Dữ liệu mâu thuẫn
+
+export type FindingOfficerStatus =
+  | "unverified" // Chưa kiểm tra
+  | "confirmed"  // Cán bộ xác nhận
+  | "edited";     // Cán bộ đã chỉnh sửa
+
+export type DocumentLegibility = "good" | "partial_blurry" | "unreadable" | "missing_pages";
+
+export interface DocumentSection {
+  id: string;
+  title: string;
+  pageNumber: number;
+  content: string;
+}
+
+export interface DocumentVersion {
+  version: number;
+  uploadedAt: string;
+  uploadedBy: "student" | "officer";
+  fileName: string;
+  fileSize?: string;
+  legibility: DocumentLegibility;
+  legibilityNote?: string;
+  sections: DocumentSection[];
+  isLatest: boolean;
+}
+
+export interface ReviewDocument {
+  id: string;
+  type: "application" | "transcript" | "syllabus_old" | "syllabus_target" | "supplement";
+  title: string;
+  institution: string;
+  versions: DocumentVersion[];
+  currentVersion: number;
+  required: boolean;
+}
+
+export interface EvidenceCitation {
+  documentId: string;
+  documentTitle: string;
+  version: number;
+  sectionId?: string;
+  sectionTitle?: string;
+  pageNumber: number;
+  snippet: string;
+  highlightColor?: string;
+}
+
+export interface ReviewCriterion {
+  id: string;
+  code: string;
+  category: "credit" | "prerequisite" | "core_content" | "lab_practice" | "learning_outcomes";
+  title: string;
+  description: string;
+  targetRequirement: string;
+  isMandatory: boolean;
+}
+
+export interface ReviewFinding {
+  id: string;
+  criterionId: string;
+  criterionTitle: string;
+  category: "credit" | "prerequisite" | "core_content" | "lab_practice" | "learning_outcomes";
+  targetRequirement: string;
+  extractedEvidence: string;
+  citations: EvidenceCitation[];
+  aiLabel: FindingAiLabel;
+  aiExplanation: string;
+  aiSuggestedAction?: string;
+  officerStatus: FindingOfficerStatus;
+  officerAdjustedLabel?: FindingAiLabel;
+  officerNote?: string;
+  officerReviewedAt?: string;
+  officerReviewedBy?: string;
+}
+
+export interface SupplementRequest {
+  id: string;
+  createdAt: string;
+  sentAt?: string;
+  sentBy: string;
+  targetStudentId: string;
+  status: "draft" | "sent" | "responded";
+  subject: string;
+  messageBody: string;
+  requestedDocuments: string[];
+  findingsInvolved: string[];
+  studentReply?: {
+    submittedAt: string;
+    note: string;
+    supplementedDocumentIds: string[];
+  };
+}
+
+export interface ReviewCaseAuditLog {
+  id: string;
+  timestamp: string;
+  actorName: string;
+  actorRole: "officer" | "student" | "ai" | "system";
+  action: string;
+  details?: string;
+}
+
+export interface ReviewCase {
+  id: string;
+  code: string;
+  createdAt: string;
+  updatedAt: string;
+  status: ReviewCaseStatus;
+  studentId: string;
+  studentName: string;
+  studentMssv: string;
+  studentMajor: string;
+  studentClassYear: string;
+  studentEmail: string;
+  targetCourseCode: string;
+  targetCourseName: string;
+  targetCourseCredits: number;
+  targetDepartment: string;
+  priorCourseCode: string;
+  priorCourseName: string;
+  priorCourseCredits: number;
+  priorInstitution: string;
+  priorAcademicYear: string;
+  priorGrade: string;
+  criteriaSetId: string;
+  criteriaSetName: string;
+  criteria: ReviewCriterion[];
+  documents: ReviewDocument[];
+  aiStatus: AiTaskStatus;
+  aiLastRunAt?: string;
+  aiSummary: {
+    overallRecommendation: string;
+    totalCriteria: number;
+    matchCount: number;
+    differenceCount: number;
+    insufficientCount: number;
+    contradictionCount: number;
+    isStale: boolean;
+    staleReason?: string;
+  };
+  findings: ReviewFinding[];
+  supplementRequests: SupplementRequest[];
+  finalReport?: {
+    completedAt: string;
+    officerId: string;
+    officerName: string;
+    decisionRecommendation: "propose_recognition" | "propose_conditional" | "propose_rejection";
+    conclusionSummary: string;
+    disclaimer: string;
+  };
+  auditLogs: ReviewCaseAuditLog[];
+}
+
+
