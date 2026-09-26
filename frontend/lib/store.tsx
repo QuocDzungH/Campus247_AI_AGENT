@@ -63,6 +63,8 @@ interface StoreContextType {
       academicStatus: string;
     }>
   >;
+  lastUpdatedField: "reason" | "receiveMethod" | null;
+  updateGate1Field: (field: "reason" | "receiveMethod" | "destinationOrg", value: any) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -134,6 +136,23 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     receiveMethod: "digital_pdf" as "digital_pdf" | "paper_stamped",
     academicStatus: "Bình thường",
   });
+  const [lastUpdatedField, setLastUpdatedField] = useState<"reason" | "receiveMethod" | null>(null);
+
+  const updateGate1Field = (field: "reason" | "receiveMethod" | "destinationOrg", value: any) => {
+    setGate1FormData((prev) => ({
+      ...prev,
+      [field]: value,
+      ...(field === "reason" && (!prev.destinationOrg || prev.destinationOrg.includes("Ngân hàng"))
+        ? { destinationOrg: value }
+        : {}),
+    }));
+    if (field === "reason" || field === "receiveMethod") {
+      setLastUpdatedField(field);
+      setTimeout(() => {
+        setLastUpdatedField(null);
+      }, 3500);
+    }
+  };
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
@@ -598,6 +617,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         setGate1Open,
         gate1FormData,
         setGate1FormData,
+        lastUpdatedField,
+        updateGate1Field,
       }}
     >
       {children}

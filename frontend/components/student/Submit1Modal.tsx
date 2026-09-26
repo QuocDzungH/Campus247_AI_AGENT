@@ -7,6 +7,8 @@ import {
   Lock,
   CheckCircle2,
   X,
+  Sparkles,
+  Bot,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
 
@@ -16,12 +18,15 @@ interface Submit1ModalProps {
 }
 
 export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
-  const { currentUser, createTicket, gate1FormData, tickets } = useStore();
+  const {
+    currentUser,
+    createTicket,
+    gate1FormData,
+    setGate1FormData,
+    lastUpdatedField,
+    tickets,
+  } = useStore();
 
-  const [reason, setReason] = useState(gate1FormData.reason);
-  const [receiveMethod, setReceiveMethod] = useState<"digital_pdf" | "paper_stamped">(
-    gate1FormData.receiveMethod
-  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -32,9 +37,12 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
       const created = createTicket({
         title: "Cấp Giấy xác nhận sinh viên (BM-03)",
         certificateType: "Giấy xác nhận sinh viên chính quy (BM-03)",
-        destinationOrg: "Ngân hàng Chính sách Xã hội Chi nhánh Q. Thủ Đức",
-        purpose: reason,
-        receiveMethod,
+        destinationOrg:
+          gate1FormData.destinationOrg ||
+          gate1FormData.reason ||
+          "Ngân hàng Chính sách Xã hội Chi nhánh Q. Thủ Đức",
+        purpose: gate1FormData.reason,
+        receiveMethod: gate1FormData.receiveMethod,
         priority: "normal",
         priorityReason: "Hồ sơ Cổng 1 đã ký cam đoan thông tin, không ghi nhận vi phạm kỷ luật.",
       });
@@ -123,36 +131,63 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
             </div>
           </div>
 
-          <div>
-            <label className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1">
-              Lý do & Nơi gửi xác nhận:
-            </label>
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
+                Lý do &amp; Nơi gửi xác nhận:
+              </label>
+              {lastUpdatedField === "reason" && (
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 animate-pulse">
+                  <Sparkles className="w-3 h-3" />
+                  AI vừa cập nhật
+                </span>
+              )}
+            </div>
             <input
               type="text"
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              className="w-full p-2.5 rounded-lg text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
+              value={gate1FormData.reason}
+              onChange={(e) =>
+                setGate1FormData((prev) => ({ ...prev, reason: e.target.value }))
+              }
+              placeholder="Nhập mục đích xin giấy (hoặc yêu cầu AI bên trái sửa giúp)..."
+              className={`w-full p-2.5 rounded-lg text-xs border transition-all duration-300 text-slate-900 dark:text-white ${
+                lastUpdatedField === "reason"
+                  ? "bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-500 ring-2 ring-emerald-500/30"
+                  : "bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              }`}
             />
           </div>
 
           {/* Receive Method */}
-          <div>
-            <label className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5">
-              Phương thức nhận văn bản:
-            </label>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
+                Phương thức nhận văn bản:
+              </label>
+              {lastUpdatedField === "receiveMethod" && (
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 animate-pulse">
+                  <Sparkles className="w-3 h-3" />
+                  AI vừa cập nhật
+                </span>
+              )}
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <label
                 className={`flex items-start gap-2 p-2.5 rounded-xl border cursor-pointer transition-all ${
-                  receiveMethod === "digital_pdf"
-                    ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-500 text-blue-900 dark:text-blue-200"
+                  gate1FormData.receiveMethod === "digital_pdf"
+                    ? lastUpdatedField === "receiveMethod"
+                      ? "bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-500 ring-2 ring-emerald-500/30 text-emerald-950 dark:text-emerald-200"
+                      : "bg-blue-50/70 dark:bg-blue-950/40 border-blue-500 text-blue-900 dark:text-blue-200"
                     : "bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
                 }`}
               >
                 <input
                   type="radio"
                   name="receiveMethod"
-                  checked={receiveMethod === "digital_pdf"}
-                  onChange={() => setReceiveMethod("digital_pdf")}
+                  checked={gate1FormData.receiveMethod === "digital_pdf"}
+                  onChange={() =>
+                    setGate1FormData((prev) => ({ ...prev, receiveMethod: "digital_pdf" }))
+                  }
                   className="mt-0.5 text-blue-600 focus:ring-blue-500"
                 />
                 <div>
@@ -165,16 +200,20 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
 
               <label
                 className={`flex items-start gap-2 p-2.5 rounded-xl border cursor-pointer transition-all ${
-                  receiveMethod === "paper_stamped"
-                    ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-500 text-blue-900 dark:text-blue-200"
+                  gate1FormData.receiveMethod === "paper_stamped"
+                    ? lastUpdatedField === "receiveMethod"
+                      ? "bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-500 ring-2 ring-emerald-500/30 text-emerald-950 dark:text-emerald-200"
+                      : "bg-blue-50/70 dark:bg-blue-950/40 border-blue-500 text-blue-900 dark:text-blue-200"
                     : "bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
                 }`}
               >
                 <input
                   type="radio"
                   name="receiveMethod"
-                  checked={receiveMethod === "paper_stamped"}
-                  onChange={() => setReceiveMethod("paper_stamped")}
+                  checked={gate1FormData.receiveMethod === "paper_stamped"}
+                  onChange={() =>
+                    setGate1FormData((prev) => ({ ...prev, receiveMethod: "paper_stamped" }))
+                  }
                   className="mt-0.5 text-blue-600 focus:ring-blue-500"
                 />
                 <div>
