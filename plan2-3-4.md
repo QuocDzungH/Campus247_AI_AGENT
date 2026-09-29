@@ -525,7 +525,7 @@ Retry cùng handover key trả lại ticket đã commit; khóa phản hồi thu�
 
 ### Nền tảng dữ liệu P0
 
-Frontend prototype cũ đã được xóa; dựng mới từ bộ ảnh Stitch do người dùng cung cấp theo [prompt Antigravity](docs/Prompt-prototype-antigravity.md). Asset ảnh trong `frontend/public/assets/` được giữ lại. Backend hiện có graph/chat mẫu. Đợt dựng prototype chỉ mô phỏng giao diện bằng mock; P0 vẫn cần bổ sung lưu trữ thật trước khi nối Officer Copilot:
+Frontend prototype cũ đã được xóa; dựng mới từ bộ ảnh Stitch do người dùng cung cấp. Asset ảnh trong `frontend/public/assets/` được giữ lại. Backend hiện có graph/chat mẫu. Đợt dựng prototype chỉ mô phỏng giao diện bằng mock; P0 vẫn cần bổ sung lưu trữ thật trước khi nối Officer Copilot:
 
 - `User`/role/phạm vi truy cập; danh tính lấy từ session đã xác thực.
 - `Conversation`, `Message`, `Ticket`, `OfficerLog`; liên kết conversation/ticket/student, phân biệt message gửi SV với artifact nội bộ.
