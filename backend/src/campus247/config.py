@@ -24,9 +24,18 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:3000"
 
     # LLM
-    openai_api_key: str = ""
+    llm_provider: str = "openai"
+    llm_model: str = "gpt-4o-mini"
     model_name: str = "gpt-4o-mini"
-    llm_temperature: float = Field(default=0.7, ge=0.0, le=2.0)
+    llm_temperature: float = Field(default=0.2, ge=0.0, le=2.0)
+    openai_api_key: str = ""
+    google_api_key: str = ""
+    gemini_api_key: str = ""
+    groq_api_key: str = ""
+    deepseek_api_key: str = ""
+    anthropic_api_key: str = ""
+    openai_base_url: str = ""
+    agent_mode: Literal["stub", "langgraph"] = "stub"
 
     # Database
     database_url: str = "sqlite:///./data/app.db"

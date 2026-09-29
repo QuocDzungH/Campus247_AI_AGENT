@@ -102,11 +102,26 @@ CampusAgent.prepare_officer_brief()
 
 Hai graph không truy cập database, không tự đọc biến auth và không ghi dữ liệu. Mọi dữ liệu phải đến từ input contract hoặc dependency đã inject.
 
+Model và agent được khởi tạo qua hai factory có trách nhiệm riêng:
+
+```text
+Settings
+  → services.llm.create_chat_model(settings) -> BaseChatModel
+  → agents.factory.create_agent(model, rag) -> CampusAgent
+  → intake_graph / officer_graph
+```
+
+- `services/llm.py` chọn provider và tạo `BaseChatModel`; đây là nơi duy nhất biết `ChatOpenAI`, `ChatGoogleGenerativeAI` hoặc `ChatGroq`.
+- `agents/factory.py` lắp model, `RagPort`, prompts và hai graph vào `CampusAgent`; file này không đọc API key và không chọn provider.
+- Node nhận dependency qua closure hoặc constructor; không gọi `get_settings()` và không tự tạo model.
+- `openai_base_url` chỉ áp dụng cho OpenAI-compatible provider. Groq và Grok là hai dịch vụ khác nhau; `langchain-groq` không phải adapter cho model Grok của xAI.
+
 ## 5. Cấu trúc file đề xuất
 
 ```text
 backend/src/campus247/agents/
   adapter.py
+  factory.py
   intake_graph.py
   officer_graph.py
   state.py
@@ -114,6 +129,7 @@ backend/src/campus247/agents/
   guards.py
   prompts/
     __init__.py
+    common.py
     intake.py
     officer.py
   nodes/
@@ -128,6 +144,8 @@ backend/src/campus247/agents/
 
 backend/tests/test_agents/
   test_adapter.py
+  test_model_factory.py
+  test_state.py
   test_intake_router.py
   test_l2_intake.py
   test_l4_handover.py
@@ -141,9 +159,115 @@ eval/agent/
   README.md
   dataset.jsonl
   run_eval.py
+
+backend/src/campus247/services/
+  llm.py                     refactor thành provider factory
 ```
 
 Có thể điều chỉnh tên file nếu code gọn hơn, nhưng phải giữ ranh giới intake/officer/guard rõ ràng. Xóa hoặc cô lập graph `analyze → respond` mẫu sau khi runtime mới hoạt động; không để hai graph cùng được gọi dưới tên “agent” gây nhầm lẫn.
+
+### 5.1. State schema bắt buộc
+
+`state.py` dùng state riêng cho hai graph. Không tiếp tục dùng `AgentState` mẫu gồm `query/analysis/response`. Khung tối thiểu:
+
+```python
+from typing import Literal, Required, TypedDict
+
+from pydantic import BaseModel, Field
+
+from campus247.models.contracts_v1 import (
+    ChecklistItem,
+    Citation,
+    Fact,
+    FieldIssue,
+    Fields,
+    IntakeContext,
+    IntakeResult,
+    MissingItem,
+    ModuleError,
+    OfficerBrief,
+    Priority,
+    RagResult,
+    Risk,
+    Route,
+    TicketSnapshot,
+    WarningItem,
+)
+
+
+class RouteDecision(BaseModel):
+    route: Route
+    intent: Literal[
+        "policy_question",
+        "student_certificate",
+        "academic_complaint",
+        "wellbeing",
+        "unauthorized_action",
+    ]
+    risk_type: Risk | None = None
+    reason: str
+    confidence: float | None = Field(default=None, ge=0.0, le=1.0)
+
+
+class FieldExtraction(BaseModel):
+    provided_fields: list[Literal["purpose", "destination_org", "receive_method"]]
+    purpose: str | None = None
+    destination_org: str | None = None
+    receive_method: Literal["digital_pdf", "paper_stamped"] | None = None
+    invalid_fields: list[FieldIssue] = Field(default_factory=list)
+
+
+SourceKey = tuple[
+    Literal["student_message", "profile", "policy", "tool_result"],
+    str,
+]
+
+
+class IntakeState(TypedDict, total=False):
+    context: Required[IntakeContext]
+    decision: RouteDecision
+    extracted_fields: FieldExtraction
+    rag_result: RagResult
+    result: IntakeResult
+    error: ModuleError
+
+
+class OfficerState(TypedDict, total=False):
+    snapshot: Required[TicketSnapshot]
+    source_registry: set[SourceKey]
+    summary: str
+    facts: list[Fact]
+    missing_items: list[MissingItem]
+    checklist: list[ChecklistItem]
+    suggested_priority: Priority
+    priority_reasons: list[str]
+    draft_reply: str | None
+    citations: list[Citation]
+    warnings: list[WarningItem]
+    quality_status: Literal["pass", "fail"]
+    brief: OfficerBrief
+    error: ModuleError
+```
+
+`total=False` cho phép mỗi node trả partial state; chỉ input gốc dùng `Required`. Không đặt model client, API key hoặc database session vào state. `provided_fields` phân biệt field không được nhắc tới với field model không extract được, tránh ghi `None` đè preview cũ. Final merge vẫn phải validate lại qua `Fields`/`Intake`. `RouteDecision` cần validator bắt buộc `risk_type` khi route L4 và cấm risk khi không phải L4. `approved_sources` vẫn nằm trong snapshot; `source_registry` chỉ là chỉ mục ID/type để guard kiểm tra provenance. Nếu cần passage trung gian, dùng kiểu `list[Passage]`, không dùng `dict[str, Any]`.
+
+### 5.2. Quy chuẩn prompt và ngôn ngữ
+
+- Tất cả system prompt, câu hỏi bổ sung L2 và draft tiếng Việt phải dùng tiếng Việt.
+- Nội dung gửi sinh viên dùng đại từ **“bạn”**, lịch sự và ngắn gọn. Không trộn “bạn/em” trong cùng luồng.
+- Officer Brief dùng văn phong trung lập, nghiệp vụ; phân biệt rõ “sinh viên khai báo”, “profile demo” và “đã được cán bộ xác minh”.
+- Chỉ viết “nhà trường/phòng phụ trách đã…” khi snapshot chứa sự kiện đã hoàn tất tương ứng. Nếu chưa có, dùng “bộ phận phụ trách sẽ kiểm tra” hoặc mẫu tiếp nhận đã duyệt.
+- Không chẩn đoán wellbeing, không hứa SLA/kết quả và không nhắc chi tiết triển khai kỹ thuật cho người dùng.
+- Mỗi prompt có `PROMPT_VERSION`, mô tả input đáng tin cậy, dữ liệu không đáng tin cậy và output schema.
+- Dùng `model.with_structured_output(PydanticModel)` làm cơ chế chính. Không yêu cầu model xuất JSON text rồi parse bằng regex. Chỉ ở adapter fallback không hỗ trợ native structured output mới yêu cầu JSON thuần, không Markdown/code fence, sau đó validate lại bằng Pydantic.
+
+### 5.3. Quy chuẩn async
+
+- Hai method của `CampusAgent` phải là `async def` đúng `AgentPort` và gọi graph bằng `await graph.ainvoke(...)`.
+- Node gọi LLM/RAG hoặc I/O khác phải là `async def` và dùng `await model.ainvoke(...)` / `await rag.answer_question(...)`.
+- Node thuần dữ liệu như merge field, validate source hoặc quality guard có thể là `def`; không cần ép mọi node thành async.
+- Không gọi `.invoke()` cho network model bên trong request FastAPI. Không dùng `asyncio.run()` trong agent/node; worker/backend hiện tại chịu trách nhiệm tạo async boundary.
+- Timeout/retry phải bọc lời gọi async và tuân theo ngân sách Task 7; không dùng sleep blocking.
 
 ## 6. Thứ tự thực hiện cho Grok
 
@@ -163,14 +287,33 @@ Baseline tại thời điểm viết plan: **109 test pass**, Ruff pass và cont
 
 ### Task 1 — Tạo adapter và dependency boundary
 
-1. Tạo `CampusAgent` implement đầy đủ `AgentPort`.
-2. Inject model/client và `RagPort`; không khởi tạo network client trong node hoặc khi import module.
-3. Tạo factory cho intake graph và officer graph.
-4. Giữ `StubAgent` cho unit/integration test backend hiện hữu.
-5. Cho phép chọn stub/real bằng config rõ ràng; mặc định test không gọi API thật.
-6. Không thay đổi signature trong `ports_v1.py`.
+1. Refactor `services/llm.py` thành `create_chat_model(settings: Settings) -> BaseChatModel`.
+2. Chuẩn hóa `llm_provider` thành enum/Literal được hỗ trợ, tối thiểu gồm `openai`, `google`, `groq`, `openai_compatible`; provider lạ phải fail fast với lỗi cấu hình rõ ràng.
+3. Với OpenAI dùng `langchain-openai`; Gemini dùng `langchain-google-genai`; Groq dùng `langchain-groq`. Cập nhật đồng thời `pyproject.toml` và `requirements.txt` cho provider thực sự được bật.
+4. Validate model name, API key và `openai_base_url` theo provider tại startup khi `agent_mode=langgraph`; không bắt test/stub mode có key thật.
+5. Tạo `agents/factory.py` để nhận `BaseChatModel` và `RagPort`, build hai graph rồi trả `CampusAgent`.
+6. Tạo `CampusAgent` implement đầy đủ `AgentPort`; cả hai method là async và dùng `await graph.ainvoke(...)`.
+7. Inject model và `RagPort`; không khởi tạo network client trong node hoặc khi import module.
+8. Giữ `StubAgent` cho unit/integration test backend hiện hữu và dùng fake `BaseChatModel` cho test graph.
+9. Cho phép chọn stub/real bằng config rõ ràng; mặc định test không gọi API thật.
+10. Không thay đổi signature trong `ports_v1.py`.
 
-**Điều kiện pass:** adapter chạy được với fake model và `StubRag`; import app không phát sinh network call; test backend cũ vẫn pass.
+Không đặt provider factory thứ hai trong `agents/`. `services/llm.py` sở hữu provider; `agents/factory.py` sở hữu graph/agent composition.
+
+Repo đã có `llm_provider`, `llm_model`, `model_name`, các API key và `openai_base_url`. Khi triển khai, dùng `llm_model` làm tên model chuẩn; giữ `model_name` như alias tương thích trong một giai đoạn hoặc xóa có migration rõ ràng, không để hai giá trị cạnh tranh. Với Gemini, ưu tiên `GOOGLE_API_KEY` rồi mới fallback `GEMINI_API_KEY`. Không quảng bá provider trong `.env.example` nếu factory và dependency tương ứng chưa hoạt động.
+
+| `llm_provider` | Model class | Package | Credential/config |
+|---|---|---|---|
+| `openai` | `ChatOpenAI` | `langchain-openai` | `OPENAI_API_KEY` |
+| `google` | `ChatGoogleGenerativeAI` | `langchain-google-genai` | `GOOGLE_API_KEY`, fallback `GEMINI_API_KEY` |
+| `groq` | `ChatGroq` | `langchain-groq` | `GROQ_API_KEY` |
+| `openai_compatible` | `ChatOpenAI` | `langchain-openai` | `OPENAI_API_KEY` và `OPENAI_BASE_URL` bắt buộc |
+
+Factory chỉ truyền tham số chung khi provider hỗ trợ. Không giả định mọi model dùng cùng temperature, timeout, retry hoặc structured-output method; cấu hình khác biệt phải nằm trong nhánh provider và có test. Grok/xAI chưa nằm trong ma trận P0; chỉ thêm khi có provider/key/config và smoke test riêng.
+
+Tài liệu adapter chính thức: [Google Gemini](https://docs.langchain.com/oss/python/integrations/chat/google_generative_ai) dùng `langchain-google-genai`; [Groq](https://docs.langchain.com/oss/python/integrations/chat/groq) dùng `langchain-groq`. Không suy ra mọi provider hỗ trợ structured output giống nhau; mỗi provider/model được bật phải có smoke test cho `with_structured_output`.
+
+**Điều kiện pass:** provider factory trả đúng lớp model bằng constructor đã mock; adapter chạy được với fake model và `StubRag`; import app không phát sinh network call; thiếu key chỉ làm fail cấu hình langgraph tương ứng; test backend cũ vẫn pass.
 
 ### Task 2 — Xây Safety and Intent Router
 
@@ -192,6 +335,8 @@ confidence: number hoặc null, chỉ dùng nội bộ
 4. Rule hậu kiểm: tín hiệu L4 thắng mixed intent.
 5. Nếu output classifier sai schema, raise `OUTPUT_SCHEMA_INVALID`; không đoán route bằng chuỗi response.
 
+Classifier phải được tạo qua `model.with_structured_output(RouteDecision)` và gọi bằng `await ...ainvoke(...)`. Prompt yêu cầu quyết định theo ngữ cảnh bằng tiếng Việt; Pydantic/provider schema mới là lớp kiểm tra hình dạng output, không dựa vào lời nhắc “hãy trả JSON”.
+
 Phải phân biệt:
 
 - “Thủ tục phúc khảo điểm thế nào?” → L1.
@@ -201,7 +346,7 @@ Phải phân biệt:
 - “Tôi muốn xin giấy xác nhận sinh viên” → L2.
 - Câu có cả xin giấy và khiếu nại/wellbeing → L4.
 
-Không dựa duy nhất vào việc có từ “khiếu nại”, “điểm” hoặc “gấp”. Include negation và câu đang hỏi quy trình trong fixture.
+Không dựa duy nhất vào việc có từ “khiếu nại”, “điểm” hoặc “gấp”. Thêm câu phủ định và câu chỉ hỏi quy trình vào fixture.
 
 **Điều kiện pass:** toàn bộ routing fixture bắt buộc đúng route/risk; không có case L4 bị phát hành reply của L1/L2.
 
@@ -217,7 +362,7 @@ receive_method: digital_pdf | paper_stamped
 
 Quy tắc:
 
-1. Extract field từ message hiện tại bằng structured output.
+1. Tạo extractor bằng `model.with_structured_output(FieldExtraction)` và gọi async; `provided_fields` chỉ chứa field được message hiện tại nêu rõ.
 2. Merge lên `context.preview.fields`; chỉ thay field khi message hiện tại cung cấp giá trị mới rõ ràng.
 3. Validate enum và giá trị rỗng/mơ hồ.
 4. Tạo `missing_fields` và `invalid_fields` đúng contract.
@@ -283,9 +428,11 @@ Graph nhận duy nhất `TicketSnapshot` và thực hiện các node:
 
 #### 5.3 Triage and Checklist
 
-- Complaint/wellbeing/unauthorized action giữ priority `high`.
-- Không hạ priority high có sẵn.
-- `high` bắt buộc có lý do.
+- **Quy tắc an toàn (Floor):** Không hạ `priority: high` có sẵn từ snapshot; ca `wellbeing` nguy cơ cao luôn giữ `high`.
+- **Đánh giá đa chiều (Urgency & Impact):** Phân loại độ ưu tiên không phụ thuộc cứng nhắc vào route hay category, mà đánh giá kết hợp:
+  - *Thời gian / Deadline:* Đề xuất `high` cho bất kỳ ticket nào (kể cả L2 xin giấy xác nhận) nếu có mốc thời gian gấp/hạn nộp sát nút (ví dụ $< 24h$ hoặc cần nộp ngay trong ngày).
+  - *Loại việc & Mức độ ảnh hưởng:* Đánh giá tác động đến quyền lợi sống còn của sinh viên (nguy cơ lỡ học bổng, visa, thôi học, vi phạm SLA). Các khiếu nại quy chế thông thường không gấp có thể giữ `normal` nếu backend chưa set `high`.
+- Mọi trường hợp đề xuất `suggested_priority: high` bắt buộc phải có lý do cụ thể trong `priority_reasons`.
 - Checklist lấy từ template code/config P0 đã duyệt, không để model tự đặt quy trình tùy ý.
 - Mọi `checked` phải là `false`.
 
@@ -344,15 +491,16 @@ Tuân thủ ngân sách đã chốt:
 - Mỗi provider call tối đa 10 giây và không vượt ngân sách còn lại.
 - Chỉ một retry lỗi tạm thời trong lượt intake; tắt retry SDK ẩn hoặc tính nó vào ngân sách.
 - Officer brief tối đa 60 giây/lần; retry job thuộc backend, agent không tự tạo vòng retry vô hạn.
+- Dùng timeout async quanh lời gọi provider; không dùng `time.sleep`, client sync hoặc `.invoke()` trong node I/O.
 
-**Điều kiện pass:** fake timeout/rate limit/schema error tạo đúng code/stage/request ID; test không đợi thời gian thật.
+**Điều kiện pass:** fake async timeout/rate limit/schema error tạo đúng code/stage/request ID; test không đợi thời gian thật và event loop vẫn xử lý được coroutine khác trong lúc fake provider chờ.
 
 ### Task 8 — Runtime integration
 
-1. Thêm config chọn implementation, ví dụ `AGENT_MODE=stub|langgraph`.
-2. `runtime.py` tạo duy nhất một `CampusAgent` phù hợp và inject dependency.
+1. Dùng config `AGENT_MODE=stub|langgraph`; không tạo model thật khi mode là `stub`.
+2. `runtime.py` gọi `services.llm.create_chat_model(settings)`, sau đó `agents.factory.create_agent(model, rag)` để tạo duy nhất một `CampusAgent`.
 3. API và worker cùng lấy agent qua `get_agent()`.
-4. Test mặc định dùng stub/fake và không cần `OPENAI_API_KEY` thật.
+4. Test mặc định dùng stub/fake và không cần API key provider thật.
 5. Không đổi flow transaction trong `student.py` hoặc `jobs.py` trừ khi cần sửa bug integration rõ ràng và có test tái hiện.
 6. Endpoint graph mẫu trong `api/routes.py` phải được xóa, đổi thành adapter mới hoặc ghi rõ demo; không để production route gọi graph nối chuỗi cũ.
 
@@ -365,7 +513,7 @@ Tạo dataset có expected output cho ít nhất:
 - 10 case L2, gồm nhiều lượt và chỉnh field.
 - 10 case L4, gồm complaint, wellbeing, unauthorized action, mixed intent và câu phủ định.
 - 5 câu hỏi thủ tục phải giữ L1.
-- 10 snapshot L3, gồm certificate, complaint, thiếu dữ liệu, dữ liệu mâu thuẫn và source injection.
+- 10 snapshot L3, gồm certificate (có cả case thường và case deadline gấp trong ngày để kiểm tra đề xuất high kèm lý do), complaint, thiếu dữ liệu, dữ liệu mâu thuẫn và source injection.
 
 Tách dataset dùng để chỉnh prompt và dataset giữ lại để kiểm tra. Báo cáo:
 
@@ -381,7 +529,10 @@ Không ghi “100% an toàn” từ một bộ mẫu nhỏ. Báo rõ model, prom
 
 - Dùng Pydantic contract làm output; không parse JSON bằng regex.
 - Node trả partial state, không mutate object input.
-- Prompt đặt trong module riêng và có `PROMPT_VERSION`.
+- Prompt đặt trong module riêng, dùng tiếng Việt và có `PROMPT_VERSION`.
+- Nội dung sinh viên thống nhất xưng hô “bạn”; Officer Brief dùng văn phong nghiệp vụ trung lập.
+- Structured output dùng `with_structured_output`; không coi lời nhắc “trả JSON” là validation.
+- `CampusAgent` và mọi node I/O phải async; node thuần validate/merge có thể sync.
 - Không hardcode secret, model name hoặc API key.
 - Không gọi network ở module import time.
 - Không tạo ID nghiệp vụ giả.
@@ -396,7 +547,8 @@ Không ghi “100% an toàn” từ một bộ mẫu nhỏ. Báo rõ model, prom
 ## 8. Thứ tự commit đề xuất
 
 ```text
-feat(agent): add AgentPort adapter and graph factories
+feat(agent): add provider model factory and configuration validation
+feat(agent): add typed graph states and AgentPort adapter
 feat(agent): implement contextual L2 and L4 routing
 feat(agent): implement multi-turn certificate intake
 feat(agent): implement officer brief workflow
@@ -412,6 +564,10 @@ Mỗi commit phải chạy được test liên quan. Không gom thay đổi fron
 Plan hoàn thành khi đáp ứng tất cả điều kiện sau:
 
 - `CampusAgent` implement đúng hai method của `AgentPort`.
+- Provider factory trả `BaseChatModel`, tách khỏi agent factory và fail rõ ràng khi provider/config không hợp lệ.
+- `IntakeState` và `OfficerState` dùng typed partial state, không chứa client/secret/session.
+- Prompt tiếng Việt tuân thủ văn phong đã chốt và mọi model output được Pydantic validate.
+- Lời gọi LLM/RAG chạy async; không block event loop FastAPI.
 - L2 thu thập đủ ba field qua một hoặc nhiều lượt và không tự submit.
 - L4 nhận đúng ba nhóm risk, mixed intent ưu tiên safety và không báo thành công trước backend.
 - L3 tạo brief có facts truy được source, checklist false, priority có reason và draft an toàn.
