@@ -1,6 +1,6 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
-from campus247.agents.graph import agent
+from campus247.config import get_settings
 from campus247.models.schemas import ChatRequest, ChatResponse
 
 router = APIRouter()
@@ -8,18 +8,14 @@ router = APIRouter()
 
 @router.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest) -> ChatResponse:
-    """Chat với AI agent."""
-    try:
-        result = await agent.ainvoke({"query": request.message})
-        return ChatResponse(
-            response=result.get("response", ""),
-            analysis=result.get("analysis", ""),
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    """Demo leftover from the sample graph. Production intake is POST /conversations/{id}/messages."""
+    return ChatResponse(
+        response="Endpoint demo. Hãy dùng /api/v1/conversations/{id}/messages cho intake P0.",
+        analysis="isolated-demo",
+    )
 
 
 @router.get("/status")
 async def agent_status():
-    """Kiểm tra trạng thái agent."""
-    return {"status": "ready", "agent": "LangGraph Agent v1.0"}
+    settings = get_settings()
+    return {"status": "ready", "agent": "CampusAgent", "agent_mode": settings.agent_mode}

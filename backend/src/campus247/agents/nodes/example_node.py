@@ -1,7 +1,16 @@
-from campus247.agents.state import AgentState
+from typing import TypedDict
 
 
-async def analyze_node(state: AgentState) -> dict:
+class SampleAgentState(TypedDict, total=False):
+    query: str
+    context: str
+    analysis: str
+    response: str
+    error: str
+    metadata: dict
+
+
+async def analyze_node(state: SampleAgentState) -> dict:
     """Phân tích query từ user."""
     query = state.get("query", "")
 
@@ -12,7 +21,7 @@ async def analyze_node(state: AgentState) -> dict:
     return {"analysis": analysis}
 
 
-async def respond_node(state: AgentState) -> dict:
+async def respond_node(state: SampleAgentState) -> dict:
     """Tạo response từ analysis."""
     analysis = state.get("analysis", "")
     error = state.get("error")

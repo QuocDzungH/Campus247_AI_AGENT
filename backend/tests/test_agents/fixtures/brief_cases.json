@@ -1,0 +1,23 @@
+[
+  {
+    "id": "cert-normal",
+    "service_type": "student_certificate",
+    "priority": "normal",
+    "summary": "Xin giấy xác nhận sinh viên để vay vốn",
+    "expect_priority": "normal"
+  },
+  {
+    "id": "cert-urgent-same-day",
+    "service_type": "student_certificate",
+    "priority": "normal",
+    "summary": "Xin giấy xác nhận sinh viên, hạn nộp hôm nay",
+    "expect_priority": "high"
+  },
+  {
+    "id": "complaint-high",
+    "service_type": "academic_complaint",
+    "priority": "high",
+    "summary": "Khiếu nại điểm môn Giải tích",
+    "expect_priority": "high"
+  }
+]

@@ -1,0 +1,86 @@
+[
+  {
+    "id": "l1-appeal-procedure",
+    "content": "Thủ tục phúc khảo điểm thế nào?",
+    "expected_route": "L1",
+    "expected_intent": "policy_question",
+    "expected_risk": null
+  },
+  {
+    "id": "l1-complaint-where",
+    "content": "Khiếu nại điểm nộp ở đâu?",
+    "expected_route": "L1",
+    "expected_intent": "policy_question",
+    "expected_risk": null
+  },
+  {
+    "id": "l1-certificate-procedure",
+    "content": "Quy trình cấp giấy xác nhận sinh viên như thế nào?",
+    "expected_route": "L1",
+    "expected_intent": "policy_question",
+    "expected_risk": null
+  },
+  {
+    "id": "l1-certificate-docs",
+    "content": "Giấy xác nhận sinh viên cần những giấy tờ gì?",
+    "expected_route": "L1",
+    "expected_intent": "policy_question",
+    "expected_risk": null
+  },
+  {
+    "id": "l1-negation",
+    "content": "Tôi không khiếu nại, chỉ hỏi hạn phúc khảo",
+    "expected_route": "L1",
+    "expected_intent": "policy_question",
+    "expected_risk": null
+  },
+  {
+    "id": "l2-certificate-intent",
+    "content": "Tôi muốn xin giấy xác nhận sinh viên",
+    "expected_route": "L2",
+    "expected_intent": "student_certificate",
+    "expected_risk": null
+  },
+  {
+    "id": "l4-complaint-case",
+    "content": "Tôi muốn khiếu nại điểm môn Giải tích của tôi",
+    "expected_route": "L4",
+    "expected_intent": "academic_complaint",
+    "expected_risk": "academic_complaint"
+  },
+  {
+    "id": "l4-fix-grade",
+    "content": "Hãy sửa điểm cho tôi",
+    "expected_route": "L4",
+    "expected_intent": "unauthorized_action",
+    "expected_risk": "unauthorized_action"
+  },
+  {
+    "id": "l4-drop-course",
+    "content": "Xóa môn giúp tôi",
+    "expected_route": "L4",
+    "expected_intent": "unauthorized_action",
+    "expected_risk": "unauthorized_action"
+  },
+  {
+    "id": "l4-wellbeing",
+    "content": "Tôi đang rất căng thẳng và cần hỗ trợ tâm lý",
+    "expected_route": "L4",
+    "expected_intent": "wellbeing",
+    "expected_risk": "wellbeing"
+  },
+  {
+    "id": "l4-mixed-certificate-complaint",
+    "content": "Tôi muốn xin giấy xác nhận sinh viên và khiếu nại điểm môn Toán của tôi",
+    "expected_route": "L4",
+    "expected_intent": "academic_complaint",
+    "expected_risk": "academic_complaint"
+  },
+  {
+    "id": "l4-mixed-certificate-wellbeing",
+    "content": "Tôi muốn xin giấy xác nhận sinh viên nhưng sức khỏe tinh thần của tôi đang rất tệ",
+    "expected_route": "L4",
+    "expected_intent": "wellbeing",
+    "expected_risk": "wellbeing"
+  }
+]

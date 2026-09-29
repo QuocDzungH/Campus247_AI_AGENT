@@ -1,8 +1,8 @@
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Self
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     cors_origins: str = "http://localhost:3000"
 
-    # LLM
+    # LLM. Canonical model name is llm_model; model_name is a compatibility alias.
     llm_provider: str = "openai"
     llm_model: str = "gpt-4o-mini"
     model_name: str = "gpt-4o-mini"
@@ -48,6 +48,17 @@ class Settings(BaseSettings):
 
     # Vector Store
     chroma_persist_dir: str = "./data/chroma"
+
+    @model_validator(mode="after")
+    def apply_model_name_alias(self) -> Self:
+        """Use MODEL_NAME only when LLM_MODEL was not set. llm_model stays canonical if both exist."""
+        if "llm_model" not in self.model_fields_set and "model_name" in self.model_fields_set:
+            self.llm_model = self.model_name
+        return self
+
+    def resolved_llm_model(self) -> str:
+        """Canonical chat model name. llm_model wins; model_name is a legacy alias."""
+        return (self.llm_model or self.model_name).strip()
 
 
 @lru_cache

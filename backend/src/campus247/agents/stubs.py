@@ -1,5 +1,7 @@
 """Contract-faithful stubs. They do not invent L1 citations or ticket codes."""
 
+from campus247.agents.metadata import STUB_MODEL_NAME
+from campus247.agents.provenance import deterministic_facts
 from campus247.models.contracts_v1 import (
     Intake,
     IntakeContext,
@@ -34,6 +36,14 @@ class StubAgent:
         self.intake_result = intake_result
         self.brief = brief
 
+    def brief_artifact_metadata(self) -> dict[str, str | None]:
+        return {
+            "model_name": STUB_MODEL_NAME,
+            "prompt_version": "1",
+            "template_version": "1",
+            "index_version": None,
+        }
+
     async def run_intake(self, context: IntakeContext) -> IntakeResult:
         if self.intake_result is not None:
             return self.intake_result
@@ -59,28 +69,7 @@ class StubAgent:
         if self.brief is not None:
             return self.brief
         ticket = snapshot.ticket
-        facts = []
-        if snapshot.student_profile.full_name:
-            facts.append(
-                {
-                    "key": "student_name",
-                    "value": snapshot.student_profile.full_name,
-                    "source_type": "profile",
-                    "source_id": snapshot.student_profile.student_id,
-                    "verification_status": "unverified",
-                }
-            )
-        if ticket.request_data and ticket.request_data.purpose:
-            source_id = snapshot.messages[0].id if snapshot.messages else ticket.id
-            facts.append(
-                {
-                    "key": "purpose",
-                    "value": ticket.request_data.purpose,
-                    "source_type": "student_message",
-                    "source_id": source_id,
-                    "verification_status": "unverified",
-                }
-            )
+        facts = deterministic_facts(snapshot)
         return OfficerBrief(
             ticket_id=ticket.id,
             source_ticket_revision=snapshot.source_ticket_revision,

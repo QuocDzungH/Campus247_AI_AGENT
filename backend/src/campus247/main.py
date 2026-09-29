@@ -16,6 +16,9 @@ from campus247.services.common import new_id
 async def lifespan(app: FastAPI):
     settings = get_settings()
     print(f"Starting {settings.app_name} in {settings.app_env} mode")
+    from campus247.services.runtime import init_runtime
+
+    init_runtime(settings)
     yield
     print("Shutting down...")
 

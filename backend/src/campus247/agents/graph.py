@@ -1,7 +1,10 @@
+"""Isolated sample graph (analyze → respond). Production intake uses CampusAgent."""
+
 from langgraph.graph import END, StateGraph
 
-from campus247.agents.nodes.example_node import analyze_node, respond_node
-from campus247.agents.state import AgentState
+from campus247.agents.nodes.example_node import SampleAgentState, analyze_node, respond_node
+
+AgentState = SampleAgentState
 
 
 def should_continue(state: AgentState) -> str:

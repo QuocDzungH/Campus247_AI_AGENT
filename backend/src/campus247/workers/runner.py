@@ -4,7 +4,7 @@ import time
 
 from campus247.db.engine import session_scope
 from campus247.services.jobs import lease_next_job, process_job
-from campus247.services.runtime import get_agent
+from campus247.services.runtime import get_agent, init_runtime
 
 log = logging.getLogger("campus.worker")
 
@@ -33,6 +33,7 @@ async def _process(job_id: str) -> bool:
 
 def run_forever(idle_sleep: float = 1.0) -> None:
     logging.basicConfig(level=logging.INFO)
+    init_runtime()
     log.info("worker started")
     while True:
         try:

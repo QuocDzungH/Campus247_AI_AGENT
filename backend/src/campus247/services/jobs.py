@@ -3,6 +3,7 @@ from datetime import timedelta
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
+from campus247.agents.metadata import metadata_from_agent
 from campus247.config import get_settings
 from campus247.db.engine import dialect_name
 from campus247.db.models import Job, OfficerBrief, Ticket
@@ -199,12 +200,12 @@ async def _process_prepare_brief(session: Session, job: Job, agent: AgentPort) -
         session.commit()
         return
     if ticket.revision != job.source_revision:
-        _store_brief(session, ticket, brief, job, current=False, status="stale")
+        _store_brief(session, ticket, brief, job, agent, current=False, status="stale")
         job.state = "succeeded"
         job.updated_at = utcnow()
         session.commit()
         return
-    _store_brief(session, ticket, brief, job, current=True, status="ready")
+    _store_brief(session, ticket, brief, job, agent, current=True, status="ready")
     job.state = "succeeded"
     job.lease_until = None
     job.updated_at = utcnow()
@@ -212,9 +213,19 @@ async def _process_prepare_brief(session: Session, job: Job, agent: AgentPort) -
     session.commit()
 
 
-def _store_brief(session: Session, ticket: Ticket, brief: BriefModel, job: Job, *, current: bool, status: str) -> None:
+def _store_brief(
+    session: Session,
+    ticket: Ticket,
+    brief: BriefModel,
+    job: Job,
+    agent: AgentPort,
+    *,
+    current: bool,
+    status: str,
+) -> None:
     from campus247.db.models import FactProvenance
 
+    meta = metadata_from_agent(agent)
     now = utcnow()
     if current:
         for row in session.execute(select(OfficerBrief).where(OfficerBrief.ticket_id == ticket.id, OfficerBrief.is_current.is_(True))).scalars():
@@ -243,10 +254,10 @@ def _store_brief(session: Session, ticket: Ticket, brief: BriefModel, job: Job, 
         draft_reply=brief.draft_reply,
         citations=[item.model_dump(mode="json") for item in brief.citations],
         warnings=[item.model_dump(mode="json") for item in brief.warnings],
-        model_name="stub-agent",
-        prompt_version="1",
-        template_version="1",
-        index_version=None,
+        model_name=meta["model_name"],
+        prompt_version=meta["prompt_version"],
+        template_version=meta["template_version"],
+        index_version=meta.get("index_version"),
         created_at=now,
         updated_at=now,
     )

@@ -69,6 +69,43 @@ async def test_old_revision_job_does_not_overwrite_new_brief(db_session, restore
     assert old_job.state in {"cancelled", "succeeded"}
 
 
+@pytest.mark.asyncio
+async def test_brief_artifact_uses_agent_runtime_metadata(db_session, restore_agent):
+    student = _user(db_session, "SV-DEMO-006")
+    _, conv = create_conversation(db_session, student, "meta-conv", "req-mc")
+    _, chat = await send_conversation_message(
+        db_session, student, conv["id"], "xin giấy", "meta-msg", "req-mm", StubAgent(intake_result=PREVIEW_INTAKE)
+    )
+    _, submitted = submit1(
+        db_session,
+        student,
+        Submit1(preview_id=chat["preview"]["id"], preview_version=chat["preview"]["version"], confirmed=True),
+        "meta-sub",
+        "req-ms",
+    )
+    ticket = db_session.get(Ticket, submitted["ticket"]["id"])
+    job = db_session.execute(
+        select(Job).where(Job.ticket_id == ticket.id, Job.source_revision == ticket.revision)
+    ).scalar_one()
+
+    class NamedAgent(StubAgent):
+        def brief_artifact_metadata(self):
+            return {
+                "model_name": "gpt-4o-mini",
+                "prompt_version": "officer-brief-v1/officer-dossier-v2/officer-triage-v3/officer-drafter-v2",
+                "template_version": "officer-drafter-v2",
+                "index_version": None,
+            }
+
+    await process_job(db_session, job, NamedAgent())
+    stored = db_session.execute(
+        select(OfficerBrief).where(OfficerBrief.ticket_id == ticket.id, OfficerBrief.is_current.is_(True))
+    ).scalar_one()
+    assert stored.model_name == "gpt-4o-mini"
+    assert stored.prompt_version == "officer-brief-v1/officer-dossier-v2/officer-triage-v3/officer-drafter-v2"
+    assert stored.template_version == "officer-drafter-v2"
+
+
 def test_worker_reclaims_expired_lease(db_session):
     ticket = db_session.execute(select(Ticket).where(Ticket.status == "open")).scalars().first()
     job = enqueue_prepare_brief(db_session, ticket)
