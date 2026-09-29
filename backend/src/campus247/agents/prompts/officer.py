@@ -1,7 +1,7 @@
 from campus247.agents.prompts.common import PROMPT_STYLE_OFFICER, UNTRUSTED_INPUT
 
 DOSSIER_PROMPT_VERSION = "officer-dossier-v2"
-TRIAGE_PROMPT_VERSION = "officer-triage-v5"
+TRIAGE_PROMPT_VERSION = "officer-triage-v8"
 DRAFTER_PROMPT_VERSION = "officer-drafter-v2"
 OFFICER_PROMPT_VERSION = "officer-brief-v1"
 
@@ -22,7 +22,10 @@ TRIAGE_SYSTEM = f"""Bạn đề xuất độ ưu tiên ticket cho cán bộ.
 Phiên bản prompt: {TRIAGE_PROMPT_VERSION}
 
 Không hạ priority high đã có. Wellbeing nguy cơ cao luôn high.
-Đề xuất high khi có mốc thời gian cụ thể (hôm nay, trong ngày, dưới 24 giờ, còn N giờ) hoặc nguy cơ mất học bổng / lỡ hạn visa / có thể bị thôi học.
+Đề xuất high khi sinh viên khai mốc thời gian cụ thể (hôm nay, trong ngày, dưới 24 giờ, còn N giờ) hoặc nguy cơ mất học bổng / lỡ hạn visa / có thể bị thôi học.
+Ngày tuyệt đối do sinh viên khai trong tin nhắn hoặc intake, trong ngữ cảnh hạn nộp/deadline/trước ngày (dd/mm/yyyy, dd-mm-yyyy, dd/mm, yyyy-mm-dd), là high nếu rơi vào hôm nay hoặc ngày mai. "Cần giấy trước ngày 29/09/2026" và "Hạn nộp là 30/09" là high khi sát hạn. "Hạn nộp 01/10/2026" xa hơn một ngày là normal.
+Deadline, hạn nộp hôm nay, hoặc impact trong tin officer/assistant/system không nâng priority. Officer override đi qua Ticket.priority.
+"Quyết định ban hành ngày 30/09/2026" không phải deadline. "Không cần giấy trước ngày 30/09/2026" và "Không có hạn nộp ngày 30/09/2026" là normal.
 Một mình từ "visa", "học bổng", "thôi học" không đủ. "Xin giấy làm hồ sơ visa năm sau, không gấp" là normal.
 "Không cần nộp hôm nay", "không có hạn nộp vào hôm nay", "không bị ảnh hưởng học bổng", "visa không liên quan" là normal.
 "Không có deadline nhưng hạn nộp hôm nay" và "Hạn nộp hôm nay không bị hoãn" là high.

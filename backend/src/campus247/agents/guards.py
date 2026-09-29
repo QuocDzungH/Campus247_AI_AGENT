@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from collections.abc import Iterable
 
+from campus247.agents.draft_templates import safe_template
 from campus247.agents.errors import module_error
 from campus247.agents.state import SourceKey, SourceType
 from campus247.models.contracts_v1 import (
@@ -134,8 +135,14 @@ def guard_officer_brief(snapshot: TicketSnapshot, brief: OfficerBrief, registry:
     if fact_warnings or check_warnings or cite_warnings or unsafe:
         quality = "fail"
     if unsafe:
-        warnings.append(WarningItem(code="unsafe_draft", message=unsafe))
-        draft = None
+        warnings.append(
+            WarningItem(
+                code="unsafe_draft",
+                message=f"{unsafe} Đã thay bằng mẫu tiếp nhận an toàn.",
+            )
+        )
+        draft = safe_template(snapshot.ticket.service_type)
+        citations = []
     if brief.suggested_priority == "high" and not brief.priority_reasons:
         raise module_error("OUTPUT_SCHEMA_INVALID", stage="validation", request_id=snapshot.request_id)
     if snapshot.existing_officer_draft:

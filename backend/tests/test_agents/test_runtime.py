@@ -45,7 +45,7 @@ def test_langgraph_init_runtime_uses_campus_agent(monkeypatch):
         meta = agent.brief_artifact_metadata()
         assert meta["model_name"] == "gpt-4o-mini"
         assert "officer-dossier-v2" in (meta["prompt_version"] or "")
-        assert meta["template_version"] == "officer-drafter-v2"
+        assert meta["template_version"] == "officer-safe-template-v1"
     finally:
         set_agent(original_agent)
         set_rag(original_rag)

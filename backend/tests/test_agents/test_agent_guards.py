@@ -2,6 +2,7 @@ import asyncio
 
 import pytest
 
+from campus247.agents.draft_templates import safe_template
 from campus247.agents.guards import guard_officer_brief, sanitize_checklist, source_registry_from_snapshot
 from campus247.agents.nodes.triage import checklist_for
 from campus247.models.contracts_v1 import Citation, ModuleCallError, OfficerBrief, Passage
@@ -15,25 +16,113 @@ def test_checklist_autotick_is_reset():
     assert warnings
 
 
-def test_placeholder_draft_is_dropped():
-    snapshot = make_snapshot()
-    brief = OfficerBrief(
-        ticket_id=snapshot.ticket.id,
-        source_ticket_revision=snapshot.source_ticket_revision,
-        summary="Tóm tắt hồ sơ giấy xác nhận.",
-        facts=[],
-        missing_items=[],
-        checklist=checklist_for(snapshot),
-        suggested_priority="normal",
-        priority_reasons=[],
-        draft_reply="Chào [Tên sinh viên], TODO hoàn tất giấy.",
-        citations=[],
-        warnings=[],
-        quality_status="pass",
+def _brief(snapshot, draft: str, *, citations=None, **overrides) -> OfficerBrief:
+    data = {
+        "ticket_id": snapshot.ticket.id,
+        "source_ticket_revision": snapshot.source_ticket_revision,
+        "summary": "Tóm tắt hồ sơ giấy xác nhận.",
+        "facts": [],
+        "missing_items": [],
+        "checklist": checklist_for(snapshot),
+        "suggested_priority": "normal",
+        "priority_reasons": [],
+        "draft_reply": draft,
+        "citations": citations or [],
+        "warnings": [],
+        "quality_status": "pass",
+    }
+    data.update(overrides)
+    return OfficerBrief.model_validate(data)
+
+
+def _policy_citation() -> Citation:
+    return Citation(
+        document_id="doc_qc",
+        document_title="Quy chế đào tạo",
+        document_version="2024",
+        chunk_id="chunk_qc_1",
+        locator="Điều 12",
+        quote="Sinh viên được cấp giấy xác nhận khi đang học.",
+        url="https://example.edu/qc",
     )
-    guarded = guard_officer_brief(snapshot, brief, source_registry_from_snapshot(snapshot))
-    assert guarded.draft_reply is None
+
+
+@pytest.mark.parametrize(
+    "draft",
+    [
+        "Chào [Tên sinh viên], hoàn tất giấy.",
+        "TODO gửi phản hồi cho sinh viên.",
+        "Nhà trường đã cấp giấy xác nhận sinh viên.",
+        "Cam kết trả kết quả trong vòng 24 giờ.",
+        "Theo quy chế đào tạo bạn đủ điều kiện nhận giấy.",
+    ],
+)
+def test_unsafe_draft_is_replaced_with_safe_template(draft: str):
+    snapshot = make_snapshot()
+    guarded = guard_officer_brief(
+        snapshot,
+        _brief(snapshot, draft),
+        source_registry_from_snapshot(snapshot),
+    )
+    expected = safe_template(snapshot.ticket.service_type)
+    assert guarded.draft_reply == expected
     assert guarded.quality_status == "fail"
+    assert guarded.citations == []
+    warning = next(item for item in guarded.warnings if item.code == "unsafe_draft")
+    assert "Đã thay bằng mẫu tiếp nhận an toàn." in warning.message
+    assert "[Tên sinh viên]" not in expected
+    assert "TODO" not in expected
+    assert "đã cấp giấy" not in expected.lower()
+    assert "theo quy chế" not in expected.lower()
+
+
+def test_unsafe_draft_clears_approved_citations():
+    citation = _policy_citation()
+    snapshot = make_snapshot(approved_sources=[Passage(citation=citation, text=citation.quote, score=0.9)])
+    guarded = guard_officer_brief(
+        snapshot,
+        _brief(snapshot, "Chào [Tên sinh viên].", citations=[citation]),
+        source_registry_from_snapshot(snapshot),
+    )
+    assert guarded.citations == []
+    assert guarded.draft_reply == safe_template(snapshot.ticket.service_type)
+    assert guarded.quality_status == "fail"
+
+
+def test_unsafe_draft_drops_error_citations():
+    snapshot = make_snapshot()
+    fake = _policy_citation().model_copy(update={"document_title": "Sách giả", "quote": "Bịa quote"})
+    guarded = guard_officer_brief(
+        snapshot,
+        _brief(snapshot, "Chào [Tên sinh viên].", citations=[fake]),
+        source_registry_from_snapshot(snapshot),
+    )
+    assert guarded.citations == []
+    assert guarded.draft_reply == safe_template(snapshot.ticket.service_type)
+    assert guarded.quality_status == "fail"
+
+
+def test_existing_officer_draft_is_preserved_when_replacing_unsafe_draft():
+    original = "Draft cán bộ đã lưu, không được ghi đè."
+    snapshot = make_snapshot(existing_officer_draft=original)
+    guarded = guard_officer_brief(
+        snapshot,
+        _brief(snapshot, "TODO gửi giấy."),
+        source_registry_from_snapshot(snapshot),
+    )
+    assert snapshot.existing_officer_draft == original
+    assert any(item.code == "existing_officer_draft" for item in guarded.warnings)
+    assert guarded.draft_reply == safe_template(snapshot.ticket.service_type)
+    assert guarded.quality_status == "fail"
+
+
+def test_valid_draft_is_not_replaced():
+    snapshot = make_snapshot()
+    draft = "Bộ phận phụ trách sẽ kiểm tra hồ sơ."
+    guarded = guard_officer_brief(snapshot, _brief(snapshot, draft), source_registry_from_snapshot(snapshot))
+    assert guarded.draft_reply == draft
+    assert guarded.quality_status == "pass"
+    assert all(item.code != "unsafe_draft" for item in guarded.warnings)
 
 
 def test_officer_messages_are_not_student_sources():
@@ -79,6 +168,7 @@ def test_fabricated_citation_metadata_is_dropped():
     guarded = guard_officer_brief(snapshot, brief, source_registry_from_snapshot(snapshot))
     assert guarded.citations == []
     assert guarded.quality_status == "fail"
+    assert guarded.draft_reply == "Bộ phận phụ trách sẽ kiểm tra hồ sơ."
 
 
 def test_unapproved_citation_is_dropped():
@@ -109,6 +199,7 @@ def test_unapproved_citation_is_dropped():
     guarded = guard_officer_brief(snapshot, brief, source_registry_from_snapshot(snapshot))
     assert guarded.citations == []
     assert guarded.quality_status == "fail"
+    assert guarded.draft_reply == "Bộ phận phụ trách sẽ kiểm tra hồ sơ."
 
 
 def test_high_priority_without_reason_raises():

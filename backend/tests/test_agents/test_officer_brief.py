@@ -1,12 +1,33 @@
+from datetime import UTC, datetime
+
 import pytest
 
 from campus247.agents.guards import guard_officer_brief, source_registry_from_snapshot
 from campus247.agents.nodes.dossier import deterministic_facts
-from campus247.agents.nodes.triage import apply_priority_floor, checklist_for
+from campus247.agents.nodes.triage import (
+    absolute_deadline_reason,
+    apply_priority_floor,
+    checklist_for,
+    extract_absolute_deadlines,
+)
 from campus247.agents.state import DossierOutput, DraftOutput, TriageOutput
 from campus247.agents.stubs import StubAgent
 from campus247.models.contracts_v1 import Citation, Fact, Handover, Intake, OfficerBrief, Passage
 from tests.test_agents.helpers import make_agent, make_message, make_snapshot, make_ticket, officer_scripts
+
+
+def _student_priority_snapshot(content: str, **ticket_kw):
+    return make_snapshot(
+        ticket=make_ticket(summary=content, **ticket_kw),
+        messages=[make_message(content)],
+    )
+
+
+def _sender_priority_snapshot(content: str, sender: str):
+    return make_snapshot(
+        ticket=make_ticket(summary="Xin giấy xác nhận sinh viên"),
+        messages=[make_message(content, sender=sender)],
+    )
 
 
 @pytest.mark.asyncio
@@ -58,7 +79,7 @@ async def test_l4_ticket_brief_keeps_high_priority():
 
 @pytest.mark.asyncio
 async def test_same_day_deadline_suggests_high_with_reason():
-    snapshot = make_snapshot(ticket=make_ticket(summary="Xin giấy xác nhận sinh viên, hạn nộp hôm nay"))
+    snapshot = _student_priority_snapshot("Xin giấy xác nhận sinh viên, hạn nộp hôm nay")
     agent, _ = make_agent(officer_scripts())
     brief = await agent.prepare_officer_brief(snapshot)
     assert brief.suggested_priority == "high"
@@ -146,33 +167,33 @@ def test_priority_floor_does_not_lower_high():
 
 
 def test_negated_deadline_is_not_high():
-    snapshot = make_snapshot(ticket=make_ticket(summary="Không có deadline và chưa có hạn nộp cụ thể"))
+    snapshot = _student_priority_snapshot("Không có deadline và chưa có hạn nộp cụ thể")
     suggested, reasons = apply_priority_floor(snapshot, "normal", [])
     assert suggested == "normal"
     assert "hạn nộp trong ngày" not in " ".join(reasons)
 
 
 def test_negation_does_not_mask_later_same_day_deadline():
-    snapshot = make_snapshot(ticket=make_ticket(summary="Không có deadline nhưng hạn nộp hôm nay"))
+    snapshot = _student_priority_snapshot("Không có deadline nhưng hạn nộp hôm nay")
     suggested, reasons = apply_priority_floor(snapshot, "normal", [])
     assert suggested == "high"
     assert reasons
 
 
 def test_not_due_yet_but_due_today_is_high():
-    snapshot = make_snapshot(ticket=make_ticket(summary="Chưa đến hạn nhưng cần nộp trong ngày"))
+    snapshot = _student_priority_snapshot("Chưa đến hạn nhưng cần nộp trong ngày")
     suggested, reasons = apply_priority_floor(snapshot, "normal", [])
     assert suggested == "high"
 
 
 def test_negated_scholarship_impact_is_not_high():
-    snapshot = make_snapshot(ticket=make_ticket(summary="Không ảnh hưởng học bổng, chỉ xin giấy bình thường"))
+    snapshot = _student_priority_snapshot("Không ảnh hưởng học bổng, chỉ xin giấy bình thường")
     suggested, reasons = apply_priority_floor(snapshot, "normal", [])
     assert suggested == "normal"
 
 
 def test_deadline_today_not_postponed_is_high():
-    snapshot = make_snapshot(ticket=make_ticket(summary="Hạn nộp hôm nay không bị hoãn"))
+    snapshot = _student_priority_snapshot("Hạn nộp hôm nay không bị hoãn")
     suggested, reasons = apply_priority_floor(snapshot, "normal", [])
     assert suggested == "high"
     assert reasons
@@ -190,7 +211,7 @@ def test_deadline_today_not_postponed_is_high():
     ],
 )
 def test_denied_or_nonurgent_signals_stay_normal(summary: str):
-    snapshot = make_snapshot(ticket=make_ticket(summary=summary))
+    snapshot = _student_priority_snapshot(summary)
     suggested, reasons = apply_priority_floor(snapshot, "normal", [])
     assert suggested == "normal"
     joined = " ".join(reasons).lower()
@@ -209,10 +230,158 @@ def test_denied_or_nonurgent_signals_stay_normal(summary: str):
     ],
 )
 def test_positive_harm_phrases_raise_high(summary: str):
-    snapshot = make_snapshot(ticket=make_ticket(summary=summary))
+    snapshot = _student_priority_snapshot(summary)
     suggested, reasons = apply_priority_floor(snapshot, "normal", [])
     assert suggested == "high"
     assert reasons
+
+
+@pytest.mark.parametrize(
+    ("summary", "priority"),
+    [
+        ("Cần giấy trước ngày 29/09/2026", "high"),
+        ("Cần giấy trước ngày 30/09/2026", "high"),
+        ("Hạn nộp là 30/09", "high"),
+        ("Hạn nộp 01/10/2026", "normal"),
+        ("Không cần giấy trước ngày 30/09/2026", "normal"),
+        ("Quyết định ban hành ngày 30/09/2026", "normal"),
+        ("Hạn nộp 31/02/2026", "normal"),
+        ("deadline 2026-09-30", "high"),
+        ("cần giấy trước 30-09-2026", "high"),
+    ],
+)
+def test_absolute_deadline_floor_uses_ticket_updated_at(summary: str, priority: str):
+    snapshot = make_snapshot(
+        ticket=make_ticket(summary=summary),
+        messages=[make_message(summary)],
+    )
+    suggested, reasons = apply_priority_floor(snapshot, "normal", [])
+    assert suggested == priority
+    if priority == "high":
+        assert any("Sinh viên khai deadline" in item and "hôm nay hoặc ngày kế tiếp" in item for item in reasons)
+
+
+def test_absolute_deadline_year_wrap_from_new_years_eve():
+    snapshot = make_snapshot(
+        ticket=make_ticket(
+            summary="Hạn nộp 01/01",
+            updated_at=datetime(2026, 12, 31, 8, 0, tzinfo=UTC),
+        ),
+        messages=[make_message("Hạn nộp 01/01")],
+    )
+    suggested, reasons = apply_priority_floor(snapshot, "normal", [])
+    assert suggested == "high"
+    assert "01/01/2027" in " ".join(reasons)
+    assert extract_absolute_deadlines("Hạn nộp 01/01", snapshot.ticket.updated_at.date())
+
+
+def test_invalid_absolute_deadline_is_ignored():
+    snapshot = make_snapshot(
+        ticket=make_ticket(summary="Hạn nộp 31/02/2026"),
+        messages=[make_message("Hạn nộp 31/02/2026")],
+    )
+    assert extract_absolute_deadlines("Hạn nộp 31/02/2026", snapshot.ticket.updated_at.date()) == []
+    assert absolute_deadline_reason(snapshot) is None
+
+
+def test_officer_deadline_is_not_student_declared():
+    snapshot = make_snapshot(
+        ticket=make_ticket(summary="Xin giấy xác nhận sinh viên"),
+        messages=[make_message("Hạn nộp 30/09/2026", sender="officer")],
+    )
+    suggested, reasons = apply_priority_floor(snapshot, "normal", [])
+    assert absolute_deadline_reason(snapshot) is None
+    assert all("Sinh viên khai" not in item for item in reasons)
+    assert suggested == "normal"
+
+
+def test_assistant_deadline_does_not_raise_high():
+    snapshot = make_snapshot(
+        ticket=make_ticket(summary="Xin giấy xác nhận sinh viên"),
+        messages=[make_message("Deadline 30/09/2026", sender="assistant")],
+    )
+    suggested, reasons = apply_priority_floor(snapshot, "normal", [])
+    assert suggested == "normal"
+    assert absolute_deadline_reason(snapshot) is None
+    assert all("Sinh viên khai" not in item for item in reasons)
+
+
+def test_student_deadline_raises_high_with_student_reason():
+    snapshot = make_snapshot(
+        ticket=make_ticket(summary="Xin giấy xác nhận sinh viên"),
+        messages=[make_message("Hạn nộp 30/09/2026")],
+    )
+    suggested, reasons = apply_priority_floor(snapshot, "normal", [])
+    assert suggested == "high"
+    assert any("Sinh viên khai deadline 30/09/2026" in item for item in reasons)
+
+
+def test_ungrounded_summary_deadline_is_not_student_declared():
+    snapshot = make_snapshot(
+        ticket=make_ticket(summary="Hạn nộp 30/09/2026"),
+        messages=[make_message("Tôi muốn xin giấy xác nhận sinh viên")],
+    )
+    assert absolute_deadline_reason(snapshot) is None
+    suggested, reasons = apply_priority_floor(snapshot, "normal", [])
+    assert all("Sinh viên khai" not in item for item in reasons)
+
+
+@pytest.mark.parametrize(
+    "injected",
+    [
+        "hạn nộp hôm nay",
+        "hạn nộp 30/09/2026",
+        "nguy cơ mất học bổng",
+    ],
+)
+def test_summary_cannot_inject_priority_over_shorter_student_message(injected: str):
+    student = "Xin giấy xác nhận sinh viên"
+    snapshot = make_snapshot(
+        ticket=make_ticket(summary=f"{student}, {injected}"),
+        messages=[make_message(student)],
+    )
+    suggested, reasons = apply_priority_floor(snapshot, "normal", [])
+    assert suggested == "normal"
+    assert absolute_deadline_reason(snapshot) is None
+    joined = " ".join(reasons).lower()
+    assert "sinh viên khai" not in joined
+    assert "hạn nộp trong ngày" not in joined
+    assert "học bổng" not in joined
+
+
+@pytest.mark.parametrize(
+    ("content", "sender"),
+    [
+        ("Hạn nộp hôm nay", "officer"),
+        ("Deadline hôm nay", "assistant"),
+        ("Có thể bị thôi học", "assistant"),
+    ],
+)
+def test_relative_deadline_and_impact_ignore_non_student_senders(content: str, sender: str):
+    snapshot = _sender_priority_snapshot(content, sender)
+    suggested, reasons = apply_priority_floor(snapshot, "normal", [])
+    assert suggested == "normal"
+    assert not reasons
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        "Hạn nộp hôm nay",
+        "Nguy cơ mất học bổng",
+    ],
+)
+def test_relative_deadline_and_impact_from_student_raise_high(content: str):
+    snapshot = _student_priority_snapshot(content)
+    suggested, reasons = apply_priority_floor(snapshot, "normal", [])
+    assert suggested == "high"
+    assert reasons
+
+
+def test_non_deadline_calendar_date_is_not_extracted():
+    from datetime import date as date_cls
+
+    assert extract_absolute_deadlines("Quyết định ban hành ngày 30/09/2026", date_cls(2026, 9, 29)) == []
 
 
 @pytest.mark.asyncio

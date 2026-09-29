@@ -3,6 +3,7 @@ from __future__ import annotations
 import time
 from typing import Any
 
+from campus247.agents.draft_templates import template_draft
 from campus247.agents.llm_invoke import (
     OFFICER_BUDGET_SECONDS,
     PROVIDER_CALL_TIMEOUT_SECONDS,
@@ -13,35 +14,6 @@ from campus247.agents.prompts.officer import DRAFTER_SYSTEM
 from campus247.agents.snapshot_text import format_officer_context, format_passages
 from campus247.agents.state import DraftOutput, OfficerState
 from campus247.models.contracts_v1 import Citation, TicketSnapshot, WarningItem
-
-_TEMPLATES = {
-    "student_certificate": (
-        "Bộ phận phụ trách sẽ kiểm tra yêu cầu cấp giấy xác nhận sinh viên của bạn và phản hồi sau khi rà soát hồ sơ."
-    ),
-    "academic_complaint": (
-        "Bộ phận phụ trách sẽ kiểm tra thông tin khiếu nại đã ghi nhận. Kết quả xử lý sẽ do cán bộ thông báo sau khi rà soát."
-    ),
-    "student_support": (
-        "Thông tin đã được ghi nhận để bộ phận phụ trách tiếp nhận. Cán bộ sẽ liên hệ sau khi kiểm tra hồ sơ."
-    ),
-}
-
-_GROUNDED_FALLBACK = {
-    "student_certificate": (
-        "Bộ phận phụ trách sẽ đối chiếu yêu cầu cấp giấy xác nhận sinh viên với nguồn quy chế đã duyệt trong hồ sơ và phản hồi sau khi rà soát."
-    ),
-    "academic_complaint": (
-        "Bộ phận phụ trách sẽ đối chiếu thông tin khiếu nại với nguồn quy chế đã duyệt trong hồ sơ. Kết quả xử lý sẽ do cán bộ thông báo sau khi rà soát."
-    ),
-    "student_support": (
-        "Thông tin đã được ghi nhận. Cán bộ sẽ đối chiếu hồ sơ với nguồn đã duyệt trước khi liên hệ."
-    ),
-}
-
-
-def template_draft(snapshot: TicketSnapshot, *, grounded: bool = False) -> str:
-    table = _GROUNDED_FALLBACK if grounded else _TEMPLATES
-    return table.get(snapshot.ticket.service_type, table["student_certificate"])
 
 
 def citations_from_chunk_ids(snapshot: TicketSnapshot, chunk_ids: list[str]) -> tuple[list[Citation], list[str]]:

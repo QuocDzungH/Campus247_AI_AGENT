@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from campus247.agents.draft_templates import SAFE_TEMPLATE_VERSION
 from campus247.agents.prompts import PROMPT_VERSIONS
 
 STUB_MODEL_NAME = "stub-agent"
@@ -24,7 +25,7 @@ def build_brief_artifact_metadata(*, model_name: str, index_version: str | None 
     return {
         "model_name": model_name,
         "prompt_version": officer_prompt_pack(),
-        "template_version": PROMPT_VERSIONS["drafter"],
+        "template_version": SAFE_TEMPLATE_VERSION,
         "index_version": index_version,
     }
 
