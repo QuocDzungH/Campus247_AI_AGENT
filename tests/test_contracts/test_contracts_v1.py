@@ -31,6 +31,8 @@ def test_examples_validate_and_round_trip(case):
         ("submit1", "student_id", "SV024"),
         ("submit2", "expected_revision", 0),
         ("submit2", "action", "approve_grade_change"),
+        ("claim", "confirmed", False),
+        ("claim", "expected_revision", 0),
         ("intake_preview", "intake.fields.receive_method", "email"),
         ("intake_preview", "intake.fields.purpose", None),
         ("intake_handover", "reply", "Đã tạo ticket TKT-FAKE"),

@@ -27,6 +27,12 @@ class Settings(BaseSettings):
 
     # Database
     database_url: str = "sqlite:///./data/app.db"
+    demo_auth_enabled: bool = True
+    session_ttl_seconds: int = Field(default=8 * 3600, ge=60)
+    preview_ttl_seconds: int = Field(default=30 * 60, ge=60)
+    idempotency_ttl_seconds: int = Field(default=24 * 3600, ge=60)
+    worker_lease_seconds: int = Field(default=60, ge=5)
+    worker_max_attempts: int = Field(default=3, ge=1)
 
     # Vector Store
     chroma_persist_dir: str = "./data/chroma"

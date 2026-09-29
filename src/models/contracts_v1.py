@@ -409,6 +409,11 @@ class Submit2(Contract):
     confirmed: Literal[True]
 
 
+class ClaimRequest(Contract):
+    expected_revision: int = Field(ge=1)
+    confirmed: Literal[True]
+
+
 class PreviewPatch(Contract):
     """Replace the editable fields as a full snapshot; null clears a field."""
 
@@ -535,6 +540,11 @@ class Submit2Result(Contract):
     audit_id: Id
 
 
+class ClaimResult(Contract):
+    ticket: Ticket
+    audit_id: Id
+
+
 class TicketDetail(Contract):
     ticket: Ticket
     messages: Page[Message]
@@ -546,7 +556,15 @@ class AuditEntry(Contract):
     actor_id: Id | None
     actor_type: Literal["student", "officer", "system"]
     action: Literal[
-        "create", "handover", "supplement", "respond", "request_info", "resolve", "brief_ready", "brief_failed"
+        "create",
+        "handover",
+        "supplement",
+        "respond",
+        "request_info",
+        "resolve",
+        "brief_ready",
+        "brief_failed",
+        "claim",
     ]
     from_status: Status | None
     to_status: Status | None

@@ -1,7 +1,16 @@
-.PHONY: run test lint format typecheck check clean
+.PHONY: run test lint format typecheck check clean migrate seed worker
 
 run:
 	uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
+
+migrate:
+	alembic upgrade head
+
+seed:
+	python -m scripts.seed_edu14
+
+worker:
+	python -m src.workers
 
 test:
 	pytest tests/ -v

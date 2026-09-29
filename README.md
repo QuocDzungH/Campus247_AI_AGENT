@@ -83,6 +83,21 @@ uvicorn src.main:app --reload --port 8000
 Swagger UI ở <http://localhost:8000/docs>. Hoặc dùng `make run`, `make test`,
 `make lint` — xem `Makefile`.
 
+### Database (P0)
+
+Chi tiết schema, ERD và giới hạn SQLite: [`docs/database/README.md`](docs/database/README.md).
+
+```bash
+mkdir -p data
+.venv/bin/alembic upgrade head          # migration từ DB rỗng
+.venv/bin/python -m scripts.seed_edu14  # seed giả lập, chỉ thêm bản ghi còn thiếu
+.venv/bin/python -m scripts.seed_edu14 --reset  # khôi phục dòng demo từ JSON
+.venv/bin/python -m src.workers         # worker prepare_brief / retry_handover
+.venv/bin/alembic downgrade -1          # rollback một revision
+```
+
+SQLite local: `DATABASE_URL=sqlite:///./data/app.db`. PostgreSQL (Compose): `docker compose up --build`.
+
 ## Cấu trúc thư mục
 
 ```
