@@ -5,8 +5,8 @@ Contract giao tiếp đã chốt. Các endpoint ở đây là mục tiêu triể
 | Thành phần | File chuẩn | Cách dùng |
 |---|---|---|
 | Quyết định nghiệp vụ, lỗi và quyền ghi | [Quy ước P0](../Quy-uoc-ky-thuat-P0-va-phan-cong.md) | Đọc mục 13–19 khi triển khai tích hợp |
-| Kiểu dữ liệu và cross-field validation | [contracts_v1.py](../../src/models/contracts_v1.py) | Import trực tiếp vào RAG/Agent/Backend |
-| Interface async | [ports_v1.py](../../src/models/ports_v1.py) | Người 1 implement RagPort; người 2 implement AgentPort |
+| Kiểu dữ liệu và cross-field validation | [contracts_v1.py](../../backend/src/campus247/models/contracts_v1.py) | Import trực tiếp vào RAG/Agent/Backend |
+| Interface async | [ports_v1.py](../../backend/src/campus247/models/ports_v1.py) | Người 1 implement RagPort; người 2 implement AgentPort |
 | HTTP contract | [p0-v1.openapi.json](p0-v1.openapi.json) | Người 3 implement API; người 4 sinh types/client hoặc dựng adapter/mock |
 | Dữ liệu mẫu | [p0-v1.examples.json](p0-v1.examples.json) | Dùng chung payload trong mock và test |
 
@@ -18,7 +18,7 @@ Từ thư mục gốc repository, với môi trường Python đã cài requirem
 
 ```bash
 .venv/bin/python -m scripts.export_contracts_v1 --check
-.venv/bin/pytest tests/test_contracts/ -q
+.venv/bin/pytest backend/tests/test_contracts/ -q --rootdir=backend
 ```
 
 Artifact JSON được sinh tự động; không sửa tay. Khi thay đổi contract đã được thống nhất:

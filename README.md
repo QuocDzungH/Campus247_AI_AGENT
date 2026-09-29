@@ -49,7 +49,7 @@ của đội thì báo BTC — repo tự tạo nằm ngoài org sẽ không đư
 ```bash
 python3.11 -m venv .venv
 source .venv/bin/activate      # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
+pip install -e "./backend[dev]"
 ```
 
 ### 3. Cấu hình biến môi trường
@@ -77,38 +77,55 @@ Codex CLI, Gemini CLI, Antigravity hoặc GitHub Copilot, và cài pre-push hook
 ### 5. Chạy server
 
 ```bash
-uvicorn src.main:app --reload --port 8000
+uvicorn campus247.main:app --reload --port 8000
 ```
 
 Swagger UI ở <http://localhost:8000/docs>. Hoặc dùng `make run`, `make test`,
 `make lint` — xem `Makefile`.
 
+### Database (P0)
+
+Chi tiết schema, ERD và giới hạn SQLite: [`docs/database/README.md`](docs/database/README.md).
+
+```bash
+mkdir -p data
+.venv/bin/alembic -c backend/alembic.ini upgrade head  # migration từ DB rỗng
+.venv/bin/python -m campus247.db.seed                   # seed giả lập, chỉ thêm bản ghi còn thiếu
+.venv/bin/python -m campus247.db.seed --reset           # khôi phục dòng demo từ JSON
+.venv/bin/python -m campus247.workers                   # worker prepare_brief / retry_handover
+.venv/bin/alembic -c backend/alembic.ini downgrade -1   # rollback một revision
+```
+
+SQLite local: `DATABASE_URL=sqlite:///./data/app.db`. PostgreSQL (Compose): `docker compose up --build`.
+
 ## Cấu trúc thư mục
 
 ```
-src/
-  agents/            LangGraph agent
-    graph.py         State graph (nodes + edges)
-    state.py         State schema (TypedDict)
-    nodes/           Node functions
-    tools/           Agent tools (@tool)
-  api/routes.py      FastAPI endpoints
-  models/schemas.py  Pydantic schemas
-  services/llm.py    LLM client
-  config.py          Pydantic Settings
-  main.py            App entry point
-tests/               pytest suite
-scripts/             Hook ghi log AI + installer
+backend/
+  src/campus247/
+    agents/            LangGraph agent
+      graph.py         State graph (nodes + edges)
+      state.py         State schema (TypedDict)
+      nodes/           Node functions
+      tools/           Agent tools (@tool)
+    api/routes.py      FastAPI endpoints
+    models/schemas.py  Pydantic schemas
+    services/llm.py    LLM client
+    config.py          Pydantic Settings
+    main.py            App entry point
+  tests/               pytest suite
+  Dockerfile           Multi-stage build
+frontend/              Next.js App Router
+scripts/               Hook ghi log AI + installer
 docs/
-  guide/             Technical Guidebook (nguồn của bản online)
-  architecture_diagram.md
-eval/                Kết quả evaluation
-presentation/        Slide và video Demo Day
+  guide/               Technical Guidebook (nguồn của bản online)
+  architecture/        Sơ đồ và tài liệu kiến trúc
+eval/                  Kết quả evaluation
+presentation/          Slide và video Demo Day
 .claude/ .codex/ .cursor/ .gemini/ .agents/ .github/hooks/
-                     Config hook cho từng công cụ
-.github/workflows/   CI
-Dockerfile           Multi-stage build
-docker-compose.yml   Chạy backend bằng Docker
+                       Config hook cho từng công cụ
+.github/workflows/     CI
+docker-compose.yml     Chạy backend bằng Docker
 README_boilerplate.md  Khung README cho dự án của đội
 ```
 
@@ -136,9 +153,9 @@ bằng bất kỳ markdown viewer nào.
 
 | # | Deliverable | Vị trí | Template lo tới đâu |
 |---|---|---|---|
-| 1 | Source code | `src/` | Khung sẵn |
+| 1 | Source code | `backend/`, `frontend/` | Khung sẵn |
 | 2 | README | copy `README_boilerplate.md` thành `README.md` | Khung sẵn |
-| 3 | Architecture diagram | `docs/architecture_diagram.md` | Khung sẵn |
+| 3 | Architecture diagram | `docs/architecture/` | Khung sẵn |
 | 4 | AI logs | LangSmith (3 biến môi trường) + auto AI usage logging | Cấu hình sẵn |
 | 5 | Live URL | deploy lên Render/Vercel | CI/CD sẵn |
 | 6 | Video demo | `presentation/` | Đội tự làm |
@@ -153,7 +170,7 @@ bằng bất kỳ markdown viewer nào.
 |---|---|
 | Agent | LangGraph + LangChain 0.3 |
 | Backend | FastAPI 0.115 + Uvicorn |
-| LLM | OpenAI, mặc định `gpt-4o-mini` (đổi trong `src/config.py`) |
+| LLM | OpenAI, mặc định `gpt-4o-mini` (đổi trong `backend/src/campus247/config.py`) |
 | Giao diện | Next.js hoặc Streamlit (đội tự chọn, hướng dẫn ở chương 6) |
 | Lint / test | ruff + pytest 8 |
 | DevOps | Docker + GitHub Actions |

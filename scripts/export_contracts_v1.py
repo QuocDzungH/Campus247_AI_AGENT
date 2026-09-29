@@ -8,7 +8,7 @@ import json
 from copy import deepcopy
 from pathlib import Path
 
-from src.models import contracts_v1 as c
+from campus247.models import contracts_v1 as c
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "docs" / "contracts"
@@ -33,6 +33,7 @@ ENDPOINTS = [
     ("get", "/officer/tickets/{id}/brief", None, 200, c.BriefEnvelope, False),
     ("post", "/officer/tickets/{id}/prepare", c.PrepareRequest, 202, c.JobAccepted, True),
     ("post", "/officer/tickets/{id}/actions", c.Submit2, 200, c.Submit2Result, True),
+    ("post", "/officer/tickets/{id}/claim", c.ClaimRequest, 200, c.ClaimResult, True),
     ("get", "/officer/tickets/{id}/audit", None, 200, c.Page[c.AuditEntry], False),
 ]
 
@@ -254,6 +255,8 @@ def example_cases() -> list[dict]:
             confirmed=True,
         ),
     )
+    add("claim", c.ClaimRequest, dict(expected_revision=1, confirmed=True))
+    add("claim_success", c.ClaimResult, dict(ticket=ticket, audit_id="aud_claim_001"))
     add("preview_patch", c.PreviewPatch, dict(expected_version=1, fields=fields))
     add("processing", c.Processing, dict(operation_id="op_001", status="processing", poll_after_ms=2000))
     module_error = dict(code="PROVIDER_TIMEOUT", retryable=True, stage="brief", request_id="req_001")

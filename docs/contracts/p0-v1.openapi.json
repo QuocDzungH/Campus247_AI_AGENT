@@ -3526,6 +3526,236 @@
         }
       }
     },
+    "/api/v1/officer/tickets/{id}/claim": {
+      "post": {
+        "operationId": "post_officer_tickets_by_id_claim",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contract target; runtime implementation is separate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimResult"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "202": {
+            "description": "Operation already processing; repeat same request/key after Retry-After.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Processing"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "example": 2
+                }
+              },
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "401": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "403": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "404": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "409": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "422": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "429": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "502": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "503": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaimRequest"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/officer/tickets/{id}/audit": {
       "get": {
         "operationId": "get_officer_tickets_by_id_audit",
@@ -4171,7 +4401,8 @@
               "request_info",
               "resolve",
               "brief_ready",
-              "brief_failed"
+              "brief_failed",
+              "claim"
             ],
             "title": "Action",
             "type": "string"
@@ -4724,6 +4955,196 @@
         "title": "ChatResult",
         "type": "object"
       },
+      "ClaimRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "minimum": 1,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "confirmed": {
+            "const": true,
+            "title": "Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "confirmed"
+        ],
+        "title": "ClaimRequest",
+        "type": "object"
+      },
+      "Ticket": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "code": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Code",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "open",
+              "pending_officer",
+              "resolved"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "priority": {
+            "enum": [
+              "normal",
+              "high"
+            ],
+            "title": "Priority",
+            "type": "string"
+          },
+          "conversation_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Conversation Id",
+            "type": "string"
+          },
+          "student_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Student Id",
+            "type": "string"
+          },
+          "category": {
+            "enum": [
+              "action",
+              "complaint"
+            ],
+            "title": "Category",
+            "type": "string"
+          },
+          "service_type": {
+            "enum": [
+              "student_certificate",
+              "academic_complaint",
+              "student_support"
+            ],
+            "title": "Service Type",
+            "type": "string"
+          },
+          "priority_reasons": {
+            "items": {
+              "maxLength": 10000,
+              "minLength": 1,
+              "type": "string"
+            },
+            "title": "Priority Reasons",
+            "type": "array"
+          },
+          "summary": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Summary",
+            "type": "string"
+          },
+          "request_data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fields"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "handover_reason": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Handover Reason"
+          },
+          "assigned_officer_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigned Officer Id"
+          },
+          "revision": {
+            "minimum": 1,
+            "title": "Revision",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "status",
+          "priority",
+          "conversation_id",
+          "student_id",
+          "category",
+          "service_type",
+          "priority_reasons",
+          "summary",
+          "request_data",
+          "handover_reason",
+          "assigned_officer_id",
+          "revision",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "Ticket",
+        "type": "object"
+      },
+      "ClaimResult": {
+        "additionalProperties": false,
+        "properties": {
+          "ticket": {
+            "$ref": "#/components/schemas/Ticket"
+          },
+          "audit_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Audit Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket",
+          "audit_id"
+        ],
+        "title": "ClaimResult",
+        "type": "object"
+      },
       "Contract": {
         "additionalProperties": false,
         "properties": {},
@@ -5171,155 +5592,6 @@
           "is_demo"
         ],
         "title": "Profile",
-        "type": "object"
-      },
-      "Ticket": {
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "maxLength": 128,
-            "minLength": 1,
-            "title": "Id",
-            "type": "string"
-          },
-          "code": {
-            "maxLength": 128,
-            "minLength": 1,
-            "title": "Code",
-            "type": "string"
-          },
-          "status": {
-            "enum": [
-              "open",
-              "pending_officer",
-              "resolved"
-            ],
-            "title": "Status",
-            "type": "string"
-          },
-          "priority": {
-            "enum": [
-              "normal",
-              "high"
-            ],
-            "title": "Priority",
-            "type": "string"
-          },
-          "conversation_id": {
-            "maxLength": 128,
-            "minLength": 1,
-            "title": "Conversation Id",
-            "type": "string"
-          },
-          "student_id": {
-            "maxLength": 128,
-            "minLength": 1,
-            "title": "Student Id",
-            "type": "string"
-          },
-          "category": {
-            "enum": [
-              "action",
-              "complaint"
-            ],
-            "title": "Category",
-            "type": "string"
-          },
-          "service_type": {
-            "enum": [
-              "student_certificate",
-              "academic_complaint",
-              "student_support"
-            ],
-            "title": "Service Type",
-            "type": "string"
-          },
-          "priority_reasons": {
-            "items": {
-              "maxLength": 10000,
-              "minLength": 1,
-              "type": "string"
-            },
-            "title": "Priority Reasons",
-            "type": "array"
-          },
-          "summary": {
-            "maxLength": 10000,
-            "minLength": 1,
-            "title": "Summary",
-            "type": "string"
-          },
-          "request_data": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Fields"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "handover_reason": {
-            "anyOf": [
-              {
-                "maxLength": 10000,
-                "minLength": 1,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Handover Reason"
-          },
-          "assigned_officer_id": {
-            "anyOf": [
-              {
-                "maxLength": 128,
-                "minLength": 1,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Assigned Officer Id"
-          },
-          "revision": {
-            "minimum": 1,
-            "title": "Revision",
-            "type": "integer"
-          },
-          "created_at": {
-            "format": "date-time",
-            "title": "Created At",
-            "type": "string"
-          },
-          "updated_at": {
-            "format": "date-time",
-            "title": "Updated At",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "code",
-          "status",
-          "priority",
-          "conversation_id",
-          "student_id",
-          "category",
-          "service_type",
-          "priority_reasons",
-          "summary",
-          "request_data",
-          "handover_reason",
-          "assigned_officer_id",
-          "revision",
-          "created_at",
-          "updated_at"
-        ],
-        "title": "Ticket",
         "type": "object"
       },
       "IntakeContext": {

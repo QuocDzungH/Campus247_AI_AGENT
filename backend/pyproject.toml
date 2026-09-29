@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "campus247"
+version = "0.1.0"
+description = "Campus 24/7 academic-ops assistant backend"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.7.0",
+    "python-dotenv>=1.0.0",
+    "langchain>=0.3.0",
+    "langchain-openai>=0.3.0",
+    "langgraph>=0.2.0",
+    "sqlalchemy>=2.0.0",
+    "alembic>=1.14.0",
+    "psycopg[binary]>=3.2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.8.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "httpx>=0.28.0",
+]
+
+[project.scripts]
+campus247-seed = "campus247.db.seed:main"
+campus247-worker = "campus247.workers.runner:run_forever"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+campus247 = ["db/seed_data/*.json"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src", ".."]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["campus247"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
