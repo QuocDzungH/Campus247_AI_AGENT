@@ -1,0 +1,893 @@
+{
+  "contract_version": "P0-contract-v1",
+  "cases": [
+    {
+      "name": "retrieval_request",
+      "model": "RetrievalRequest",
+      "payload": {
+        "query": "Xin giấy cần gì?",
+        "policy_scope": "demo_academic",
+        "top_k": 5,
+        "effective_at": "2026-09-29T03:00:00Z"
+      }
+    },
+    {
+      "name": "retrieval_found",
+      "model": "RetrievalResult",
+      "payload": {
+        "status": "found",
+        "passages": [
+          {
+            "citation": {
+              "document_id": "policy_001",
+              "document_title": "Quy trình demo",
+              "document_version": "1",
+              "chunk_id": "chunk_012",
+              "locator": "Mục 2",
+              "quote": "Sinh viên kiểm tra thông tin trước khi gửi yêu cầu.",
+              "url": null
+            },
+            "text": "Sinh viên kiểm tra thông tin trước khi gửi yêu cầu.",
+            "score": 0.82
+          }
+        ],
+        "index_version": "demo-v1"
+      }
+    },
+    {
+      "name": "retrieval_empty",
+      "model": "RetrievalResult",
+      "payload": {
+        "status": "empty",
+        "passages": [],
+        "index_version": "demo-v1"
+      }
+    },
+    {
+      "name": "rag_request",
+      "model": "RagRequest",
+      "payload": {
+        "question": "Xin giấy cần gì?",
+        "history": [
+          {
+            "id": "msg_001",
+            "conversation_id": "conv_001",
+            "ticket_id": null,
+            "sender": "student",
+            "content": "Tôi muốn xin giấy xác nhận",
+            "created_at": "2026-09-29T03:00:00Z"
+          }
+        ],
+        "policy_scope": "demo_academic",
+        "effective_at": "2026-09-29T03:00:00Z"
+      }
+    },
+    {
+      "name": "rag_answered",
+      "model": "RagResult",
+      "payload": {
+        "status": "answered",
+        "answer": "Nội dung phản hồi mẫu",
+        "citations": [
+          {
+            "document_id": "policy_001",
+            "document_title": "Quy trình demo",
+            "document_version": "1",
+            "chunk_id": "chunk_012",
+            "locator": "Mục 2",
+            "quote": "Sinh viên kiểm tra thông tin trước khi gửi yêu cầu.",
+            "url": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "rag_needs_clarification",
+      "model": "RagResult",
+      "payload": {
+        "status": "needs_clarification",
+        "answer": "Nội dung phản hồi mẫu",
+        "citations": []
+      }
+    },
+    {
+      "name": "rag_insufficient_evidence",
+      "model": "RagResult",
+      "payload": {
+        "status": "insufficient_evidence",
+        "answer": "Nội dung phản hồi mẫu",
+        "citations": []
+      }
+    },
+    {
+      "name": "intake_context",
+      "model": "IntakeContext",
+      "payload": {
+        "request_id": "req_001",
+        "conversation_id": "conv_001",
+        "conversation_revision": 1,
+        "actor": {
+          "user_id": "SV001",
+          "role": "student"
+        },
+        "student_profile": {
+          "student_id": "SV001",
+          "full_name": "Nguyễn Văn An",
+          "mssv": "20210018",
+          "faculty": "KTPM",
+          "cohort": "K18",
+          "is_demo": true
+        },
+        "message": {
+          "id": "msg_001",
+          "conversation_id": "conv_001",
+          "ticket_id": null,
+          "sender": "student",
+          "content": "Tôi muốn xin giấy xác nhận",
+          "created_at": "2026-09-29T03:00:00Z"
+        },
+        "history": [],
+        "preview": null,
+        "linked_ticket": null,
+        "policy_scope": "demo_academic",
+        "effective_at": "2026-09-29T03:00:00Z"
+      }
+    },
+    {
+      "name": "intake_preview",
+      "model": "IntakeResult",
+      "payload": {
+        "route": "L2",
+        "outcome": "preview_ready",
+        "reply": "Hãy kiểm tra yêu cầu",
+        "citations": [],
+        "intake": {
+          "service_type": "student_certificate",
+          "fields": {
+            "purpose": "Vay vốn ngân hàng",
+            "destination_org": "Ngân hàng Chính sách Xã hội",
+            "receive_method": "paper_stamped"
+          },
+          "missing_fields": [],
+          "invalid_fields": []
+        },
+        "handover": null
+      }
+    },
+    {
+      "name": "intake_collecting",
+      "model": "IntakeResult",
+      "payload": {
+        "route": "L2",
+        "outcome": "collecting",
+        "reply": "Bạn muốn nhận bản giấy hay điện tử?",
+        "citations": [],
+        "intake": {
+          "service_type": "student_certificate",
+          "fields": {
+            "purpose": "Vay vốn ngân hàng",
+            "destination_org": "Ngân hàng Chính sách Xã hội",
+            "receive_method": null
+          },
+          "missing_fields": [
+            "receive_method"
+          ],
+          "invalid_fields": []
+        },
+        "handover": null
+      }
+    },
+    {
+      "name": "intake_handover",
+      "model": "IntakeResult",
+      "payload": {
+        "route": "L4",
+        "outcome": "handover_required",
+        "reply": null,
+        "citations": [],
+        "intake": null,
+        "handover": {
+          "risk_type": "academic_complaint",
+          "reason": "Sinh viên gửi khiếu nại điểm",
+          "summary": "Đề nghị cán bộ kiểm tra điểm học phần",
+          "source_message_ids": [
+            "msg_001"
+          ]
+        }
+      }
+    },
+    {
+      "name": "ticket_snapshot",
+      "model": "TicketSnapshot",
+      "payload": {
+        "ticket": {
+          "id": "tkt_001",
+          "code": "TKT-0001",
+          "status": "open",
+          "priority": "normal",
+          "conversation_id": "conv_001",
+          "student_id": "SV001",
+          "category": "action",
+          "service_type": "student_certificate",
+          "priority_reasons": [],
+          "summary": "Xin giấy để vay vốn",
+          "request_data": {
+            "purpose": "Vay vốn ngân hàng",
+            "destination_org": "Ngân hàng Chính sách Xã hội",
+            "receive_method": "paper_stamped"
+          },
+          "handover_reason": null,
+          "assigned_officer_id": null,
+          "revision": 1,
+          "created_at": "2026-09-29T03:00:00Z",
+          "updated_at": "2026-09-29T03:00:00Z"
+        },
+        "source_ticket_revision": 1,
+        "student_profile": {
+          "student_id": "SV001",
+          "full_name": "Nguyễn Văn An",
+          "mssv": "20210018",
+          "faculty": "KTPM",
+          "cohort": "K18",
+          "is_demo": true
+        },
+        "messages": [
+          {
+            "id": "msg_001",
+            "conversation_id": "conv_001",
+            "ticket_id": null,
+            "sender": "student",
+            "content": "Tôi muốn xin giấy xác nhận",
+            "created_at": "2026-09-29T03:00:00Z"
+          }
+        ],
+        "intake_packet": {
+          "service_type": "student_certificate",
+          "fields": {
+            "purpose": "Vay vốn ngân hàng",
+            "destination_org": "Ngân hàng Chính sách Xã hội",
+            "receive_method": "paper_stamped"
+          },
+          "missing_fields": [],
+          "invalid_fields": []
+        },
+        "handover_packet": null,
+        "approved_sources": [
+          {
+            "citation": {
+              "document_id": "policy_001",
+              "document_title": "Quy trình demo",
+              "document_version": "1",
+              "chunk_id": "chunk_012",
+              "locator": "Mục 2",
+              "quote": "Sinh viên kiểm tra thông tin trước khi gửi yêu cầu.",
+              "url": null
+            },
+            "text": "Sinh viên kiểm tra thông tin trước khi gửi yêu cầu.",
+            "score": 0.82
+          }
+        ],
+        "existing_officer_draft": null,
+        "request_id": "req_001"
+      }
+    },
+    {
+      "name": "officer_brief",
+      "model": "OfficerBrief",
+      "payload": {
+        "ticket_id": "tkt_001",
+        "source_ticket_revision": 1,
+        "summary": "Sinh viên xin giấy để vay vốn",
+        "facts": [
+          {
+            "key": "purpose",
+            "value": "Vay vốn ngân hàng",
+            "source_type": "student_message",
+            "source_id": "msg_001",
+            "verification_status": "unverified"
+          }
+        ],
+        "missing_items": [],
+        "checklist": [
+          {
+            "id": "check_profile",
+            "label": "Kiểm tra tình trạng học tập",
+            "checked": false
+          }
+        ],
+        "suggested_priority": "normal",
+        "priority_reasons": [],
+        "draft_reply": "Phòng học vụ đã tiếp nhận yêu cầu.",
+        "citations": [
+          {
+            "document_id": "policy_001",
+            "document_title": "Quy trình demo",
+            "document_version": "1",
+            "chunk_id": "chunk_012",
+            "locator": "Mục 2",
+            "quote": "Sinh viên kiểm tra thông tin trước khi gửi yêu cầu.",
+            "url": null
+          }
+        ],
+        "warnings": [],
+        "quality_status": "pass"
+      }
+    },
+    {
+      "name": "chat_preview",
+      "model": "ChatResult",
+      "payload": {
+        "conversation_id": "conv_001",
+        "user_message_id": "msg_001",
+        "route": "L2",
+        "outcome": "preview_ready",
+        "reply": {
+          "id": "msg_002",
+          "conversation_id": "conv_001",
+          "ticket_id": null,
+          "sender": "assistant",
+          "content": "Bạn hãy kiểm tra thông tin trước khi gửi.",
+          "created_at": "2026-09-29T03:00:00Z"
+        },
+        "citations": [],
+        "preview": {
+          "service_type": "student_certificate",
+          "fields": {
+            "purpose": "Vay vốn ngân hàng",
+            "destination_org": "Ngân hàng Chính sách Xã hội",
+            "receive_method": "paper_stamped"
+          },
+          "missing_fields": [],
+          "invalid_fields": [],
+          "id": "preview_001",
+          "version": 1,
+          "can_submit": true,
+          "expires_at": "2026-09-29T03:30:00Z"
+        },
+        "ticket": null,
+        "conversation_state": {
+          "status": "active",
+          "ai_response_locked": false,
+          "handover_status": "none"
+        }
+      }
+    },
+    {
+      "name": "chat_collecting",
+      "model": "ChatResult",
+      "payload": {
+        "conversation_id": "conv_001",
+        "user_message_id": "msg_001",
+        "route": "L2",
+        "outcome": "collecting",
+        "reply": {
+          "id": "msg_002",
+          "conversation_id": "conv_001",
+          "ticket_id": null,
+          "sender": "assistant",
+          "content": "Bạn hãy kiểm tra thông tin trước khi gửi.",
+          "created_at": "2026-09-29T03:00:00Z"
+        },
+        "citations": [],
+        "preview": {
+          "service_type": "student_certificate",
+          "fields": {
+            "purpose": "Vay vốn ngân hàng",
+            "destination_org": "Ngân hàng Chính sách Xã hội",
+            "receive_method": null
+          },
+          "missing_fields": [
+            "receive_method"
+          ],
+          "invalid_fields": [],
+          "id": "preview_001",
+          "version": 1,
+          "can_submit": false,
+          "expires_at": "2026-09-29T03:30:00Z"
+        },
+        "ticket": null,
+        "conversation_state": {
+          "status": "active",
+          "ai_response_locked": false,
+          "handover_status": "none"
+        }
+      }
+    },
+    {
+      "name": "chat_answered",
+      "model": "ChatResult",
+      "payload": {
+        "conversation_id": "conv_001",
+        "user_message_id": "msg_001",
+        "route": "L1",
+        "outcome": "answered",
+        "reply": {
+          "id": "msg_002",
+          "conversation_id": "conv_001",
+          "ticket_id": null,
+          "sender": "assistant",
+          "content": "Bạn hãy kiểm tra thông tin trước khi gửi.",
+          "created_at": "2026-09-29T03:00:00Z"
+        },
+        "citations": [
+          {
+            "document_id": "policy_001",
+            "document_title": "Quy trình demo",
+            "document_version": "1",
+            "chunk_id": "chunk_012",
+            "locator": "Mục 2",
+            "quote": "Sinh viên kiểm tra thông tin trước khi gửi yêu cầu.",
+            "url": null
+          }
+        ],
+        "preview": null,
+        "ticket": null,
+        "conversation_state": {
+          "status": "active",
+          "ai_response_locked": false,
+          "handover_status": "none"
+        }
+      }
+    },
+    {
+      "name": "chat_needs_clarification",
+      "model": "ChatResult",
+      "payload": {
+        "conversation_id": "conv_001",
+        "user_message_id": "msg_001",
+        "route": "L1",
+        "outcome": "needs_clarification",
+        "reply": {
+          "id": "msg_002",
+          "conversation_id": "conv_001",
+          "ticket_id": null,
+          "sender": "assistant",
+          "content": "Bạn hãy kiểm tra thông tin trước khi gửi.",
+          "created_at": "2026-09-29T03:00:00Z"
+        },
+        "citations": [],
+        "preview": null,
+        "ticket": null,
+        "conversation_state": {
+          "status": "active",
+          "ai_response_locked": false,
+          "handover_status": "none"
+        }
+      }
+    },
+    {
+      "name": "chat_insufficient_evidence",
+      "model": "ChatResult",
+      "payload": {
+        "conversation_id": "conv_001",
+        "user_message_id": "msg_001",
+        "route": "L1",
+        "outcome": "insufficient_evidence",
+        "reply": {
+          "id": "msg_002",
+          "conversation_id": "conv_001",
+          "ticket_id": null,
+          "sender": "assistant",
+          "content": "Bạn hãy kiểm tra thông tin trước khi gửi.",
+          "created_at": "2026-09-29T03:00:00Z"
+        },
+        "citations": [],
+        "preview": null,
+        "ticket": null,
+        "conversation_state": {
+          "status": "active",
+          "ai_response_locked": false,
+          "handover_status": "none"
+        }
+      }
+    },
+    {
+      "name": "chat_handover_completed",
+      "model": "ChatResult",
+      "payload": {
+        "conversation_id": "conv_001",
+        "user_message_id": "msg_001",
+        "route": "L4",
+        "outcome": "handover_completed",
+        "reply": {
+          "id": "msg_002",
+          "conversation_id": "conv_001",
+          "ticket_id": "tkt_001",
+          "sender": "system",
+          "content": "Thông tin đã được lưu để cán bộ tiếp nhận.",
+          "created_at": "2026-09-29T03:00:00Z"
+        },
+        "citations": [],
+        "preview": null,
+        "ticket": {
+          "id": "tkt_001",
+          "code": "TKT-0001",
+          "status": "pending_officer",
+          "priority": "high"
+        },
+        "conversation_state": {
+          "status": "handover",
+          "ai_response_locked": true,
+          "handover_status": "completed"
+        }
+      }
+    },
+    {
+      "name": "chat_forwarded_to_officer",
+      "model": "ChatResult",
+      "payload": {
+        "conversation_id": "conv_001",
+        "user_message_id": "msg_001",
+        "route": "L4",
+        "outcome": "forwarded_to_officer",
+        "reply": {
+          "id": "msg_002",
+          "conversation_id": "conv_001",
+          "ticket_id": "tkt_001",
+          "sender": "system",
+          "content": "Thông tin đã được lưu để cán bộ tiếp nhận.",
+          "created_at": "2026-09-29T03:00:00Z"
+        },
+        "citations": [],
+        "preview": null,
+        "ticket": {
+          "id": "tkt_001",
+          "code": "TKT-0001",
+          "status": "pending_officer",
+          "priority": "high"
+        },
+        "conversation_state": {
+          "status": "handover",
+          "ai_response_locked": true,
+          "handover_status": "completed"
+        }
+      }
+    },
+    {
+      "name": "chat_supplement_received",
+      "model": "ChatResult",
+      "payload": {
+        "conversation_id": "conv_001",
+        "user_message_id": "msg_001",
+        "route": "L2",
+        "outcome": "supplement_received",
+        "reply": {
+          "id": "msg_002",
+          "conversation_id": "conv_001",
+          "ticket_id": "tkt_001",
+          "sender": "system",
+          "content": "Thông tin đã được lưu để cán bộ tiếp nhận.",
+          "created_at": "2026-09-29T03:00:00Z"
+        },
+        "citations": [],
+        "preview": null,
+        "ticket": {
+          "id": "tkt_001",
+          "code": "TKT-0001",
+          "status": "pending_officer",
+          "priority": "normal"
+        },
+        "conversation_state": {
+          "status": "active",
+          "ai_response_locked": false,
+          "handover_status": "none"
+        }
+      }
+    },
+    {
+      "name": "submit1",
+      "model": "Submit1",
+      "payload": {
+        "preview_id": "preview_001",
+        "preview_version": 1,
+        "confirmed": true
+      }
+    },
+    {
+      "name": "submit1_success",
+      "model": "Submit1Result",
+      "payload": {
+        "ticket": {
+          "id": "tkt_001",
+          "code": "TKT-0001",
+          "status": "open",
+          "priority": "normal",
+          "conversation_id": "conv_001",
+          "student_id": "SV001",
+          "category": "action",
+          "service_type": "student_certificate",
+          "priority_reasons": [],
+          "summary": "Xin giấy để vay vốn",
+          "request_data": {
+            "purpose": "Vay vốn ngân hàng",
+            "destination_org": "Ngân hàng Chính sách Xã hội",
+            "receive_method": "paper_stamped"
+          },
+          "handover_reason": null,
+          "assigned_officer_id": null,
+          "revision": 1,
+          "created_at": "2026-09-29T03:00:00Z",
+          "updated_at": "2026-09-29T03:00:00Z"
+        },
+        "brief_status": "pending"
+      }
+    },
+    {
+      "name": "submit2",
+      "model": "Submit2",
+      "payload": {
+        "action": "respond",
+        "content": "Phòng học vụ đã tiếp nhận.",
+        "expected_revision": 1,
+        "reviewed_brief_version": 1,
+        "confirmed": true
+      }
+    },
+    {
+      "name": "preview_patch",
+      "model": "PreviewPatch",
+      "payload": {
+        "expected_version": 1,
+        "fields": {
+          "purpose": "Vay vốn ngân hàng",
+          "destination_org": "Ngân hàng Chính sách Xã hội",
+          "receive_method": "paper_stamped"
+        }
+      }
+    },
+    {
+      "name": "processing",
+      "model": "Processing",
+      "payload": {
+        "operation_id": "op_001",
+        "status": "processing",
+        "poll_after_ms": 2000
+      }
+    },
+    {
+      "name": "brief_pending",
+      "model": "BriefEnvelope",
+      "payload": {
+        "status": "pending",
+        "current_ticket_revision": 1,
+        "brief_version": null,
+        "source_ticket_revision": null,
+        "artifact": null,
+        "error": null
+      }
+    },
+    {
+      "name": "brief_processing",
+      "model": "BriefEnvelope",
+      "payload": {
+        "status": "processing",
+        "current_ticket_revision": 1,
+        "brief_version": null,
+        "source_ticket_revision": null,
+        "artifact": null,
+        "error": null
+      }
+    },
+    {
+      "name": "brief_ready",
+      "model": "BriefEnvelope",
+      "payload": {
+        "status": "ready",
+        "current_ticket_revision": 1,
+        "brief_version": 1,
+        "source_ticket_revision": 1,
+        "artifact": {
+          "brief": {
+            "ticket_id": "tkt_001",
+            "source_ticket_revision": 1,
+            "summary": "Sinh viên xin giấy để vay vốn",
+            "facts": [
+              {
+                "key": "purpose",
+                "value": "Vay vốn ngân hàng",
+                "source_type": "student_message",
+                "source_id": "msg_001",
+                "verification_status": "unverified"
+              }
+            ],
+            "missing_items": [],
+            "checklist": [
+              {
+                "id": "check_profile",
+                "label": "Kiểm tra tình trạng học tập",
+                "checked": false
+              }
+            ],
+            "suggested_priority": "normal",
+            "priority_reasons": [],
+            "draft_reply": "Phòng học vụ đã tiếp nhận yêu cầu.",
+            "citations": [
+              {
+                "document_id": "policy_001",
+                "document_title": "Quy trình demo",
+                "document_version": "1",
+                "chunk_id": "chunk_012",
+                "locator": "Mục 2",
+                "quote": "Sinh viên kiểm tra thông tin trước khi gửi yêu cầu.",
+                "url": null
+              }
+            ],
+            "warnings": [],
+            "quality_status": "pass"
+          },
+          "brief_version": 1,
+          "source_ticket_revision": 1,
+          "model_name": "demo-model",
+          "prompt_version": "1",
+          "template_version": "1",
+          "index_version": "demo-v1",
+          "created_at": "2026-09-29T03:00:00Z"
+        },
+        "error": null
+      }
+    },
+    {
+      "name": "brief_failed",
+      "model": "BriefEnvelope",
+      "payload": {
+        "status": "failed",
+        "current_ticket_revision": 1,
+        "brief_version": null,
+        "source_ticket_revision": null,
+        "artifact": null,
+        "error": {
+          "code": "PROVIDER_TIMEOUT",
+          "retryable": true,
+          "stage": "brief",
+          "request_id": "req_001"
+        }
+      }
+    },
+    {
+      "name": "brief_stale",
+      "model": "BriefEnvelope",
+      "payload": {
+        "status": "stale",
+        "current_ticket_revision": 2,
+        "brief_version": 1,
+        "source_ticket_revision": 1,
+        "artifact": {
+          "brief": {
+            "ticket_id": "tkt_001",
+            "source_ticket_revision": 1,
+            "summary": "Sinh viên xin giấy để vay vốn",
+            "facts": [
+              {
+                "key": "purpose",
+                "value": "Vay vốn ngân hàng",
+                "source_type": "student_message",
+                "source_id": "msg_001",
+                "verification_status": "unverified"
+              }
+            ],
+            "missing_items": [],
+            "checklist": [
+              {
+                "id": "check_profile",
+                "label": "Kiểm tra tình trạng học tập",
+                "checked": false
+              }
+            ],
+            "suggested_priority": "normal",
+            "priority_reasons": [],
+            "draft_reply": "Phòng học vụ đã tiếp nhận yêu cầu.",
+            "citations": [
+              {
+                "document_id": "policy_001",
+                "document_title": "Quy trình demo",
+                "document_version": "1",
+                "chunk_id": "chunk_012",
+                "locator": "Mục 2",
+                "quote": "Sinh viên kiểm tra thông tin trước khi gửi yêu cầu.",
+                "url": null
+              }
+            ],
+            "warnings": [],
+            "quality_status": "pass"
+          },
+          "brief_version": 1,
+          "source_ticket_revision": 1,
+          "model_name": "demo-model",
+          "prompt_version": "1",
+          "template_version": "1",
+          "index_version": "demo-v1",
+          "created_at": "2026-09-29T03:00:00Z"
+        },
+        "error": null
+      }
+    },
+    {
+      "name": "error_handover_failed",
+      "model": "ErrorEnvelope",
+      "payload": {
+        "error": {
+          "code": "HANDOVER_FAILED",
+          "message": "Chưa hoàn tất thao tác; kiểm tra trạng thái trước khi thử lại.",
+          "request_id": "req_001",
+          "retryable": true,
+          "details": {
+            "conversation_id": "conv_001",
+            "user_message_id": "msg_001",
+            "ticket_id": null,
+            "current_revision": null,
+            "current_version": null,
+            "ai_response_locked": true,
+            "handover_status": "failed",
+            "field_errors": []
+          }
+        }
+      }
+    },
+    {
+      "name": "error_stale_revision",
+      "model": "ErrorEnvelope",
+      "payload": {
+        "error": {
+          "code": "STALE_REVISION",
+          "message": "Chưa hoàn tất thao tác; kiểm tra trạng thái trước khi thử lại.",
+          "request_id": "req_001",
+          "retryable": false,
+          "details": {
+            "conversation_id": null,
+            "user_message_id": null,
+            "ticket_id": null,
+            "current_revision": 2,
+            "current_version": null,
+            "ai_response_locked": null,
+            "handover_status": null,
+            "field_errors": []
+          }
+        }
+      }
+    },
+    {
+      "name": "error_ai_unavailable",
+      "model": "ErrorEnvelope",
+      "payload": {
+        "error": {
+          "code": "AI_UNAVAILABLE",
+          "message": "Chưa hoàn tất thao tác; kiểm tra trạng thái trước khi thử lại.",
+          "request_id": "req_001",
+          "retryable": true,
+          "details": {
+            "conversation_id": null,
+            "user_message_id": "msg_001",
+            "ticket_id": null,
+            "current_revision": null,
+            "current_version": null,
+            "ai_response_locked": null,
+            "handover_status": null,
+            "field_errors": []
+          }
+        }
+      }
+    },
+    {
+      "name": "error_persistence_unavailable",
+      "model": "ErrorEnvelope",
+      "payload": {
+        "error": {
+          "code": "PERSISTENCE_UNAVAILABLE",
+          "message": "Chưa hoàn tất thao tác; kiểm tra trạng thái trước khi thử lại.",
+          "request_id": "req_001",
+          "retryable": true,
+          "details": {
+            "conversation_id": null,
+            "user_message_id": null,
+            "ticket_id": null,
+            "current_revision": null,
+            "current_version": null,
+            "ai_response_locked": null,
+            "handover_status": "unknown",
+            "field_errors": []
+          }
+        }
+      }
+    }
+  ]
+}
