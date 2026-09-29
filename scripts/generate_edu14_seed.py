@@ -6,9 +6,17 @@ import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from src.models.contracts_v1 import AuditEntry, Conversation, Message, Profile, Ticket, User
+from campus247.models.contracts_v1 import AuditEntry, Conversation, Message, Profile, Ticket, User
 
-OUTPUT = Path(__file__).resolve().parents[1] / "datasets" / "edu14_demo.json"
+OUTPUT = (
+    Path(__file__).resolve().parents[1]
+    / "backend"
+    / "src"
+    / "campus247"
+    / "db"
+    / "seed_data"
+    / "edu14_demo.json"
+)
 TZ = timezone(timedelta(hours=7))
 START = datetime(2026, 8, 31, 9, 0, tzinfo=TZ)
 

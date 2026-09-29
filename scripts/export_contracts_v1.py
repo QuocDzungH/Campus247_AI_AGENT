@@ -8,7 +8,7 @@ import json
 from copy import deepcopy
 from pathlib import Path
 
-from src.models import contracts_v1 as c
+from campus247.models import contracts_v1 as c
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "docs" / "contracts"

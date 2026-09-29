@@ -14,7 +14,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 
 # Install dependencies
-pip install -r requirements.txt
+pip install -e "./backend[dev]"
 
 # Create .env if not exists
 if [ ! -f .env ]; then
@@ -25,4 +25,4 @@ fi
 # Create data directories
 mkdir -p data/chroma
 
-echo "Setup complete! Run: uvicorn src.main:app --reload"
+echo "Setup complete! Run: uvicorn campus247.main:app --reload --port 8000"

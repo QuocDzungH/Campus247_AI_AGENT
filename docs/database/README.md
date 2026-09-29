@@ -9,13 +9,13 @@ Nguồn sự thật: backend + PostgreSQL/SQLite. Frontend mock/`localStorage` k
 ```bash
 # Local SQLite (mặc định)
 mkdir -p data
-.venv/bin/alembic upgrade head
-.venv/bin/python -m scripts.seed_edu14
+.venv/bin/alembic -c backend/alembic.ini upgrade head
+.venv/bin/python -m campus247.db.seed
 # Chỉ thêm bản ghi còn thiếu; không ghi đè assignee/revision/membership đã đổi.
-.venv/bin/python -m scripts.seed_edu14 --reset
-# Khôi phục các dòng demo có trong datasets/edu14_demo.json.
-.venv/bin/uvicorn src.main:app --reload --port 8000
-.venv/bin/python -m src.workers
+.venv/bin/python -m campus247.db.seed --reset
+# Khôi phục các dòng demo có trong backend/src/campus247/db/seed_data/edu14_demo.json.
+.venv/bin/uvicorn campus247.main:app --reload --port 8000
+.venv/bin/python -m campus247.workers
 
 # PostgreSQL (Compose)
 docker compose up --build
@@ -25,8 +25,8 @@ docker compose up --build
 
 # Test
 .venv/bin/python -m scripts.export_contracts_v1 --check
-.venv/bin/ruff check src/ tests/ scripts/export_contracts_v1.py scripts/seed_edu14.py scripts/generate_edu14_seed.py
-.venv/bin/pytest tests/ -q
+.venv/bin/ruff check backend/src backend/tests scripts/export_contracts_v1.py scripts/seed_edu14.py scripts/generate_edu14_seed.py
+.venv/bin/pytest backend/tests -q --rootdir=backend
 # pytest tự chạy nhận ca đồng thời trên Postgres. EDU14_TEST_DATABASE_URL chỉ được
 # trỏ tới DB test (tên campus24_pytest hoặc kết thúc bằng _test/_pytest); fixture
 # DROP SCHEMA public CASCADE nên không dùng DB compose campus24.
@@ -34,7 +34,7 @@ docker compose up --build
 .venv/bin/pytest tests/test_db/test_postgres_concurrency.py -q
 ```
 
-Không commit `data/*.db`. Seed chỉ đọc `datasets/edu14_demo.json` (dữ liệu giả, `is_demo`, provenance). Không nhập Kaggle vào bảng nghiệp vụ. Mặc định seed insert-only; `--reset` mới ghi đè tiến trình demo.
+Không commit `data/*.db`. Seed chỉ đọc `backend/src/campus247/db/seed_data/edu14_demo.json` (dữ liệu giả, `is_demo`, provenance). Khảo sát nguồn mở nằm ở [`datasets.md`](datasets.md). Không nhập Kaggle vào bảng nghiệp vụ. Mặc định seed insert-only; `--reset` mới ghi đè tiến trình demo.
 
 ## ERD
 
