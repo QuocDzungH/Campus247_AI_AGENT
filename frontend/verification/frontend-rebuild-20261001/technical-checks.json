@@ -1,0 +1,111 @@
+{
+  "date": "2026-10-01",
+  "cwd": "C:\\Users\\Duong Vinh\\P-120\\frontend",
+  "commands": [
+    "node node_modules/typescript/bin/tsc --noEmit --incremental false",
+    "node node_modules/eslint/bin/eslint.js app components lib next.config.ts test-staff-audit-regression.mjs",
+    "node test-store-config.mjs",
+    "node test-student-release.mjs",
+    "node test-staff-workspace.mjs",
+    "node test-staff-audit-regression.mjs"
+  ],
+  "checks": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "987244",
+        "wall_time_seconds": 7.9454347,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "exit_code": 0,
+        "output": "",
+        "verifiedBy": "write_stdin session 60387 final exit 0"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "0476a4",
+        "wall_time_seconds": 1.8175984,
+        "exit_code": 0,
+        "original_token_count": 249,
+        "output": "PASS: mock mode is valid without an API URL\nPASS: API mode requires and normalizes its URL\nPASS: invalid environment mode throws ConfigurationError\nPASS: invalid localStorage mode throws ConfigurationError\nPASS: missing localStorage mode does not override environment mode\nPASS: API runtime override validates the final mode before URL checks\nPASS: configuration failure has no config or gateway\nPASS: API adapter preserves unsupported capability errors and does not expose demo-users\nPASS: mock bootstrap becomes ready only after reads and SV001 login\nPASS: network and server reasons map to connection_error\nPASS: API user mapper accepts only student and officer roles\nPASS: mock mutations are deterministic and update supplement domain state\nPASS: review mutation errors preserve not_found and conflict reasons\n(node:9460) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "6713f7",
+        "wall_time_seconds": 1.7430375,
+        "exit_code": 0,
+        "original_token_count": 144,
+        "output": "PASS: attachment references survive reload and submissions are idempotent\nPASS: messages record complete dates\nPASS: storage failure cannot report success or replace previous data\nPASS: supplements retain a downloadable attachment reference and update the workflow\nPASS: exported receipts escape user text and do not imply official issuance\nPASS: sample and draft certificates cannot be presented as issued documents\nPASS: invalid files and unavailable binary storage fail before a submission is accepted\nPASS: unreadable saved data is preserved instead of reseeding over it\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "02c1f3",
+        "wall_time_seconds": 1.8307558,
+        "exit_code": 0,
+        "original_token_count": 126,
+        "output": "PASS: new structured forms retain fields and never generate an unrelated BM-03\nPASS: responses stay open, record the actual actor, and reject stale sends without writing\nPASS: completion never issues a document, closed tickets reject writes, and unchecked work blocks completion\nPASS: queue uses real request types, excludes completed cases, and sorts urgency then age\nPASS: review requires actual checks, respects adjusted findings, tracks source changes and actor, and rejects stale/closed mutations\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "de18b6",
+        "wall_time_seconds": 1.539474,
+        "exit_code": 0,
+        "original_token_count": 104,
+        "output": "PASS: independent gateways reject stale writes, keep committed bytes, and refresh reads\nPASS: concurrent writes across instances retain unrelated records under one lock\nPASS: storage failure leaves the committed database unchanged\nPASS: persisted drafts remain private by officer and stale draft saves cannot overwrite newer text\nPASS: supplement audit records actor/full date and stale review sends are rejected\n"
+      }
+    }
+  ],
+  "afterAriaGroups": {
+    "changes": "Only role=group on two named div containers",
+    "commands": [
+      "tsc --noEmit --incremental false",
+      "eslint app components lib next.config.ts test-staff-audit-regression.mjs"
+    ],
+    "checks": [
+      {
+        "status": "fulfilled",
+        "value": {
+          "chunk_id": "c27ad5",
+          "wall_time_seconds": 7.3080063,
+          "exit_code": 0,
+          "original_token_count": 0,
+          "output": ""
+        }
+      },
+      {
+        "status": "fulfilled",
+        "value": {
+          "exit_code": 0,
+          "output": "",
+          "verifiedBy": "write_stdin session 34052 final exit 0"
+        }
+      }
+    ]
+  },
+  "productionBuild": {
+    "snapshot": "build-03",
+    "command": "node ../../../node_modules/next/dist/bin/next build --webpack",
+    "session": 90765,
+    "exitCode": 0,
+    "routes": 16,
+    "warning": "Next ignored parent pnpm-lock.yaml outside repository; did not change external files or config."
+  },
+  "diffCheck": {
+    "command": "git diff --check -- frontend",
+    "exitCode": 0
+  }
+}

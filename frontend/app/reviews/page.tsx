@@ -1,8 +1,10 @@
 "use client";
+import { StaffReviewQueue } from "@/components/staff/StaffReviews";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { formatDate } from "@/lib/format-date";
 import {
   FileSearch,
   Plus,
@@ -18,31 +20,34 @@ import {
   RotateCcw,
   FileText,
   AlertTriangle,
-  GraduationCap,
   Layers,
   HelpCircle,
   X,
   Building,
+  LayoutList,
+  LayoutGrid,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
+import { AccessibleDialog } from "@/components/shared/AccessibleDialog";
 import { useStore } from "@/lib/store";
-import { ReviewCase, ReviewCaseStatus } from "@/lib/types";
-import { DEMO_USERS, STANDARD_REVIEW_CRITERIA } from "@/lib/mock-data";
 
-export default function ReviewsListPage() {
+import { EmptyState } from "@/components/shared/EmptyState";
+import { LoadingState } from "@/components/shared/LoadingState";
+import { DataAccessState } from "@/components/shared/DataAccessState";
+
+export default function ReviewsListPage() { void PreviousReviewsListPage; return <StaffReviewQueue />; }
+
+function PreviousReviewsListPage() {
   const router = useRouter();
-  const { reviewCases, createReviewCase, resetReviewDemo, currentUser, login } = useStore();
+  const { reviewCases, createReviewCase, resetReviewDemo, currentUser, isDataLoading } = useStore();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [departmentFilter, setDepartmentFilter] = useState<string>("all");
+  const [creditFilter, setCreditFilter] = useState<string>("all");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
-  // Switch to OF001 if current user is not officer
-  useEffect(() => {
-    if (currentUser.role !== "officer") {
-      login("OF001");
-    }
-  }, [currentUser.role, login]);
+  const [viewMode, setViewMode] = useState<"table" | "grid">("table");
+  const [selectedCaseIds, setSelectedCaseIds] = useState<string[]>([]);
 
   // Form State for "Tạo hồ sơ rà soát"
   const [formStudentId, setFormStudentId] = useState("SV001");
@@ -54,6 +59,17 @@ export default function ReviewsListPage() {
   const [formPriorGrade, setFormPriorGrade] = useState("8.5 / 10");
   const [formCriteriaPreset, setFormCriteriaPreset] = useState("standard_it");
   const [formSampleDossierPreset, setFormSampleDossierPreset] = useState<"preset_a" | "preset_b" | "preset_c">("preset_a");
+
+  if (isDataLoading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-transparent">
+        <Navbar />
+        <LoadingState title="Đang tải hồ sơ rà soát..." description="Đang xác thực vai trò cán bộ và đồng bộ dữ liệu." />
+      </div>
+    );
+  }
+
+  if (!currentUser || currentUser.role !== "officer") return <DataAccessState requiredRole="officer" />;
 
   // Synchronize preset changes
   const handleSelectPreset = (preset: "preset_a" | "preset_b" | "preset_c") => {
@@ -107,10 +123,22 @@ export default function ReviewsListPage() {
       if (!matchCode && !matchName && !matchMssv && !matchTarget && !matchPrior) return false;
     }
     if (statusFilter !== "all" && item.status !== statusFilter) return false;
+    if (departmentFilter !== "all" && !item.targetDepartment.includes(departmentFilter)) return false;
+    if (creditFilter !== "all" && item.targetCourseCredits.toString() !== creditFilter) return false;
     return true;
   });
 
-  const handleCreateSubmit = (e: React.FormEvent) => {
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) setSelectedCaseIds(filteredCases.map(c => c.id));
+    else setSelectedCaseIds([]);
+  };
+
+  const handleSelectOne = (id: string, e?: React.MouseEvent | React.ChangeEvent<HTMLInputElement>) => {
+    if (e) e.stopPropagation();
+    setSelectedCaseIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const targetCourseNames: Record<string, { name: string; credits: number; dept: string }> = {
@@ -125,7 +153,7 @@ export default function ReviewsListPage() {
       dept: "Khoa Đào tạo",
     };
 
-    const newCase = createReviewCase({
+    const newCase = await createReviewCase({
       studentId: formStudentId,
       targetCourseCode: formTargetCourse,
       targetCourseName: targetInfo.name,
@@ -146,7 +174,7 @@ export default function ReviewsListPage() {
     });
 
     setIsCreateModalOpen(false);
-    router.push(`/reviews/${newCase.id}`);
+    if (newCase) router.push(`/reviews/${newCase.id}`);
   };
 
   return (
@@ -201,7 +229,7 @@ export default function ReviewsListPage() {
       <div className="max-w-[1600px] w-full mx-auto p-4 sm:p-6 lg:p-8 flex-1 space-y-6">
         {/* 4 Metrics Cards (Real-time from Store) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-4 rounded-2xl glass-surface glass-card-interactive flex items-start justify-between">
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-start justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
             <div className="space-y-1">
               <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                 TỔNG SỐ HỒ SƠ RÀ SOÁT
@@ -219,7 +247,7 @@ export default function ReviewsListPage() {
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl glass-surface glass-card-interactive flex items-start justify-between">
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-start justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
             <div className="space-y-1">
               <div className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
                 CẦN CÁN BỘ KIỂM TRA
@@ -237,7 +265,7 @@ export default function ReviewsListPage() {
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl glass-surface glass-card-interactive flex items-start justify-between">
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-start justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
             <div className="space-y-1">
               <div className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
                 CHỜ SINH VIÊN BỔ SUNG
@@ -255,7 +283,7 @@ export default function ReviewsListPage() {
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl glass-surface glass-card-interactive flex items-start justify-between">
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-start justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
             <div className="space-y-1">
               <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                 ĐÃ HOÀN TẤT RÀ SOÁT
@@ -275,10 +303,12 @@ export default function ReviewsListPage() {
         </div>
 
         {/* Filter and Search Bar */}
-        <div className="p-4 rounded-2xl glass-surface flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
           <div className="relative flex-1 max-w-md">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+            <label htmlFor="search-review" className="sr-only">Tìm kiếm hồ sơ</label>
             <input
+              id="search-review"
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -338,15 +368,71 @@ export default function ReviewsListPage() {
                 Đã hoàn tất ({completedCount})
               </button>
             </div>
+
+            <label htmlFor="department-filter" className="sr-only">Lọc theo Khoa/Bộ môn</label>
+            <select
+              id="department-filter"
+              value={departmentFilter}
+              onChange={(e) => setDepartmentFilter(e.target.value)}
+              className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="all">Tất cả Khoa/Bộ môn</option>
+              <option value="CNPM">Khoa CNPM</option>
+              <option value="KHCB">Khoa KHCB</option>
+            </select>
+
+            <label htmlFor="credit-filter" className="sr-only">Lọc theo Tín chỉ</label>
+            <select
+              id="credit-filter"
+              value={creditFilter}
+              onChange={(e) => setCreditFilter(e.target.value)}
+              className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="all">Tất cả Tín chỉ</option>
+              <option value="2">2 Tín chỉ</option>
+              <option value="3">3 Tín chỉ</option>
+              <option value="4">4 Tín chỉ</option>
+            </select>
+
+            <div className="hidden md:flex bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setViewMode("table")}
+                aria-label="Xem hồ sơ dạng danh sách"
+                title="Xem hồ sơ dạng danh sách"
+                className={`p-1.5 rounded-lg transition-all ${viewMode === "table" ? "bg-white dark:bg-slate-700 shadow-xs text-indigo-600 dark:text-indigo-400" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
+              >
+                <LayoutList className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("grid")}
+                aria-label="Xem hồ sơ dạng lưới"
+                title="Xem hồ sơ dạng lưới"
+                className={`p-1.5 rounded-lg transition-all ${viewMode === "grid" ? "bg-white dark:bg-slate-700 shadow-xs text-indigo-600 dark:text-indigo-400" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* List Table of Dossiers */}
-        <div className="rounded-3xl glass-surface border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700/60 text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider text-[10px]">
-                <tr>
+        {/* List of Dossiers */}
+        {viewMode === "table" && (
+          <div className="hidden xl:block rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700/60 text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider text-[10px]">
+                  <tr>
+                    <th className="py-3.5 px-4 w-10">
+                      <input
+                        type="checkbox"
+                        aria-label="Chọn tất cả hồ sơ rà soát"
+                        checked={selectedCaseIds.length > 0 && selectedCaseIds.length === filteredCases.length}
+                        onChange={handleSelectAll}
+                        className="rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                      />
+                    </th>
                   <th className="py-3.5 px-4">Mã hồ sơ</th>
                   <th className="py-3.5 px-4">Sinh viên đề nghị</th>
                   <th className="py-3.5 px-4">Cặp học phần đối chiếu</th>
@@ -360,8 +446,24 @@ export default function ReviewsListPage() {
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {filteredCases.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-12 text-center text-slate-400 text-xs">
-                      Không tìm thấy hồ sơ rà soát nào phù hợp với điều kiện tìm kiếm.
+                    <td colSpan={9} className="p-5">
+                      <EmptyState
+                        icon={FileSearch}
+                        title="Không có hồ sơ phù hợp"
+                        description="Hãy thay đổi từ khóa hoặc trạng thái để xem lại danh sách rà soát."
+                        action={(
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSearchQuery("");
+                              setStatusFilter("all");
+                            }}
+                            className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold"
+                          >
+                            Xóa bộ lọc
+                          </button>
+                        )}
+                      />
                     </td>
                   </tr>
                 ) : (
@@ -379,6 +481,16 @@ export default function ReviewsListPage() {
                         key={item.id}
                         className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors group"
                       >
+                        {/* Checkbox */}
+                        <td className="py-3.5 px-4">
+                          <input
+                            type="checkbox"
+                            aria-label={`Chọn hồ sơ ${item.code}`}
+                            checked={selectedCaseIds.includes(item.id)}
+                            onChange={(e) => handleSelectOne(item.id, e)}
+                            className="rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                          />
+                        </td>
                         {/* Mã hồ sơ */}
                         <td className="py-3.5 px-4">
                           <Link
@@ -501,7 +613,7 @@ export default function ReviewsListPage() {
 
                         {/* Cập nhật */}
                         <td className="py-3.5 px-4 font-mono text-[11px] text-slate-500 dark:text-slate-400">
-                          {item.updatedAt}
+                          {formatDate(item.updatedAt)}
                         </td>
 
                         {/* Thao tác */}
@@ -522,6 +634,86 @@ export default function ReviewsListPage() {
             </table>
           </div>
         </div>
+        )}
+
+        <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" : "grid xl:hidden grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"}>
+          {filteredCases.length === 0 ? (
+            <div className="col-span-full">
+              <EmptyState
+                icon={FileSearch}
+                title="Không có hồ sơ phù hợp"
+                description="Hãy thay đổi từ khóa hoặc trạng thái để xem lại danh sách rà soát."
+                action={(
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setStatusFilter("all");
+                      setDepartmentFilter("all");
+                      setCreditFilter("all");
+                    }}
+                    className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold"
+                  >
+                    Xóa bộ lọc
+                  </button>
+                )}
+              />
+            </div>
+          ) : (
+            filteredCases.map(item => (
+              <div key={item.id} className="p-4 rounded-3xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200/80 dark:border-slate-800 flex flex-col relative transition hover:border-indigo-300 dark:hover:border-indigo-700">
+                <div className="absolute top-4 right-4 z-10" onClick={e => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    aria-label={`Chọn hồ sơ ${item.code} (Mobile)`}
+                    checked={selectedCaseIds.includes(item.id)}
+                    onChange={(e) => handleSelectOne(item.id, e)}
+                    className="rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer w-4 h-4"
+                  />
+                </div>
+                <div className="mb-2">
+                  <Link href={`/reviews/${item.id}`} className="font-mono font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
+                    {item.code}
+                  </Link>
+                  <div className="text-sm font-bold text-slate-900 dark:text-white mt-1">
+                    {item.studentName} <span className="font-mono text-xs text-slate-500 font-normal">({item.studentMssv})</span>
+                  </div>
+                </div>
+                <div className="flex-1 space-y-2 mt-2 border-t border-slate-100 dark:border-slate-800 pt-3">
+                  <div className="text-xs">
+                    <div className="text-slate-500">Đã học:</div>
+                    <div className="font-semibold text-slate-900 dark:text-white truncate" title={item.priorCourseName}>
+                      {item.priorCourseName} ({item.priorCourseCredits} TC)
+                    </div>
+                  </div>
+                  <div className="text-xs">
+                    <div className="text-slate-500">Đề nghị:</div>
+                    <div className="font-semibold text-slate-900 dark:text-white truncate" title={item.targetCourseName}>
+                      {item.targetCourseCode} - {item.targetCourseName} ({item.targetCourseCredits} TC)
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-3">
+                  <div>
+                    {item.status === "in_review" && (
+                      <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">Đang thẩm định</span>
+                    )}
+                    {item.status === "waiting_supplement" && (
+                      <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400">Chờ bổ sung</span>
+                    )}
+                    {item.status === "completed" && (
+                      <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">Đã hoàn tất</span>
+                    )}
+                  </div>
+                  <Link href={`/reviews/${item.id}`} className="px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-semibold text-xs hover:bg-indigo-100 dark:hover:bg-indigo-800 transition-colors">
+                    Chi tiết
+                  </Link>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
 
         {/* Disclaimer Footer */}
         <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-300/60 dark:border-amber-900/60 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5 leading-relaxed">
@@ -534,7 +726,12 @@ export default function ReviewsListPage() {
 
       {/* Modal: Tạo hồ sơ rà soát */}
       {isCreateModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+        <AccessibleDialog
+          open={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          labelledBy="create-review-dialog-title"
+          className="w-full max-w-2xl"
+        >
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2">
@@ -542,7 +739,7 @@ export default function ReviewsListPage() {
                   <Plus className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 dark:text-white text-base">
+                  <h3 id="create-review-dialog-title" className="font-bold text-slate-900 dark:text-white text-base">
                     Tạo Hồ sơ Rà soát Công nhận Học phần
                   </h3>
                   <p className="text-[11px] text-slate-500">
@@ -553,6 +750,7 @@ export default function ReviewsListPage() {
               <button
                 type="button"
                 onClick={() => setIsCreateModalOpen(false)}
+                aria-label="Đóng tạo hồ sơ rà soát"
                 className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600"
               >
                 <X className="w-5 h-5" />
@@ -615,10 +813,11 @@ export default function ReviewsListPage() {
             <form onSubmit={handleCreateSubmit} className="space-y-4 text-xs">
               {/* Sinh viên */}
               <div>
-                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label htmlFor="formStudentId" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   1. Chọn Sinh viên đề nghị:
                 </label>
                 <select
+                  id="formStudentId"
                   value={formStudentId}
                   onChange={(e) => setFormStudentId(e.target.value)}
                   className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
@@ -630,10 +829,11 @@ export default function ReviewsListPage() {
 
               {/* Học phần tiếp nhận */}
               <div>
-                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label htmlFor="formTargetCourse" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   2. Chọn Học phần tại trường tiếp nhận:
                 </label>
                 <select
+                  id="formTargetCourse"
                   value={formTargetCourse}
                   onChange={(e) => setFormTargetCourse(e.target.value)}
                   className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
@@ -653,8 +853,9 @@ export default function ReviewsListPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[11px] text-slate-500 mb-1">Tên môn học đã học:</label>
+                    <label htmlFor="formPriorCourseName" className="block text-[11px] text-slate-500 mb-1">Tên môn học đã học:</label>
                     <input
+                      id="formPriorCourseName"
                       type="text"
                       value={formPriorCourseName}
                       onChange={(e) => setFormPriorCourseName(e.target.value)}
@@ -663,8 +864,9 @@ export default function ReviewsListPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] text-slate-500 mb-1">Mã học phần:</label>
+                    <label htmlFor="formPriorCourseCode" className="block text-[11px] text-slate-500 mb-1">Mã học phần:</label>
                     <input
+                      id="formPriorCourseCode"
                       type="text"
                       value={formPriorCourseCode}
                       onChange={(e) => setFormPriorCourseCode(e.target.value)}
@@ -676,8 +878,9 @@ export default function ReviewsListPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="sm:col-span-2">
-                    <label className="block text-[11px] text-slate-500 mb-1">Trường cũ đã tích lũy:</label>
+                    <label htmlFor="formPriorInstitution" className="block text-[11px] text-slate-500 mb-1">Trường cũ đã tích lũy:</label>
                     <input
+                      id="formPriorInstitution"
                       type="text"
                       value={formPriorInstitution}
                       onChange={(e) => setFormPriorInstitution(e.target.value)}
@@ -686,8 +889,9 @@ export default function ReviewsListPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] text-slate-500 mb-1">Số tín chỉ:</label>
+                    <label htmlFor="formPriorCredits" className="block text-[11px] text-slate-500 mb-1">Số tín chỉ:</label>
                     <input
+                      id="formPriorCredits"
                       type="number"
                       min={1}
                       max={10}
@@ -702,10 +906,11 @@ export default function ReviewsListPage() {
 
               {/* Bộ tiêu chí */}
               <div>
-                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label htmlFor="formCriteriaPreset" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   4. Chọn Bộ Tiêu chí Rà soát Minh họa:
                 </label>
                 <select
+                  id="formCriteriaPreset"
                   value={formCriteriaPreset}
                   onChange={(e) => setFormCriteriaPreset(e.target.value)}
                   className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
@@ -734,6 +939,37 @@ export default function ReviewsListPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </AccessibleDialog>
+      )}
+
+      {/* Floating Bulk Action Bar */}
+      {selectedCaseIds.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl flex items-center gap-4 animate-fade-in">
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+            Đã chọn {selectedCaseIds.length} hồ sơ rà soát
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSelectedCaseIds([])}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 whitespace-nowrap transition-colors"
+            >
+              Bỏ chọn
+            </button>
+            <button
+              onClick={() => setSelectedCaseIds([])}
+              className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm whitespace-nowrap transition-colors"
+              disabled
+            >
+              Phê duyệt hàng loạt (Demo UI)
+            </button>
+            <button
+              onClick={() => setSelectedCaseIds([])}
+              className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-sm whitespace-nowrap transition-colors"
+              disabled
+            >
+              Từ chối hàng loạt (Demo UI)
+            </button>
           </div>
         </div>
       )}

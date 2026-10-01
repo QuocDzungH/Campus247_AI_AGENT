@@ -1,0 +1,272 @@
+{
+  "scans": 28,
+  "violations": 0,
+  "scansDetail": [
+    {
+      "run": "browser-04",
+      "label": "light-/login",
+      "route": "/login",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 21
+        }
+      ]
+    },
+    {
+      "run": "browser-04",
+      "label": "light-/dashboard",
+      "route": "/dashboard",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 101
+        }
+      ]
+    },
+    {
+      "run": "browser-04",
+      "label": "light-/tickets/QA-TKT-006",
+      "route": "/tickets/QA-TKT-006",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "run": "browser-04",
+      "label": "light-/reviews",
+      "route": "/reviews",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "run": "browser-04",
+      "label": "light-/reviews/REV-2026-003",
+      "route": "/reviews/REV-2026-003",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "run": "browser-04",
+      "label": "dialog-light-response",
+      "route": "/tickets/QA-TKT-006",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "run": "browser-04",
+      "label": "dialog-light-edit",
+      "route": "/reviews/REV-2026-003",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "run": "browser-04",
+      "label": "dialog-light-supplement",
+      "route": "/reviews/REV-2026-003",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "run": "browser-04",
+      "label": "dialog-light-finalize",
+      "route": "/reviews/QA-REV-READY",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "run": "browser-04",
+      "label": "dark-/login",
+      "route": "/login",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 21
+        }
+      ]
+    },
+    {
+      "run": "browser-04",
+      "label": "dark-/dashboard",
+      "route": "/dashboard",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 111
+        }
+      ]
+    },
+    {
+      "run": "browser-04",
+      "label": "dark-/tickets/QA-TKT-006",
+      "route": "/tickets/QA-TKT-006",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "run": "browser-04",
+      "label": "dark-/reviews",
+      "route": "/reviews",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "run": "browser-04",
+      "label": "dark-/reviews/REV-2026-003",
+      "route": "/reviews/REV-2026-003",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "run": "browser-04",
+      "label": "dialog-dark-response",
+      "route": "/tickets/QA-TKT-006",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "run": "browser-04",
+      "label": "dialog-dark-edit",
+      "route": "/reviews/REV-2026-003",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "run": "browser-04",
+      "label": "dialog-dark-supplement",
+      "route": "/reviews/REV-2026-003",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "run": "browser-04",
+      "label": "dialog-dark-finalize",
+      "route": "/reviews/QA-REV-READY",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "run": "supplemental-02",
+      "label": "light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "run": "supplemental-02",
+      "label": "dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "run": "visual-recheck-02",
+      "label": "light",
+      "route": "/dashboard",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "run": "visual-recheck-02",
+      "label": "light",
+      "route": "/tickets/QA-TKT-006",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "run": "visual-recheck-02",
+      "label": "light",
+      "route": "/reviews",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "run": "visual-recheck-02",
+      "label": "light",
+      "route": "/reviews/REV-2026-003",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "run": "visual-recheck-02",
+      "label": "dark",
+      "route": "/dashboard",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "run": "visual-recheck-02",
+      "label": "dark",
+      "route": "/tickets/QA-TKT-006",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "run": "visual-recheck-02",
+      "label": "dark",
+      "route": "/reviews",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "run": "visual-recheck-02",
+      "label": "dark",
+      "route": "/reviews/REV-2026-003",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 3
+        }
+      ]
+    }
+  ]
+}

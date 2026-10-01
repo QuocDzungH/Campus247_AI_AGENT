@@ -24,49 +24,51 @@ export function StudentWorkspaceHub({
 }: StudentWorkspaceHubProps) {
   const { currentUser, tickets } = useStore();
 
+  if (!currentUser) return null;
+
   const studentTickets = tickets.filter((t) => t.studentId === currentUser.id);
 
   return (
-    <div className="flex flex-col h-full min-h-0 glass-surface rounded-3xl shadow-2xl overflow-hidden text-xs">
+    <div className="flex flex-col h-full min-h-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm overflow-hidden text-xs">
       {/* Panel Top Header */}
-      <div className="shrink-0 p-4 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/80 flex items-center justify-between">
+      <div className="shrink-0 p-4 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-blue-600/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-200/60 dark:border-blue-800/60 font-bold">
             <FileText className="w-4 h-4" />
           </div>
           <div>
             <h3 className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">
-              Bàn làm việc &amp; Hồ sơ Sinh viên
+              Bàn làm việc sinh viên
             </h3>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              Cổng Kê khai Trực tuyến &amp; Theo dõi học vụ 24/7
+              Kê khai trực tuyến và theo dõi hồ sơ 24/7
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-emerald-50/80 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-800">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span>SẴN SÀNG KÊ KHAI</span>
+          <span role="status" aria-live="polite">Sẵn sàng</span>
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-4">
         {/* Card 1: Fast Service Launcher */}
-        <div className="p-4 rounded-2xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200/60 dark:border-slate-800/70 shadow-sm space-y-3">
-          <div className="flex items-center justify-between">
+        <div className="p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 shadow-none space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="font-bold text-slate-900 dark:text-white text-xs">
-                Cổng Kê khai Yêu cầu (Submit 1)
+                Tạo yêu cầu cấp giấy
               </span>
-              <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-semibold border border-blue-200 dark:border-blue-700/50">
-                MẪU BM-03
+              <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-semibold border border-slate-200 dark:border-slate-700">
+                Mã biểu mẫu: BM-03
               </span>
             </div>
-            <span className="text-[10px] text-slate-400 font-mono">Quy chế Đào tạo L2</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400">Giấy xác nhận sinh viên</span>
           </div>
 
           <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
-            Trợ lý AI hỗ trợ tự động điền form và đối soát dữ liệu đào tạo. Bạn có thể trò chuyện với AI hoặc mở trực tiếp biểu mẫu bên dưới:
+            Điền thông tin và gửi yêu cầu cấp Giấy xác nhận sinh viên. Trợ lý AI có thể hỗ trợ đối chiếu dữ liệu học vụ.
           </p>
 
           <button
@@ -75,12 +77,12 @@ export function StudentWorkspaceHub({
             className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 transition-all text-xs"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Mở biểu mẫu Kê khai Cấp Giấy (L2)</span>
+            <span>Bắt đầu điền biểu mẫu</span>
           </button>
 
           <div className="space-y-1.5 pt-1 border-t border-slate-100 dark:border-slate-800/80">
-            <span className="text-[10px] uppercase font-semibold text-slate-400 dark:text-slate-500 tracking-wider block">
-              Mẫu kê khai nhanh:
+            <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 block">
+              Chọn nhanh loại yêu cầu
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
               <button
@@ -90,8 +92,8 @@ export function StudentWorkspaceHub({
                 }
                 className="p-2 text-left rounded-xl bg-white/60 dark:bg-slate-800/60 hover:bg-white/90 dark:hover:bg-slate-700/80 border border-slate-200/60 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all text-[11px] backdrop-blur-xs"
               >
-                <div className="font-semibold truncate">📝 Vay vốn NHCSXH</div>
-                <div className="text-[9px] text-slate-400 truncate">Học kỳ 2 / 2026</div>
+                <div className="font-semibold leading-snug min-h-[2rem]">Vay vốn ngân hàng</div>
+                <div className="text-[10px] text-slate-400">Học kỳ 2 / 2026</div>
               </button>
 
               <button
@@ -103,8 +105,8 @@ export function StudentWorkspaceHub({
                 }
                 className="p-2 text-left rounded-xl bg-white/60 dark:bg-slate-800/60 hover:bg-white/90 dark:hover:bg-slate-700/80 border border-slate-200/60 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all text-[11px] backdrop-blur-xs"
               >
-                <div className="font-semibold truncate">🏛️ Tạm hoãn NVQS</div>
-                <div className="text-[9px] text-slate-400 truncate">Năm 2026</div>
+                <div className="font-semibold leading-snug min-h-[2rem]">Tạm hoãn nghĩa vụ quân sự</div>
+                <div className="text-[10px] text-slate-400">Năm 2026</div>
               </button>
 
               <button
@@ -114,8 +116,8 @@ export function StudentWorkspaceHub({
                 }
                 className="p-2 text-left rounded-xl bg-white/60 dark:bg-slate-800/60 hover:bg-white/90 dark:hover:bg-slate-700/80 border border-slate-200/60 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all text-[11px] backdrop-blur-xs"
               >
-                <div className="font-semibold truncate">💼 Thực tập DN</div>
-                <div className="text-[9px] text-slate-400 truncate">Kỳ tốt nghiệp</div>
+                <div className="font-semibold leading-snug min-h-[2rem]">Thực tập tốt nghiệp</div>
+                <div className="text-[10px] text-slate-400">Kỳ tốt nghiệp</div>
               </button>
             </div>
           </div>
@@ -123,7 +125,7 @@ export function StudentWorkspaceHub({
           <div className="p-2 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 flex items-start gap-2 text-[10px] text-blue-700 dark:text-blue-300">
             <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
             <span>
-              <strong>Tương tác thông minh:</strong> Bạn có thể gõ vào khung chat bên trái như <em>&ldquo;đổi sang bản giấy&rdquo;</em> hoặc <em>&ldquo;sửa lý do thành...&rdquo;</em>, AI sẽ trực tiếp cập nhật biểu mẫu cho bạn!
+              <strong>Trợ lý có thể cập nhật biểu mẫu:</strong> Bạn có thể nhờ đổi mục đích hoặc phương thức nhận.
             </span>
           </div>
         </div>
@@ -132,16 +134,16 @@ export function StudentWorkspaceHub({
         <div className="space-y-2 pt-1">
           <div className="flex items-center justify-between text-xs px-1">
             <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-              <span>Hồ sơ cá nhân đang theo dõi</span>
+              <span>Yêu cầu đang theo dõi</span>
               <span className="px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 font-mono text-[10px]">
                 {studentTickets.length}
               </span>
             </span>
             <Link
               href="/my-requests"
-              className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5"
+              className="inline-flex min-h-[44px] items-center gap-0.5 px-2 rounded-lg text-[11px] text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:underline"
             >
-              <span>Xem lịch sử học vụ</span>
+              <span>Xem tất cả yêu cầu</span>
               <ChevronRight className="w-3 h-3" />
             </Link>
           </div>
@@ -150,7 +152,7 @@ export function StudentWorkspaceHub({
             {studentTickets.map((t) => (
               <div
                 key={t.id}
-                className="p-3 rounded-2xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200/60 dark:border-slate-800/80 shadow-sm space-y-1.5 hover:border-blue-300 dark:hover:border-blue-700 transition-all"
+                className="p-3 rounded-2xl bg-white/70 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 shadow-none space-y-1.5 hover:border-blue-300 dark:hover:border-blue-700 transition-colors"
               >
                 <div className="flex items-center justify-between">
                   <span className="font-mono font-bold text-slate-800 dark:text-slate-200 text-xs">
@@ -161,27 +163,27 @@ export function StudentWorkspaceHub({
                       t.status === "open"
                         ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
                         : t.status === "pending_officer"
-                        ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
-                        : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20"
+                        ? "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                        : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20"
                     }`}
                   >
                     {t.status === "open"
-                      ? "MỚI TIẾP NHẬN"
+                      ? "Mới tiếp nhận"
                       : t.status === "pending_officer"
-                      ? "CHỜ CÁN BỘ"
-                      : "ĐÃ HOÀN TẤT"}
+                      ? "Đang chờ xử lý"
+                      : "Đã hoàn tất"}
                   </span>
                 </div>
 
-                <div className="font-medium text-slate-900 dark:text-white text-xs">
+                <div className="font-medium text-slate-900 dark:text-white text-xs min-h-[2rem] line-clamp-2">
                   {t.title}
                 </div>
 
-                <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800/80">
-                  <span>Cán bộ: {t.assignedOfficerName || "Phòng Đào tạo"}</span>
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[10px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800/80">
+                  <span>Cán bộ phụ trách: {t.assignedOfficerName || "Phòng Đào tạo"}</span>
                   <span className="font-mono text-amber-600 dark:text-amber-400 flex items-center gap-1">
                     <Clock className="w-3 h-3" />
-                    <span>SLA: {t.slaRemaining || t.slaDeadline}</span>
+                    <span>Thời gian còn lại: {t.slaRemaining || t.slaDeadline}</span>
                   </span>
                 </div>
               </div>
@@ -190,7 +192,7 @@ export function StudentWorkspaceHub({
         </div>
 
         {/* Card 3: Academic Qualifications & Tuition */}
-        <div className="p-3 rounded-2xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200/60 dark:border-slate-800/80 shadow-sm space-y-2">
+        <div className="p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 shadow-none space-y-2">
           <div className="flex items-center justify-between text-[11px]">
             <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
               <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />

@@ -175,14 +175,53 @@ export function buildDefaultCertificate(
 }
 
 /**
+ * Hàm escaping HTML cơ bản, deterministic để bảo vệ nội dung text
+ */
+function escapeHtml(unsafe: unknown): string {
+  if (unsafe == null) return "";
+  return String(unsafe)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/**
  * Sinh mã HTML hoàn chỉnh chuẩn trang văn bản hành chính Việt Nam cho Giấy xác nhận BM-03
  */
 export function generateCertificateHtml(cert: IssuedCertificateDocument): string {
+  // Escape toàn bộ dynamic fields để chống XSS
+  const safeCert = {
+    studentName: escapeHtml(cert.studentName),
+    studentMssv: escapeHtml(cert.studentMssv),
+    studentDob: escapeHtml(cert.studentDob),
+    studentGender: escapeHtml(cert.studentGender),
+    studentClassYear: escapeHtml(cert.studentClassYear),
+    studentMajor: escapeHtml(cert.studentMajor),
+    studentFaculty: escapeHtml(cert.studentFaculty),
+    studentAcademicStatus: escapeHtml(cert.studentAcademicStatus),
+    destinationOrg: escapeHtml(cert.destinationOrg),
+    purpose: escapeHtml(cert.purpose),
+    validUntil: escapeHtml(cert.validUntil),
+    customOfficerNotes: escapeHtml(cert.customOfficerNotes),
+    docNumber: escapeHtml(cert.docNumber),
+    id: escapeHtml(cert.id),
+    issuedByOfficerName: escapeHtml(cert.issuedByOfficerName),
+    issuedByOfficerId: escapeHtml(cert.issuedByOfficerId),
+    templateCode: escapeHtml(cert.templateCode),
+    templateVersion: escapeHtml(cert.templateVersion),
+    issuedAtFormatted: escapeHtml(cert.issuedAtFormatted)
+  };
+
+  const dayStr = safeCert.issuedAtFormatted.split("·")[1]?.trim() || "24 tháng 10 năm 2026";
+
   return `<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Giấy xác nhận sinh viên - ${cert.studentName} (${cert.studentMssv})</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none';">
+  <title>Giấy xác nhận sinh viên - ${safeCert.studentName} (${safeCert.studentMssv})</title>
   <style>
     @page { size: A4; margin: 20mm; }
     body {
@@ -364,13 +403,13 @@ export function generateCertificateHtml(cert: IssuedCertificateDocument): string
           <div class="school-name">TRƯỜNG ĐẠI HỌC CAMPUS</div>
           <div class="school-sub">PHÒNG ĐÀO TẠO & CTSV</div>
           <div class="divider"></div>
-          <div class="doc-num">Số: <strong>${cert.docNumber}</strong></div>
+          <div class="doc-num">Số: <strong>${safeCert.docNumber}</strong></div>
         </td>
         <td class="header-right">
           <div class="nation-title">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
           <div class="nation-motto">Độc lập - Tự do - Hạnh phúc</div>
           <div class="divider"></div>
-          <div class="date-line">TP. Hồ Chí Minh, ngày ${cert.issuedAtFormatted.split("·")[1]?.trim() || "24 tháng 10 năm 2026"}</div>
+          <div class="date-line">TP. Hồ Chí Minh, ngày ${dayStr}</div>
         </td>
       </tr>
     </table>
@@ -378,7 +417,7 @@ export function generateCertificateHtml(cert: IssuedCertificateDocument): string
     <!-- Title Section -->
     <div class="main-title">
       <h1>GIẤY XÁC NHẬN SINH VIÊN</h1>
-      <div class="sub-code">(Mẫu số: ${cert.templateCode} · Phiên bản: ${cert.templateVersion})</div>
+      <div class="sub-code">(Mẫu số: ${safeCert.templateCode} · Phiên bản: ${safeCert.templateVersion})</div>
     </div>
 
     <!-- Body Section -->
@@ -390,32 +429,32 @@ export function generateCertificateHtml(cert: IssuedCertificateDocument): string
       <tr>
         <td class="info-label">Họ và tên sinh viên</td>
         <td class="info-dots">:</td>
-        <td class="info-val">${cert.studentName}</td>
+        <td class="info-val">${safeCert.studentName}</td>
       </tr>
       <tr>
         <td class="info-label">Ngày sinh</td>
         <td class="info-dots">:</td>
-        <td class="info-val">${cert.studentDob} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Giới tính: ${cert.studentGender}</td>
+        <td class="info-val">${safeCert.studentDob} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Giới tính: ${safeCert.studentGender}</td>
       </tr>
       <tr>
         <td class="info-label">Mã số sinh viên (MSSV)</td>
         <td class="info-dots">:</td>
-        <td class="info-val">${cert.studentMssv}</td>
+        <td class="info-val">${safeCert.studentMssv}</td>
       </tr>
       <tr>
         <td class="info-label">Khóa học / Niên khóa</td>
         <td class="info-dots">:</td>
-        <td class="info-val">${cert.studentClassYear}</td>
+        <td class="info-val">${safeCert.studentClassYear}</td>
       </tr>
       <tr>
         <td class="info-label">Ngành đào tạo</td>
         <td class="info-dots">:</td>
-        <td class="info-val">${cert.studentMajor}</td>
+        <td class="info-val">${safeCert.studentMajor}</td>
       </tr>
       <tr>
         <td class="info-label">Khoa / Bộ môn phụ trách</td>
         <td class="info-dots">:</td>
-        <td class="info-val">${cert.studentFaculty}</td>
+        <td class="info-val">${safeCert.studentFaculty}</td>
       </tr>
       <tr>
         <td class="info-label">Hệ đào tạo</td>
@@ -425,27 +464,27 @@ export function generateCertificateHtml(cert: IssuedCertificateDocument): string
       <tr>
         <td class="info-label">Tình trạng học tập</td>
         <td class="info-dots">:</td>
-        <td class="info-val">${cert.studentAcademicStatus}</td>
+        <td class="info-val">${safeCert.studentAcademicStatus}</td>
       </tr>
       <tr>
         <td class="info-label">Cơ quan / Đơn vị tiếp nhận</td>
         <td class="info-dots">:</td>
-        <td class="info-val">${cert.destinationOrg}</td>
+        <td class="info-val">${safeCert.destinationOrg}</td>
       </tr>
       <tr>
         <td class="info-label">Mục đích cấp giấy</td>
         <td class="info-dots">:</td>
-        <td class="info-val">${cert.purpose}</td>
+        <td class="info-val">${safeCert.purpose}</td>
       </tr>
       <tr>
         <td class="info-label">Thời hạn có giá trị</td>
         <td class="info-dots">:</td>
-        <td class="info-val">${cert.validUntil}</td>
+        <td class="info-val">${safeCert.validUntil}</td>
       </tr>
     </table>
 
     <p class="intro-p" style="margin-top: 15px; font-style: italic;">
-      ${cert.customOfficerNotes || "Giấy xác nhận được cấp trên cơ sở dữ liệu học vụ đồng bộ tại thời điểm thẩm định. Đề nghị cơ quan tiếp nhận phối hợp hỗ trợ sinh viên."}
+      ${safeCert.customOfficerNotes || "Giấy xác nhận được cấp trên cơ sở dữ liệu học vụ đồng bộ tại thời điểm thẩm định. Đề nghị cơ quan tiếp nhận phối hợp hỗ trợ sinh viên."}
     </p>
 
     <!-- Signatures Section -->
@@ -456,8 +495,8 @@ export function generateCertificateHtml(cert: IssuedCertificateDocument): string
           - Như trên;<br>
           - Lưu: P. Đào tạo, Hồ sơ SV.<br>
           <div style="margin-top: 20px; font-size: 11px; color: #64748b;">
-            Mã định danh văn bản: <code>${cert.id}</code><br>
-            Cán bộ thụ lý: ${cert.issuedByOfficerName} (${cert.issuedByOfficerId})
+            Mã định danh văn bản: <code>${safeCert.id}</code><br>
+            Cán bộ thụ lý: ${safeCert.issuedByOfficerName} (${safeCert.issuedByOfficerId})
           </div>
         </td>
         <td class="footer-right">
@@ -471,7 +510,7 @@ export function generateCertificateHtml(cert: IssuedCertificateDocument): string
             <span style="font-size: 9px; margin-top: 4px;">Campus 24/7 Simulator</span>
           </div>
 
-          <div style="font-weight: bold; margin-top: 5px;">${cert.issuedByOfficerName}</div>
+          <div style="font-weight: bold; margin-top: 5px;">${safeCert.issuedByOfficerName}</div>
         </td>
       </tr>
     </table>
@@ -486,6 +525,17 @@ export function generateCertificateHtml(cert: IssuedCertificateDocument): string
 }
 
 /**
+ * Hàm chuẩn hóa tên file an toàn cho tải xuống
+ */
+function getSafeFileName(fileName: string | undefined, mssv: string): string {
+  const defaultName = `Giay_Xac_Nhan_Sinh_Vien_${mssv}.html`;
+  const rawName = fileName || defaultName;
+  // Loại bỏ path separator và control characters
+  const safeName = rawName.replace(/[\/\?<>\\:\*\|":]/g, "_").replace(/[\x00-\x1F]/g, "");
+  return safeName.endsWith(".html") ? safeName : `${safeName}.html`;
+}
+
+/**
  * Tải file văn bản thật về máy tính của người dùng
  */
 export function downloadCertificateFile(cert: IssuedCertificateDocument): void {
@@ -497,11 +547,13 @@ export function downloadCertificateFile(cert: IssuedCertificateDocument): void {
   
   const link = document.createElement("a");
   link.href = url;
-  link.download = cert.fileName || `Giay_Xac_Nhan_Sinh_Vien_${cert.studentMssv}.html`;
+  link.download = getSafeFileName(cert.fileName, cert.studentMssv);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+
+  // Tránh leak memory bằng cách revoke ngay sau khi trigger tải
+  setTimeout(() => URL.revokeObjectURL(url), 100);
 }
 
 /**
@@ -511,12 +563,19 @@ export function openCertificatePrintWindow(cert: IssuedCertificateDocument): voi
   if (typeof window === "undefined") return;
 
   const htmlContent = generateCertificateHtml(cert);
-  const printWindow = window.open("", "_blank");
-  if (!printWindow) {
-    alert("Trình duyệt chặn mở cửa sổ mới. Vui lòng bấm 'Tải bản PDF' thay thế.");
-    return;
-  }
-  printWindow.document.open();
-  printWindow.document.write(htmlContent);
-  printWindow.document.close();
+  const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  // Thu hồi URL sau 10s để đảm bảo browser tải xong trang mới
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 10000);
 }
