@@ -39,7 +39,7 @@ Trạng thái ticket: `open` Mới tiếp nhận → `pending_officer` Chờ cá
 
 ## 2. Thứ tự làm kỹ thuật
 
-Prototype cũ đã được xóa. Dựng mới project trong `frontend/` từ bộ ảnh Stitch được người dùng chọn, theo [prompt Antigravity](Prompt-prototype-antigravity.md). Giữ asset tại `frontend/public/assets/`; không khôi phục component, CSS hoặc mock store cũ từ Git history.
+Prototype cũ đã được xóa. Dựng mới project trong `frontend/` từ bộ ảnh Stitch được người dùng chọn. Giữ asset tại `frontend/public/assets/`; không khôi phục component, CSS hoặc mock store cũ từ Git history.
 
 Prototype React **mới** sẽ trở thành nền frontend cho giai đoạn nối API. Đợt dựng giao diện dùng mock để kiểm chứng thiết kế và tương tác; việc nghiệm thu backend thật vẫn theo pipeline/plan.
 
