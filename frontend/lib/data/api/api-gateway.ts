@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { CampusDataGateway } from "../gateway";
+import { CampusDataGateway, SessionOptions } from "../gateway";
 import {
   User,
   UserRole,
@@ -16,30 +16,42 @@ import {
 } from "../../types";
 import { UnsupportedOperationError, DataGatewayError } from "../errors";
 import { ApiClient } from "./api-client";
+import { createBrowserSessionStore, SessionStore } from "./session";
+import { LoginResult } from "./types";
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function isUserRole(value: unknown): value is UserRole {
+  return value === "student" || value === "officer";
+}
 
 export class ApiCampusDataGateway implements CampusDataGateway {
   private client: ApiClient;
+  private sessionStore: SessionStore;
+  private authEpoch = 0;
 
-  constructor(baseUrl: string) {
-    this.client = new ApiClient(baseUrl);
+  constructor(baseUrl: string, options?: { client?: ApiClient; sessionStore?: SessionStore }) {
+    this.client = options?.client ?? new ApiClient(baseUrl);
+    this.sessionStore = options?.sessionStore ?? createBrowserSessionStore();
+    const existing = this.sessionStore.load();
+    if (existing) this.client.setAccessToken(existing.access_token);
   }
 
-  private isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === "object" && value !== null;
+  private beginAuthEpoch(): number {
+    this.authEpoch += 1;
+    return this.authEpoch;
   }
 
-  private isUserRole(value: unknown): value is UserRole {
-    return value === "student" || value === "officer";
-  }
-
-  private mapToUser(data: unknown): User {
-    if (!this.isRecord(data)) {
+  mapToUser(data: unknown): User {
+    if (!isRecord(data)) {
       throw new DataGatewayError("validation", "Invalid user data received from API");
     }
     if (typeof data.id !== "string" || typeof data.name !== "string") {
       throw new DataGatewayError("validation", "Missing required user fields");
     }
-    if (!this.isUserRole(data.role)) {
+    if (!isUserRole(data.role)) {
       throw new DataGatewayError("validation", `Invalid user role: ${String(data.role)}`);
     }
 
@@ -54,18 +66,107 @@ export class ApiCampusDataGateway implements CampusDataGateway {
     };
   }
 
-  async login(userId: string): Promise<User> {
+  private parseLoginResult(data: unknown): LoginResult {
+    if (!isRecord(data)) {
+      throw new DataGatewayError("validation", "Invalid login result received from API");
+    }
+    if (typeof data.access_token !== "string" || data.access_token.length === 0) {
+      throw new DataGatewayError("validation", "Login result is missing access_token");
+    }
+    if (typeof data.expires_at !== "string") {
+      throw new DataGatewayError("validation", "Login result is missing expires_at");
+    }
+    const user = this.mapToUser(data.user);
+    return {
+      access_token: data.access_token,
+      token_type: "Bearer",
+      expires_at: data.expires_at,
+      user: { id: user.id, role: user.role, name: user.name },
+    };
+  }
+
+  private persistSession(result: LoginResult, remember: boolean): User {
+    this.client.setAccessToken(result.access_token);
+    this.sessionStore.save({
+      access_token: result.access_token,
+      token_type: "Bearer",
+      expires_at: result.expires_at,
+      user: result.user,
+      remember,
+    });
+    return this.mapToUser(result.user);
+  }
+
+  async login(userId: string, options?: SessionOptions): Promise<User> {
+    const epoch = this.beginAuthEpoch();
     try {
-      // P0 contract has /api/v1/auth/demo-login and /api/v1/me
-      await this.client.post("/api/v1/auth/demo-login", { userId });
-      const user = await this.client.get("/api/v1/me");
-      return this.mapToUser(user);
+      const response = await this.client.request<LoginResult>("/api/v1/auth/demo-login", {
+        method: "POST",
+        body: { user_id: userId },
+        skipAuth: true,
+        skipIdempotency: true,
+      });
+      const result = this.parseLoginResult(response.body);
+      if (epoch !== this.authEpoch) {
+        return this.mapToUser(result.user);
+      }
+      return this.persistSession(result, options?.remember !== false);
     } catch (err) {
       if (err instanceof DataGatewayError && err.reason === "not_found") {
         throw new DataGatewayError("unauthorized", "User not found (HTTP 404)");
       }
       throw err;
     }
+  }
+
+  async restoreSession(): Promise<User | null> {
+    const stored = this.sessionStore.load();
+    if (!stored) {
+      this.client.setAccessToken(null);
+      return null;
+    }
+    const token = stored.access_token;
+    this.client.setAccessToken(token);
+    try {
+      const me = await this.client.get("/api/v1/me", { skipIdempotency: true });
+      return this.mapToUser(me);
+    } catch (err) {
+      if (err instanceof DataGatewayError && err.reason === "unauthorized") {
+        this.client.clearAccessTokenIfCurrent(token);
+        this.sessionStore.clearIfCurrent(token);
+        return null;
+      }
+      throw err;
+    }
+  }
+
+  async endSession(): Promise<void> {
+    this.beginAuthEpoch();
+    const token = this.client.getAccessToken();
+    if (token) {
+      this.sessionStore.clearIfCurrent(token);
+      this.client.clearAccessTokenIfCurrent(token);
+    } else {
+      this.sessionStore.clear();
+      this.client.setAccessToken(null);
+    }
+    this.client.abortInFlight();
+    if (!token) return;
+    try {
+      await this.client.request("/api/v1/auth/logout", {
+        method: "POST",
+        body: {},
+        skipAuth: true,
+        skipIdempotency: true,
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch {
+      // Local session was already discarded before this request.
+    }
+  }
+
+  abortRequests(): void {
+    this.client.abortInFlight();
   }
 
   async resetDemoData(): Promise<void> {
@@ -135,7 +236,6 @@ export class ApiCampusDataGateway implements CampusDataGateway {
 
   // --- Chat ---
   async getChatSessions(): Promise<ChatSession[]> {
-    // /api/v1/conversations exists but mapping might be complex, failing safe
     throw new UnsupportedOperationError("getChatSessions");
   }
 

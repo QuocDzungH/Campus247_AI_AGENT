@@ -13,9 +13,16 @@ import {
   StoredAttachment,
 } from "../types";
 
+export interface SessionOptions {
+  remember?: boolean;
+}
+
 export interface CampusDataGateway {
   // Auth
-  login(userId: string): Promise<User>;
+  login(userId: string, options?: SessionOptions): Promise<User>;
+  restoreSession?(): Promise<User | null>;
+  endSession?(): Promise<void>;
+  abortRequests?(): void;
 
   // Tickets
   getTickets(): Promise<Ticket[]>;

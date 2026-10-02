@@ -16,18 +16,29 @@ import {
 import { AuthLayout } from "@/components/AuthLayout";
 import { useStore } from "@/lib/store";
 import { AccessibleDialog } from "@/components/shared/AccessibleDialog";
+import { API_DEMO_ACCOUNTS, isOfficerDemoUserId, resolveApiDemoUserId } from "@/lib/data/api/demo-accounts";
 
 // Set to false when the real authentication flow is ready for release.
 const DEMO_ACCOUNTS_ENABLED = true;
-const DEMO_ACCOUNTS = [
+const MOCK_DEMO_ACCOUNTS = [
   { label: "Sinh viên", identifier: "SV001", password: "demo1234" },
   { label: "Cán bộ", identifier: "OF001", password: "demo1234" },
 ] as const;
 
+function resolveMockDemoUserId(identifier: string): string | null {
+  const trimmed = identifier.trim().toLowerCase();
+  if (trimmed.includes("an.nv") || trimmed === "sv001" || trimmed === "20210018") return "SV001";
+  if (trimmed.includes("ha.tt") || trimmed === "of001") return "OF001";
+  if (trimmed.includes("tram.lb") || trimmed === "sv024" || trimmed === "20240019") return "SV024";
+  return null;
+}
+
 function LoginForm() {
   const router = useRouter();
 
-  const { login } = useStore();
+  const { login, dataConfig } = useStore();
+  const isApiMode = dataConfig?.mode === "api";
+  const demoAccounts = isApiMode ? API_DEMO_ACCOUNTS : MOCK_DEMO_ACCOUNTS;
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -62,15 +73,8 @@ function LoginForm() {
     setLoading(true);
 
     try {
-      // Find matching user
-      let matchedUserId = "";
-      if (trimmed.includes("an.nv") || trimmed === "sv001" || trimmed === "20210018") {
-        matchedUserId = "SV001";
-      } else if (trimmed.includes("ha.tt") || trimmed === "of001") {
-        matchedUserId = "OF001";
-      } else if (trimmed.includes("tram.lb") || trimmed === "sv024" || trimmed === "20240019") {
-        matchedUserId = "SV024";
-      } else {
+      const matchedUserId = isApiMode ? resolveApiDemoUserId(identifier) : resolveMockDemoUserId(identifier);
+      if (!matchedUserId) {
         setLoading(false);
         setError("Không tìm thấy tài khoản. Kiểm tra thông tin hoặc chọn tài khoản mẫu bên dưới.");
         return;
@@ -86,7 +90,7 @@ function LoginForm() {
       setLoading(false);
 
       if (success) {
-        if (matchedUserId === "OF001") {
+        if (isOfficerDemoUserId(matchedUserId)) {
           router.push("/dashboard");
         } else {
           router.push("/student");
@@ -216,7 +220,7 @@ function LoginForm() {
                 Chọn một tài khoản để điền sẵn thông tin đăng nhập.
               </p>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {DEMO_ACCOUNTS.map((account) => (
+                {demoAccounts.map((account) => (
                   <button
                     key={account.identifier}
                     type="button"

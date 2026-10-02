@@ -99,7 +99,7 @@ interface BootstrapData {
   chatSessions: ChatSession[];
   reviewCases: ReviewCase[];
   demoUsers: User[];
-  currentUser: User;
+  currentUser: User | null;
   status: "ready";
 }
 
@@ -110,11 +110,21 @@ export async function bootstrapData(
   if (!config || !gateway) {
     throw new ConfigurationError("Data bootstrap requires a valid configuration and gateway.");
   }
-  if (config.mode === "api") {
-    throw new UnsupportedOperationError("API data bootstrap");
-  }
 
   const activeGateway = requireGateway(gateway, null);
+
+  if (config.mode === "api") {
+    const currentUser = activeGateway.restoreSession ? await activeGateway.restoreSession() : null;
+    return {
+      tickets: [],
+      chatSessions: [],
+      reviewCases: [],
+      demoUsers: [],
+      currentUser,
+      status: "ready",
+    };
+  }
+
   const [tickets, chatSessions, reviewCases, demoUsers] = await Promise.all([
     activeGateway.getTickets(),
     activeGateway.getChatSessions(),
@@ -251,7 +261,51 @@ interface StoreContextType {
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 const LOCAL_STORAGE_KEY_THEME = "campus247_theme_v2";
-const LOCAL_STORAGE_KEY_USER = "campus247_current_user_v1";
+export const MOCK_REMEMBERED_USER_KEY = "campus247_current_user_v1";
+
+export function writeMockRememberedUser(
+  mode: DataConfig["mode"] | null | undefined,
+  remember: boolean,
+  userId: string
+): void {
+  if (typeof window === "undefined" || mode === "api") return;
+  try {
+    if (remember) localStorage.setItem(MOCK_REMEMBERED_USER_KEY, userId);
+    else localStorage.removeItem(MOCK_REMEMBERED_USER_KEY);
+  } catch {
+    /* Mock remember is best-effort and isolated from the API session. */
+  }
+}
+
+export function clearMockRememberedUser(mode: DataConfig["mode"] | null | undefined): void {
+  if (typeof window === "undefined" || mode === "api") return;
+  try {
+    localStorage.removeItem(MOCK_REMEMBERED_USER_KEY);
+  } catch {
+    /* Keep going; API session storage is untouched. */
+  }
+}
+
+export function dataStateAfterGatewaySuccess(): { dataError: null; dataStatus: "ready" } {
+  return { dataError: null, dataStatus: "ready" };
+}
+
+export async function performGatewayLogin(
+  gateway: CampusDataGateway,
+  userId: string,
+  options: {
+    remember?: boolean;
+    mode?: DataConfig["mode"] | null;
+    isCurrent: () => boolean;
+  }
+): Promise<User | null> {
+  gateway.abortRequests?.();
+  if (options.mode === "api" && gateway.endSession) {
+    await gateway.endSession();
+  }
+  if (!options.isCurrent()) return null;
+  return gateway.login(userId, { remember: options.remember });
+}
 
 // Demo users moved to gateway
 
@@ -324,9 +378,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
       if (!authRestored.current) {
         let restoredUser: User | null = null;
-        const persistedUserId = localStorage.getItem(LOCAL_STORAGE_KEY_USER);
-        if (persistedUserId) {
-          restoredUser = await initialized.gateway!.login(persistedUserId);
+        if (initialized.config?.mode === "api") {
+          restoredUser = bootstrap.currentUser;
+        } else {
+          const persistedUserId = localStorage.getItem(MOCK_REMEMBERED_USER_KEY);
+          if (persistedUserId) {
+            restoredUser = await initialized.gateway!.login(persistedUserId);
+          }
         }
         if (run !== loadGeneration.current) return;
         // Login/logout during bootstrap owns the newer in-memory session.
@@ -364,10 +422,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       try {
         const activeGateway = requireGateway(gateway, dataError);
         const result = await operation(activeGateway);
-        if (dataConfig?.mode === "mock" && hasDataLoaded) {
-          setDataError(null);
-          setDataStatus("ready");
-        }
+        const successState = dataStateAfterGatewaySuccess();
+        setDataError(successState.dataError);
+        setDataStatus(successState.dataStatus);
         return result;
       } catch (error: unknown) {
         const dataGatewayError = toDataGatewayError(error);
@@ -376,7 +433,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         throw dataGatewayError;
       }
     },
-    [dataConfig, dataError, gateway, hasDataLoaded]
+    [dataError, gateway]
   );
 
   const toggleTheme = () => {
@@ -389,15 +446,29 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const clearApiAccountState = () => {
+    setTickets([]);
+    setChatSessions([]);
+    setReviewCases([]);
+    setDemoUsers([]);
+    setChatMessages([]);
+    setActiveSessionId("");
+    setL4HandoverActive(false);
+  };
+
   const login = async (userId: string, remember = true): Promise<boolean> => {
     const generation = ++authGeneration.current;
     try {
-      const user = await executeGateway((activeGateway) => activeGateway.login(userId));
-      if (generation !== authGeneration.current) return false;
-      if (typeof window !== "undefined") {
-        if (remember) localStorage.setItem(LOCAL_STORAGE_KEY_USER, user.id);
-        else localStorage.removeItem(LOCAL_STORAGE_KEY_USER);
-      }
+      const user = await executeGateway((activeGateway) =>
+        performGatewayLogin(activeGateway, userId, {
+          remember,
+          mode: dataConfig?.mode,
+          isCurrent: () => generation === authGeneration.current,
+        })
+      );
+      if (generation !== authGeneration.current || !user) return false;
+      writeMockRememberedUser(dataConfig?.mode, remember, user.id);
+      if (dataConfig?.mode === "api") clearApiAccountState();
       setCurrentUser(user);
       authRestored.current = true;
       return true;
@@ -409,14 +480,29 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     ++authGeneration.current;
     authRestored.current = true;
+    gateway?.abortRequests?.();
+    if (dataConfig?.mode === "api") {
+      clearApiAccountState();
+      void gateway?.endSession?.().catch(() => {
+        /* Local session is already discarded. */
+      });
+    }
     setCurrentUser(null);
-    if (typeof window !== "undefined") localStorage.removeItem(LOCAL_STORAGE_KEY_USER);
+    clearMockRememberedUser(dataConfig?.mode);
   };
 
   const getTicket = (id: string) => tickets.find((t) => t.id === id || t.code === id);
 
   const reloadData = async () => {
     if (!hasDataLoaded) { await loadAllData(); return; }
+    if (dataConfig?.mode === "api") {
+      await executeGateway(async (activeGateway) => {
+        if (!activeGateway.restoreSession) return;
+        const restored = await activeGateway.restoreSession();
+        setCurrentUser(restored);
+      });
+      return;
+    }
     await executeGateway(async (activeGateway) => {
       const [nextTickets, nextReviews] = await Promise.all([activeGateway.getTickets(), activeGateway.getReviewCases()]);
       setTickets(nextTickets);

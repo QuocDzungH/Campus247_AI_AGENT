@@ -11,6 +11,12 @@ export type ErrorReason =
   | "unknown";
 
 export class DataGatewayError extends Error {
+  public code?: string;
+  public requestId?: string;
+  public retryable?: boolean;
+  public status?: number;
+  public retryAfter?: string | null;
+
   constructor(
     public reason: ErrorReason,
     public message: string,
