@@ -1,0 +1,107 @@
+[
+  {
+    "id": "q01",
+    "question": "Làm thế nào để xin bảng điểm chính thức?",
+    "expected_answer": "Sinh viên có thể xin bảng điểm chính thức bằng cách gửi yêu cầu qua cổng thông tin sinh viên hoặc liên hệ trực tiếp phòng Đào tạo. Thời gian xử lý thường là 3-5 ngày làm việc.",
+    "category": "xin_giay_to",
+    "expected_sources": ["transcript_policy_01"]
+  },
+  {
+    "id": "q02",
+    "question": "Lệ phí xin cấp lại thẻ sinh viên là bao nhiêu?",
+    "expected_answer": "Lệ phí xin cấp lại thẻ sinh viên do bị mất hoặc hỏng là 100,000 VND. Phí này cần được đóng tại phòng Kế toán trước khi nhận thẻ mới.",
+    "category": "xin_giay_to",
+    "expected_sources": ["fee_schedule_2023"]
+  },
+  {
+    "id": "q03",
+    "question": "Tôi có thể nhận giấy chứng nhận sinh viên qua đường bưu điện không?",
+    "expected_answer": "Có, sinh viên có thể yêu cầu gửi giấy chứng nhận qua đường bưu điện. Phí vận chuyển sẽ do sinh viên tự chi trả khi nhận tài liệu.",
+    "category": "xin_giay_to",
+    "expected_sources": ["delivery_methods"]
+  },
+  {
+    "id": "q04",
+    "question": "Thời gian xử lý đơn xin tạm nghỉ học là bao lâu?",
+    "expected_answer": "Đơn xin tạm nghỉ học (Leave of Absence) thường được xử lý trong vòng 7 đến 10 ngày làm việc kể từ khi nhận đủ giấy tờ hợp lệ.",
+    "category": "xin_giay_to",
+    "expected_sources": ["loa_policy"]
+  },
+  {
+    "id": "q05",
+    "question": "Có những loại giấy chứng nhận sinh viên nào?",
+    "expected_answer": "Có hai loại chính: Giấy chứng nhận sinh viên (bản tiếng Việt) và Giấy chứng nhận sinh viên (bản tiếng Anh) thường dùng cho mục đích xin visa.",
+    "category": "xin_giay_to",
+    "expected_sources": ["certificate_types"]
+  },
+  {
+    "id": "q06",
+    "question": "Quy trình nộp đơn khiếu nại về dịch vụ trường học như thế nào?",
+    "expected_answer": "Sinh viên cần điền mẫu đơn khiếu nại trực tuyến trên hệ thống quản lý sinh viên, trình bày rõ vấn đề và đính kèm bằng chứng (nếu có).",
+    "category": "khieu_nai",
+    "expected_sources": ["complaint_procedure"]
+  },
+  {
+    "id": "q07",
+    "question": "Tôi có thể nộp đơn khiếu nại ở đâu?",
+    "expected_answer": "Sinh viên có thể nộp đơn trực tuyến hoặc nộp trực tiếp tại Văn phòng Công tác Sinh viên (Student Affairs Office).",
+    "category": "khieu_nai",
+    "expected_sources": ["complaint_locations"]
+  },
+  {
+    "id": "q08",
+    "question": "Mất bao lâu để nhận được phản hồi cho một khiếu nại?",
+    "expected_answer": "Trường sẽ gửi thông báo tiếp nhận trong vòng 2 ngày làm việc và phản hồi chính thức về hướng giải quyết trong vòng 14 ngày làm việc.",
+    "category": "khieu_nai",
+    "expected_sources": ["complaint_timeline"]
+  },
+  {
+    "id": "q09",
+    "question": "Hạn chót để nộp đơn phúc khảo điểm là khi nào?",
+    "expected_answer": "Hạn chót để nộp đơn phúc khảo là 3 ngày làm việc kể từ ngày điểm chính thức được công bố trên hệ thống.",
+    "category": "phuc_khao_diem",
+    "expected_sources": ["grade_appeal_deadline"]
+  },
+  {
+    "id": "q10",
+    "question": "Cần điền mẫu đơn nào để phúc khảo điểm thi cuối kỳ?",
+    "expected_answer": "Sinh viên cần điền Form GA-01 (Grade Appeal Form) và nộp cho văn phòng khoa (College Office).",
+    "category": "phuc_khao_diem",
+    "expected_sources": ["grade_appeal_form"]
+  },
+  {
+    "id": "q11",
+    "question": "Quy định về đạo đức học thuật tại VinUni xử lý hành vi đạo văn như thế nào?",
+    "expected_answer": "Hành vi đạo văn vi phạm nghiêm trọng liêm chính học thuật. Tùy mức độ, sinh viên có thể nhận điểm 0 cho bài tập đó, đánh rớt môn, hoặc bị đình chỉ học thuật.",
+    "category": "academic_integrity",
+    "expected_sources": ["academic_integrity_policy"]
+  },
+  {
+    "id": "q12",
+    "question": "Quy tắc ứng xử của sinh viên quy định gì về trang phục?",
+    "expected_answer": "Sinh viên cần ăn mặc lịch sự, phù hợp với môi trường học thuật. Không mặc quần đùi quá ngắn, áo hở hang hoặc dép lê khi vào lớp học.",
+    "category": "code_of_conduct",
+    "expected_sources": ["dress_code_policy"]
+  },
+  {
+    "id": "q13",
+    "question": "Giờ giới nghiêm tại ký túc xá là mấy giờ?",
+    "expected_answer": "Giờ giới nghiêm (curfew) tại ký túc xá VinUni là 11:30 PM. Sinh viên cần có mặt tại KTX trước giờ này hoặc phải xin phép ban quản lý trước.",
+    "category": "dormitory_rules",
+    "expected_sources": ["dorm_regulations"]
+  },
+  {
+    "id": "q14",
+    "question": "Làm sao để mượn sách từ thư viện?",
+    "expected_answer": "Sinh viên sử dụng thẻ sinh viên quét tại máy tự động mượn trả sách (Self-checkout kiosk) tại thư viện. Thời hạn mượn thông thường là 14 ngày.",
+    "category": "library_services",
+    "expected_sources": ["library_borrowing"]
+  },
+  {
+    "id": "q15",
+    "question": "Cách đặt phòng thảo luận nhóm như thế nào?",
+    "expected_answer": "Sinh viên có thể đặt phòng thảo luận qua hệ thống Room Booking System trên portal của trường. Đặt trước tối đa 7 ngày và sử dụng không quá 3 giờ/lần.",
+    "category": "room_booking",
+    "expected_sources": ["room_booking_guide"]
+  }
+]
