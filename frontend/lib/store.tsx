@@ -1,76 +1,192 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
 import {
   User,
   Ticket,
   TicketStatus,
-  TicketMessage,
   ChatMessage,
   ChatSession,
   ReviewCase,
   FindingOfficerStatus,
   FindingAiLabel,
   SupplementRequest,
-  ReviewFinding,
-  SystemVerificationItem,
   IssuedCertificateDocument,
+  StoredAttachment,
 } from "./types";
+import { createGateway } from "./data/create-gateway";
+import { getDataConfig, DataConfig } from "./data/config";
+import { CampusDataGateway } from "./data/gateway";
+import { officerDraftFor } from "./staff-policy";
 import {
-  DEMO_USERS,
-  INITIAL_TICKETS,
-  INITIAL_CHAT_SESSIONS,
-  INITIAL_REVIEW_CASES,
-  STANDARD_REVIEW_CRITERIA,
-} from "./mock-data";
-import { compareCourseContent } from "./review-service";
-import { runCertificateVerification, buildDefaultCertificate } from "./certificate-service";
+  ConfigurationError,
+  DataGatewayError,
+  UnsupportedOperationError,
+} from "./data/errors";
+
+export type DataStatus =
+  | "loading"
+  | "ready"
+  | "configuration_error"
+  | "unsupported"
+  | "connection_error"
+  | "data_error";
+
+function toDataGatewayError(error: unknown): DataGatewayError {
+  if (error instanceof DataGatewayError) return error;
+  return new DataGatewayError(
+    "unknown",
+    error instanceof Error ? error.message : String(error),
+    error
+  );
+}
+
+export function statusForError(error: DataGatewayError): DataStatus {
+  if (error.reason === "configuration") return "configuration_error";
+  if (error.reason === "unsupported") return "unsupported";
+  if (error.reason === "network" || error.reason === "server") return "connection_error";
+  return "data_error";
+}
+
+export function requireGateway(
+  gateway: CampusDataGateway | null,
+  dataError: DataGatewayError | null
+): CampusDataGateway {
+  if (gateway) return gateway;
+  if (dataError) throw dataError;
+  throw new ConfigurationError("Data gateway is not initialized.");
+}
+
+interface InitialDataState {
+  config: DataConfig | null;
+  gateway: CampusDataGateway | null;
+  error: DataGatewayError | null;
+  status: DataStatus;
+}
+
+export function initializeDataState(): InitialDataState {
+  try {
+    const config = getDataConfig();
+    try {
+      return {
+        config,
+        gateway: createGateway(config),
+        error: null,
+        status: "loading",
+      };
+    } catch (error: unknown) {
+      const dataError = toDataGatewayError(error);
+      return {
+        config,
+        gateway: null,
+        error: dataError,
+        status: statusForError(dataError),
+      };
+    }
+  } catch (error: unknown) {
+    const dataError = toDataGatewayError(error);
+    return {
+      config: null,
+      gateway: null,
+      error: dataError,
+      status: "configuration_error",
+    };
+  }
+}
+
+interface BootstrapData {
+  tickets: Ticket[];
+  chatSessions: ChatSession[];
+  reviewCases: ReviewCase[];
+  demoUsers: User[];
+  currentUser: User;
+  status: "ready";
+}
+
+export async function bootstrapData(
+  config: DataConfig | null,
+  gateway: CampusDataGateway | null
+): Promise<BootstrapData> {
+  if (!config || !gateway) {
+    throw new ConfigurationError("Data bootstrap requires a valid configuration and gateway.");
+  }
+  if (config.mode === "api") {
+    throw new UnsupportedOperationError("API data bootstrap");
+  }
+
+  const activeGateway = requireGateway(gateway, null);
+  const [tickets, chatSessions, reviewCases, demoUsers] = await Promise.all([
+    activeGateway.getTickets(),
+    activeGateway.getChatSessions(),
+    activeGateway.getReviewCases(),
+    activeGateway.getDemoUsers(),
+  ]);
+  const currentUser = await activeGateway.login("SV001");
+  return {
+    tickets,
+    chatSessions,
+    reviewCases,
+    demoUsers,
+    currentUser,
+    status: "ready",
+  };
+}
 
 interface StoreContextType {
   // Theme
   theme: "light" | "dark";
   toggleTheme: () => void;
 
+  // Data Layer State
+  isDataLoading: boolean;
+  dataError: DataGatewayError | null;
+  dataStatus: DataStatus;
+  dataConfig: DataConfig | null;
+
+  reloadData: () => Promise<void>;
+
   // Auth / Current User
-  currentUser: User;
+  currentUser: User | null;
   setCurrentUser: (user: User) => void;
-  login: (userId: string) => boolean;
+  login: (userId: string, remember?: boolean) => Promise<boolean>;
   logout: () => void;
+  demoUsers: User[];
 
   // Tickets
   tickets: Ticket[];
   getTicket: (id: string) => Ticket | undefined;
-  createTicket: (data: Partial<Ticket>) => Ticket;
-  updateTicketStatus: (id: string, status: TicketStatus, actorName: string) => void;
-  updateOfficerDraft: (id: string, draft: string) => void;
-  resetOfficerDraft: (id: string) => void;
-  toggleChecklistItem: (ticketId: string, itemId: string) => void;
+  createTicket: (data: Partial<Ticket>) => Promise<Ticket>;
+  updateTicketStatus: (id: string, status: TicketStatus, actorName: string) => Promise<void>;
+  updateOfficerDraft: (id: string, draft: string) => Promise<void>;
+  resetOfficerDraft: (id: string) => Promise<void>;
+  toggleChecklistItem: (ticketId: string, itemId: string) => Promise<void>;
   addTicketMessage: (
     ticketId: string,
     message: { senderId: string; senderName: string; senderRole: "student" | "officer" | "system"; content: string }
-  ) => void;
+  ) => Promise<void>;
   submitGate2Response: (
     ticketId: string,
     actionType: "respond" | "request_info" | "resolve",
-    customContent?: string
-  ) => void;
-  resetAllDemoData: () => void;
+    customContent?: string,
+    expectedSnapshot?: string
+  ) => Promise<void>;
+  resetAllDemoData: () => Promise<void>;
 
   // Certificate Verification & BM-03 Issuance
-  runTicketVerification: (ticketId: string) => void;
-  retryCriterionVerification: (ticketId: string, criterionId: string) => void;
-  confirmCriterionReview: (ticketId: string, criterionId: string, note?: string) => void;
-  updateCertificateDraft: (ticketId: string, edits: Partial<IssuedCertificateDocument>) => void;
-  issueCertificate: (ticketId: string) => IssuedCertificateDocument | null;
+  runTicketVerification: (ticketId: string) => Promise<void>;
+  retryCriterionVerification: (ticketId: string, criterionId: string) => Promise<void>;
+  confirmCriterionReview: (ticketId: string, criterionId: string, note?: string) => Promise<void>;
+  updateCertificateDraft: (ticketId: string, edits: Partial<IssuedCertificateDocument>) => Promise<void>;
+  issueCertificate: (ticketId: string) => Promise<IssuedCertificateDocument | null>;
 
   // Chat Assistant State & Sessions
   chatSessions: ChatSession[];
   activeSessionId: string;
   selectChatSession: (sessionId: string) => void;
-  createNewChatSession: () => void;
-  deleteChatSession: (sessionId: string) => void;
+  createNewChatSession: () => Promise<void>;
+  deleteChatSession: (sessionId: string) => Promise<void>;
   chatMessages: ChatMessage[];
-  addChatMessage: (msg: Omit<ChatMessage, "id" | "timestamp">) => void;
+  addChatMessage: (msg: Omit<ChatMessage, "id" | "timestamp">) => Promise<void>;
   isL4HandoverActive: boolean;
   setL4HandoverActive: (active: boolean) => void;
   isGate1Open: boolean;
@@ -98,12 +214,12 @@ interface StoreContextType {
     }>
   >;
   lastUpdatedField: "reason" | "receiveMethod" | null;
-  updateGate1Field: (field: "reason" | "receiveMethod" | "destinationOrg", value: any) => void;
+  updateGate1Field: (field: "reason" | "receiveMethod" | "destinationOrg", value: string) => void;
 
   // Academic Review Cases (Rà soát học phần)
   reviewCases: ReviewCase[];
   getReviewCase: (id: string) => ReviewCase | undefined;
-  createReviewCase: (data: Partial<ReviewCase>) => ReviewCase;
+  createReviewCase: (data: Partial<ReviewCase>) => Promise<ReviewCase>;
   runAiReview: (caseId: string) => Promise<void>;
   updateFindingReview: (
     caseId: string,
@@ -112,9 +228,10 @@ interface StoreContextType {
       officerStatus: FindingOfficerStatus;
       officerAdjustedLabel?: FindingAiLabel;
       officerNote?: string;
-    }
-  ) => void;
-  sendSupplementRequest: (caseId: string, request: SupplementRequest) => void;
+    },
+    expectedSnapshot?: string
+  ) => Promise<void>;
+  sendSupplementRequest: (caseId: string, request: SupplementRequest, expectedSnapshot?: string) => Promise<void>;
   submitStudentSupplement: (
     caseId: string,
     payload: {
@@ -122,161 +239,276 @@ interface StoreContextType {
       docTitle?: string;
       fileName?: string;
       versionToActivate?: number;
+      attachment?: StoredAttachment;
     }
-  ) => void;
-  finalizeReviewCase: (caseId: string, report: NonNullable<ReviewCase["finalReport"]>) => void;
-  resetReviewDemo: () => void;
+  ) => Promise<void>;
+  finalizeReviewCase: (caseId: string, report: NonNullable<ReviewCase["finalReport"]>, expectedSnapshot?: string) => Promise<void>;
+  resetReviewDemo: () => Promise<void>;
   isAiAnalyzing: boolean;
   aiAnalyzingStep: number;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_KEY_TICKETS = "campus247_tickets_v2";
 const LOCAL_STORAGE_KEY_THEME = "campus247_theme_v2";
-const LOCAL_STORAGE_KEY_USER = "campus247_user_v2";
-const LOCAL_STORAGE_KEY_REVIEWS = "campus247_reviews_v2";
+const LOCAL_STORAGE_KEY_USER = "campus247_current_user_v1";
+
+// Demo users moved to gateway
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
-  // Theme state: Default Light as required
-  const [theme, setTheme] = useState<"light" | "dark">(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const savedTheme = localStorage.getItem(LOCAL_STORAGE_KEY_THEME) as "light" | "dark" | null;
-        if (savedTheme === "dark") {
-          document.documentElement.classList.add("dark");
-          return "dark";
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return "light";
-  });
+  const [theme, setTheme] = useState<"light" | "dark">("light");
 
-  // User state
-  const [currentUser, setCurrentUser] = useState<User>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const savedUser = localStorage.getItem(LOCAL_STORAGE_KEY_USER);
-        if (savedUser) {
-          const parsed = JSON.parse(savedUser);
-          if (parsed?.id && DEMO_USERS[parsed.id]) {
-            return DEMO_USERS[parsed.id];
-          }
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return DEMO_USERS.SV001;
-  });
+  // Storage is initialized after hydration, never during server/client rendering.
+  const [dataConfig, setDataConfig] = useState<DataConfig | null>(null);
+  const [gateway, setGateway] = useState<CampusDataGateway | null>(null);
+  const [isDataLoading, setIsDataLoading] = useState(true);
+  const [dataError, setDataError] = useState<DataGatewayError | null>(null);
+  const [dataStatus, setDataStatus] = useState<DataStatus>("loading");
+  const [hasDataLoaded, setHasDataLoaded] = useState(false);
+  const authGeneration = useRef(0);
+  const authRestored = useRef(false);
+  const loadGeneration = useRef(0);
 
-  // Tickets state
-  const [tickets, setTickets] = useState<Ticket[]>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const savedTickets = localStorage.getItem(LOCAL_STORAGE_KEY_TICKETS);
-        if (savedTickets) {
-          return JSON.parse(savedTickets);
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return INITIAL_TICKETS;
-  });
-
-  // Academic Review Cases state
-  const [reviewCases, setReviewCases] = useState<ReviewCase[]>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem(LOCAL_STORAGE_KEY_REVIEWS);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed;
-          }
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return INITIAL_REVIEW_CASES;
-  });
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [reviewCases, setReviewCases] = useState<ReviewCase[]>([]);
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
+  const [demoUsers, setDemoUsers] = useState<User[]>([]);
 
   const [isAiAnalyzing, setIsAiAnalyzing] = useState(false);
   const [aiAnalyzingStep, setAiAnalyzingStep] = useState(1);
-
-  // Chat Assistant & Sessions state
-  const [chatSessions, setChatSessions] = useState<ChatSession[]>(() => {
-    return INITIAL_CHAT_SESSIONS || [];
-  });
-  const [activeSessionId, setActiveSessionId] = useState<string>(() => {
-    return INITIAL_CHAT_SESSIONS?.[0]?.id || "sess-bm03-vayvon";
-  });
-
-  const [isL4HandoverActive, setL4HandoverActive] = useState<boolean>(() => {
-    return !!INITIAL_CHAT_SESSIONS?.[0]?.isL4HandoverActive;
-  });
+  const [activeSessionId, setActiveSessionId] = useState<string>("");
+  const [isL4HandoverActive, setL4HandoverActive] = useState<boolean>(false);
   const [isGate1Open, setGate1Open] = useState(false);
-  const [gate1FormData, setGate1FormData] = useState(() => {
-    return (
-      INITIAL_CHAT_SESSIONS?.[0]?.gate1FormData || {
-        fullName: "Nguyễn Văn An",
-        mssv: "20210018",
-        classYear: "Khóa 18 (2021 - 2025) · K18 KTPM",
-        department: "Khoa Công nghệ Phần mềm",
-        reason: "Nộp Ngân hàng Chính sách Xã hội Chi nhánh Q. Thủ Đức (Học kỳ 2)",
-        destinationOrg: "Ngân hàng Chính sách Xã hội Chi nhánh Q. Thủ Đức",
-        receiveMethod: "digital_pdf" as "digital_pdf" | "paper_stamped",
-        academicStatus: "Bình thường",
-      }
-    );
+  const [gate1FormData, setGate1FormData] = useState<StoreContextType["gate1FormData"]>({
+    fullName: "Nguyễn Văn An",
+    mssv: "20210018",
+    classYear: "Khóa 18 (2021 - 2025) · K18 KTPM",
+    department: "Khoa Công nghệ Phần mềm",
+    reason: "Nộp Ngân hàng Chính sách Xã hội Chi nhánh Q. Thủ Đức (Học kỳ 2)",
+    destinationOrg: "Ngân hàng Chính sách Xã hội Chi nhánh Q. Thủ Đức",
+    receiveMethod: "digital_pdf",
+    academicStatus: "Bình thường",
   });
-
   const [lastUpdatedField, setLastUpdatedField] = useState<"reason" | "receiveMethod" | null>(null);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
-  const updateGate1Field = (field: "reason" | "receiveMethod" | "destinationOrg", value: any) => {
-    setGate1FormData((prev) => ({
-      ...prev,
-      [field]: value,
-      ...(field === "reason" && (!prev.destinationOrg || prev.destinationOrg.includes("Ngân hàng"))
-        ? { destinationOrg: value }
-        : {}),
-    }));
-    if (field === "reason" || field === "destinationOrg") {
-      setTickets((prev) => {
-        const next = prev.map((t) => {
-          if (t.studentId === currentUser.id && t.type === "certificate" && t.status !== "resolved") {
-            return {
-              ...t,
-              dataChangedSinceLastCheck: true,
-              purpose: field === "reason" ? value : t.purpose,
-              destinationOrg: field === "destinationOrg" ? value : t.destinationOrg,
-            };
-          }
-          return t;
-        });
-        try {
-          localStorage.setItem(LOCAL_STORAGE_KEY_TICKETS, JSON.stringify(next));
-        } catch (e) {
-          console.error(e);
+  const loadAllData = useCallback(async () => {
+    const run = ++loadGeneration.current;
+    const authAtStart = authGeneration.current;
+    setIsDataLoading(true);
+    setHasDataLoaded(false);
+    setDataStatus("loading");
+    setDataError(null);
+    try {
+      // Retry recreates a gateway that may have failed while reading storage.
+      const initialized = initializeDataState();
+      setDataConfig(initialized.config);
+      setGateway(initialized.gateway);
+      if (initialized.error) throw initialized.error;
+      const bootstrap = await bootstrapData(initialized.config, initialized.gateway);
+      if (run !== loadGeneration.current) return;
+      setTickets(bootstrap.tickets);
+      setChatSessions(bootstrap.chatSessions);
+      setReviewCases(bootstrap.reviewCases);
+      setDemoUsers(bootstrap.demoUsers);
+
+      if (bootstrap.chatSessions.length > 0) {
+        setActiveSessionId(bootstrap.chatSessions[0].id);
+        setChatMessages(bootstrap.chatSessions[0].messages || []);
+        setL4HandoverActive(!!bootstrap.chatSessions[0].isL4HandoverActive);
+        if (bootstrap.chatSessions[0].gate1FormData) {
+          setGate1FormData(bootstrap.chatSessions[0].gate1FormData);
         }
-        return next;
-      });
+      }
+
+      if (!authRestored.current) {
+        let restoredUser: User | null = null;
+        const persistedUserId = localStorage.getItem(LOCAL_STORAGE_KEY_USER);
+        if (persistedUserId) {
+          restoredUser = await initialized.gateway!.login(persistedUserId);
+        }
+        if (run !== loadGeneration.current) return;
+        // Login/logout during bootstrap owns the newer in-memory session.
+        if (authAtStart === authGeneration.current) setCurrentUser(restoredUser);
+        authRestored.current = true;
+      }
+      setHasDataLoaded(true);
+      setDataStatus(bootstrap.status);
+    } catch (e: unknown) {
+      if (run !== loadGeneration.current) return;
+      const dataGatewayError = toDataGatewayError(e);
+      setDataError(dataGatewayError);
+      setDataStatus(statusForError(dataGatewayError));
+      throw dataGatewayError;
+    } finally {
+      if (run === loadGeneration.current) setIsDataLoading(false);
     }
-    if (field === "reason" || field === "receiveMethod") {
-      setLastUpdatedField(field);
-      setTimeout(() => {
-        setLastUpdatedField(null);
-      }, 3500);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      let savedTheme: string | null = null;
+      try { savedTheme = localStorage.getItem(LOCAL_STORAGE_KEY_THEME); } catch { /* Use the in-memory theme. */ }
+      if (savedTheme === "dark") {
+        document.documentElement.classList.add("dark");
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setTheme("dark");
+      }
+    }
+    void loadAllData().catch(() => { /* The retry state displays the error. */ });
+  }, [loadAllData]);
+
+  const executeGateway = useCallback(
+    async <T,>(operation: (activeGateway: CampusDataGateway) => Promise<T>): Promise<T> => {
+      try {
+        const activeGateway = requireGateway(gateway, dataError);
+        const result = await operation(activeGateway);
+        if (dataConfig?.mode === "mock" && hasDataLoaded) {
+          setDataError(null);
+          setDataStatus("ready");
+        }
+        return result;
+      } catch (error: unknown) {
+        const dataGatewayError = toDataGatewayError(error);
+        setDataError(dataGatewayError);
+        setDataStatus(statusForError(dataGatewayError));
+        throw dataGatewayError;
+      }
+    },
+    [dataConfig, dataError, gateway, hasDataLoaded]
+  );
+
+  const toggleTheme = () => {
+    setTheme((prev) => {
+      const next = prev === "light" ? "dark" : "light";
+      if (next === "dark") document.documentElement.classList.add("dark");
+      else document.documentElement.classList.remove("dark");
+      try { localStorage.setItem(LOCAL_STORAGE_KEY_THEME, next); } catch { /* Theme remains usable for this session. */ }
+      return next;
+    });
+  };
+
+  const login = async (userId: string, remember = true): Promise<boolean> => {
+    const generation = ++authGeneration.current;
+    try {
+      const user = await executeGateway((activeGateway) => activeGateway.login(userId));
+      if (generation !== authGeneration.current) return false;
+      if (typeof window !== "undefined") {
+        if (remember) localStorage.setItem(LOCAL_STORAGE_KEY_USER, user.id);
+        else localStorage.removeItem(LOCAL_STORAGE_KEY_USER);
+      }
+      setCurrentUser(user);
+      authRestored.current = true;
+      return true;
+    } catch {
+      return false;
     }
   };
 
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>(() => {
-    return INITIAL_CHAT_SESSIONS?.[0]?.messages || [];
-  });
+  const logout = () => {
+    ++authGeneration.current;
+    authRestored.current = true;
+    setCurrentUser(null);
+    if (typeof window !== "undefined") localStorage.removeItem(LOCAL_STORAGE_KEY_USER);
+  };
+
+  const getTicket = (id: string) => tickets.find((t) => t.id === id || t.code === id);
+
+  const reloadData = async () => {
+    if (!hasDataLoaded) { await loadAllData(); return; }
+    await executeGateway(async (activeGateway) => {
+      const [nextTickets, nextReviews] = await Promise.all([activeGateway.getTickets(), activeGateway.getReviewCases()]);
+      setTickets(nextTickets);
+      setReviewCases(nextReviews);
+    });
+  };
+
+  const createTicket = async (data: Partial<Ticket>): Promise<Ticket> => {
+    if (!currentUser) throw new DataGatewayError("unauthorized", "Not logged in");
+    return executeGateway(async (activeGateway) => {
+      const ticket = await activeGateway.createTicket(currentUser, data);
+      setTickets(await activeGateway.getTickets());
+      return ticket;
+    });
+  };
+
+  const updateTicketStatus = async (id: string, status: TicketStatus, actorName: string) => {
+    await executeGateway(async (activeGateway) => {
+      await activeGateway.updateTicketStatus(id, status, actorName);
+      setTickets(await activeGateway.getTickets());
+    });
+  };
+
+  const updateOfficerDraft = async (id: string, draft: string) => {
+    if (currentUser?.role !== "officer") throw new DataGatewayError("unauthorized", "Chỉ cán bộ được lưu nháp phản hồi.");
+    const ticket = getTicket(id);
+    if (!ticket) throw new DataGatewayError("not_found", "Không tìm thấy hồ sơ.");
+    await executeGateway(async (activeGateway) => {
+      await activeGateway.updateOfficerDraft(id, draft, currentUser, officerDraftFor(ticket, currentUser.id));
+      setTickets(await activeGateway.getTickets());
+    });
+  };
+
+  const resetOfficerDraft = async (id: string) => {
+    const ticket = getTicket(id);
+    if (!ticket) throw new DataGatewayError("not_found", "Không tìm thấy hồ sơ.");
+    await updateOfficerDraft(id, ticket.officerDraftDefault);
+  };
+
+  const toggleChecklistItem = async (ticketId: string, itemId: string) => {
+    await executeGateway(async (activeGateway) => {
+      await activeGateway.toggleChecklistItem(ticketId, itemId);
+      setTickets(await activeGateway.getTickets());
+    });
+  };
+
+  const addTicketMessage = async (ticketId: string, message: { senderId: string; senderName: string; senderRole: "student" | "officer" | "system"; content: string }) => {
+    await executeGateway(async (activeGateway) => {
+      await activeGateway.addTicketMessage(ticketId, message);
+      setTickets(await activeGateway.getTickets());
+    });
+  };
+
+  const submitGate2Response = async (ticketId: string, actionType: "respond" | "request_info" | "resolve", customContent?: string, expectedSnapshot?: string) => {
+    if (currentUser?.role !== "officer") throw new DataGatewayError("unauthorized", "Chỉ cán bộ được xử lý hồ sơ.");
+    await executeGateway(async (activeGateway) => {
+      await activeGateway.submitGate2Response(ticketId, actionType, customContent, currentUser, expectedSnapshot);
+      setTickets(await activeGateway.getTickets());
+    });
+  };
+
+  const runTicketVerification = async (ticketId: string) => {
+    await executeGateway(async (activeGateway) => {
+      await activeGateway.runTicketVerification(ticketId);
+      setTickets(await activeGateway.getTickets());
+    });
+  };
+
+  const retryCriterionVerification = async (ticketId: string, criterionId: string) => {
+    await executeGateway(async (activeGateway) => {
+      await activeGateway.retryCriterionVerification(ticketId, criterionId);
+      setTickets(await activeGateway.getTickets());
+    });
+  };
+
+  const confirmCriterionReview = async (ticketId: string, criterionId: string, note?: string) => {
+    await executeGateway(async (activeGateway) => {
+      await activeGateway.confirmCriterionReview(ticketId, criterionId, note);
+      setTickets(await activeGateway.getTickets());
+    });
+  };
+
+  const updateCertificateDraft = async (ticketId: string, edits: Partial<IssuedCertificateDocument>) => {
+    await executeGateway(async (activeGateway) => {
+      await activeGateway.updateCertificateDraft(ticketId, edits);
+      setTickets(await activeGateway.getTickets());
+    });
+  };
+
+  const issueCertificate = async (ticketId: string): Promise<IssuedCertificateDocument | null> => {
+    throw new UnsupportedOperationError(`Phát hành tài liệu chính thức cho ${ticketId}`);
+  };
 
   const selectChatSession = (sessionId: string) => {
     const session = chatSessions.find((s) => s.id === sessionId);
@@ -284,1008 +516,146 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setActiveSessionId(sessionId);
     setChatMessages(session.messages || []);
     setL4HandoverActive(!!session.isL4HandoverActive);
-    if (session.gate1FormData) {
-      setGate1FormData(session.gate1FormData);
+    if (session.gate1FormData) setGate1FormData(session.gate1FormData);
+  };
+
+  const createNewChatSession = async () => {
+    await executeGateway(async (activeGateway) => {
+      const session = await activeGateway.createChatSession();
+      setChatSessions(await activeGateway.getChatSessions());
+      setActiveSessionId(session.id);
+      setChatMessages(session.messages || []);
+      setL4HandoverActive(false);
+      setGate1Open(false);
+    });
+  };
+
+  const deleteChatSession = async (sessionId: string) => {
+    await executeGateway(async (activeGateway) => {
+      await activeGateway.deleteChatSession(sessionId);
+      let remaining = await activeGateway.getChatSessions();
+      if (remaining.length === 0) {
+        const session = await activeGateway.createChatSession();
+        remaining = await activeGateway.getChatSessions();
+        setActiveSessionId(session.id);
+        setChatMessages(session.messages || []);
+        setL4HandoverActive(false);
+      } else if (activeSessionId === sessionId) {
+        setActiveSessionId(remaining[0].id);
+        setChatMessages(remaining[0].messages || []);
+        setL4HandoverActive(!!remaining[0].isL4HandoverActive);
+        if (remaining[0].gate1FormData) setGate1FormData(remaining[0].gate1FormData);
+      }
+      setChatSessions(remaining);
+    });
+  };
+
+  const addChatMessage = async (msg: Omit<ChatMessage, "id" | "timestamp">) => {
+    await executeGateway(async (activeGateway) => {
+      await activeGateway.addChatMessage(activeSessionId, msg);
+      const remaining = await activeGateway.getChatSessions();
+      setChatSessions(remaining);
+      const current = remaining.find((session) => session.id === activeSessionId);
+      if (current) setChatMessages(current.messages);
+    });
+  };
+
+  const updateGate1Field = (field: "reason" | "receiveMethod" | "destinationOrg", value: string) => {
+    setGate1FormData((prev) => ({
+      ...prev,
+      [field]: value,
+      ...(field === "reason" && (!prev.destinationOrg || prev.destinationOrg.includes("Ngân hàng"))
+        ? { destinationOrg: value }
+        : {}),
+    }));
+    if (field === "reason" || field === "receiveMethod") {
+      setLastUpdatedField(field);
+      setTimeout(() => setLastUpdatedField(null), 3500);
     }
   };
 
-  const createNewChatSession = () => {
-    const newId = `sess-${Date.now()}`;
-    const initialMsg: ChatMessage = {
-      id: `cm-${Date.now()}`,
-      sender: "bot",
-      text: "Xin chào! Tôi là Trợ lý Học vụ Campus 24/7. Tôi có thể hỗ trợ bạn tra cứu quy chế học vụ (L1), tự động soạn thảo biểu mẫu BM-03 (L2), hoặc tiếp nhận chuyển tiếp khiếu nại đào tạo (L4). Bạn đang cần hỗ trợ vấn đề gì hôm nay?",
-      timestamp: "Vừa xong",
-    };
-    const newSession: ChatSession = {
-      id: newId,
-      title: "Cuộc hội thoại mới",
-      preview: "Bắt đầu cuộc trao đổi mới với Trợ lý AI...",
-      updatedAt: "Vừa xong",
-      tag: "Chung",
-      messages: [initialMsg],
-      isL4HandoverActive: false,
-    };
-    setChatSessions((prev) => [newSession, ...prev]);
-    setActiveSessionId(newId);
-    setChatMessages([initialMsg]);
-    setL4HandoverActive(false);
-    setGate1Open(false);
-  };
+  // Review Cases
+  const getReviewCase = (id: string) => reviewCases.find((c) => c.id === id || c.code === id);
 
-  const deleteChatSession = (sessionId: string) => {
-    setChatSessions((prev) => {
-      const remaining = prev.filter((s) => s.id !== sessionId);
-      if (activeSessionId === sessionId) {
-        if (remaining.length > 0) {
-          setActiveSessionId(remaining[0].id);
-          setChatMessages(remaining[0].messages || []);
-          setL4HandoverActive(!!remaining[0].isL4HandoverActive);
-          if (remaining[0].gate1FormData) {
-            setGate1FormData(remaining[0].gate1FormData);
-          }
-        } else {
-          createNewChatSession();
-        }
-      }
-      return remaining;
+  const createReviewCase = async (data: Partial<ReviewCase>): Promise<ReviewCase> => {
+    return executeGateway(async (activeGateway) => {
+      const reviewCase = await activeGateway.createReviewCase(data);
+      setReviewCases(await activeGateway.getReviewCases());
+      return reviewCase;
     });
-  };
-
-  const toggleTheme = () => {
-    setTheme((prev) => {
-      const next = prev === "light" ? "dark" : "light";
-      if (next === "dark") {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
-      try {
-        localStorage.setItem(LOCAL_STORAGE_KEY_THEME, next);
-      } catch (e) {
-        console.error(e);
-      }
-      return next;
-    });
-  };
-
-  const login = (userId: string): boolean => {
-    const user = DEMO_USERS[userId];
-    if (user) {
-      setCurrentUser(user);
-      try {
-        localStorage.setItem(LOCAL_STORAGE_KEY_USER, JSON.stringify(user));
-      } catch (e) {
-        console.error(e);
-      }
-      return true;
-    }
-    return false;
-  };
-
-  const logout = () => {
-    setCurrentUser(DEMO_USERS.SV001);
-    try {
-      localStorage.removeItem(LOCAL_STORAGE_KEY_USER);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const saveTickets = (newTickets: Ticket[]) => {
-    setTickets(newTickets);
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEY_TICKETS, JSON.stringify(newTickets));
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const getTicket = (id: string) => {
-    return tickets.find((t) => t.id === id || t.code === id);
-  };
-
-  const createTicket = (data: Partial<Ticket>): Ticket => {
-    const newId = `TKT-2026-0${Math.floor(143 + Math.random() * 850)}`;
-    const now = new Date();
-    const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(
-      now.getSeconds()
-    ).padStart(2, "0")}`;
-    const dateStr = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(
-      2,
-      "0"
-    )}/${now.getFullYear()}`;
-    const timestamp = `${timeStr} · ${dateStr}`;
-
-    const newTicket: Ticket = {
-      id: newId,
-      code: newId,
-      title: data.title || "Cấp Giấy xác nhận sinh viên (BM-03)",
-      type: data.type || "certificate",
-      studentId: currentUser.id,
-      studentName: currentUser.name,
-      studentMssv: currentUser.mssv || currentUser.id,
-      studentMajor: currentUser.major || "K18 Kỹ thuật Phần mềm",
-      studentClassYear: currentUser.classYear || "Khóa 18 (2021 - 2025)",
-      studentEmail: currentUser.email,
-      status: "open",
-      priority: data.priority || "normal",
-      priorityReason: data.priorityReason || "Hồ sơ tạo từ Cổng 1, sinh viên đã xác thực thông tin khai báo.",
-      createdAt: now.toISOString(),
-      submittedAt: timestamp,
-      slaDeadline: data.slaDeadline || "24h - 48h",
-      certificateType: data.certificateType || "Giấy xác nhận sinh viên chính quy (BM-03)",
-      receiveMethod: data.receiveMethod || "digital_pdf",
-      destinationOrg: data.destinationOrg || "Ngân hàng Chính sách Xã hội",
-      purpose: data.purpose || "Bổ sung hồ sơ vay vốn học tập",
-      aiSummary: {
-        target: `Sinh viên cần cấp ${data.certificateType || "Giấy xác nhận sinh viên"} cho mục đích: ${data.purpose || "Vay vốn chính sách"}.`,
-        context: "Hồ sơ được gửi trực tuyến qua Cổng 1; chưa có ghi nhận nợ đọng hoặc cảnh cáo học vụ.",
-        categorySla: "Ca cấp giấy tiêu chuẩn (L2). SLA phản hồi: 24h - 48h.",
-        confidence: "98.5%",
-        nextBestAction: "Kiểm tra tình trạng sinh viên và học phí trên hệ thống đào tạo trước khi phản hồi tiếp nhận.",
-        nextBestActionReason: "Đảm bảo tuân thủ Điều 14 Quy chế Đào tạo & CTSV.",
-      },
-      facts: [
-        {
-          id: `f-${Date.now()}-1`,
-          key: "Mục đích sử dụng giấy",
-          source: "Lời khai SV tại Cổng 1",
-          value: data.purpose || "Bổ sung hồ sơ vay vốn NHCSXH",
-          status: "unverified",
-          statusText: "Chưa kiểm chứng (Lời khai SV)",
-        },
-        {
-          id: `f-${Date.now()}-2`,
-          key: "Định danh khai báo",
-          source: "[SSO Profile]",
-          value: `${currentUser.name} · ${currentUser.mssv || currentUser.id}`,
-          status: "verified",
-          statusText: "Khớp tài khoản đăng nhập",
-        },
-        {
-          id: `f-${Date.now()}-3`,
-          key: "Tình trạng học tập",
-          source: "[CSDL Đào tạo]",
-          value: "Chưa xác minh trên CSDL",
-          status: "unverified",
-          statusText: "Chưa kiểm tra CSDL",
-        },
-        {
-          id: `f-${Date.now()}-4`,
-          key: "Nghĩa vụ tài chính",
-          source: "[Kế hoạch - TC]",
-          value: "Chưa đối soát nợ học phí",
-          status: "unverified",
-          statusText: "Chưa đối soát nợ",
-        },
-      ],
-      checklist: [
-        {
-          id: `c-${Date.now()}-1`,
-          label: "1. Đối soát trạng thái sinh viên trên CSDL trường",
-          description: "Kiểm tra trạng thái 'Đang học chính quy', không bị tạm hoãn/đình chỉ.",
-          checked: false,
-        },
-        {
-          id: `c-${Date.now()}-2`,
-          label: "2. Kiểm tra xác nhận hoàn thành nghĩa vụ học phí học kỳ",
-          description: "Tra cứu cổng KHTC: Không có ghi chú nợ học phí kỳ hiện tại.",
-          checked: false,
-        },
-        {
-          id: `c-${Date.now()}-3`,
-          label: "3. Kiểm tra tính hợp lệ của mục đích xin giấy",
-          description: "Mục đích vay vốn NHCSXH đúng biểu mẫu BM-03 theo quy định CTSV.",
-          checked: false,
-        },
-      ],
-      sopReference: "SOP-CTSV-01 (Mẫu tham khảo)",
-      sopDeadline: "Thời hạn xử lý: Trong vòng 48 giờ làm việc.",
-      officerDraftDefault: `Chào bạn ${currentUser.name}, Phòng Đào tạo & CTSV đã tiếp nhận yêu cầu ${data.title || "cấp Giấy xác nhận sinh viên"} của bạn. Hồ sơ đang được đối soát với CSDL Đào tạo. Bản điện tử có ký số sẽ được gửi lại cho bạn qua Cổng SV trong vòng 24-48h làm việc.`,
-      officerDraft: `Chào bạn ${currentUser.name}, Phòng Đào tạo & CTSV đã tiếp nhận yêu cầu ${data.title || "cấp Giấy xác nhận sinh viên"} của bạn. Hồ sơ đang được đối soát với CSDL Đào tạo. Bản điện tử có ký số sẽ được gửi lại cho bạn qua Cổng SV trong vòng 24-48h làm việc.`,
-      assignedOfficerId: "OF001",
-      assignedOfficerName: "ThS. Trần Thu Hà",
-      messages: [
-        {
-          id: `msg-${Date.now()}-sys`,
-          senderId: "system",
-          senderName: "Hệ thống AI tự động",
-          senderRole: "system",
-          content: "Hồ sơ tạo thành công từ Cổng 1 và đã chuyển vào hàng chờ Cán bộ Phòng Đào tạo & CTSV.",
-          timestamp: timeStr,
-        },
-      ],
-      auditLogs: [
-        {
-          id: `aud-${Date.now()}-1`,
-          timestamp: timestamp,
-          source: "Cổng 1 (Sinh viên)",
-          action: `Sinh viên nộp yêu cầu ${data.title || "Cấp giấy xác nhận sinh viên"}`,
-          actor: `${currentUser.name} (${currentUser.mssv || currentUser.id})`,
-        },
-        {
-          id: `aud-${Date.now()}-2`,
-          timestamp: timestamp,
-          source: "Campus AI Engine v4.2",
-          action: "Trích xuất dữ liệu, gắn cờ SOP-CTSV-01, khởi tạo Fact Sheet và phân loại L2 - Bình thường",
-          actor: "AI Engine v4.2",
-        },
-      ],
-    };
-
-    if (newTicket.type === "certificate") {
-      newTicket.systemVerifications = runCertificateVerification(newTicket);
-      newTicket.issuedCertificate = buildDefaultCertificate(newTicket);
-      newTicket.documentStatus = "draft";
-    }
-
-    const updated = [newTicket, ...tickets];
-    saveTickets(updated);
-    return newTicket;
-  };
-
-  const updateTicketStatus = (id: string, status: TicketStatus, actorName: string) => {
-    const updated = tickets.map((t) => {
-      if (t.id === id) {
-        const now = new Date();
-        const timestamp = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(
-          2,
-          "0"
-        )} · ${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}`;
-        const newLog = {
-          id: `aud-${Date.now()}`,
-          timestamp,
-          source: "Bàn làm việc Cán bộ",
-          action: `Cập nhật trạng thái sang: ${status === "open" ? "Mới tiếp nhận" : status === "pending_officer" ? "Chờ cán bộ" : "Đã hoàn tất"}`,
-          actor: actorName,
-        };
-        return {
-          ...t,
-          status,
-          auditLogs: [...t.auditLogs, newLog],
-        };
-      }
-      return t;
-    });
-    saveTickets(updated);
-  };
-
-  const updateOfficerDraft = (id: string, draft: string) => {
-    const updated = tickets.map((t) => {
-      if (t.id === id) {
-        return { ...t, officerDraft: draft };
-      }
-      return t;
-    });
-    saveTickets(updated);
-  };
-
-  const resetOfficerDraft = (id: string) => {
-    const updated = tickets.map((t) => {
-      if (t.id === id) {
-        return { ...t, officerDraft: t.officerDraftDefault };
-      }
-      return t;
-    });
-    saveTickets(updated);
-  };
-
-  const toggleChecklistItem = (ticketId: string, itemId: string) => {
-    const updated = tickets.map((t) => {
-      if (t.id === ticketId) {
-        return {
-          ...t,
-          checklist: t.checklist.map((c) => (c.id === itemId ? { ...c, checked: !c.checked } : c)),
-        };
-      }
-      return t;
-    });
-    saveTickets(updated);
-  };
-
-  const addTicketMessage = (
-    ticketId: string,
-    message: { senderId: string; senderName: string; senderRole: "student" | "officer" | "system"; content: string }
-  ) => {
-    const now = new Date();
-    const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-    const newMsg: TicketMessage = {
-      id: `msg-${Date.now()}`,
-      ...message,
-      timestamp: timeStr,
-    };
-    const updated = tickets.map((t) => {
-      if (t.id === ticketId) {
-        return {
-          ...t,
-          messages: [...t.messages, newMsg],
-        };
-      }
-      return t;
-    });
-    saveTickets(updated);
-  };
-
-  const submitGate2Response = (
-    ticketId: string,
-    actionType: "respond" | "request_info" | "resolve",
-    customContent?: string
-  ) => {
-    const ticket = tickets.find((t) => t.id === ticketId);
-    if (!ticket) return;
-
-    const now = new Date();
-    const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-    const timestampFull = `${timeStr} · ${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(
-      2,
-      "0"
-    )}`;
-
-    let messageContent = customContent || ticket.officerDraft;
-    let nextStatus: TicketStatus = ticket.status;
-    let auditAction = "";
-
-    let issuedCertDoc: IssuedCertificateDocument | undefined = ticket.issuedCertificate;
-    const cleanNumber = ticket.code.replace(/[^0-9]/g, "").slice(-4) || "0142";
-    const docNumber = `${cleanNumber}/XNSV-ĐT-2026`;
-
-    if (actionType === "respond") {
-      nextStatus = "pending_officer";
-      auditAction = "Cán bộ gửi phản hồi nghiệp vụ qua Cổng Kiểm duyệt 2 (Trạng thái: Chờ cán bộ)";
-    } else if (actionType === "request_info") {
-      nextStatus = "pending_officer";
-      messageContent =
-        customContent ||
-        "Phòng Đào tạo & CTSV yêu cầu bạn gửi bổ sung ảnh chụp Thẻ sinh viên hoặc Giấy tờ chứng minh đối tượng chính sách để cán bộ hoàn tất hồ sơ.";
-      auditAction = "Cán bộ gửi yêu cầu bổ sung hồ sơ chứng từ cho sinh viên";
-    } else if (actionType === "resolve") {
-      nextStatus = "resolved";
-      if (ticket.type === "certificate") {
-        issuedCertDoc = {
-          ...(ticket.issuedCertificate || buildDefaultCertificate(ticket)),
-          id: `CERT-2026-${cleanNumber}`,
-          docNumber,
-          status: "issued",
-          issuedAt: now.toISOString(),
-          issuedAtFormatted: timestampFull,
-          issuedByOfficerId: "OF001",
-          issuedByOfficerName: "ThS. Trần Thu Hà",
-          isDemoSample: true,
-          fileName: `Giay_Xac_Nhan_Sinh_Vien_${ticket.studentMssv}_BM03.html`,
-        };
-        messageContent =
-          customContent ||
-          `Phòng Đào tạo & CTSV đã hoàn tất thẩm định đối soát và chính thức phát hành Giấy xác nhận sinh viên (BM-03) số ${docNumber} (Bản mẫu demo — chưa ký số). Sinh viên có thể xem trực tiếp hoặc tải văn bản về máy tại Cổng Sinh viên.`;
-        auditAction = `Cán bộ hoàn tất thẩm định đối soát, phê duyệt và phát hành Giấy xác nhận sinh viên số ${docNumber}`;
-      } else {
-        messageContent =
-          customContent ||
-          "Hồ sơ đã được thẩm định đạt yêu cầu và phê duyệt hoàn tất (Resolved).";
-        auditAction = "Cán bộ thẩm định đạt yêu cầu và phê duyệt hoàn tất hồ sơ (Resolved)";
-      }
-    }
-
-    const newMsg: TicketMessage = {
-      id: `msg-${Date.now()}`,
-      senderId: "OF001",
-      senderName: "Trần Thu Hà (OF001)",
-      senderRole: "officer",
-      content: messageContent,
-      timestamp: timeStr,
-    };
-
-    const newAuditLog = {
-      id: `aud-${Date.now()}`,
-      timestamp: timestampFull,
-      source: "Cổng Kiểm duyệt Cán bộ (Submit 2)",
-      action: auditAction,
-      actor: "ThS. Trần Thu Hà (OF001)",
-    };
-
-    const updated = tickets.map((t) => {
-      if (t.id === ticketId) {
-        return {
-          ...t,
-          status: nextStatus,
-          documentStatus: actionType === "resolve" && t.type === "certificate" ? ("issued" as const) : t.documentStatus,
-          issuedCertificate: issuedCertDoc || t.issuedCertificate,
-          messages: [...t.messages, newMsg],
-          auditLogs: [...t.auditLogs, newAuditLog],
-        };
-      }
-      return t;
-    });
-
-    saveTickets(updated);
-  };
-
-  const runTicketVerification = (ticketId: string) => {
-    const ticket = tickets.find((t) => t.id === ticketId);
-    if (!ticket) return;
-
-    const newVerifications = runCertificateVerification(ticket);
-    const updated = tickets.map((t) => {
-      if (t.id === ticketId) {
-        return {
-          ...t,
-          systemVerifications: newVerifications,
-          dataChangedSinceLastCheck: false,
-        };
-      }
-      return t;
-    });
-    saveTickets(updated);
-  };
-
-  const retryCriterionVerification = (ticketId: string, criterionId: string) => {
-    const now = new Date();
-    const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(
-      now.getSeconds()
-    ).padStart(2, "0")}`;
-    const dateStr = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
-    const timestamp = `${timeStr} · ${dateStr}`;
-
-    const updated = tickets.map((t) => {
-      if (t.id === ticketId && t.systemVerifications) {
-        const updatedVerifs = t.systemVerifications.map((item) => {
-          if (item.id === criterionId || item.criterionKey === criterionId) {
-            return {
-              ...item,
-              status: "passed" as const,
-              lookupTimestamp: timestamp,
-              reason: "Đã tái kết nối thành công CSDL Đào tạo [PORTAL-DB] (HTTP 200 OK). Kết quả: Dữ liệu đào tạo hợp lệ.",
-              evidenceDetails: {
-                ...item.evidenceDetails,
-                rawSnippet: `RETRY SUCCESS: HTTP 200 OK from https://daotao.campus.edu.vn/api/v1/students/verify at ${timestamp}`,
-                verifiedFields: {
-                  "Trạng thái đào tạo": "Đang học chính quy",
-                  "Số tín chỉ tích lũy": "114 / 138 TC",
-                  "Cảnh cáo học tập": "Mức 0 (Bình thường)",
-                },
-              },
-            };
-          }
-          return item;
-        });
-
-        const newAudit = {
-          id: `aud-${Date.now()}-retry`,
-          timestamp,
-          source: "Hệ thống Đối soát Tự động",
-          action: "Cán bộ kích hoạt Thử lại tra cứu CSDL Đào tạo; hệ thống tái kết nối thành công (HTTP 200 OK).",
-          actor: "OF001 (ThS. Trần Thu Hà)",
-        };
-
-        return {
-          ...t,
-          systemVerifications: updatedVerifs,
-          auditLogs: [...t.auditLogs, newAudit],
-        };
-      }
-      return t;
-    });
-    saveTickets(updated);
-  };
-
-  const confirmCriterionReview = (ticketId: string, criterionId: string, note?: string) => {
-    const updated = tickets.map((t) => {
-      if (t.id === ticketId && t.systemVerifications) {
-        const updatedVerifs = t.systemVerifications.map((item) => {
-          if (item.id === criterionId || item.criterionKey === criterionId) {
-            return {
-              ...item,
-              officerReviewStatus: "confirmed" as const,
-              officerReviewNote: note || "Cán bộ đã đối soát bằng chứng từ CSDL và xác nhận đủ điều kiện.",
-            };
-          }
-          return item;
-        });
-
-        const allConfirmed = updatedVerifs.every((v) => v.officerReviewStatus === "confirmed");
-
-        return {
-          ...t,
-          systemVerifications: updatedVerifs,
-          documentStatus: allConfirmed ? ("approved" as const) : t.documentStatus || ("draft" as const),
-        };
-      }
-      return t;
-    });
-    saveTickets(updated);
-  };
-
-  const updateCertificateDraft = (ticketId: string, edits: Partial<IssuedCertificateDocument>) => {
-    const updated = tickets.map((t) => {
-      if (t.id === ticketId) {
-        const currentCert = t.issuedCertificate || buildDefaultCertificate(t);
-        const safeEdits = {
-          ...edits,
-          studentName: t.studentName,
-          studentMssv: t.studentMssv,
-          studentMajor: t.studentMajor,
-          studentClassYear: t.studentClassYear,
-        };
-        return {
-          ...t,
-          issuedCertificate: {
-            ...currentCert,
-            ...safeEdits,
-          },
-        };
-      }
-      return t;
-    });
-    saveTickets(updated);
-  };
-
-  const issueCertificate = (ticketId: string): IssuedCertificateDocument | null => {
-    const ticket = tickets.find((t) => t.id === ticketId);
-    if (!ticket) return null;
-
-    const now = new Date();
-    const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-    const dateStr = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
-    const timestampFull = `${timeStr} · ${dateStr}`;
-
-    const cleanNumber = ticket.code.replace(/[^0-9]/g, "").slice(-4) || "0142";
-    const docNumber = `${cleanNumber}/XNSV-ĐT-2026`;
-
-    const finalCert: IssuedCertificateDocument = {
-      ...(ticket.issuedCertificate || buildDefaultCertificate(ticket)),
-      id: `CERT-2026-${cleanNumber}`,
-      docNumber,
-      status: "issued",
-      issuedAt: now.toISOString(),
-      issuedAtFormatted: timestampFull,
-      issuedByOfficerId: "OF001",
-      issuedByOfficerName: "ThS. Trần Thu Hà",
-      isDemoSample: true,
-      fileName: `Giay_Xac_Nhan_Sinh_Vien_${ticket.studentMssv}_BM03.html`,
-    };
-
-    const newMsg: TicketMessage = {
-      id: `msg-${Date.now()}`,
-      senderId: "OF001",
-      senderName: "Trần Thu Hà (OF001)",
-      senderRole: "officer",
-      content: `Phòng Đào tạo & CTSV đã hoàn tất thẩm định đối soát và chính thức phát hành Giấy xác nhận sinh viên (BM-03) số ${docNumber} (Bản mẫu demo — chưa ký số). Sinh viên có thể xem trực tiếp hoặc tải văn bản về máy tại Cổng Sinh viên.`,
-      timestamp: timeStr,
-    };
-
-    const newAuditLog = {
-      id: `aud-${Date.now()}`,
-      timestamp: timestampFull,
-      source: "Cổng Kiểm duyệt Cán bộ (Submit 2)",
-      action: `Cán bộ hoàn tất thẩm định đối soát, phê duyệt và phát hành Giấy xác nhận sinh viên số ${docNumber}`,
-      actor: "ThS. Trần Thu Hà (OF001)",
-    };
-
-    const updated = tickets.map((t) => {
-      if (t.id === ticketId) {
-        return {
-          ...t,
-          status: "resolved" as const,
-          documentStatus: "issued" as const,
-          issuedCertificate: finalCert,
-          messages: [...t.messages, newMsg],
-          auditLogs: [...t.auditLogs, newAuditLog],
-        };
-      }
-      return t;
-    });
-
-    saveTickets(updated);
-    return finalCert;
-  };
-
-  const addChatMessage = (msg: Omit<ChatMessage, "id" | "timestamp">) => {
-    const now = new Date();
-    const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")} SA`;
-    const newMsg: ChatMessage = {
-      id: `cm-${Date.now()}`,
-      timestamp: timeStr,
-      ...msg,
-    };
-
-    setChatMessages((prev) => {
-      const updatedMessages = [...prev, newMsg];
-
-      setChatSessions((prevSessions) => {
-        return prevSessions.map((session) => {
-          if (session.id === activeSessionId) {
-            let sessionTag = session.tag;
-            if (msg.level) {
-              sessionTag = msg.level;
-            }
-            let updatedTitle = session.title;
-            if (session.title === "Cuộc hội thoại mới" && msg.sender === "user") {
-              updatedTitle = msg.text.slice(0, 38) + (msg.text.length > 38 ? "..." : "");
-            }
-            return {
-              ...session,
-              title: updatedTitle,
-              tag: sessionTag,
-              preview: msg.text.slice(0, 60),
-              updatedAt: "Vừa xong",
-              messages: updatedMessages,
-              isL4HandoverActive: msg.actionCard === "l4_handover" ? true : session.isL4HandoverActive,
-            };
-          }
-          return session;
-        });
-      });
-
-      return updatedMessages;
-    });
-  };
-
-  // ========================================================
-  // ACADEMIC REVIEW ASSISTANT ACTIONS & METHODS
-  // ========================================================
-
-  const saveReviewCases = (newCases: ReviewCase[]) => {
-    setReviewCases(newCases);
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEY_REVIEWS, JSON.stringify(newCases));
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const getReviewCase = (id: string) => {
-    return reviewCases.find((c) => c.id === id || c.code === id);
-  };
-
-  const createReviewCase = (data: Partial<ReviewCase>): ReviewCase => {
-    const newId = `REV-2026-0${Math.floor(10 + Math.random() * 89)}`;
-    const now = new Date();
-    const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-    const dateStr = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
-    const timestamp = `${timeStr} · ${dateStr}`;
-
-    const student = data.studentId && DEMO_USERS[data.studentId] ? DEMO_USERS[data.studentId] : currentUser;
-
-    const baseCase: ReviewCase = {
-      id: newId,
-      code: newId,
-      createdAt: now.toISOString(),
-      updatedAt: timestamp,
-      status: "in_review",
-      studentId: student.id,
-      studentName: student.name,
-      studentMssv: student.mssv || student.id,
-      studentMajor: student.major || "Kỹ thuật Phần mềm",
-      studentClassYear: student.classYear || "Khóa 18",
-      studentEmail: student.email,
-      targetCourseCode: data.targetCourseCode || "IT3011",
-      targetCourseName: data.targetCourseName || "Cấu trúc dữ liệu và giải thuật",
-      targetCourseCredits: data.targetCourseCredits || 3,
-      targetDepartment: data.targetDepartment || "Khoa Công nghệ Phần mềm",
-      priorCourseCode: data.priorCourseCode || "IT2020",
-      priorCourseName: data.priorCourseName || "Cấu trúc dữ liệu",
-      priorCourseCredits: data.priorCourseCredits || 3,
-      priorInstitution: data.priorInstitution || "Trường Đại học Bách Khoa TP.HCM (Minh họa)",
-      priorAcademicYear: data.priorAcademicYear || "2023 - 2024",
-      priorGrade: data.priorGrade || "8.0 / 10",
-      criteriaSetId: data.criteriaSetId || "set-std-it",
-      criteriaSetName: data.criteriaSetName || "Bộ tiêu chí công nhận học phần Khối ngành CNTT (Minh họa)",
-      criteria: data.criteria || STANDARD_REVIEW_CRITERIA,
-      documents: data.documents || INITIAL_REVIEW_CASES[0].documents,
-      aiStatus: "ready",
-      aiLastRunAt: timestamp,
-      aiSummary: {
-        overallRecommendation: "Đã khởi tạo hồ sơ rà soát và đối chiếu ban đầu với bộ tiêu chí minh họa.",
-        totalCriteria: (data.criteria || STANDARD_REVIEW_CRITERIA).length,
-        matchCount: 4,
-        differenceCount: 1,
-        insufficientCount: 1,
-        contradictionCount: 0,
-        isStale: false,
-      },
-      findings: [],
-      supplementRequests: [],
-      auditLogs: [
-        {
-          id: `aud-${Date.now()}-init`,
-          timestamp,
-          actorName: currentUser.name,
-          actorRole: currentUser.role,
-          action: `Khởi tạo hồ sơ rà soát đề nghị công nhận học phần ${data.targetCourseName || "IT3011"}`,
-          details: `Cặp học phần: ${data.priorCourseName || "Cấu trúc dữ liệu"} (${data.priorInstitution || "ĐH Bách Khoa"}) ➜ ${data.targetCourseName || "Cấu trúc dữ liệu và giải thuật"}`,
-        },
-      ],
-    };
-
-    const { findings, summary } = compareCourseContent(baseCase, baseCase.documents);
-    baseCase.findings = findings;
-    baseCase.aiSummary = summary;
-
-    const updated = [baseCase, ...reviewCases];
-    saveReviewCases(updated);
-    return baseCase;
   };
 
   const runAiReview = async (caseId: string) => {
-    const caseItem = reviewCases.find((c) => c.id === caseId || c.code === caseId);
-    if (!caseItem) return;
-
     setIsAiAnalyzing(true);
     setAiAnalyzingStep(1);
-
-    await new Promise((r) => setTimeout(r, 220));
-    setAiAnalyzingStep(2);
-    await new Promise((r) => setTimeout(r, 220));
-    setAiAnalyzingStep(3);
-    await new Promise((r) => setTimeout(r, 220));
-    setAiAnalyzingStep(4);
-    await new Promise((r) => setTimeout(r, 220));
-
-    const now = new Date();
-    const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-    const dateStr = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}`;
-    const timestamp = `${timeStr} · ${dateStr}`;
-
-    const { findings, summary } = compareCourseContent(caseItem, caseItem.documents);
-
-    const updatedCases = reviewCases.map((c) => {
-      if (c.id === caseId || c.code === caseId) {
-        return {
-          ...c,
-          aiStatus: "ready" as const,
-          aiLastRunAt: timestamp,
-          findings,
-          aiSummary: {
-            ...summary,
-            isStale: false,
-          },
-          auditLogs: [
-            ...c.auditLogs,
-            {
-              id: `aud-${Date.now()}-ai`,
-              timestamp,
-              actorName: "Campus Review AI Engine v4.2",
-              actorRole: "ai" as const,
-              action: "Chạy lại AI rà soát đối chiếu hồ sơ với các phiên bản tài liệu mới nhất",
-              details: `Kết quả: ${summary.matchCount} tiêu chí có bằng chứng, ${summary.differenceCount} có khác biệt, ${summary.insufficientCount} chưa đủ căn cứ, ${summary.contradictionCount} mâu thuẫn.`,
-            },
-          ],
-        };
-      }
-      return c;
-    });
-
-    saveReviewCases(updatedCases);
-    setIsAiAnalyzing(false);
-    setAiAnalyzingStep(1);
+    try {
+      await new Promise((r) => setTimeout(r, 220));
+      setAiAnalyzingStep(2);
+      await new Promise((r) => setTimeout(r, 220));
+      setAiAnalyzingStep(3);
+      await new Promise((r) => setTimeout(r, 220));
+      setAiAnalyzingStep(4);
+      await executeGateway(async (activeGateway) => {
+        await activeGateway.runAiReview(caseId);
+        setReviewCases(await activeGateway.getReviewCases());
+      });
+    } finally {
+      setIsAiAnalyzing(false);
+      setAiAnalyzingStep(1);
+    }
   };
 
-  const updateFindingReview = (
+  const updateFindingReview = async (
     caseId: string,
     findingId: string,
-    updates: {
-      officerStatus: FindingOfficerStatus;
-      officerAdjustedLabel?: FindingAiLabel;
-      officerNote?: string;
-    }
+    updates: { officerStatus: FindingOfficerStatus; officerAdjustedLabel?: FindingAiLabel; officerNote?: string },
+    expectedSnapshot?: string
   ) => {
-    const now = new Date();
-    const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-    const dateStr = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}`;
-    const timestamp = `${timeStr} · ${dateStr}`;
-
-    const updatedCases = reviewCases.map((c) => {
-      if (c.id === caseId || c.code === caseId) {
-        let changedFindingTitle = "";
-        const updatedFindings = c.findings.map((f) => {
-          if (f.id === findingId) {
-            changedFindingTitle = f.criterionTitle;
-            return {
-              ...f,
-              officerStatus: updates.officerStatus,
-              officerAdjustedLabel: updates.officerAdjustedLabel ?? f.officerAdjustedLabel,
-              officerNote: updates.officerNote ?? f.officerNote,
-              officerReviewedAt: timestamp,
-              officerReviewedBy: `${currentUser.name} (${currentUser.id})`,
-            };
-          }
-          return f;
-        });
-
-        const newAudit = {
-          id: `aud-${Date.now()}`,
-          timestamp,
-          actorName: currentUser.name,
-          actorRole: currentUser.role,
-          action: `Cán bộ ${updates.officerStatus === "confirmed" ? "xác nhận" : "chỉnh sửa"} nhận định cho tiêu chí "${changedFindingTitle}"`,
-          details: updates.officerNote ? `Ghi chú cán bộ: "${updates.officerNote}"` : undefined,
-        };
-
-        return {
-          ...c,
-          updatedAt: timestamp,
-          findings: updatedFindings,
-          auditLogs: [...c.auditLogs, newAudit],
-        };
-      }
-      return c;
+    if (currentUser?.role !== "officer") throw new DataGatewayError("unauthorized", "Chỉ cán bộ được xác nhận nhận định.");
+    await executeGateway(async (activeGateway) => {
+      await activeGateway.updateFindingReview(caseId, findingId, updates, currentUser, expectedSnapshot);
+      setReviewCases(await activeGateway.getReviewCases());
     });
-
-    saveReviewCases(updatedCases);
   };
 
-  const sendSupplementRequest = (caseId: string, request: SupplementRequest) => {
-    const now = new Date();
-    const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-    const dateStr = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}`;
-    const timestamp = `${timeStr} · ${dateStr}`;
-
-    const finalizedReq: SupplementRequest = {
-      ...request,
-      sentAt: timestamp,
-      status: "sent",
-    };
-
-    const updatedCases = reviewCases.map((c) => {
-      if (c.id === caseId || c.code === caseId) {
-        return {
-          ...c,
-          status: "waiting_supplement" as const,
-          updatedAt: timestamp,
-          supplementRequests: [...c.supplementRequests.filter((r) => r.id !== request.id), finalizedReq],
-          auditLogs: [
-            ...c.auditLogs,
-            {
-              id: `aud-${Date.now()}-sup`,
-              timestamp,
-              actorName: currentUser.name,
-              actorRole: "officer" as const,
-              action: `Cán bộ gửi yêu cầu bổ sung hồ sơ tới sinh viên ${c.studentName}`,
-              details: `Yêu cầu bổ sung: ${request.requestedDocuments.join(", ")}`,
-            },
-          ],
-        };
-      }
-      return c;
+  const sendSupplementRequest = async (caseId: string, request: SupplementRequest, expectedSnapshot?: string) => {
+    if (currentUser?.role !== "officer" || request.sentBy !== currentUser.id) throw new DataGatewayError("unauthorized", "Chỉ cán bộ hiện tại được gửi yêu cầu bổ sung.");
+    await executeGateway(async (activeGateway) => {
+      await activeGateway.sendSupplementRequest(caseId, request, currentUser, expectedSnapshot);
+      setReviewCases(await activeGateway.getReviewCases());
     });
-
-    saveReviewCases(updatedCases);
   };
 
-  const submitStudentSupplement = (
+  const submitStudentSupplement = async (
     caseId: string,
-    payload: {
-      note: string;
-      docTitle?: string;
-      fileName?: string;
-      versionToActivate?: number;
-    }
+    payload: { note: string; docTitle?: string; fileName?: string; versionToActivate?: number; attachment?: StoredAttachment }
   ) => {
-    const now = new Date();
-    const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-    const dateStr = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}`;
-    const timestamp = `${timeStr} · ${dateStr}`;
-
-    const updatedCases = reviewCases.map((c) => {
-      if (c.id === caseId || c.code === caseId) {
-        const updatedDocs = c.documents.map((doc) => {
-          if (doc.type === "syllabus_old" && (payload.versionToActivate === 2 || doc.versions.length >= 2)) {
-            return {
-              ...doc,
-              currentVersion: 2,
-              versions: doc.versions.map((v) => ({
-                ...v,
-                isLatest: v.version === 2,
-              })),
-            };
-          }
-          return doc;
-        });
-
-        const updatedReqs = c.supplementRequests.map((r) => ({
-          ...r,
-          status: "responded" as const,
-          studentReply: {
-            submittedAt: timestamp,
-            note: payload.note,
-            supplementedDocumentIds: ["DOC-SYLLABUS-OLD-v2"],
-          },
-        }));
-
-        return {
-          ...c,
-          status: "in_review" as const,
-          documents: updatedDocs,
-          supplementRequests: updatedReqs,
-          updatedAt: timestamp,
-          aiStatus: "stale_needs_update" as const,
-          aiSummary: {
-            ...c.aiSummary,
-            isStale: true,
-            staleReason: "Sinh viên vừa bổ sung tài liệu mới (Đề cương v2). Cần chạy lại AI rà soát để cập nhật nhận định.",
-          },
-          auditLogs: [
-            ...c.auditLogs,
-            {
-              id: `aud-${Date.now()}-stusup`,
-              timestamp,
-              actorName: `${c.studentName} (${c.studentMssv})`,
-              actorRole: "student" as const,
-              action: `Sinh viên nộp bổ sung tài liệu: ${payload.fileName || "Đề cương chi tiết v2 (có xác nhận Khoa)"}`,
-              details: `Lời giải trình: "${payload.note}". Trạng thái AI đánh dấu Cần cập nhật.`,
-            },
-          ],
-        };
-      }
-      return c;
+    await executeGateway(async (activeGateway) => {
+      await activeGateway.submitStudentSupplement(caseId, payload);
+      setReviewCases(await activeGateway.getReviewCases());
     });
-
-    saveReviewCases(updatedCases);
   };
 
-  const finalizeReviewCase = (caseId: string, report: NonNullable<ReviewCase["finalReport"]>) => {
-    const now = new Date();
-    const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-    const dateStr = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}`;
-    const timestamp = `${timeStr} · ${dateStr}`;
-
-    const updatedCases = reviewCases.map((c) => {
-      if (c.id === caseId || c.code === caseId) {
-        return {
-          ...c,
-          status: "completed" as const,
-          updatedAt: timestamp,
-          finalReport: report,
-          auditLogs: [
-            ...c.auditLogs,
-            {
-              id: `aud-${Date.now()}-fin`,
-              timestamp,
-              actorName: currentUser.name,
-              actorRole: "officer" as const,
-              action: `Cán bộ hoàn tất bản rà soát sơ bộ (BM-RS-01) để trình Hội đồng Chuyên môn`,
-              details: `Đề xuất: ${
-                report.decisionRecommendation === "propose_recognition"
-                  ? "Đề nghị công nhận học phần"
-                  : report.decisionRecommendation === "propose_conditional"
-                  ? "Đề nghị công nhận có điều kiện"
-                  : "Đề nghị từ chối"
-              }. Ghi chú: ${report.conclusionSummary}`,
-            },
-          ],
-        };
-      }
-      return c;
+  const finalizeReviewCase = async (caseId: string, report: NonNullable<ReviewCase["finalReport"]>, expectedSnapshot?: string) => {
+    if (currentUser?.role !== "officer" || report.officerId !== currentUser.id) throw new DataGatewayError("unauthorized", "Không có quyền hoàn tất phiếu này.");
+    await executeGateway(async (activeGateway) => {
+      await activeGateway.finalizeReviewCase(caseId, report, expectedSnapshot);
+      setReviewCases(await activeGateway.getReviewCases());
     });
-
-    saveReviewCases(updatedCases);
   };
 
-  const resetReviewDemo = () => {
-    try {
-      localStorage.removeItem(LOCAL_STORAGE_KEY_REVIEWS);
-      setReviewCases(INITIAL_REVIEW_CASES);
-    } catch (e) {
-      console.error(e);
-    }
+  const resetReviewDemo = async () => {
+    await executeGateway(async (activeGateway) => {
+      await activeGateway.resetDemoData();
+    });
+    await loadAllData();
   };
 
-  const resetAllDemoData = () => {
-    try {
-      localStorage.removeItem(LOCAL_STORAGE_KEY_TICKETS);
-      localStorage.removeItem(LOCAL_STORAGE_KEY_USER);
-      localStorage.removeItem(LOCAL_STORAGE_KEY_REVIEWS);
-      setTickets(INITIAL_TICKETS);
-      setReviewCases(INITIAL_REVIEW_CASES);
-      setCurrentUser(DEMO_USERS.SV001);
-      setL4HandoverActive(false);
-      setGate1Open(false);
-      setChatSessions(INITIAL_CHAT_SESSIONS);
-      setActiveSessionId(INITIAL_CHAT_SESSIONS[0].id);
-      setChatMessages(INITIAL_CHAT_SESSIONS[0].messages || []);
-    } catch (e) {
-      console.error(e);
-    }
+  const resetAllDemoData = async () => {
+    await executeGateway(async (activeGateway) => {
+      await activeGateway.resetDemoData();
+    });
+    await loadAllData();
   };
 
   return (
@@ -1293,10 +663,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       value={{
         theme,
         toggleTheme,
+        isDataLoading,
+        dataError,
+        dataStatus,
+        dataConfig,
+        reloadData,
         currentUser,
-        setCurrentUser,
+        setCurrentUser: user => { ++authGeneration.current; authRestored.current = true; setCurrentUser(user); },
         login,
         logout,
+        demoUsers,
         tickets,
         getTicket,
         createTicket,
@@ -1347,8 +723,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
 export function useStore() {
   const context = useContext(StoreContext);
-  if (!context) {
-    throw new Error("useStore must be used within a StoreProvider");
-  }
+  if (!context) throw new Error("useStore must be used within a StoreProvider");
   return context;
 }

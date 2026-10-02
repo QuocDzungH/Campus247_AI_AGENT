@@ -1,8 +1,8 @@
 "use client";
+import { StaffReviewWorkspace } from "@/components/staff/StaffReviews";
 
-import React, { useState, useEffect, use } from "react";
+import React, { useState, use } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Sparkles,
@@ -11,37 +11,28 @@ import {
   AlertTriangle,
   AlertCircle,
   HelpCircle,
-  Clock,
-  Layers,
   ChevronRight,
-  ExternalLink,
   Edit3,
   Send,
-  Printer,
-  Download,
-  Share2,
   RefreshCw,
   Building,
-  GraduationCap,
-  FileCheck,
   History,
   Shield,
   X,
-  FileQuestion,
   Eye,
   Bookmark,
   Check,
   Upload,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
+import { AccessibleDialog } from "@/components/shared/AccessibleDialog";
+import { LoadingState } from "@/components/shared/LoadingState";
+import { DataAccessState } from "@/components/shared/DataAccessState";
 import { useStore } from "@/lib/store";
 import {
-  ReviewCase,
   ReviewFinding,
   FindingAiLabel,
-  FindingOfficerStatus,
   EvidenceCitation,
-  DocumentLegibility,
   SupplementRequest,
 } from "@/lib/types";
 import { draftSupplementRequest, generateReviewReport, AI_PROGRESS_STEPS } from "@/lib/review-service";
@@ -51,7 +42,17 @@ interface PageProps {
 }
 
 export default function ReviewWorkstationPage({ params }: PageProps) {
-  const router = useRouter();
+  void PreviousReviewWorkstationPage;
+  const { reviewId } = use(params);
+  const { getReviewCase, currentUser, isDataLoading } = useStore();
+  const record = getReviewCase(reviewId);
+  if (isDataLoading) return <><Navbar /><LoadingState title="Đang tải hồ sơ rà soát…" /></>;
+  if (currentUser?.role !== "officer") return <DataAccessState requiredRole="officer" />;
+  if (!record) return <><Navbar /><main className="p-8"><h1 className="text-xl font-semibold">Không tìm thấy hồ sơ rà soát</h1><Link className="mt-4 inline-block text-blue-700" href="/reviews">Quay lại danh sách</Link></main></>;
+  return <StaffReviewWorkspace key={`${currentUser.id}:${record.id}`} record={record} />;
+}
+
+function PreviousReviewWorkstationPage({ params }: PageProps) {
   const resolvedParams = use(params);
   const reviewId = resolvedParams.reviewId;
 
@@ -63,19 +64,12 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
     submitStudentSupplement,
     finalizeReviewCase,
     currentUser,
-    login,
+    isDataLoading,
     isAiAnalyzing,
     aiAnalyzingStep,
   } = useStore();
 
   const caseItem = getReviewCase(reviewId);
-
-  // Switch to officer OF001 if needed
-  useEffect(() => {
-    if (currentUser.role !== "officer") {
-      login("OF001");
-    }
-  }, [currentUser.role, login]);
 
   // Center Tab State
   const [activeCenterTab, setActiveCenterTab] = useState<
@@ -83,9 +77,20 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
   >("comparison");
 
   // Right Pane Active State
-  const [activeRightTab, setActiveRightTab] = useState<"document" | "supplement_draft" | "report_draft">("document");
-  const [selectedDocId, setSelectedDocId] = useState<string>("");
-  const [selectedDocVersion, setSelectedDocVersion] = useState<number>(1);
+  const [selectedDocId, setSelectedDocId] = useState<string>(() => {
+    if (caseItem && caseItem.documents.length > 0) {
+      const oldSyl = caseItem.documents.find((d) => d.type === "syllabus_old") || caseItem.documents[0];
+      return oldSyl.id;
+    }
+    return "";
+  });
+  const [selectedDocVersion, setSelectedDocVersion] = useState<number>(() => {
+    if (caseItem && caseItem.documents.length > 0) {
+      const oldSyl = caseItem.documents.find((d) => d.type === "syllabus_old") || caseItem.documents[0];
+      return oldSyl.currentVersion;
+    }
+    return 1;
+  });
   const [activeCitation, setActiveCitation] = useState<EvidenceCitation | null>(null);
 
   // Modals
@@ -102,17 +107,27 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
   >("propose_recognition");
   const [finalizeSummary, setFinalizeSummary] = useState("");
   const [finalizeConfirmed, setFinalizeConfirmed] = useState(false);
+  const [isSubmittingSupplement, setIsSubmittingSupplement] = useState(false);
+  const [supplementError, setSupplementError] = useState<string | null>(null);
+  const [isSubmittingFinalize, setIsSubmittingFinalize] = useState(false);
+  const [finalizeError, setFinalizeError] = useState<string | null>(null);
 
-  // Sync default selected document
-  useEffect(() => {
-    if (caseItem && caseItem.documents.length > 0) {
-      if (!selectedDocId) {
-        const oldSyl = caseItem.documents.find((d) => d.type === "syllabus_old") || caseItem.documents[0];
-        setSelectedDocId(oldSyl.id);
-        setSelectedDocVersion(oldSyl.currentVersion);
-      }
-    }
-  }, [caseItem, selectedDocId]);
+  const [isSavingFinding, setIsSavingFinding] = useState(false);
+  const [findingSaveError, setFindingSaveError] = useState<string | null>(null);
+  const [confirmingFindingId, setConfirmingFindingId] = useState<string | null>(null);
+  const [confirmFindingError, setConfirmFindingError] = useState<{ id: string, message: string } | null>(null);
+  const [isDemoUploading, setIsDemoUploading] = useState(false);
+
+  if (isDataLoading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-transparent">
+        <Navbar />
+        <LoadingState title="Đang tải hồ sơ rà soát..." description="Đang xác thực vai trò cán bộ và đồng bộ dữ liệu." />
+      </div>
+    );
+  }
+
+  if (!currentUser || currentUser.role !== "officer") return <DataAccessState requiredRole="officer" />;
 
   if (!caseItem) {
     return (
@@ -144,7 +159,6 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
     setActiveCitation(cit);
     setSelectedDocId(cit.documentId);
     setSelectedDocVersion(cit.version);
-    setActiveRightTab("document");
   };
 
   // Open modal to edit finding
@@ -154,22 +168,42 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
     setEditFindingReason(finding.officerNote || "");
   };
 
-  const handleSaveEditFinding = () => {
-    if (!editingFinding) return;
-    updateFindingReview(caseItem.id, editingFinding.id, {
-      officerStatus: "edited",
-      officerAdjustedLabel: editFindingLabel,
-      officerNote: editFindingReason.trim() || "Cán bộ đã thẩm định lại và điều chỉnh nhận định dựa trên hồ sơ.",
-    });
-    setEditingFinding(null);
+  const handleSaveEditFinding = async () => {
+    if (!editingFinding || isSavingFinding) return;
+    setIsSavingFinding(true);
+    setFindingSaveError(null);
+    try {
+      await updateFindingReview(caseItem.id, editingFinding.id, {
+        officerStatus: "edited",
+        officerAdjustedLabel: editFindingLabel,
+        officerNote: editFindingReason.trim() || "Cán bộ đã thẩm định lại và điều chỉnh nhận định dựa trên hồ sơ.",
+      });
+      setEditingFinding(null);
+    } catch (error) {
+      setFindingSaveError(error instanceof Error ? error.message : "Có lỗi xảy ra khi lưu");
+    } finally {
+      setIsSavingFinding(false);
+    }
   };
 
   // Quick confirm finding
-  const handleQuickConfirmFinding = (finding: ReviewFinding) => {
-    updateFindingReview(caseItem.id, finding.id, {
-      officerStatus: "confirmed",
-      officerNote: "Cán bộ đồng thuận với nhận định và bằng chứng do AI trích xuất.",
-    });
+  const handleQuickConfirmFinding = async (finding: ReviewFinding) => {
+    if (confirmingFindingId) return;
+    setConfirmingFindingId(finding.id);
+    setConfirmFindingError(null);
+    try {
+      await updateFindingReview(caseItem.id, finding.id, {
+        officerStatus: "confirmed",
+        officerNote: "Cán bộ đồng thuận với nhận định và bằng chứng do AI trích xuất.",
+      });
+    } catch (error) {
+      setConfirmFindingError({
+        id: finding.id,
+        message: error instanceof Error ? error.message : "Có lỗi xảy ra khi xác nhận",
+      });
+    } finally {
+      setConfirmingFindingId(null);
+    }
   };
 
   // Open Supplement Request Drawer/Modal
@@ -183,10 +217,18 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
     setIsSupplementModalOpen(true);
   };
 
-  const handleSendSupplementRequest = () => {
-    if (!supplementDraft) return;
-    sendSupplementRequest(caseItem.id, supplementDraft);
-    setIsSupplementModalOpen(false);
+  const handleSendSupplementRequest = async () => {
+    if (!supplementDraft || isSubmittingSupplement) return;
+    setIsSubmittingSupplement(true);
+    setSupplementError(null);
+    try {
+      await sendSupplementRequest(caseItem.id, supplementDraft);
+      setIsSupplementModalOpen(false);
+    } catch (error) {
+      setSupplementError(error instanceof Error ? error.message : "Đã có lỗi xảy ra");
+    } finally {
+      setIsSubmittingSupplement(false);
+    }
   };
 
   // Open Finalize Modal
@@ -204,20 +246,36 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
     setIsFinalizeModalOpen(true);
   };
 
-  const handleExecuteFinalize = () => {
-    if (!finalizeConfirmed) return;
-    const report = generateReviewReport(caseItem, currentUser, finalizeRecommendation, finalizeSummary);
-    finalizeReviewCase(caseItem.id, report);
-    setIsFinalizeModalOpen(false);
+  const handleExecuteFinalize = async () => {
+    if (!finalizeConfirmed || !currentUser || isSubmittingFinalize) return;
+    setIsSubmittingFinalize(true);
+    setFinalizeError(null);
+    try {
+      const report = generateReviewReport(caseItem, currentUser, finalizeRecommendation, finalizeSummary);
+      await finalizeReviewCase(caseItem.id, report);
+      setIsFinalizeModalOpen(false);
+    } catch (error) {
+      setFinalizeError(error instanceof Error ? error.message : "Đã có lỗi xảy ra");
+    } finally {
+      setIsSubmittingFinalize(false);
+    }
   };
 
   // Quick Demo Action: Simulate student submitting syllabus v2
-  const handleDemoStudentUploadV2 = () => {
-    submitStudentSupplement(caseItem.id, {
-      note: "Em đã xin được Đề cương chi tiết có đóng dấu mộc đỏ và chữ ký của Phó Trưởng Khoa CNTT - ĐH Bách Khoa, có bổ sung đầy đủ Chương 5 về Đồ thị và thuật toán duyệt BFS/DFS, Dijkstra.",
-      fileName: "De_cuong_IT2020_Co_xac_nhan_Khoa_CNTT_v2.pdf",
-      versionToActivate: 2,
-    });
+  const handleDemoStudentUploadV2 = async () => {
+    if (isDemoUploading) return;
+    setIsDemoUploading(true);
+    try {
+      await submitStudentSupplement(caseItem.id, {
+        note: "Em đã xin được Đề cương chi tiết có đóng dấu mộc đỏ và chữ ký của Phó Trưởng Khoa CNTT - ĐH Bách Khoa, có bổ sung đầy đủ Chương 5 về Đồ thị và thuật toán duyệt BFS/DFS, Dijkstra.",
+        fileName: "De_cuong_IT2020_Co_xac_nhan_Khoa_CNTT_v2.pdf",
+        versionToActivate: 2,
+      });
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Có lỗi xảy ra");
+    } finally {
+      setIsDemoUploading(false);
+    }
   };
 
   return (
@@ -232,6 +290,7 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
               href="/reviews"
               className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 text-slate-600 dark:text-slate-300 transition-colors shadow-xs"
               title="Quay lại danh sách hồ sơ"
+              aria-label="Quay lại danh sách hồ sơ"
             >
               <ArrowLeft className="w-4 h-4" />
             </Link>
@@ -335,7 +394,7 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
             ======================================================== */}
         <aside className="w-full xl:w-[320px] flex flex-col gap-5 shrink-0">
           {/* Box 1: Hồ sơ đính kèm & Phiên bản */}
-          <div className="p-4 rounded-3xl glass-surface border border-slate-200/80 dark:border-slate-800 space-y-3">
+          <div className="p-4 rounded-3xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
                 <FileText className="w-3.5 h-3.5 text-indigo-500" />
@@ -358,7 +417,6 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
                     onClick={() => {
                       setSelectedDocId(doc.id);
                       setSelectedDocVersion(doc.currentVersion);
-                      setActiveRightTab("document");
                     }}
                     className={`p-3 rounded-2xl border cursor-pointer transition-all ${
                       isSelected
@@ -406,7 +464,7 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
           </div>
 
           {/* Box 2: Tình trạng đọc & Kiểm tra OCR */}
-          <div className="p-4 rounded-3xl glass-surface border border-slate-200/80 dark:border-slate-800 space-y-3">
+          <div className="p-4 rounded-3xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 space-y-3">
             <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
               <Eye className="w-3.5 h-3.5 text-blue-500" />
               <span>Chất lượng Nhận dạng &amp; Đọc hiểu</span>
@@ -460,7 +518,8 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
                 <button
                   type="button"
                   onClick={handleDemoStudentUploadV2}
-                  className="w-full py-2 px-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                  disabled={isDemoUploading}
+                  className="w-full py-2 px-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50"
                 >
                   <Upload className="w-3 h-3" />
                   <span>Mô phỏng: SV nộp Đề cương v2</span>
@@ -473,7 +532,7 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
           </div>
 
           {/* Box 3: Thông tin Cán bộ phụ trách */}
-          <div className="p-4 rounded-3xl glass-surface border border-slate-200/80 dark:border-slate-800 space-y-2">
+          <div className="p-4 rounded-3xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 space-y-2">
             <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
               <Shield className="w-3.5 h-3.5 text-indigo-500" />
               <span>Cán bộ Thẩm định</span>
@@ -484,7 +543,7 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
               </div>
               <div>
                 <div className="font-semibold text-slate-900 dark:text-white">
-                  {currentUser.name} ({currentUser.id})
+                  {currentUser?.name} ({currentUser?.id})
                 </div>
                 <div className="text-[10px] text-slate-400">Phòng Đào tạo &amp; CTSV</div>
               </div>
@@ -497,7 +556,7 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
             ======================================================== */}
         <main className="flex-1 flex flex-col space-y-4 min-w-0">
           {/* Navigation Tabs for Center Workspace */}
-          <div className="flex items-center gap-1.5 p-1.5 rounded-2xl glass-surface border border-slate-200/80 dark:border-slate-800 text-xs font-semibold overflow-x-auto">
+          <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 text-xs font-semibold overflow-x-auto">
             <button
               type="button"
               onClick={() => setActiveCenterTab("overview")}
@@ -565,12 +624,12 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
           {activeCenterTab === "overview" && (
             <div className="space-y-4 animate-in fade-in">
               {/* Summary Card */}
-              <div className="p-5 rounded-3xl glass-surface border border-slate-200/80 dark:border-slate-800 space-y-4">
+              <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                     <h3 className="font-bold text-slate-900 dark:text-white text-sm">
-                      Đánh giá Tổng hợp từ Campus Review AI Engine
+                      Đánh giá tổng hợp có AI hỗ trợ
                     </h3>
                   </div>
                   <span className="text-xs font-mono text-slate-400">
@@ -581,6 +640,9 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
                 <div className="p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-xs text-indigo-950 dark:text-indigo-200 leading-relaxed">
                   {caseItem.aiSummary.overallRecommendation}
                 </div>
+                <p className="text-xs text-slate-600 dark:text-slate-300">
+                  Nhận định từ tài liệu mẫu, cập nhật {caseItem.aiLastRunAt}. Cán bộ xem trích dẫn và xác nhận từng tiêu chí trước khi lập phiếu rà soát.
+                </p>
 
                 {/* Scorecards */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -621,7 +683,7 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
 
               {/* Course Comparison Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 rounded-3xl glass-surface border border-slate-200/80 dark:border-slate-800 space-y-2">
+                <div className="p-4 rounded-3xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 space-y-2">
                   <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                     HỌC PHẦN ĐÃ HỌC (TRƯỜNG CŨ)
                   </div>
@@ -639,7 +701,7 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
                   </div>
                 </div>
 
-                <div className="p-4 rounded-3xl glass-surface border border-slate-200/80 dark:border-slate-800 space-y-2">
+                <div className="p-4 rounded-3xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 space-y-2">
                   <div className="text-[11px] font-bold uppercase tracking-wider text-indigo-500">
                     HỌC PHẦN TẠI TRƯỜNG TIẾP NHẬN
                   </div>
@@ -663,7 +725,7 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
           {/* TAB 2: ĐỐI CHIẾU HỌC PHẦN (COURSE COMPARISON TABLE) */}
           {activeCenterTab === "comparison" && (
             <div className="space-y-4 animate-in fade-in">
-              <div className="rounded-3xl glass-surface border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-xs">
+              <div className="rounded-3xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700/60 text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider text-[10px]">
@@ -678,8 +740,6 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                       {caseItem.findings.map((f) => {
-                        const displayLabel = f.officerAdjustedLabel || f.aiLabel;
-
                         return (
                           <tr
                             key={f.id}
@@ -791,13 +851,21 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
                             {/* Thao tác */}
                             <td className="py-3.5 px-3.5 align-top text-right space-y-1">
                               {f.officerStatus === "unverified" && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleQuickConfirmFinding(f)}
-                                  className="w-full text-center px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-semibold transition-colors"
-                                >
-                                  Xác nhận
-                                </button>
+                                <div>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleQuickConfirmFinding(f)}
+                                    disabled={confirmingFindingId === f.id}
+                                    className="w-full text-center px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-semibold transition-colors disabled:opacity-50"
+                                  >
+                                    {confirmingFindingId === f.id ? "Đang xác nhận..." : "Xác nhận"}
+                                  </button>
+                                  {confirmFindingError?.id === f.id && (
+                                    <div role="alert" className="text-[10px] text-red-600 dark:text-red-400 mt-1 text-center">
+                                      {confirmFindingError.message}
+                                    </div>
+                                  )}
+                                </div>
                               )}
                               <button
                                 type="button"
@@ -820,7 +888,7 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
           {/* TAB 3: VẤN ĐỀ CẦN XÁC MINH (ISSUES) */}
           {activeCenterTab === "issues" && (
             <div className="space-y-4 animate-in fade-in">
-              <div className="p-4 rounded-3xl glass-surface border border-slate-200/80 dark:border-slate-800 space-y-3">
+              <div className="p-4 rounded-3xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="w-5 h-5 text-amber-500" />
@@ -951,7 +1019,7 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
           {/* TAB 5: LỊCH SỬ (AUDIT TRAIL) */}
           {activeCenterTab === "history" && (
             <div className="space-y-4 animate-in fade-in">
-              <div className="p-5 rounded-3xl glass-surface border border-slate-200/80 dark:border-slate-800 space-y-3">
+              <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 space-y-3">
                 <h3 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
                   <History className="w-4 h-4 text-slate-400" />
                   <span>Nhật ký Xử lý Hồ sơ (Audit Trail)</span>
@@ -992,7 +1060,7 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
             ======================================================== */}
         <aside className="w-full xl:w-[460px] flex flex-col gap-4 shrink-0">
           {/* Header of Right Pane */}
-          <div className="p-4 rounded-3xl glass-surface border border-slate-200/80 dark:border-slate-800 space-y-3">
+          <div className="p-4 rounded-3xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Bookmark className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
@@ -1112,19 +1180,27 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
           MODAL: SỬA NHẬN ĐỊNH CỦA CÁN BỘ (EDIT FINDING)
           ======================================================== */}
       {editingFinding && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+        <AccessibleDialog
+          open={Boolean(editingFinding)}
+          onClose={() => setEditingFinding(null)}
+          preventClose={isSavingFinding}
+          labelledBy="edit-finding-dialog-title"
+          className="w-full max-w-lg"
+        >
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2">
                 <Edit3 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                <h3 className="font-bold text-slate-900 dark:text-white text-sm">
+                <h3 id="edit-finding-dialog-title" className="font-bold text-slate-900 dark:text-white text-sm">
                   Cán bộ Điều chỉnh Nhận định
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setEditingFinding(null)}
-                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                disabled={isSavingFinding}
+                aria-label="Đóng chỉnh sửa nhận định"
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50"
               >
                 <X className="w-4 h-4 text-slate-400" />
               </button>
@@ -1139,8 +1215,9 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">Nhận định sau điều chỉnh của Cán bộ:</label>
+                <label htmlFor="editFindingLabel" className="block font-semibold mb-1">Nhận định sau điều chỉnh của Cán bộ:</label>
                 <select
+                  id="editFindingLabel"
                   value={editFindingLabel}
                   onChange={(e) => setEditFindingLabel(e.target.value as FindingAiLabel)}
                   className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
@@ -1153,10 +1230,11 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">
+                <label htmlFor="editFindingReason" className="block font-semibold mb-1">
                   Lý do điều chỉnh của Cán bộ (Bắt buộc để lưu hồ sơ):
                 </label>
                 <textarea
+                  id="editFindingReason"
                   value={editFindingReason}
                   onChange={(e) => setEditFindingReason(e.target.value)}
                   rows={3}
@@ -1166,43 +1244,59 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
               </div>
             </div>
 
+            {findingSaveError && (
+              <div role="alert" className="p-2 rounded-xl bg-red-50 text-red-700 text-xs mt-2 border border-red-200">
+                {findingSaveError}
+              </div>
+            )}
+
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
               <button
                 type="button"
                 onClick={() => setEditingFinding(null)}
-                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-slate-100"
+                disabled={isSavingFinding}
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-slate-100 disabled:opacity-50"
               >
                 Hủy bỏ
               </button>
               <button
                 type="button"
                 onClick={handleSaveEditFinding}
-                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-xs"
+                disabled={isSavingFinding}
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-xs disabled:opacity-50"
               >
-                Lưu chỉnh sửa
+                {isSavingFinding ? "Đang lưu..." : "Lưu chỉnh sửa"}
               </button>
             </div>
           </div>
-        </div>
+        </AccessibleDialog>
       )}
 
       {/* ========================================================
           MODAL: SOẠN & XEM TRƯỚC YÊU CẦU BỔ SUNG
           ======================================================== */}
       {isSupplementModalOpen && supplementDraft && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+        <AccessibleDialog
+          open={isSupplementModalOpen}
+          onClose={() => setIsSupplementModalOpen(false)}
+          preventClose={isSubmittingSupplement}
+          labelledBy="supplement-dialog-title"
+          className="w-full max-w-2xl"
+        >
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2">
                 <Send className="w-5 h-5 text-amber-600" />
-                <h3 className="font-bold text-slate-900 dark:text-white text-sm">
+                <h3 id="supplement-dialog-title" className="font-bold text-slate-900 dark:text-white text-sm">
                   Soạn thảo Yêu cầu Bổ sung Hồ sơ cho Sinh viên
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setIsSupplementModalOpen(false)}
-                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                disabled={isSubmittingSupplement}
+                aria-label="Đóng yêu cầu bổ sung"
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50"
               >
                 <X className="w-4 h-4 text-slate-400" />
               </button>
@@ -1210,8 +1304,9 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
 
             <div className="text-xs space-y-3">
               <div>
-                <label className="block text-slate-400 mb-1">Tiêu đề thông báo:</label>
+                <label htmlFor="supplementSubject" className="block text-slate-400 mb-1">Tiêu đề thông báo:</label>
                 <input
+                  id="supplementSubject"
                   type="text"
                   value={supplementDraft.subject}
                   onChange={(e) => setSupplementDraft({ ...supplementDraft, subject: e.target.value })}
@@ -1220,59 +1315,93 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1">Nội dung văn bản yêu cầu (Cán bộ có thể chỉnh sửa):</label>
+                <label htmlFor="supplementMessageBody" className="block text-slate-400 mb-1">Nội dung văn bản yêu cầu (Cán bộ có thể chỉnh sửa):</label>
                 <textarea
+                  id="supplementMessageBody"
                   value={supplementDraft.messageBody}
                   onChange={(e) => setSupplementDraft({ ...supplementDraft, messageBody: e.target.value })}
-                  rows={8}
+                  rows={6}
                   className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono leading-relaxed"
                 />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1">Đính kèm các vấn đề cần làm rõ (Kéo thả hoặc Chọn):</label>
+                <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                  {caseItem.findings.filter(f => f.aiLabel !== "has_evidence").map(f => (
+                    <label key={f.id} className="flex items-start gap-2 p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 cursor-pointer transition-colors">
+                      <input type="checkbox" defaultChecked className="mt-0.5 rounded text-indigo-600 focus:ring-indigo-500" />
+                      <div>
+                        <div className="font-bold text-slate-800 dark:text-slate-200">{f.criterionTitle}</div>
+                        <div className="text-[10px] text-slate-500 leading-tight mt-0.5 line-clamp-2">{f.aiExplanation}</div>
+                      </div>
+                    </label>
+                  ))}
+                  {caseItem.findings.filter(f => f.aiLabel !== "has_evidence").length === 0 && (
+                    <div className="p-3 text-center text-slate-500 italic bg-slate-50 dark:bg-slate-800 rounded-xl">Không có vấn đề nào cần làm rõ.</div>
+                  )}
+                </div>
               </div>
 
               <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-[11px] text-amber-900 dark:text-amber-200">
                 Thông báo này sẽ được gửi trực tiếp đến Cổng Sinh viên (/my-requests) của sinh viên{" "}
                 <span className="font-bold">{caseItem.studentName}</span>. Sinh viên sẽ nộp tài liệu bổ sung trực tiếp trên cùng hồ sơ này.
               </div>
+              {supplementError && (
+                <div className="p-3 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-[11px] text-red-900 dark:text-red-200">
+                  {supplementError}
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
               <button
                 type="button"
                 onClick={() => setIsSupplementModalOpen(false)}
-                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-slate-100"
+                disabled={isSubmittingSupplement}
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-slate-100 disabled:opacity-50"
               >
                 Đóng
               </button>
               <button
                 type="button"
+                disabled={isSubmittingSupplement}
                 onClick={handleSendSupplementRequest}
-                className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold shadow-xs flex items-center gap-1.5"
+                className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold shadow-xs flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send className="w-3.5 h-3.5" />
-                <span>Gửi yêu cầu bổ sung</span>
+                <span>{isSubmittingSupplement ? "Đang gửi..." : "Gửi yêu cầu bổ sung"}</span>
               </button>
             </div>
           </div>
-        </div>
+        </AccessibleDialog>
       )}
 
       {/* ========================================================
           MODAL: HOÀN TẤT BẢN RÀ SOÁT (FINALIZE REVIEW)
           ======================================================== */}
       {isFinalizeModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+        <AccessibleDialog
+          open={isFinalizeModalOpen}
+          onClose={() => setIsFinalizeModalOpen(false)}
+          preventClose={isSubmittingFinalize}
+          labelledBy="finalize-dialog-title"
+          className="w-full max-w-xl"
+        >
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                <h3 className="font-bold text-slate-900 dark:text-white text-sm">
+                <h3 id="finalize-dialog-title" className="font-bold text-slate-900 dark:text-white text-sm">
                   Xác nhận Hoàn tất Bản rà soát Học thuật
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setIsFinalizeModalOpen(false)}
-                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                disabled={isSubmittingFinalize}
+                aria-label="Đóng xác nhận hoàn tất rà soát"
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50"
               >
                 <X className="w-4 h-4 text-slate-400" />
               </button>
@@ -1280,10 +1409,11 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
 
             <div className="text-xs space-y-3">
               <div>
-                <label className="block font-semibold mb-1">Đề xuất chuyên môn của Cán bộ:</label>
+                <label htmlFor="finalizeRecommendation" className="block font-semibold mb-1">Đề xuất chuyên môn của Cán bộ:</label>
                 <select
+                  id="finalizeRecommendation"
                   value={finalizeRecommendation}
-                  onChange={(e) => setFinalizeRecommendation(e.target.value as any)}
+                  onChange={(e) => setFinalizeRecommendation(e.target.value as "propose_recognition" | "propose_conditional" | "propose_rejection")}
                   className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold"
                 >
                   <option value="propose_recognition">Đề nghị Công nhận học phần (Đủ điều kiện)</option>
@@ -1293,8 +1423,9 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">Tóm tắt kết luận của Cán bộ:</label>
+                <label htmlFor="finalizeSummary" className="block font-semibold mb-1">Tóm tắt kết luận của Cán bộ:</label>
                 <textarea
+                  id="finalizeSummary"
                   value={finalizeSummary}
                   onChange={(e) => setFinalizeSummary(e.target.value)}
                   rows={3}
@@ -1323,6 +1454,11 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
                   </span>
                 </label>
               </div>
+              {finalizeError && (
+                <div className="p-3 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-[11px] text-red-900 dark:text-red-200">
+                  {finalizeError}
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
@@ -1335,16 +1471,16 @@ export default function ReviewWorkstationPage({ params }: PageProps) {
               </button>
               <button
                 type="button"
-                disabled={!finalizeConfirmed}
+                disabled={!finalizeConfirmed || isSubmittingFinalize}
                 onClick={handleExecuteFinalize}
-                className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white font-semibold shadow-xs flex items-center gap-1.5"
+                className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed"
               >
                 <CheckCircle2 className="w-4 h-4" />
-                <span>Hoàn tất &amp; Lưu phiếu BM-RS-01</span>
+                <span>{isSubmittingFinalize ? "Đang lưu..." : "Hoàn tất & Lưu phiếu BM-RS-01"}</span>
               </button>
             </div>
           </div>
-        </div>
+        </AccessibleDialog>
       )}
     </div>
   );

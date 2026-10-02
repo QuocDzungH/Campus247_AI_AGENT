@@ -16,7 +16,15 @@ export interface User {
 
 export type TicketStatus = "open" | "pending_officer" | "resolved";
 export type TicketPriority = "normal" | "high";
-export type TicketType = "certificate" | "transcript" | "complaint";
+export type TicketType = "certificate" | "transcript" | "complaint" | "lookup";
+
+export interface StoredAttachment {
+  id: string;
+  name: string;
+  size: number;
+  contentType: string;
+  field?: string;
+}
 
 export interface TicketMessage {
   id: string;
@@ -128,6 +136,15 @@ export interface Ticket {
   destinationOrg: string;
   purpose: string;
   notes?: string;
+  submissionKey?: string;
+  attachments?: StoredAttachment[];
+
+  requestPayload?: {
+    schemaVersion: 1;
+    task: "certificate" | "complaint";
+    documentType?: string;
+    submittedFields: { name: string; label: string; value: string }[];
+  };
 
   // AI Preparation for Officer (L3)
   aiSummary: {
@@ -147,6 +164,7 @@ export interface Ticket {
   // Officer Draft for Submit 2
   officerDraft: string;
   officerDraftDefault: string;
+  officerDrafts?: Record<string, string>;
   assignedOfficerId?: string;
   assignedOfficerName?: string;
   
@@ -255,6 +273,7 @@ export interface DocumentVersion {
   uploadedBy: "student" | "officer";
   fileName: string;
   fileSize?: string;
+  attachment?: StoredAttachment;
   legibility: DocumentLegibility;
   legibilityNote?: string;
   sections: DocumentSection[];
@@ -308,6 +327,7 @@ export interface ReviewFinding {
   officerNote?: string;
   officerReviewedAt?: string;
   officerReviewedBy?: string;
+  officerSourceVersion?: string;
 }
 
 export interface SupplementRequest {
