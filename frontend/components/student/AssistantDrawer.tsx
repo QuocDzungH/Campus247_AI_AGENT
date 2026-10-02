@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowUp, Check, MessageCircle, X } from "lucide-react";
 import { AccessibleDialog } from "@/components/shared/AccessibleDialog";
 import { answerStudentQuestion, receiveMethodLabel, type AssistantReply } from "@/lib/student-assistant";
+import { CitationList } from "./CitationList";
 import type { StudentTask, StudentDraft, CertificateData } from "@/lib/student-workspace";
 import { useVinUniForms } from "@/lib/vinuni-workspace";
 import { fieldClass, secondaryButton } from "./StudentFlowUI";
@@ -85,12 +86,7 @@ export function AssistantDrawer({ task }: { task: StudentTask }) {
           {exchanges.map((exchange) => <div key={exchange.id} className="space-y-3">
             <p className="ml-8 rounded-2xl bg-slate-100 px-4 py-3 text-base dark:bg-slate-800"><span className="sr-only">Bạn: </span>{exchange.question}</p>
             <div className="space-y-3 pr-2 text-base leading-relaxed"><p><span className="sr-only">Trợ lý: </span>{exchange.reply.text}</p>
-              {exchange.reply.source && <details className="rounded-xl border border-slate-200 p-3 text-sm dark:border-slate-700">
-                <summary className="cursor-pointer font-medium">Nguồn hướng dẫn · {exchange.reply.source.section}</summary>
-                <p className="mt-3 text-slate-500 dark:text-slate-400">{exchange.reply.source.title}</p>
-                <blockquote className="mt-2 border-l-2 border-slate-300 pl-3 dark:border-slate-600">{exchange.reply.source.quote}</blockquote>
-                {exchange.reply.source.href && <a href={exchange.reply.source.href} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex min-h-11 items-center text-blue-700 underline dark:text-blue-300">Mở nguồn VinUni</a>}
-              </details>}
+              <CitationList sources={exchange.reply.sources} source={exchange.reply.source} />
               {exchange.reply.proposal && <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
                 <p className="text-sm font-semibold">{exchange.reply.proposal.label}</p>
                 <dl className="mt-3 space-y-2 text-sm">

@@ -21,7 +21,16 @@ class Settings(BaseSettings):
     app_port: int = Field(default=8000, ge=1, le=65535)
     app_host: str = "0.0.0.0"
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
-    cors_origins: str = "http://localhost:3000"
+    cors_origins: str = ",".join(
+        [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:3100",
+            "http://127.0.0.1:3100",
+            "http://localhost:3101",
+            "http://127.0.0.1:3101",
+        ]
+    )
 
     # LLM. Canonical model name is llm_model; model_name is a compatibility alias.
     llm_provider: str = "openai"

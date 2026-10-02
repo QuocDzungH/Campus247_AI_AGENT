@@ -15,10 +15,13 @@ export function RequestStatus({ item, localOnly = false }: { item: RequestItem; 
 const section = "rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 dark:border-slate-700 dark:bg-slate-900";
 const muted = "text-sm leading-relaxed text-slate-600 dark:text-slate-300";
 
-export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement }: {
+export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement, detailLoading = false, detailError = null, onRetryDetail }: {
   item: RequestItem; localOnly: boolean; onBack: () => void;
   onMessage: (id: string, text: string) => Promise<void>;
   onSupplement: (id: string, payload: { note: string; fileName?: string; docTitle?: string; attachment?: StoredAttachment }) => Promise<void>;
+  detailLoading?: boolean;
+  detailError?: string | null;
+  onRetryDetail?: () => void;
 }) {
   const heading = useRef<HTMLHeadingElement>(null);
   const [text, setText] = useState("");
@@ -119,7 +122,9 @@ export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement
 
     {!pending && <section className={section} aria-labelledby="latest-reply-title">
       <h3 id="latest-reply-title" tabIndex={-1} className="flex items-center gap-2 text-lg font-semibold"><MessageSquare className="h-5 w-5" aria-hidden="true" />Phản hồi gần nhất của cán bộ</h3>
-      <p className={`mt-3 whitespace-pre-wrap break-words ${muted}`}>{latest || "Chưa có phản hồi của cán bộ trong hồ sơ này."}</p>
+      {detailLoading && <p role="status" className={`mt-3 ${muted}`}>Đang tải chi tiết hồ sơ…</p>}
+      {detailError && <p role="alert" className="mt-3 rounded-xl bg-red-50 p-3 text-sm text-red-800 dark:bg-red-950 dark:text-red-200">{detailError} Danh sách hồ sơ vẫn được giữ.{onRetryDetail && <button type="button" className={`${secondaryButton} mt-2`} onClick={onRetryDetail}>Thử tải lại chi tiết</button>}</p>}
+      {!detailLoading && <p className={`mt-3 whitespace-pre-wrap break-words ${muted}`}>{latest || "Chưa có phản hồi của cán bộ trong hồ sơ này."}</p>}
     </section>}
 
     {item.state === "completed" && <section className={section} aria-labelledby="result-title">
@@ -140,7 +145,7 @@ export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement
         <p className={`mt-3 ${muted}`}>Chưa có tệp chính thức để tải trong hồ sơ này. Liên hệ cán bộ phụ trách để nhận tài liệu.</p>
       </> : <>
         <p className={`mt-3 ${muted}`}>Tài liệu chính thức chưa được cung cấp trong hồ sơ này. Bạn sẽ nhận thông báo khi có kết quả.</p>
-        <p className={`mt-2 ${muted}`}>Cách nhận đã khai: {item.record.receiveMethod === "paper_stamped" ? "Bản giấy có đóng dấu" : "Bản điện tử"}. Hãy theo dõi phản hồi của cán bộ.</p>
+        <p className={`mt-2 ${muted}`}>Cách nhận đã khai: {item.record.receiveMethod === "paper_stamped" ? "Bản giấy có đóng dấu" : item.record.receiveMethod === "digital_pdf" ? "Bản điện tử" : "Chưa có dữ liệu"}. Hãy theo dõi phản hồi của cán bộ.</p>
       </>}
     </section>}
 

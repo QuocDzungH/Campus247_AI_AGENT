@@ -151,10 +151,15 @@ test("login posts user_id and stores Bearer for later requests", async () => {
 
 test("restore uses GET /me with stored token and does not re-login by user id", async () => {
   const calls = installFetch((request) => {
-    assert.ok(request.url.endsWith("/api/v1/me"));
-    assert.equal(request.method, "GET");
-    assert.equal(request.headers.get("Authorization"), "Bearer tok_restore");
-    return jsonResponse(200, { id: "OF-DEMO-01", role: "officer", name: "Cán bộ Demo" });
+    if (request.url.includes("/api/v1/me")) {
+      assert.equal(request.method, "GET");
+      assert.equal(request.headers.get("Authorization"), "Bearer tok_restore");
+      return jsonResponse(200, { id: "OF-DEMO-01", role: "officer", name: "Cán bộ Demo" });
+    }
+    if (request.url.includes("/api/v1/officer/tickets")) {
+      return jsonResponse(200, { items: [], total: 0, page: 1, page_size: 100 });
+    }
+    throw new Error(`Unexpected URL ${request.url}`);
   });
 
   const sessionStore = createMemorySessionStore({
@@ -173,7 +178,9 @@ test("restore uses GET /me with stored token and does not re-login by user id", 
   assert.equal(bootstrap.currentUser.id, "OF-DEMO-01");
   assert.equal(bootstrap.currentUser.role, "officer");
   assert.equal(bootstrap.tickets.length, 0);
-  assert.equal(calls.length, 1);
+  assert.equal(calls.length, 2);
+  assert.ok(calls[0].url.includes("/api/v1/me"));
+  assert.ok(calls[1].url.includes("/api/v1/officer/tickets"));
   assert.equal(calls.some((call) => call.url.includes("demo-login")), false);
 });
 

@@ -12,6 +12,13 @@ import {
   IssuedCertificateDocument,
   StoredAttachment,
 } from "../types";
+import type {
+  BriefView,
+  CampusPreview,
+  ChatTurnResult,
+  ConversationView,
+  PreviewFieldsPatch,
+} from "./api/mappers";
 
 export interface SessionOptions {
   remember?: boolean;
@@ -93,4 +100,52 @@ export interface CampusDataGateway {
   // Demo / UAT Utilities
   getDemoUsers(): Promise<User[]>;
   resetDemoData(): Promise<void>;
+
+  // P0 API operations. Mock mode leaves these unimplemented.
+  createConversation?(options?: { idempotencyKey?: string }): Promise<ConversationView>;
+  sendConversationMessage?(
+    conversationId: string,
+    content: string,
+    options?: { signal?: AbortSignal; idempotencyKey?: string }
+  ): Promise<ChatTurnResult>;
+  listConversationMessages?(conversationId: string): Promise<ChatMessage[]>;
+  patchPreview?(
+    previewId: string,
+    expectedVersion: number,
+    fields: PreviewFieldsPatch,
+    options?: { idempotencyKey?: string }
+  ): Promise<CampusPreview>;
+  submitPreview?(
+    previewId: string,
+    previewVersion: number,
+    options?: { idempotencyKey?: string }
+  ): Promise<Ticket>;
+  claimTicket?(
+    ticketId: string,
+    expectedRevision: number,
+    options?: { idempotencyKey?: string }
+  ): Promise<Ticket>;
+  prepareBrief?(
+    ticketId: string,
+    expectedRevision: number,
+    options?: { signal?: AbortSignal; idempotencyKey?: string }
+  ): Promise<BriefView>;
+  getBrief?(ticketId: string): Promise<BriefView>;
+  getTicketDetail?(ticketId: string): Promise<Ticket>;
+  listAudit?(ticketId: string): Promise<Ticket["auditLogs"]>;
+  sendTicketMessage?(
+    ticketId: string,
+    content: string,
+    options?: { signal?: AbortSignal; idempotencyKey?: string }
+  ): Promise<ChatTurnResult>;
+  submitOfficerAction?(
+    ticketId: string,
+    payload: {
+      action: "respond" | "request_info" | "resolve";
+      content: string;
+      expectedRevision: number;
+      reviewedBriefVersion: number | null;
+      idempotencyKey?: string;
+    }
+  ): Promise<Ticket>;
 }

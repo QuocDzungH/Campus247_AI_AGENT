@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { CampusDataGateway, SessionOptions } from "../gateway";
 import {
   User,
@@ -15,9 +14,28 @@ import {
   IssuedCertificateDocument,
 } from "../../types";
 import { UnsupportedOperationError, DataGatewayError } from "../errors";
-import { ApiClient } from "./api-client";
+import { applyBriefToTicket, decideReviewedBriefVersion, isBriefPollComplete, markBriefLoadFailure } from "./g2-flow";
+import { ApiClient, INTAKE_API_TIMEOUT_MS } from "./api-client";
 import { createBrowserSessionStore, SessionStore } from "./session";
 import { LoginResult } from "./types";
+import {
+  BriefView,
+  CampusPreview,
+  ChatTurnResult,
+  ConversationView,
+  PreviewFieldsPatch,
+  mapAuditEntry,
+  mapBrief,
+  mapChatResult,
+  mapConversation,
+  mapConversationToSession,
+  mapPreview,
+  mapTicketDetail,
+  mapWireMessageToChat,
+  mapWireTicket,
+  parsePage,
+} from "./mappers";
+import { pollUntil, requestUntilComplete } from "./replay";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -169,36 +187,100 @@ export class ApiCampusDataGateway implements CampusDataGateway {
     this.client.abortInFlight();
   }
 
+  private actorRole(): UserRole | null {
+    return this.sessionStore.load()?.user.role ?? null;
+  }
+
+  private async collectPages<T>(path: string, mapItem: (item: unknown) => T): Promise<T[]> {
+    const pageSize = 100;
+    const firstBody = await this.client.get(`${path}${path.includes("?") ? "&" : "?"}page=1&page_size=${pageSize}`, {
+      skipIdempotency: true,
+    });
+    const first = parsePage(firstBody, mapItem, path);
+    const items = [...first.items];
+    const totalPages = Math.max(1, Math.ceil(first.total / pageSize));
+    for (let page = 2; page <= totalPages; page += 1) {
+      const body = await this.client.get(`${path}${path.includes("?") ? "&" : "?"}page=${page}&page_size=${pageSize}`, {
+        skipIdempotency: true,
+      });
+      items.push(...parsePage(body, mapItem, path).items);
+    }
+    return items;
+  }
+
   async resetDemoData(): Promise<void> {
     throw new UnsupportedOperationError("resetDemoData");
   }
 
-  // --- Tickets ---
   async getTickets(): Promise<Ticket[]> {
-    throw new UnsupportedOperationError("getTickets");
+    const role = this.actorRole();
+    const path = role === "officer" ? "/api/v1/officer/tickets" : "/api/v1/tickets";
+    return this.collectPages(path, mapWireTicket);
   }
 
   async getTicket(id: string): Promise<Ticket | undefined> {
-    throw new UnsupportedOperationError("getTicket");
+    try {
+      return await this.getTicketDetail(id);
+    } catch (err) {
+      if (err instanceof DataGatewayError && err.reason === "not_found") return undefined;
+      throw err;
+    }
   }
 
-  async createTicket(currentUser: User, data: Partial<Ticket>): Promise<Ticket> {
+  async getTicketDetail(id: string): Promise<Ticket> {
+    const body = await this.client.get(`/api/v1/tickets/${encodeURIComponent(id)}?page=1&page_size=100`, {
+      skipIdempotency: true,
+    });
+    let auditLogs: Ticket["auditLogs"] = [];
+    let auditLoadError: string | undefined;
+    if (this.actorRole() === "officer") {
+      try {
+        auditLogs = await this.listAudit(id);
+      } catch (error) {
+        auditLoadError = error instanceof Error ? error.message : "Không tải được nhật ký.";
+      }
+    }
+    let ticket = mapTicketDetail(body, auditLogs);
+    if (auditLoadError) ticket.auditLoadError = auditLoadError;
+    if (this.actorRole() === "officer") {
+      try {
+        const brief = await this.getBrief(id);
+        ticket = applyBriefToTicket(ticket, brief);
+      } catch (error) {
+        const dataError =
+          error instanceof DataGatewayError
+            ? error
+            : new DataGatewayError("unknown", error instanceof Error ? error.message : String(error), error);
+        ticket = markBriefLoadFailure(ticket, dataError);
+      }
+    }
+    return ticket;
+  }
+
+  async listAudit(ticketId: string): Promise<Ticket["auditLogs"]> {
+    return this.collectPages(
+      `/api/v1/officer/tickets/${encodeURIComponent(ticketId)}/audit`,
+      mapAuditEntry
+    );
+  }
+
+  async createTicket(_currentUser: User, _data: Partial<Ticket>): Promise<Ticket> {
     throw new UnsupportedOperationError("createTicket");
   }
 
-  async updateTicketStatus(id: string, status: TicketStatus, actorName: string): Promise<void> {
+  async updateTicketStatus(_id: string, _status: TicketStatus, _actorName: string): Promise<void> {
     throw new UnsupportedOperationError("updateTicketStatus");
   }
 
-  async updateOfficerDraft(id: string, draft: string): Promise<void> {
-    throw new UnsupportedOperationError("updateOfficerDraft");
+  async updateOfficerDraft(_id: string, _draft: string): Promise<void> {
+    // G2: officer draft stays in the browser session. No P0 draft endpoint.
   }
 
-  async resetOfficerDraft(id: string): Promise<void> {
-    throw new UnsupportedOperationError("resetOfficerDraft");
+  async resetOfficerDraft(_id: string): Promise<void> {
+    // G2: local draft only.
   }
 
-  async toggleChecklistItem(ticketId: string, itemId: string): Promise<void> {
+  async toggleChecklistItem(_ticketId: string, _itemId: string): Promise<void> {
     throw new UnsupportedOperationError("toggleChecklistItem");
   }
 
@@ -206,60 +288,241 @@ export class ApiCampusDataGateway implements CampusDataGateway {
     ticketId: string,
     message: Omit<TicketMessage, "id" | "timestamp">
   ): Promise<void> {
-    throw new UnsupportedOperationError("addTicketMessage");
+    await this.sendTicketMessage(ticketId, message.content);
+  }
+
+  async sendTicketMessage(
+    ticketId: string,
+    content: string,
+    options?: { signal?: AbortSignal; idempotencyKey?: string }
+  ): Promise<ChatTurnResult> {
+    const result = await requestUntilComplete(
+      this.client,
+      `/api/v1/tickets/${encodeURIComponent(ticketId)}/messages`,
+      {
+        method: "POST",
+        body: { content },
+        timeoutMs: INTAKE_API_TIMEOUT_MS,
+        signal: options?.signal,
+        idempotencyKey: options?.idempotencyKey,
+      }
+    );
+    return mapChatResult(result.body);
   }
 
   async submitGate2Response(
     ticketId: string,
     actionType: "respond" | "request_info" | "resolve",
-    customContent?: string
+    customContent?: string,
+    _actor?: User,
+    expectedSnapshot?: string
   ): Promise<void> {
-    throw new UnsupportedOperationError("submitGate2Response");
+    const ticket = await this.getTicketDetail(ticketId);
+    const briefGate = decideReviewedBriefVersion(ticket, {
+      manualBrief: expectedSnapshot === "manual-brief",
+    });
+    if (!briefGate.ok) throw new DataGatewayError("validation", briefGate.reason);
+    await this.submitOfficerAction(ticketId, {
+      action: actionType,
+      content: customContent?.trim() || "Đã xử lý yêu cầu.",
+      expectedRevision: ticket.serverRevision ?? 1,
+      reviewedBriefVersion: briefGate.reviewedBriefVersion,
+    });
+  }
+
+  async submitOfficerAction(
+    ticketId: string,
+    payload: {
+      action: "respond" | "request_info" | "resolve";
+      content: string;
+      expectedRevision: number;
+      reviewedBriefVersion: number | null;
+      idempotencyKey?: string;
+    }
+  ): Promise<Ticket> {
+    const result = await requestUntilComplete(this.client, `/api/v1/officer/tickets/${encodeURIComponent(ticketId)}/actions`, {
+      method: "POST",
+      body: {
+        action: payload.action,
+        content: payload.content,
+        expected_revision: payload.expectedRevision,
+        reviewed_brief_version: payload.reviewedBriefVersion,
+        confirmed: true,
+      },
+      idempotencyKey: payload.idempotencyKey,
+    });
+    const body = result.body;
+    if (!body || typeof body !== "object" || !("ticket" in body)) {
+      throw new DataGatewayError("validation", "Invalid Submit2 result");
+    }
+    return mapWireTicket((body as { ticket: unknown }).ticket);
+  }
+
+  async createConversation(options?: { idempotencyKey?: string }): Promise<ConversationView> {
+    const result = await requestUntilComplete(this.client, "/api/v1/conversations", {
+      method: "POST",
+      body: {},
+      idempotencyKey: options?.idempotencyKey,
+    });
+    return mapConversation(result.body);
+  }
+
+  async sendConversationMessage(
+    conversationId: string,
+    content: string,
+    options?: { signal?: AbortSignal; idempotencyKey?: string }
+  ): Promise<ChatTurnResult> {
+    const result = await requestUntilComplete(
+      this.client,
+      `/api/v1/conversations/${encodeURIComponent(conversationId)}/messages`,
+      {
+        method: "POST",
+        body: { content },
+        timeoutMs: INTAKE_API_TIMEOUT_MS,
+        signal: options?.signal,
+        idempotencyKey: options?.idempotencyKey,
+      }
+    );
+    return mapChatResult(result.body);
+  }
+
+  async listConversationMessages(conversationId: string): Promise<ChatMessage[]> {
+    return this.collectPages(
+      `/api/v1/conversations/${encodeURIComponent(conversationId)}/messages`,
+      (item) => mapWireMessageToChat(item)
+    );
+  }
+
+  async patchPreview(
+    previewId: string,
+    expectedVersion: number,
+    fields: PreviewFieldsPatch,
+    options?: { idempotencyKey?: string }
+  ): Promise<CampusPreview> {
+    const result = await requestUntilComplete(this.client, `/api/v1/previews/${encodeURIComponent(previewId)}`, {
+      method: "PATCH",
+      body: { expected_version: expectedVersion, fields },
+      idempotencyKey: options?.idempotencyKey,
+    });
+    return mapPreview(result.body);
+  }
+
+  async submitPreview(
+    previewId: string,
+    previewVersion: number,
+    options?: { idempotencyKey?: string }
+  ): Promise<Ticket> {
+    const result = await requestUntilComplete(this.client, "/api/v1/tickets", {
+      method: "POST",
+      body: { preview_id: previewId, preview_version: previewVersion, confirmed: true },
+      idempotencyKey: options?.idempotencyKey,
+    });
+    const body = result.body;
+    if (!body || typeof body !== "object" || !("ticket" in body)) {
+      throw new DataGatewayError("validation", "Invalid Submit1 result");
+    }
+    return mapWireTicket((body as { ticket: unknown }).ticket);
+  }
+
+  async claimTicket(
+    ticketId: string,
+    expectedRevision: number,
+    options?: { idempotencyKey?: string }
+  ): Promise<Ticket> {
+    const result = await requestUntilComplete(
+      this.client,
+      `/api/v1/officer/tickets/${encodeURIComponent(ticketId)}/claim`,
+      {
+        method: "POST",
+        body: { expected_revision: expectedRevision, confirmed: true },
+        idempotencyKey: options?.idempotencyKey,
+      }
+    );
+    const body = result.body;
+    if (!body || typeof body !== "object" || !("ticket" in body)) {
+      throw new DataGatewayError("validation", "Invalid claim result");
+    }
+    return mapWireTicket((body as { ticket: unknown }).ticket);
+  }
+
+  async getBrief(ticketId: string): Promise<BriefView> {
+    const body = await this.client.get(`/api/v1/officer/tickets/${encodeURIComponent(ticketId)}/brief`, {
+      skipIdempotency: true,
+    });
+    return mapBrief(body);
+  }
+
+  async prepareBrief(
+    ticketId: string,
+    expectedRevision: number,
+    options?: { signal?: AbortSignal; idempotencyKey?: string }
+  ): Promise<BriefView> {
+    const accepted = await requestUntilComplete(
+      this.client,
+      `/api/v1/officer/tickets/${encodeURIComponent(ticketId)}/prepare`,
+      {
+        method: "POST",
+        body: { expected_revision: expectedRevision },
+        idempotencyKey: options?.idempotencyKey,
+        signal: options?.signal,
+      }
+    );
+    if (accepted.status !== 202 && accepted.status !== 200) {
+      throw new DataGatewayError("server", `Unexpected prepare status ${accepted.status}`);
+    }
+    return pollUntil(
+      () => this.getBrief(ticketId),
+      (brief) => isBriefPollComplete(brief, expectedRevision),
+      { maxAttempts: 20, intervalMs: 2000, signal: options?.signal }
+    );
   }
 
   // --- Certificates ---
-  async runTicketVerification(ticketId: string): Promise<void> {
+  async runTicketVerification(_ticketId: string): Promise<void> {
     throw new UnsupportedOperationError("runTicketVerification");
   }
 
-  async retryCriterionVerification(ticketId: string, criterionId: string): Promise<void> {
+  async retryCriterionVerification(_ticketId: string, _criterionId: string): Promise<void> {
     throw new UnsupportedOperationError("retryCriterionVerification");
   }
 
-  async confirmCriterionReview(ticketId: string, criterionId: string, note?: string): Promise<void> {
+  async confirmCriterionReview(_ticketId: string, _criterionId: string, _note?: string): Promise<void> {
     throw new UnsupportedOperationError("confirmCriterionReview");
   }
 
-  async updateCertificateDraft(ticketId: string, edits: Partial<IssuedCertificateDocument>): Promise<void> {
+  async updateCertificateDraft(_ticketId: string, _edits: Partial<IssuedCertificateDocument>): Promise<void> {
     throw new UnsupportedOperationError("updateCertificateDraft");
   }
 
-  // --- Chat ---
   async getChatSessions(): Promise<ChatSession[]> {
-    throw new UnsupportedOperationError("getChatSessions");
+    if (this.actorRole() !== "student") return [];
+    const conversations = await this.collectPages("/api/v1/conversations", mapConversation);
+    return conversations.map((conversation) => mapConversationToSession(conversation));
   }
 
   async createChatSession(): Promise<ChatSession> {
-    throw new UnsupportedOperationError("createChatSession");
+    const conversation = await this.createConversation({ idempotencyKey: crypto.randomUUID() });
+    return mapConversationToSession(conversation);
   }
 
-  async deleteChatSession(sessionId: string): Promise<void> {
+  async deleteChatSession(_sessionId: string): Promise<void> {
     throw new UnsupportedOperationError("deleteChatSession");
   }
 
   async addChatMessage(sessionId: string, msg: Omit<ChatMessage, "id" | "timestamp">): Promise<void> {
-    throw new UnsupportedOperationError("addChatMessage");
+    if (msg.sender !== "user") return;
+    await this.sendConversationMessage(sessionId, msg.text);
   }
 
   async updateChatSessionGate1(
-    sessionId: string,
-    formData: NonNullable<ChatSession["gate1FormData"]>
+    _sessionId: string,
+    _formData: NonNullable<ChatSession["gate1FormData"]>
   ): Promise<void> {
-    throw new UnsupportedOperationError("updateChatSessionGate1");
+    // Preview edits go through patchPreview in API mode.
   }
 
-  async updateChatSessionL4(sessionId: string, isActive: boolean): Promise<void> {
-    throw new UnsupportedOperationError("updateChatSessionL4");
+  async updateChatSessionL4(_sessionId: string, _isActive: boolean): Promise<void> {
+    // Lock comes from ChatResult.conversation_state, not a client write.
   }
 
   // --- Reviews ---
@@ -267,22 +530,22 @@ export class ApiCampusDataGateway implements CampusDataGateway {
     throw new UnsupportedOperationError("getReviewCases");
   }
 
-  async getReviewCase(id: string): Promise<ReviewCase | undefined> {
+  async getReviewCase(_id: string): Promise<ReviewCase | undefined> {
     throw new UnsupportedOperationError("getReviewCase");
   }
 
-  async createReviewCase(data: Partial<ReviewCase>): Promise<ReviewCase> {
+  async createReviewCase(_data: Partial<ReviewCase>): Promise<ReviewCase> {
     throw new UnsupportedOperationError("createReviewCase");
   }
 
-  async runAiReview(caseId: string): Promise<void> {
+  async runAiReview(_caseId: string): Promise<void> {
     throw new UnsupportedOperationError("runAiReview");
   }
 
   async updateFindingReview(
-    caseId: string,
-    findingId: string,
-    updates: {
+    _caseId: string,
+    _findingId: string,
+    _updates: {
       officerStatus: FindingOfficerStatus;
       officerAdjustedLabel?: FindingAiLabel;
       officerNote?: string;
@@ -291,18 +554,18 @@ export class ApiCampusDataGateway implements CampusDataGateway {
     throw new UnsupportedOperationError("updateFindingReview");
   }
 
-  async sendSupplementRequest(caseId: string, request: SupplementRequest): Promise<void> {
+  async sendSupplementRequest(_caseId: string, _request: SupplementRequest): Promise<void> {
     throw new UnsupportedOperationError("sendSupplementRequest");
   }
 
   async submitStudentSupplement(
-    caseId: string,
-    payload: { note: string; docTitle?: string; fileName?: string; versionToActivate?: number }
+    _caseId: string,
+    _payload: { note: string; docTitle?: string; fileName?: string; versionToActivate?: number }
   ): Promise<void> {
     throw new UnsupportedOperationError("submitStudentSupplement");
   }
 
-  async finalizeReviewCase(caseId: string, report: NonNullable<ReviewCase["finalReport"]>): Promise<void> {
+  async finalizeReviewCase(_caseId: string, _report: NonNullable<ReviewCase["finalReport"]>): Promise<void> {
     throw new UnsupportedOperationError("finalizeReviewCase");
   }
 

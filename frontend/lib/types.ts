@@ -132,7 +132,7 @@ export interface Ticket {
   
   // Declaration fields from Gate 1
   certificateType: string;
-  receiveMethod: "digital_pdf" | "paper_stamped";
+  receiveMethod: "digital_pdf" | "paper_stamped" | "";
   destinationOrg: string;
   purpose: string;
   notes?: string;
@@ -196,6 +196,17 @@ export interface Ticket {
   messages: TicketMessage[];
   auditLogs: AuditLogEntry[];
 
+  // P0 API metadata. Absent in mock fixtures; UI treats missing values as chưa có dữ liệu.
+  serverRevision?: number;
+  conversationId?: string;
+  category?: "action" | "complaint";
+  serviceType?: "student_certificate" | "academic_complaint" | "student_support";
+  reviewedBriefVersion?: number | null;
+  briefStatus?: "pending" | "processing" | "ready" | "failed" | "stale" | "none";
+  briefLoadError?: string;
+  auditLoadError?: string;
+  officerBrief?: import("./data/api/mappers").BriefView;
+
   // Real Certificate Issuance & Pre-check Verification
   systemVerifications?: SystemVerificationItem[];
   issuedCertificate?: IssuedCertificateDocument;
@@ -215,6 +226,15 @@ export interface ChatMessage {
     quote: string;
     source: string;
   };
+  citations?: Array<{
+    documentId: string;
+    documentTitle: string;
+    documentVersion: string;
+    chunkId: string;
+    locator: string;
+    quote: string;
+    url?: string;
+  }>;
   actionCard?: "submit1_prompt" | "submit1_success" | "l4_handover";
   ticketId?: string;
   ticketData?: Partial<Ticket>;
@@ -227,6 +247,7 @@ export interface ChatSession {
   updatedAt: string;
   tag: "L1" | "L2" | "L4" | "Chung";
   messages: ChatMessage[];
+  ticketId?: string | null;
   isL4HandoverActive?: boolean;
   gate1FormData?: {
     fullName: string;

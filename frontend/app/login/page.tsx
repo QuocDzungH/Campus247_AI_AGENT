@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { AuthLayout } from "@/components/AuthLayout";
 import { useStore } from "@/lib/store";
+import { isConnectionError } from "@/lib/data/api/g2-flow";
 import { AccessibleDialog } from "@/components/shared/AccessibleDialog";
 import { API_DEMO_ACCOUNTS, isOfficerDemoUserId, resolveApiDemoUserId } from "@/lib/data/api/demo-accounts";
 
@@ -36,7 +37,7 @@ function resolveMockDemoUserId(identifier: string): string | null {
 function LoginForm() {
   const router = useRouter();
 
-  const { login, dataConfig } = useStore();
+  const { login, dataConfig, dataStatus } = useStore();
   const isApiMode = dataConfig?.mode === "api";
   const demoAccounts = isApiMode ? API_DEMO_ACCOUNTS : MOCK_DEMO_ACCOUNTS;
 
@@ -95,12 +96,18 @@ function LoginForm() {
         } else {
           router.push("/student");
         }
+      } else if (dataStatus === "connection_error") {
+        setError("Không kết nối được máy chủ. Hãy thử lại.");
       } else {
         setError("Tài khoản hoặc mật khẩu không chính xác.");
       }
-    } catch {
+    } catch (failure) {
       setLoading(false);
-      setError("Có lỗi xảy ra, vui lòng thử lại.");
+      setError(
+        isConnectionError(failure)
+          ? "Không kết nối được máy chủ. Hãy thử lại."
+          : "Có lỗi xảy ra, vui lòng thử lại."
+      );
     }
   };
 

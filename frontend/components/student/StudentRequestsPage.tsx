@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useSyncExternalStore, type FormEvent } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import { ArrowRight, FileText, Plus, Search } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { DataAccessState } from "@/components/shared/DataAccessState";
@@ -47,7 +47,13 @@ export function StudentRequestsPage() {
   // Selection is browser state over already loaded records, with no server navigation.
   const selection = useSyncExternalStore(subscribeToSelection, readSelection, serverSelection);
   const params = new URLSearchParams(selection);
-  const { currentUser, tickets, reviewCases, isDataLoading, dataError, dataConfig, reloadData, addTicketMessage, submitStudentSupplement } = useStore();
+  const { currentUser, tickets, reviewCases, isDataLoading, dataError, dataConfig, reloadData, addTicketMessage, submitStudentSupplement, refreshTicket } = useStore();
+  const [detailStatus, setDetailStatus] = useState<{ id: string; loading: boolean; error: string | null }>({
+    id: "",
+    loading: false,
+    error: null,
+  });
+  const [detailRetry, setDetailRetry] = useState(0);
   const listTitle = useRef<HTMLHeadingElement>(null);
   const lastSelected = useRef<{ id: string; kind: string } | null>(null);
   const localOnly = dataConfig?.mode === "mock";
@@ -69,6 +75,33 @@ export function StudentRequestsPage() {
     }
     lastSelected.current = selectedId ? { id: selectedId, kind: selectedKind } : null;
   }, [selectedId, selectedKind]);
+
+  useEffect(() => {
+    if (dataConfig?.mode !== "api" || selectedKind !== "ticket" || !selectedId) return;
+    let cancelled = false;
+    void refreshTicket(selectedId)
+      .then(() => {
+        if (!cancelled) setDetailStatus({ id: selectedId, loading: false, error: null });
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setDetailStatus({
+            id: selectedId,
+            loading: false,
+            error: error instanceof Error ? error.message : "Không tải được chi tiết hồ sơ.",
+          });
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [dataConfig?.mode, selectedId, selectedKind, refreshTicket, detailRetry]);
+  const detailLoading =
+    dataConfig?.mode === "api" &&
+    selectedKind === "ticket" &&
+    Boolean(selectedId) &&
+    (detailStatus.id !== selectedId || detailStatus.loading);
+  const detailError = detailStatus.id === selectedId ? detailStatus.error : null;
 
   function navigate(changes: Record<string, string | null>, replace = false) {
     const next = new URLSearchParams(params.toString());
@@ -140,7 +173,7 @@ export function StudentRequestsPage() {
             </button>
           </li>)}</ul>}
         </section>
-        {selected ? <RequestDetail key={`${currentUser.id}-${selected.kind}-${selected.id}`} item={selected} localOnly={localOnly} onBack={backToList} onMessage={(id, content) => addTicketMessage(id, { senderId: currentUser.id, senderName: currentUser.name, senderRole: "student", content })} onSupplement={async (id, payload) => { await submitStudentSupplement(id, payload); navigate({ filter: null }); }} /> : <section className="hidden rounded-2xl border border-slate-200 bg-white p-8 lg:block dark:border-slate-700 dark:bg-slate-900">
+        {selected ? <RequestDetail key={`${currentUser.id}-${selected.kind}-${selected.id}`} item={selected} localOnly={localOnly} detailLoading={detailLoading} detailError={detailError} onRetryDetail={() => { setDetailStatus({ id: "", loading: true, error: null }); setDetailRetry((value) => value + 1); }} onBack={backToList} onMessage={(id, content) => addTicketMessage(id, { senderId: currentUser.id, senderName: currentUser.name, senderRole: "student", content })} onSupplement={async (id, payload) => { await submitStudentSupplement(id, payload); navigate({ filter: null }); }} /> : <section className="hidden rounded-2xl border border-slate-200 bg-white p-8 lg:block dark:border-slate-700 dark:bg-slate-900">
           <h2 className="text-lg font-semibold">{selectedId ? "Không tìm thấy hồ sơ trong danh sách này" : "Chọn hồ sơ để xem chi tiết"}</h2>
           <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{selectedId ? "Mã hồ sơ không thuộc tài khoản này hoặc không phù hợp với bộ lọc hiện tại. Không có hồ sơ khác được tự động mở thay thế." : "Trạng thái, phản hồi và các bước tiếp theo sẽ hiển thị tại đây."}</p>
         </section>}

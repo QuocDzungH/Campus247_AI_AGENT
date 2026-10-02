@@ -11,6 +11,7 @@ export interface GuidanceSource {
 export interface AssistantReply {
   text: string;
   source?: GuidanceSource;
+  sources?: GuidanceSource[];
   action?: { label: string; href: string };
   proposal?: CertificateProposal;
 }
