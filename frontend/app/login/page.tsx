@@ -17,7 +17,7 @@ import { AuthLayout } from "@/components/AuthLayout";
 import { useStore } from "@/lib/store";
 import { isConnectionError } from "@/lib/data/api/g2-flow";
 import { AccessibleDialog } from "@/components/shared/AccessibleDialog";
-import { API_DEMO_ACCOUNTS, isOfficerDemoUserId, resolveApiDemoUserId } from "@/lib/data/api/demo-accounts";
+import { API_DEMO_ACCOUNTS, resolveApiDemoUserId } from "@/lib/data/api/demo-accounts";
 
 // Set to false when the real authentication flow is ready for release.
 const DEMO_ACCOUNTS_ENABLED = true;
@@ -39,6 +39,7 @@ function LoginForm() {
 
   const { login, dataConfig, dataStatus } = useStore();
   const isApiMode = dataConfig?.mode === "api";
+  const [demoAuthEnabled, setDemoAuthEnabled] = useState(!isApiMode);
   const demoAccounts = isApiMode ? API_DEMO_ACCOUNTS : MOCK_DEMO_ACCOUNTS;
 
   const [identifier, setIdentifier] = useState("");
@@ -50,6 +51,21 @@ function LoginForm() {
   const [helpDialogOpen, setHelpDialogOpen] = useState(false);
   const [demoAccountsOpen, setDemoAccountsOpen] = useState(false);
   const closeHelpDialog = React.useCallback(() => setHelpDialogOpen(false), []);
+
+  React.useEffect(() => {
+    if (!isApiMode || !dataConfig?.apiBaseUrl) {
+      setDemoAuthEnabled(!isApiMode);
+      return;
+    }
+    const controller = new AbortController();
+    fetch(`${dataConfig.apiBaseUrl}/api/v1/status`, { signal: controller.signal })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload) => {
+        setDemoAuthEnabled(Boolean(payload && payload.demo_auth_enabled));
+      })
+      .catch(() => setDemoAuthEnabled(false));
+    return () => controller.abort();
+  }, [isApiMode, dataConfig?.apiBaseUrl]);
 
   const handleFillDemo = (identifierValue: string, passwordValue: string) => {
     setIdentifier(identifierValue);
@@ -74,25 +90,30 @@ function LoginForm() {
     setLoading(true);
 
     try {
-      const matchedUserId = isApiMode ? resolveApiDemoUserId(identifier) : resolveMockDemoUserId(identifier);
-      if (!matchedUserId) {
-        setLoading(false);
-        setError("Không tìm thấy tài khoản. Kiểm tra thông tin hoặc chọn tài khoản mẫu bên dưới.");
-        return;
+      let user = null;
+      if (isApiMode && (!demoAuthEnabled || password !== "demo1234" || !resolveApiDemoUserId(identifier))) {
+        user = await login(identifier.trim(), rememberMe, password);
+      } else {
+        const matchedUserId = isApiMode ? resolveApiDemoUserId(identifier) : resolveMockDemoUserId(identifier);
+        if (!matchedUserId) {
+          setLoading(false);
+          setError("Không tìm thấy tài khoản. Kiểm tra thông tin hoặc chọn tài khoản mẫu bên dưới.");
+          return;
+        }
+        if (password !== "demo1234") {
+          setLoading(false);
+          setError("Tài khoản hoặc mật khẩu không chính xác.");
+          return;
+        }
+        user = await login(matchedUserId, rememberMe);
       }
-
-      if (password !== "demo1234") {
-        setLoading(false);
-        setError("Tài khoản hoặc mật khẩu không chính xác.");
-        return;
-      }
-
-      const success = await login(matchedUserId, rememberMe);
       setLoading(false);
 
-      if (success) {
-        if (isOfficerDemoUserId(matchedUserId)) {
+      if (user) {
+        if (user.role === "officer") {
           router.push("/dashboard");
+        } else if (user.role === "admin") {
+          router.push("/admin");
         } else {
           router.push("/student");
         }
@@ -209,7 +230,7 @@ function LoginForm() {
         </button>
       </form>
 
-      {DEMO_ACCOUNTS_ENABLED && (
+      {DEMO_ACCOUNTS_ENABLED && (!isApiMode || demoAuthEnabled) && (
         <section className="rounded-xl border border-dashed border-slate-300 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-900/50">
           <button
             type="button"

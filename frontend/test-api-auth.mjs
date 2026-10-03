@@ -128,8 +128,11 @@ test("login posts user_id and stores Bearer for later requests", async () => {
       assert.equal(request.headers.get("Idempotency-Key"), null);
       return jsonResponse(200, loginResult, { "X-Request-Id": "req_login" });
     }
-    if (request.url.endsWith("/api/v1/me")) {
+    if (request.url.endsWith("/api/v1/me") || request.url.endsWith("/api/v1/me/profile")) {
       assert.equal(request.headers.get("Authorization"), "Bearer tok_demo_student");
+      if (request.url.endsWith("/api/v1/me/profile")) {
+        return jsonResponse(200, { user_id: "SV-DEMO-001", mssv: "DEMO-001", full_name: "Sinh viên Demo", verification_status: "unverified", is_demo: true }, { "X-Request-Id": "req_profile" });
+      }
       return jsonResponse(200, loginResult.user, { "X-Request-Id": "req_me" });
     }
     throw new Error(`Unexpected URL ${request.url}`);
@@ -144,9 +147,11 @@ test("login posts user_id and stores Bearer for later requests", async () => {
 
   const me = await gateway.restoreSession();
   assert.equal(me.id, "SV-DEMO-001");
-  assert.equal(calls.length, 2);
+  assert.equal(calls.length, 4);
   assert.ok(calls[0].url.endsWith("/api/v1/auth/demo-login"));
-  assert.ok(calls[1].url.endsWith("/api/v1/me"));
+  assert.ok(calls[1].url.endsWith("/api/v1/me/profile"));
+  assert.ok(calls[2].url.endsWith("/api/v1/me"));
+  assert.ok(calls[3].url.endsWith("/api/v1/me/profile"));
 });
 
 test("restore uses GET /me with stored token and does not re-login by user id", async () => {
@@ -157,6 +162,9 @@ test("restore uses GET /me with stored token and does not re-login by user id", 
       return jsonResponse(200, { id: "OF-DEMO-01", role: "officer", name: "Cán bộ Demo" });
     }
     if (request.url.includes("/api/v1/officer/tickets")) {
+      return jsonResponse(200, { items: [], total: 0, page: 1, page_size: 100 });
+    }
+    if (request.url.includes("/api/v1/reviews")) {
       return jsonResponse(200, { items: [], total: 0, page: 1, page_size: 100 });
     }
     throw new Error(`Unexpected URL ${request.url}`);
@@ -178,9 +186,10 @@ test("restore uses GET /me with stored token and does not re-login by user id", 
   assert.equal(bootstrap.currentUser.id, "OF-DEMO-01");
   assert.equal(bootstrap.currentUser.role, "officer");
   assert.equal(bootstrap.tickets.length, 0);
-  assert.equal(calls.length, 2);
+  assert.equal(calls.length, 3);
   assert.ok(calls[0].url.includes("/api/v1/me"));
   assert.ok(calls[1].url.includes("/api/v1/officer/tickets"));
+  assert.ok(calls[2].url.includes("/api/v1/reviews"));
   assert.equal(calls.some((call) => call.url.includes("demo-login")), false);
 });
 

@@ -212,7 +212,7 @@ test("API adapter keeps unimplemented domain operations unsupported while bootst
   const state = initializeDataState();
   assert.equal(state.config.mode, "api");
   await expectDataError(() => state.gateway.getDemoUsers(), "unsupported");
-  await expectDataError(() => state.gateway.getReviewCases(), "unsupported");
+  await expectDataError(() => state.gateway.getReviewCases(), "network");
   await expectDataError(() => state.gateway.createTicket({ id: "SV-DEMO-001", role: "student", name: "A", email: "" }, { title: "x" }), "unsupported");
   const bootstrap = await bootstrapData(state.config, state.gateway);
   assert.equal(bootstrap.status, "ready");

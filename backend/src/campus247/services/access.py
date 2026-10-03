@@ -36,6 +36,11 @@ def require_officer(user: User) -> None:
         raise forbidden()
 
 
+def require_admin(user: User) -> None:
+    if user.role != "admin":
+        raise forbidden()
+
+
 def lock_conversation(session: Session, conversation_id: str) -> Conversation | None:
     stmt = lock_select(session, select(Conversation).where(Conversation.id == conversation_id))
     return session.execute(stmt).scalar_one_or_none()

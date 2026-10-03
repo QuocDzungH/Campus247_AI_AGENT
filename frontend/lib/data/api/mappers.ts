@@ -226,6 +226,10 @@ export function mapWireTicket(raw: unknown, extras?: { messages?: TicketMessage[
     throw new DataGatewayError("validation", "Invalid ticket service_type");
   }
   const requestData = isRecord(record.request_data) ? record.request_data : null;
+  const extraFields = isRecord(requestData?.extras) ? requestData.extras : {};
+  const submittedFields = Object.entries(extraFields)
+    .filter((entry): entry is [string, string] => typeof entry[1] === "string")
+    .map(([name, value]) => ({ name, label: name, value }));
   const purpose = typeof requestData?.purpose === "string" ? requestData.purpose : "";
   const destinationOrg = typeof requestData?.destination_org === "string" ? requestData.destination_org : "";
   const receiveMethod =
@@ -275,6 +279,13 @@ export function mapWireTicket(raw: unknown, extras?: { messages?: TicketMessage[
     conversationId: requireString(record.conversation_id, "ticket.conversation_id"),
     category: category === "complaint" ? "complaint" : "action",
     serviceType,
+    requestPayload: submittedFields.length
+      ? {
+          schemaVersion: 1,
+          task: isComplaint ? "complaint" : "certificate",
+          submittedFields,
+        }
+      : undefined,
   };
 }
 
@@ -410,7 +421,55 @@ export function mapAuditEntry(raw: unknown): AuditLogEntry {
 export function mapTicketDetail(raw: unknown, auditLogs: AuditLogEntry[] = []): Ticket {
   const record = requireRecord(raw, "ticket_detail");
   const messagesPage = parsePage(record.messages, mapWireMessageToTicketMessage, "ticket_detail.messages");
-  return mapWireTicket(record.ticket, { messages: messagesPage.items, auditLogs });
+  const ticket = mapWireTicket(record.ticket, { messages: messagesPage.items, auditLogs });
+  const workspace = isRecord(record.workspace) ? record.workspace : null;
+  if (typeof workspace?.officer_draft === "string") {
+    ticket.officerDraft = workspace.officer_draft;
+  }
+  if (Array.isArray(workspace?.checklist)) {
+    ticket.checklist = workspace.checklist.flatMap((item) => {
+      if (!isRecord(item) || typeof item.id !== "string" || typeof item.label !== "string") return [];
+      return [{ id: item.id, label: item.label, checked: item.checked === true, description: "" }];
+    });
+  }
+  if (Array.isArray(record.attachments)) {
+    ticket.attachments = record.attachments.flatMap((item) => {
+      if (!isRecord(item) || typeof item.id !== "string") return [];
+      return [
+        {
+          id: item.id,
+          name: typeof item.filename === "string" ? item.filename : item.id,
+          size: typeof item.size_bytes === "number" ? item.size_bytes : 0,
+          contentType: typeof item.mime_type === "string" ? item.mime_type : "application/octet-stream",
+          field: typeof item.field === "string" ? item.field : undefined,
+        },
+      ];
+    });
+  }
+  const verifications = Array.isArray(record.verifications) ? record.verifications : [];
+  ticket.systemVerifications = verifications.flatMap((item) => {
+    if (!isRecord(item) || typeof item.id !== "string") return [];
+    const status = item.status;
+    if (status !== "passed" && status !== "failed" && status !== "insufficient" && status !== "error") return [];
+    const review = item.officer_review_status;
+    return [
+      {
+        id: item.id,
+        criterionKey: typeof item.criterion_key === "string" ? item.criterion_key : item.id,
+        criterionLabel: typeof item.criterion_label === "string" ? item.criterion_label : "",
+        conditionApplied: typeof item.condition_applied === "string" ? item.condition_applied : "",
+        dataChecked: typeof item.data_checked === "string" ? item.data_checked : "",
+        sourceSystem: typeof item.source_system === "string" ? item.source_system : "",
+        lookupTimestamp: typeof item.lookup_timestamp === "string" ? item.lookup_timestamp : "",
+        status,
+        reason: typeof item.reason === "string" ? item.reason : "",
+        officerReviewStatus:
+          review === "confirmed" || review === "overridden" ? review : "pending",
+        officerReviewNote: typeof item.officer_note === "string" ? item.officer_note : undefined,
+      },
+    ];
+  });
+  return ticket;
 }
 
 export function mapConversationToSession(conversation: ConversationView, messages: ChatMessage[] = []): ChatSession {

@@ -473,6 +473,95 @@ def submit1(session: Session, actor: User, body: c.Submit1, idempotency_key: str
     return 201, body_out
 
 
+def _fields_from_form(fields: dict[str, str], extras: dict[str, str]) -> c.Fields:
+    merged = {key: value.strip() for key, value in {**extras, **fields}.items() if value and value.strip()}
+    purpose = merged.get("purpose")
+    destination = merged.get("destination_org")
+    method = merged.get("receive_method")
+    if method not in {"digital_pdf", "paper_stamped"}:
+        method = None
+    extras_out = {key: value for key, value in merged.items() if key not in {"purpose", "destination_org", "receive_method"}}
+    if purpose and len(purpose) < 5:
+        extras_out["purpose"] = purpose
+        purpose = None
+    return c.Fields(
+        purpose=purpose,
+        destination_org=destination or None,
+        receive_method=method,  # type: ignore[arg-type]
+        extras=extras_out,
+    )
+
+
+def submit_form(
+    session: Session, actor: User, body: c.FormSubmit, idempotency_key: str, request_id: str
+) -> tuple[int, dict]:
+    require_student(actor)
+    handle = begin_idempotent(
+        session,
+        actor=actor,
+        operation="form_submit",
+        resource_id=actor.id,
+        key=idempotency_key,
+        payload=body.model_dump(mode="json"),
+    )
+    if handle.outcome == "replay":
+        session.commit()
+        return handle.http_status or 201, handle.body or {}
+    if handle.outcome == "processing":
+        session.commit()
+        return 202, processing_body(handle.record.id)
+    profile = session.get(StudentProfile, actor.id)
+    if profile is None or not profile.mssv or not profile.full_name:
+        raise validation("Hồ sơ chưa đủ tên hoặc MSSV.")
+    now = utcnow()
+    conversation = Conversation(
+        id=new_id("conv"),
+        owner_id=actor.id,
+        status="active",
+        ai_response_locked=body.service_type == "academic_complaint",
+        handover_status="pending" if body.service_type == "academic_complaint" else "none",
+        revision=1,
+        created_at=now,
+        updated_at=now,
+    )
+    session.add(conversation)
+    session.flush()
+    fields = _fields_from_form(body.fields, body.extras)
+    is_complaint = body.service_type == "academic_complaint"
+    ticket = _create_ticket(
+        session,
+        conversation=conversation,
+        student=actor,
+        team_id=SERVICE_TEAM[body.service_type],
+        category="complaint" if is_complaint else "action",
+        service_type=body.service_type,
+        status="pending_officer" if is_complaint else "open",
+        priority="high" if is_complaint else "normal",
+        priority_reasons=["Sinh viên gửi form khiếu nại"] if is_complaint else [],
+        summary=body.summary,
+        request_data=fields.model_dump(mode="json"),
+        handover_reason=None,
+        now=now,
+    )
+    session.add(
+        IntakePacket(
+            id=new_id("inp"),
+            ticket_id=ticket.id,
+            version=1,
+            service_type=body.service_type,
+            fields=fields.model_dump(mode="json"),
+            created_at=now,
+        )
+    )
+    _audit(session, ticket, actor.id, "student", "create", None, ticket.status, request_id, now)
+    enqueue_prepare_brief(session, ticket)
+    result = c.Submit1Result(ticket=ticket_to_contract(ticket), brief_status="pending")
+    body_out = result.model_dump(mode="json")
+    complete_idempotent(session, handle.record, 201, body_out)
+    session.commit()
+    return 201, body_out
+
+
 def retry_handover(session: Session, job) -> None:
     conversation = lock_conversation(session, job.conversation_id)
     if conversation is None:

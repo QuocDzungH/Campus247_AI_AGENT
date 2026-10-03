@@ -40,9 +40,13 @@ class CorpusRag:
         *,
         load_error: str | None = None,
         index_version: str | None = None,
+        demo_prefix: bool = True,
+        allow_unaliased_scopes: bool = False,
     ) -> None:
         self._load_error = load_error
         self.index_version = index_version or "unavailable"
+        self._demo_prefix = demo_prefix
+        self._allow_unaliased_scopes = allow_unaliased_scopes
         self._index_by_scope: dict[str, LexicalIndex] = {}
         self._chunks_by_id: dict[str, IndexedChunk] = {}
         if load_error or corpus is None:
@@ -55,10 +59,27 @@ class CorpusRag:
         return cls.from_path(PACKAGED_CORPUS)
 
     @classmethod
+    def from_official(cls, directory: Path | None = None) -> CorpusRag:
+        from campus247.config import get_settings
+
+        root = Path(directory or get_settings().official_corpus_dir)
+        path = root / "index.json"
+        if not path.is_file():
+            return cls(
+                {"documents": [], "index_version": "official-empty"},
+                demo_prefix=False,
+                allow_unaliased_scopes=True,
+            )
+        loaded = cls.from_path(path)
+        loaded._demo_prefix = False
+        loaded._allow_unaliased_scopes = True
+        return loaded
+
+    @classmethod
     def from_path(cls, path: Path) -> CorpusRag:
         try:
             raw = json.loads(path.read_text(encoding="utf-8"))
-            if not isinstance(raw, dict) or not raw.get("documents"):
+            if not isinstance(raw, dict) or "documents" not in raw:
                 raise ValueError("corpus missing documents")
             return cls(raw)
         except Exception:
@@ -88,7 +109,7 @@ class CorpusRag:
         if retrieval.status != "found":
             return RagResult(status="insufficient_evidence", answer=MSG_L1_EMPTY, citations=[])
         citations = [item.citation for item in retrieval.passages]
-        answer = _compose_answer(retrieval.passages)
+        answer = _compose_answer(retrieval.passages, demo_prefix=self._demo_prefix)
         return RagResult(status="answered", answer=answer, citations=citations)
 
     def chunk_text(self, chunk_id: str) -> str | None:
@@ -99,6 +120,8 @@ class CorpusRag:
         if self._load_error:
             raise module_error("INDEX_UNAVAILABLE", stage="retrieval", request_id=request_id)
         canonical = _SCOPE_ALIASES.get(policy_scope)
+        if canonical is None and self._allow_unaliased_scopes:
+            canonical = policy_scope
         if canonical is None:
             raise module_error("POLICY_SCOPE_DENIED", stage="retrieval", request_id=request_id)
         return self._index_by_scope.get(canonical) or LexicalIndex([])
@@ -171,9 +194,12 @@ def _passage(chunk: IndexedChunk, query: str, score: float) -> Passage:
     )
 
 
-def _compose_answer(passages: list[Passage]) -> str:
+def _compose_answer(passages: list[Passage], *, demo_prefix: bool = True) -> str:
     parts = []
     for item in passages[:3]:
         citation = item.citation
         parts.append(f"{citation.document_title} ({citation.locator}): {item.text.strip()}")
-    return (_DEMO_PREFIX + "\n\n".join(parts))[:10000]
+    body = "\n\n".join(parts)
+    if demo_prefix:
+        return (_DEMO_PREFIX + body)[:10000]
+    return body[:10000]

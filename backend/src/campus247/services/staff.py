@@ -1,7 +1,16 @@
 from sqlalchemy import case, func, or_, select
 from sqlalchemy.orm import Session
 
-from campus247.db.models import AuditEntry, Message, OfficerAction, OfficerBrief, Ticket, TicketAssignment, User
+from campus247.db.models import (
+    AuditEntry,
+    Message,
+    OfficerAction,
+    OfficerBrief,
+    Ticket,
+    TicketAssignment,
+    TicketAttachment,
+    User,
+)
 from campus247.models import contracts_v1 as c
 from campus247.services.access import active_team_ids, get_visible_ticket, require_officer, require_student
 from campus247.services.common import new_id, paginate, parse_page, stale_revision, utcnow
@@ -70,7 +79,29 @@ def get_ticket_detail(
         .all()
     )
     items = [message_to_contract(row) for row in reversed(list(latest))]
-    return c.TicketDetail(ticket=ticket_to_contract(ticket), messages=paginate(items, total, page, page_size))
+    from campus247.services.files import attachment_to_contract
+
+    attachments = [
+        attachment_to_contract(row)
+        for row in session.execute(
+            select(TicketAttachment)
+            .where(TicketAttachment.ticket_id == ticket.id)
+            .order_by(TicketAttachment.created_at)
+        ).scalars()
+    ]
+    workspace = c.TicketWorkspace(
+        ticket_id=ticket.id,
+        revision=ticket.revision,
+        officer_draft=ticket.officer_draft,
+        checklist=[c.OfficerChecklistItem.model_validate(item) for item in (ticket.officer_checklist or [])],
+    )
+    return c.TicketDetail(
+        ticket=ticket_to_contract(ticket),
+        messages=paginate(items, total, page, page_size),
+        attachments=attachments,
+        workspace=workspace,
+        verifications=[c.SystemVerificationItem.model_validate(item) for item in (ticket.system_verifications or [])],
+    )
 
 
 def list_ticket_messages(
@@ -351,3 +382,142 @@ def _page_tickets(session, query, page, page_size) -> c.Page[c.Ticket]:
     total = session.execute(select(func.count()).select_from(query.subquery())).scalar_one()
     rows = session.execute(query.offset((page - 1) * page_size).limit(page_size)).scalars().all()
     return paginate([ticket_to_contract(row) for row in rows], total, page, page_size)
+
+
+def _workspace_view(ticket: Ticket) -> c.TicketWorkspace:
+    return c.TicketWorkspace(
+        ticket_id=ticket.id,
+        revision=ticket.revision,
+        officer_draft=ticket.officer_draft,
+        checklist=[c.OfficerChecklistItem.model_validate(item) for item in (ticket.officer_checklist or [])],
+    )
+
+
+def update_workspace(session: Session, actor: User, ticket_id: str, body: c.TicketWorkspacePatch) -> c.TicketWorkspace:
+    require_officer(actor)
+    ticket = get_visible_ticket(session, actor, ticket_id, for_update=True)
+    if ticket.status == "resolved":
+        raise ApiError(409, "TICKET_CLOSED", "Không sửa nháp hồ sơ đã đóng.")
+    now = utcnow()
+    if body.officer_draft is not None:
+        ticket.officer_draft = body.officer_draft
+    checklist = [dict(item) for item in (ticket.officer_checklist or [])]
+    if body.checklist is not None:
+        checklist = [item.model_dump(mode="json") for item in body.checklist]
+    if body.toggle_checklist_id:
+        if not checklist:
+            brief = (
+                session.execute(
+                    select(OfficerBrief).where(
+                        OfficerBrief.ticket_id == ticket.id, OfficerBrief.is_current.is_(True)
+                    )
+                )
+                .scalars()
+                .first()
+            )
+            if brief is not None:
+                checklist = [
+                    {"id": item.get("id"), "label": item.get("label"), "checked": False}
+                    for item in (brief.checklist or [])
+                    if isinstance(item, dict) and item.get("id") and item.get("label")
+                ]
+        found = False
+        next_items = []
+        for item in checklist:
+            if item.get("id") == body.toggle_checklist_id:
+                found = True
+                next_items.append({**item, "checked": not bool(item.get("checked"))})
+            else:
+                next_items.append(item)
+        if not found:
+            raise not_found()
+        checklist = next_items
+    ticket.officer_checklist = checklist
+    ticket.updated_at = now
+    _audit(session, ticket, actor.id, "officer", "workspace_update", ticket.status, ticket.status, "workspace", now)
+    session.commit()
+    return _workspace_view(ticket)
+
+
+SIS_UNAVAILABLE = (
+    "Chưa kết nối hệ thống đào tạo / kế hoạch-tài chính. Kết quả không được đánh dấu đã xác minh. "
+    "Cán bộ đối chiếu thủ công và ghi nhận trên checklist."
+)
+
+
+def _insufficient_item(ticket: Ticket, key: str, label: str, condition: str, source: str) -> dict:
+    now = utcnow()
+    return {
+        "id": f"verif-{ticket.id}-{key}",
+        "criterion_key": key,
+        "criterion_label": label,
+        "condition_applied": condition,
+        "data_checked": f"MSSV trên hồ sơ: {ticket.student_id}",
+        "source_system": source,
+        "lookup_timestamp": now.isoformat(),
+        "status": "insufficient",
+        "reason": SIS_UNAVAILABLE,
+        "officer_review_status": "pending",
+        "officer_note": None,
+    }
+
+
+def run_ticket_verification(session: Session, actor: User, ticket_id: str) -> list[c.SystemVerificationItem]:
+    require_officer(actor)
+    ticket = get_visible_ticket(session, actor, ticket_id, for_update=True)
+    previous = {item.get("criterion_key"): item for item in (ticket.system_verifications or []) if isinstance(item, dict)}
+    items = [
+        _insufficient_item(
+            ticket,
+            "academic_status",
+            "Tình trạng học tập",
+            "Sinh viên đang học chính quy, không bị đình chỉ.",
+            "SIS (chưa kết nối)",
+        ),
+        _insufficient_item(
+            ticket,
+            "financial_obligation",
+            "Nghĩa vụ học phí",
+            "Không dùng cache/fixture tài chính làm bằng chứng cấp giấy.",
+            "KHTC (chưa kết nối)",
+        ),
+        _insufficient_item(
+            ticket,
+            "identity_match",
+            "Khớp họ tên / MSSV",
+            "Đối chiếu hồ sơ sinh viên đã xác minh với bản khai.",
+            "Hồ sơ Campus 24/7",
+        ),
+    ]
+    for item in items:
+        prior = previous.get(item["criterion_key"]) or {}
+        if prior.get("officer_review_status") in {"confirmed", "overridden"}:
+            item["officer_review_status"] = prior["officer_review_status"]
+            item["officer_note"] = prior.get("officer_note")
+    ticket.system_verifications = items
+    ticket.updated_at = utcnow()
+    _audit(session, ticket, actor.id, "officer", "verification", ticket.status, ticket.status, "verification", utcnow())
+    session.commit()
+    return [c.SystemVerificationItem.model_validate(item) for item in items]
+
+
+def confirm_ticket_verification(
+    session: Session, actor: User, ticket_id: str, criterion_id: str, note: str | None
+) -> list[c.SystemVerificationItem]:
+    require_officer(actor)
+    ticket = get_visible_ticket(session, actor, ticket_id, for_update=True)
+    items = [dict(item) for item in (ticket.system_verifications or [])]
+    found = False
+    for item in items:
+        if item.get("id") == criterion_id or item.get("criterion_key") == criterion_id:
+            item["officer_review_status"] = "confirmed"
+            item["officer_note"] = note or "Cán bộ đã đối chiếu thủ công."
+            found = True
+            break
+    if not found:
+        raise not_found()
+    ticket.system_verifications = items
+    ticket.updated_at = utcnow()
+    _audit(session, ticket, actor.id, "officer", "verification", ticket.status, ticket.status, "verification", utcnow())
+    session.commit()
+    return [c.SystemVerificationItem.model_validate(item) for item in items]

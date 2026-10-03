@@ -21,10 +21,14 @@ async def agent_status():
 
     settings = get_settings()
     rag = get_rag()
+    demo_auth = settings.demo_auth_enabled and settings.app_env != "production"
     return {
         "status": "ready",
         "agent": type(get_agent()).__name__,
         "agent_mode": settings.agent_mode,
         "rag_mode": settings.rag_mode,
         "index_version": getattr(rag, "index_version", None),
+        "app_env": settings.app_env,
+        "demo_auth_enabled": demo_auth,
+        "auth": "demo+password" if demo_auth else "password",
     }

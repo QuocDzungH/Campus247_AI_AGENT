@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     openai_base_url: str = ""
     agent_mode: Literal["stub", "langgraph"] = "stub"
-    rag_mode: Literal["stub", "corpus"] = "stub"
+    rag_mode: Literal["stub", "corpus", "official"] = "stub"
 
     # Database
     database_url: str = "sqlite:///./data/app.db"
@@ -56,6 +56,10 @@ class Settings(BaseSettings):
     worker_lease_seconds: int = Field(default=60, ge=5)
     worker_max_attempts: int = Field(default=3, ge=1)
     worker_retrieval_timeout_seconds: int = Field(default=15, ge=1)
+    login_max_failures: int = Field(default=8, ge=3, le=30)
+    remember_ttl_seconds: int = Field(default=30 * 24 * 3600, ge=3600)
+    files_dir: str = "./data/files"
+    official_corpus_dir: str = "./data/corpus_official"
 
     # Vector Store
     chroma_persist_dir: str = "./data/chroma"
@@ -70,6 +74,16 @@ class Settings(BaseSettings):
     def resolved_llm_model(self) -> str:
         """Canonical chat model name. llm_model wins; model_name is a legacy alias."""
         return (self.llm_model or self.model_name).strip()
+
+    @model_validator(mode="after")
+    def production_requires_real_runtime(self) -> Self:
+        if self.app_env != "production":
+            return self
+        if self.demo_auth_enabled:
+            raise ValueError("APP_ENV=production requires DEMO_AUTH_ENABLED=false")
+        if self.agent_mode != "langgraph":
+            raise ValueError("APP_ENV=production requires AGENT_MODE=langgraph")
+        return self
 
 
 @lru_cache

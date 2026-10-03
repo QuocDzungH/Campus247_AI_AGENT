@@ -1,6 +1,6 @@
 export interface WireUser {
   id: string;
-  role: "student" | "officer";
+  role: "student" | "officer" | "admin";
   name: string;
 }
 

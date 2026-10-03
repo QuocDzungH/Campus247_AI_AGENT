@@ -33,33 +33,63 @@ class Base(DeclarativeBase):
 
 class User(Base):
     __tablename__ = "users"
-    __table_args__ = (CheckConstraint("role IN ('student','officer')", name="role"),)
+    __table_args__ = (
+        CheckConstraint("role IN ('student','officer','admin')", name="role"),
+        CheckConstraint("account_status IN ('active','disabled')", name="account_status"),
+    )
 
     id: Mapped[str] = mapped_column(ID, primary_key=True)
     role: Mapped[str] = mapped_column(String(16), nullable=False)
     name: Mapped[str] = mapped_column(String(1000), nullable=False)
+    username: Mapped[str | None] = mapped_column(String(128), unique=True)
+    email: Mapped[str | None] = mapped_column(String(320), unique=True)
+    password_hash: Mapped[str | None] = mapped_column(Text)
+    account_status: Mapped[str] = mapped_column(String(16), nullable=False, default="active")
+    password_changed_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    failed_login_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    locked_until: Mapped[datetime | None] = mapped_column(UTCDateTime)
     is_demo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     external_subject: Mapped[str | None] = mapped_column(String(128), unique=True, nullable=True)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
 
-    profile: Mapped["StudentProfile | None"] = relationship(back_populates="user")
+    profile: Mapped["StudentProfile | None"] = relationship(
+        back_populates="user",
+        foreign_keys="StudentProfile.user_id",
+    )
     memberships: Mapped[list["OfficerTeamMembership"]] = relationship(back_populates="user")
 
 
 class StudentProfile(Base):
     __tablename__ = "student_profiles"
+    __table_args__ = (
+        CheckConstraint(
+            "verification_status IN ('unverified','imported','officer_verified')",
+            name="verification_status",
+        ),
+        UniqueConstraint("mssv", name="uq_student_profiles_mssv"),
+    )
 
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), primary_key=True)
     full_name: Mapped[str | None] = mapped_column(String(1000))
     mssv: Mapped[str | None] = mapped_column(String(128))
+    email: Mapped[str | None] = mapped_column(String(320))
     faculty: Mapped[str | None] = mapped_column(String(1000))
+    major: Mapped[str | None] = mapped_column(String(1000))
     cohort: Mapped[str | None] = mapped_column(String(1000))
+    class_year: Mapped[str | None] = mapped_column(String(128))
+    student_status: Mapped[str | None] = mapped_column(String(128))
+    verification_status: Mapped[str] = mapped_column(String(32), nullable=False, default="unverified")
+    source: Mapped[str | None] = mapped_column(String(300))
+    source_imported_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    verified_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    verified_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
     is_demo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
 
-    user: Mapped[User] = relationship(back_populates="profile")
+    user: Mapped[User] = relationship(back_populates="profile", foreign_keys=[user_id])
+    verifier: Mapped[User | None] = relationship(foreign_keys=[verified_by])
 
 
 class Team(Base):
@@ -95,6 +125,41 @@ class SessionToken(Base):
     token_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
     expires_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False, index=True)
     revoked_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    remember: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    revoked_reason: Mapped[str | None] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
+
+
+class AuthEvent(Base):
+    __tablename__ = "auth_events"
+    __table_args__ = (Index("ix_auth_events_created", "created_at"),)
+
+    id: Mapped[str] = mapped_column(ID, primary_key=True)
+    event: Mapped[str] = mapped_column(String(64), nullable=False)
+    actor_id: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    target_user_id: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    identifier_fingerprint: Mapped[str | None] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
+
+
+class LoginThrottle(Base):
+    __tablename__ = "login_throttles"
+
+    identifier_fingerprint: Mapped[str] = mapped_column(String(64), primary_key=True)
+    failed_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    window_started_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
+    locked_until: Mapped[datetime | None] = mapped_column(UTCDateTime)
+
+
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+
+    id: Mapped[str] = mapped_column(ID, primary_key=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    expires_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
+    used_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    created_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
 
 
@@ -269,6 +334,8 @@ class Ticket(Base):
     request_data: Mapped[dict | None] = mapped_column(PortableJSON)
     handover_reason: Mapped[str | None] = mapped_column(Text)
     officer_draft: Mapped[str | None] = mapped_column(Text)
+    officer_checklist: Mapped[list] = mapped_column(PortableJSON, nullable=False, default=list)
+    system_verifications: Mapped[list] = mapped_column(PortableJSON, nullable=False, default=list)
     revision: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
@@ -485,3 +552,32 @@ class Job(Base):
     last_error: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
+
+
+class ReviewCodeSequence(Base):
+    __tablename__ = "review_code_sequences"
+
+    year: Mapped[int] = mapped_column(Integer, primary_key=True)
+    last_value: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class ReviewCase(Base):
+    __tablename__ = "review_cases"
+    __table_args__ = (
+        CheckConstraint("status IN ('draft','in_review','waiting_supplement','completed')", name="review_status"),
+        Index("ix_review_cases_student", "student_id", "created_at"),
+        Index("ix_review_cases_officer", "officer_id", "status"),
+    )
+
+    id: Mapped[str] = mapped_column(ID, primary_key=True)
+    code: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    student_id: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
+    officer_id: Mapped[str | None] = mapped_column(ForeignKey("users.id"))
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="in_review")
+    revision: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    payload: Mapped[dict] = mapped_column(PortableJSON, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
+
+    student: Mapped[User] = relationship(foreign_keys=[student_id])
+    officer: Mapped[User | None] = relationship(foreign_keys=[officer_id])

@@ -15,7 +15,14 @@ from campus247.services.common import ensure_utc, utcnow
 
 
 def user_to_contract(user: User) -> c.User:
-    return c.User(id=user.id, role=user.role, name=user.name)  # type: ignore[arg-type]
+    return c.User(
+        id=user.id,
+        role=user.role,  # type: ignore[arg-type]
+        name=user.name,
+        username=user.username,
+        email=user.email,
+        account_status=getattr(user, "account_status", None) or "active",  # type: ignore[arg-type]
+    )
 
 
 def profile_to_contract(profile) -> c.Profile:
@@ -25,7 +32,26 @@ def profile_to_contract(profile) -> c.Profile:
         mssv=profile.mssv,
         faculty=profile.faculty,
         cohort=profile.cohort,
-        is_demo=True,
+        is_demo=bool(profile.is_demo),
+    )
+
+
+def profile_view(profile) -> c.StudentProfileView:
+    return c.StudentProfileView(
+        user_id=profile.user_id,
+        full_name=profile.full_name,
+        mssv=profile.mssv,
+        email=profile.email,
+        faculty=profile.faculty,
+        major=profile.major,
+        cohort=profile.cohort,
+        class_year=profile.class_year,
+        student_status=profile.student_status,
+        verification_status=profile.verification_status or "unverified",  # type: ignore[arg-type]
+        source=profile.source,
+        source_imported_at=profile.source_imported_at,
+        verified_at=profile.verified_at,
+        is_demo=bool(profile.is_demo),
     )
 
 

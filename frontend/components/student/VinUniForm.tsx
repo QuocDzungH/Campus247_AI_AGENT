@@ -18,7 +18,7 @@ export function VinUniForm(props: FormProps) {
 }
 function VinUniFormContent({ task, review: routeReview = false, embedded = false }: FormProps) {
   const router = useRouter();
-  const { currentUser, createTicket, dataConfig } = useStore();
+  const { currentUser, createTicket, uploadTicketFile, dataConfig } = useStore();
   const { state, store } = useVinUniForms();
   const draft = state[task];
   const review = routeReview || draft.stage === 2;
@@ -91,10 +91,8 @@ function VinUniFormContent({ task, review: routeReview = false, embedded = false
     setSubmitError("");
     const documentLabel = documentTypes.find(([id]) => id === values.documentType)?.[1] || "Tài liệu học vụ";
     try {
-      const attachments = Object.values(files).some(group => group.length)
-        ? dataConfig?.mode === "mock"
-          ? await saveLocalAttachments(currentUser.id, submissionKey(), files)
-          : (() => { throw new Error("Chưa kết nối nơi tiếp nhận tệp. Hồ sơ vẫn được giữ để bạn gửi lại sau."); })()
+      const attachments = Object.values(files).some(group => group.length) && dataConfig?.mode === "mock"
+        ? await saveLocalAttachments(currentUser.id, submissionKey(), files)
         : [];
       const requestPayload = { schemaVersion: 1 as const, task, documentType: isDocument ? values.documentType : undefined,
         submittedFields: [0, 1].flatMap(stage => visibleFields(task, stage, values)).filter(field => field.type !== "file").map(field => ({ name: field.name, label: field.label, value: field.type === "checkbox" ? values[field.name] === "yes" ? "Có" : "Không" : field.options?.find(([id]) => id === values[field.name])?.[1] || values[field.name] || "Không cung cấp" })) };
@@ -113,6 +111,13 @@ function VinUniFormContent({ task, review: routeReview = false, embedded = false
         l4TriggerReason: "Sinh viên đã xác nhận gửi Grade Appeal để cán bộ xem xét.",
         priorityReason: "Khiếu nại điểm tổng kết học phần cần cán bộ xác minh và phản hồi.",
       });
+      if (dataConfig?.mode === "api") {
+        for (const [field, group] of Object.entries(files)) {
+          for (const file of group) {
+            await uploadTicketFile(ticket.id, file, field);
+          }
+        }
+      }
       store.recordSubmission(task, operation, { ticketId: ticket.id, ticketCode: ticket.code });
     } catch (failure) {
       setSubmitError(failure instanceof Error && /tệp|thiết bị|trình duyệt/.test(failure.message) ? failure.message : "Chưa nộp được hồ sơ. Bản nháp và tệp đã chọn vẫn được giữ; hãy thử lại.");

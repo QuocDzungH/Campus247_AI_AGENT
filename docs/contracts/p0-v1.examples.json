@@ -146,7 +146,8 @@
           "fields": {
             "purpose": "Vay vốn ngân hàng",
             "destination_org": "Ngân hàng Chính sách Xã hội",
-            "receive_method": "paper_stamped"
+            "receive_method": "paper_stamped",
+            "extras": {}
           },
           "missing_fields": [],
           "invalid_fields": []
@@ -167,7 +168,8 @@
           "fields": {
             "purpose": "Vay vốn ngân hàng",
             "destination_org": "Ngân hàng Chính sách Xã hội",
-            "receive_method": null
+            "receive_method": null,
+            "extras": {}
           },
           "missing_fields": [
             "receive_method"
@@ -214,7 +216,8 @@
           "request_data": {
             "purpose": "Vay vốn ngân hàng",
             "destination_org": "Ngân hàng Chính sách Xã hội",
-            "receive_method": "paper_stamped"
+            "receive_method": "paper_stamped",
+            "extras": {}
           },
           "handover_reason": null,
           "assigned_officer_id": null,
@@ -246,7 +249,8 @@
           "fields": {
             "purpose": "Vay vốn ngân hàng",
             "destination_org": "Ngân hàng Chính sách Xã hội",
-            "receive_method": "paper_stamped"
+            "receive_method": "paper_stamped",
+            "extras": {}
           },
           "missing_fields": [],
           "invalid_fields": []
@@ -335,7 +339,8 @@
           "fields": {
             "purpose": "Vay vốn ngân hàng",
             "destination_org": "Ngân hàng Chính sách Xã hội",
-            "receive_method": "paper_stamped"
+            "receive_method": "paper_stamped",
+            "extras": {}
           },
           "missing_fields": [],
           "invalid_fields": [],
@@ -374,7 +379,8 @@
           "fields": {
             "purpose": "Vay vốn ngân hàng",
             "destination_org": "Ngân hàng Chính sách Xã hội",
-            "receive_method": null
+            "receive_method": null,
+            "extras": {}
           },
           "missing_fields": [
             "receive_method"
@@ -584,6 +590,99 @@
       }
     },
     {
+      "name": "form_submit",
+      "model": "FormSubmit",
+      "payload": {
+        "service_type": "student_certificate",
+        "summary": "Xin giấy xác nhận sinh viên",
+        "fields": {
+          "purpose": "Vay vốn ngân hàng",
+          "destination_org": "Ngân hàng Chính sách Xã hội",
+          "receive_method": "paper_stamped"
+        },
+        "extras": {
+          "copies": "2"
+        },
+        "confirmed": true
+      }
+    },
+    {
+      "name": "workspace_patch",
+      "model": "TicketWorkspacePatch",
+      "payload": {
+        "officer_draft": "Phòng học vụ đã tiếp nhận.",
+        "toggle_checklist_id": null,
+        "checklist": null
+      }
+    },
+    {
+      "name": "verifications_result",
+      "model": "VerificationsResult",
+      "payload": {
+        "items": [
+          {
+            "id": "verif_001",
+            "criterion_key": "academic_status",
+            "criterion_label": "Tình trạng học tập",
+            "condition_applied": "Sinh viên đang học chính quy",
+            "data_checked": "MSSV trên hồ sơ",
+            "source_system": "SIS (chưa kết nối)",
+            "lookup_timestamp": "2026-09-29T03:00:00Z",
+            "status": "insufficient",
+            "reason": "Chưa kết nối hệ thống đào tạo.",
+            "officer_review_status": "pending",
+            "officer_note": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "review_create",
+      "model": "ReviewCaseCreate",
+      "payload": {
+        "student_id": "SV-DEMO-001",
+        "target_course_code": "IT3011",
+        "target_course_name": "Cấu trúc dữ liệu",
+        "prior_course_code": "IT2020",
+        "prior_course_name": "Cấu trúc dữ liệu",
+        "target_course_credits": 0,
+        "target_department": null,
+        "prior_course_credits": 0,
+        "prior_institution": null,
+        "prior_academic_year": null,
+        "prior_grade": null,
+        "criteria_set_id": null,
+        "criteria_set_name": null
+      }
+    },
+    {
+      "name": "review_view",
+      "model": "ReviewCaseView",
+      "payload": {
+        "id": "rev_001",
+        "code": "REV-2026-0001",
+        "status": "in_review",
+        "student_id": "SV-DEMO-001",
+        "officer_id": "OF-DEMO-01",
+        "revision": 1,
+        "created_at": "2026-09-29T03:00:00Z",
+        "updated_at": "2026-09-29T03:00:00Z",
+        "payload": {
+          "studentId": "SV-DEMO-001",
+          "findings": []
+        }
+      }
+    },
+    {
+      "name": "review_finalize",
+      "model": "ReviewFinalize",
+      "payload": {
+        "decision_recommendation": "propose_conditional",
+        "conclusion_summary": "Cần bổ sung đề cương trước khi đề xuất công nhận.",
+        "expected_revision": 2
+      }
+    },
+    {
       "name": "submit1_success",
       "model": "Submit1Result",
       "payload": {
@@ -601,7 +700,8 @@
           "request_data": {
             "purpose": "Vay vốn ngân hàng",
             "destination_org": "Ngân hàng Chính sách Xã hội",
-            "receive_method": "paper_stamped"
+            "receive_method": "paper_stamped",
+            "extras": {}
           },
           "handover_reason": null,
           "assigned_officer_id": null,
@@ -649,7 +749,8 @@
           "request_data": {
             "purpose": "Vay vốn ngân hàng",
             "destination_org": "Ngân hàng Chính sách Xã hội",
-            "receive_method": "paper_stamped"
+            "receive_method": "paper_stamped",
+            "extras": {}
           },
           "handover_reason": null,
           "assigned_officer_id": null,
@@ -668,7 +769,8 @@
         "fields": {
           "purpose": "Vay vốn ngân hàng",
           "destination_org": "Ngân hàng Chính sách Xã hội",
-          "receive_method": "paper_stamped"
+          "receive_method": "paper_stamped",
+          "extras": {}
         }
       }
     },

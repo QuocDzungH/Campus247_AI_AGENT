@@ -27,9 +27,25 @@ export interface SessionOptions {
 export interface CampusDataGateway {
   // Auth
   login(userId: string, options?: SessionOptions): Promise<User>;
+  loginWithPassword?(identifier: string, password: string, options?: SessionOptions): Promise<User>;
   restoreSession?(): Promise<User | null>;
   endSession?(): Promise<void>;
   abortRequests?(): void;
+  getMyProfile?(): Promise<{
+    mssv?: string;
+    email?: string;
+    major?: string;
+    classYear?: string;
+    faculty?: string;
+  }>;
+  changePassword?(currentPassword: string, newPassword: string): Promise<void>;
+  submitForm?(payload: {
+    serviceType: "student_certificate" | "academic_complaint";
+    summary: string;
+    fields: Record<string, string>;
+    extras: Record<string, string>;
+  }): Promise<Ticket>;
+  uploadTicketFile?(ticketId: string, file: File, field?: string): Promise<StoredAttachment>;
 
   // Tickets
   getTickets(): Promise<Ticket[]>;

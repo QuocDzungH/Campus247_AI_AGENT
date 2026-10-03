@@ -129,7 +129,8 @@ export async function hydrateApiAccount(
 ): Promise<{ tickets: Ticket[]; chatSessions: ChatSession[]; reviewCases: ReviewCase[]; demoUsers: User[] }> {
   const tickets = await gateway.getTickets();
   const chatSessions = user.role === "student" ? await gateway.getChatSessions() : [];
-  return { tickets, chatSessions, reviewCases: [], demoUsers: [] };
+  const reviewCases = user.role === "admin" ? [] : await gateway.getReviewCases();
+  return { tickets, chatSessions, reviewCases, demoUsers: [] };
 }
 
 export async function bootstrapData(
@@ -195,7 +196,8 @@ interface StoreContextType {
   // Auth / Current User
   currentUser: User | null;
   setCurrentUser: (user: User) => void;
-  login: (userId: string, remember?: boolean) => Promise<boolean>;
+  login: (userId: string, remember?: boolean, password?: string) => Promise<User | null>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   logout: () => void;
   listConversationMessages: (conversationId: string) => Promise<ChatMessage[]>;
   demoUsers: User[];
@@ -204,6 +206,7 @@ interface StoreContextType {
   tickets: Ticket[];
   getTicket: (id: string) => Ticket | undefined;
   createTicket: (data: Partial<Ticket>) => Promise<Ticket>;
+  uploadTicketFile: (ticketId: string, file: File, field?: string) => Promise<void>;
   updateTicketStatus: (id: string, status: TicketStatus, actorName: string) => Promise<void>;
   updateOfficerDraft: (id: string, draft: string) => Promise<void>;
   resetOfficerDraft: (id: string) => Promise<void>;
@@ -346,6 +349,7 @@ export async function performGatewayLogin(
     remember?: boolean;
     mode?: DataConfig["mode"] | null;
     isCurrent: () => boolean;
+    password?: string;
   }
 ): Promise<User | null> {
   gateway.abortRequests?.();
@@ -353,6 +357,9 @@ export async function performGatewayLogin(
     await gateway.endSession();
   }
   if (!options.isCurrent()) return null;
+  if (options.password && gateway.loginWithPassword) {
+    return gateway.loginWithPassword(userId, options.password, { remember: options.remember });
+  }
   return gateway.login(userId, { remember: options.remember });
 }
 
@@ -532,7 +539,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const login = async (userId: string, remember = true): Promise<boolean> => {
+  const login = async (userId: string, remember = true, password?: string): Promise<User | null> => {
     const generation = ++authGeneration.current;
     const result = await loginThenHydrate({
       isCurrent: () => generation === authGeneration.current,
@@ -542,11 +549,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             remember,
             mode: dataConfig?.mode,
             isCurrent: () => generation === authGeneration.current,
+            password,
           })
         ),
       hydrate: async (user) => {
         if (dataConfig?.mode !== "api") return { tickets: [], chatSessions: [] };
         clearApiAccountState();
+        if (user.role === "admin") return { tickets: [], chatSessions: [] };
         const tickets = await executeGateway((activeGateway) => activeGateway.getTickets());
         const chatSessions =
           user.role === "student"
@@ -565,9 +574,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       ) {
         throw result.error;
       }
-      return false;
+      return null;
     }
-    if (!result.ok && result.stage === "auth") return false;
+    if (!result.ok && result.stage === "auth") return null;
     const sessionUser = result.user;
     writeMockRememberedUser(dataConfig?.mode, remember, sessionUser.id);
     setCurrentUser(sessionUser);
@@ -577,7 +586,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         setTickets(result.tickets);
         setChatSessions(result.chatSessions);
       }
-      return true;
+      return sessionUser;
     }
     throw result.error;
   };
@@ -595,6 +604,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
     setCurrentUser(null);
     clearMockRememberedUser(dataConfig?.mode);
+  };
+
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    await executeGateway(async (activeGateway) => {
+      if (!activeGateway.changePassword) {
+        throw new UnsupportedOperationError("changePassword");
+      }
+      await activeGateway.changePassword(currentPassword, newPassword);
+    });
   };
 
   const getTicket = (id: string) => tickets.find((t) => t.id === id || t.code === id);
@@ -633,13 +651,43 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const createTicket = async (data: Partial<Ticket>): Promise<Ticket> => {
     if (!currentUser) throw new DataGatewayError("unauthorized", "Not logged in");
-    if (dataConfig?.mode === "api") {
-      throw new UnsupportedOperationError("createTicket");
-    }
     return executeGateway(async (activeGateway) => {
+      if (dataConfig?.mode === "api") {
+        if (!activeGateway.submitForm) {
+          throw new UnsupportedOperationError("createTicket");
+        }
+        const extras: Record<string, string> = {};
+        for (const field of data.requestPayload?.submittedFields || []) {
+          extras[field.name] = field.value;
+        }
+        const ticket = await activeGateway.submitForm({
+          serviceType: data.type === "complaint" ? "academic_complaint" : "student_certificate",
+          summary: data.title || data.purpose || "Yêu cầu học vụ",
+          fields: {
+            purpose: data.purpose || "",
+            destination_org: data.destinationOrg || "",
+            receive_method: data.receiveMethod || "",
+          },
+          extras,
+        });
+        if (data.attachments?.length && activeGateway.uploadTicketFile) {
+          // Browser File objects are not on StoredAttachment; VinUniForm uploads separately.
+        }
+        setTickets(await activeGateway.getTickets());
+        return ticket;
+      }
       const ticket = await activeGateway.createTicket(currentUser, data);
       setTickets(await activeGateway.getTickets());
       return ticket;
+    });
+  };
+
+  const uploadTicketFile = async (ticketId: string, file: File, field?: string) => {
+    await executeGateway(async (activeGateway) => {
+      if (!activeGateway.uploadTicketFile) {
+        throw new UnsupportedOperationError("uploadTicketFile");
+      }
+      await activeGateway.uploadTicketFile(ticketId, file, field);
     });
   };
 
@@ -654,14 +702,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     if (currentUser?.role !== "officer") throw new DataGatewayError("unauthorized", "Chỉ cán bộ được lưu nháp phản hồi.");
     const ticket = getTicket(id);
     if (!ticket) throw new DataGatewayError("not_found", "Không tìm thấy hồ sơ.");
-    if (dataConfig?.mode === "api") {
-      // G2: no P0 draft endpoint. Keep the local draft and do not refetch the list (that would drop detail).
-      upsertTicket({ ...ticket, officerDraft: draft });
-      return;
-    }
     await executeGateway(async (activeGateway) => {
       await activeGateway.updateOfficerDraft(id, draft, currentUser, officerDraftFor(ticket, currentUser.id));
-      setTickets(await activeGateway.getTickets());
+      upsertTicket({ ...ticket, officerDraft: draft });
     });
   };
 
@@ -981,11 +1024,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setIsAiAnalyzing(true);
     setAiAnalyzingStep(1);
     try {
-      await new Promise((r) => setTimeout(r, 220));
-      setAiAnalyzingStep(2);
-      await new Promise((r) => setTimeout(r, 220));
-      setAiAnalyzingStep(3);
-      await new Promise((r) => setTimeout(r, 220));
       setAiAnalyzingStep(4);
       await executeGateway(async (activeGateway) => {
         await activeGateway.runAiReview(caseId);
@@ -1063,11 +1101,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         currentUser,
         setCurrentUser: user => { ++authGeneration.current; authRestored.current = true; setCurrentUser(user); },
         login,
+        changePassword,
         logout,
         demoUsers,
         tickets,
         getTicket,
         createTicket,
+        uploadTicketFile,
         updateTicketStatus,
         updateOfficerDraft,
         resetOfficerDraft,

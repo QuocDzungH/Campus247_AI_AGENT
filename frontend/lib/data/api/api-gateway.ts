@@ -42,7 +42,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isUserRole(value: unknown): value is UserRole {
-  return value === "student" || value === "officer";
+  return value === "student" || value === "officer" || value === "admin";
 }
 
 export class ApiCampusDataGateway implements CampusDataGateway {
@@ -128,13 +128,114 @@ export class ApiCampusDataGateway implements CampusDataGateway {
       if (epoch !== this.authEpoch) {
         return this.mapToUser(result.user);
       }
-      return this.persistSession(result, options?.remember !== false);
+      return this.enrichUser(this.persistSession(result, options?.remember !== false));
     } catch (err) {
       if (err instanceof DataGatewayError && err.reason === "not_found") {
         throw new DataGatewayError("unauthorized", "User not found (HTTP 404)");
       }
       throw err;
     }
+  }
+
+  async loginWithPassword(identifier: string, password: string, options?: SessionOptions): Promise<User> {
+    const epoch = this.beginAuthEpoch();
+    const response = await this.client.request<LoginResult>("/api/v1/auth/login", {
+      method: "POST",
+      body: { identifier, password, remember: options?.remember !== false },
+      skipAuth: true,
+      skipIdempotency: true,
+    });
+    const result = this.parseLoginResult(response.body);
+    if (epoch !== this.authEpoch) {
+      return this.mapToUser(result.user);
+    }
+    return this.enrichUser(this.persistSession(result, options?.remember !== false));
+  }
+
+  private async enrichUser(user: User): Promise<User> {
+    if (user.role !== "student") return user;
+    try {
+      const profile = await this.getMyProfile();
+      return {
+        ...user,
+        mssv: profile.mssv || user.mssv,
+        email: profile.email || user.email,
+        major: profile.major || user.major,
+        classYear: profile.classYear || user.classYear,
+        department: profile.faculty || user.department,
+      };
+    } catch {
+      return user;
+    }
+  }
+
+  async getMyProfile(): Promise<{
+    mssv?: string;
+    email?: string;
+    major?: string;
+    classYear?: string;
+    faculty?: string;
+  }> {
+    const body = await this.client.get("/api/v1/me/profile", { skipIdempotency: true });
+    if (!isRecord(body)) return {};
+    return {
+      mssv: typeof body.mssv === "string" ? body.mssv : undefined,
+      email: typeof body.email === "string" ? body.email : undefined,
+      major: typeof body.major === "string" ? body.major : undefined,
+      classYear: typeof body.class_year === "string" ? body.class_year : undefined,
+      faculty: typeof body.faculty === "string" ? body.faculty : undefined,
+    };
+  }
+
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    await this.client.request("/api/v1/auth/change-password", {
+      method: "POST",
+      body: { current_password: currentPassword, new_password: newPassword },
+      skipIdempotency: true,
+    });
+  }
+
+  async submitForm(payload: {
+    serviceType: "student_certificate" | "academic_complaint";
+    summary: string;
+    fields: Record<string, string>;
+    extras: Record<string, string>;
+  }): Promise<Ticket> {
+    const response = await this.client.request("/api/v1/forms", {
+      method: "POST",
+      body: {
+        service_type: payload.serviceType,
+        summary: payload.summary,
+        fields: payload.fields,
+        extras: payload.extras,
+        confirmed: true,
+      },
+    });
+    const record = isRecord(response.body) ? response.body : {};
+    const ticketRaw = isRecord(record.ticket) ? record.ticket : record;
+    return mapWireTicket(ticketRaw);
+  }
+
+  async uploadTicketFile(ticketId: string, file: File, field?: string): Promise<StoredAttachment> {
+    const form = new FormData();
+    form.append("file", file);
+    if (field) form.append("field", field);
+    const body = await this.client.request<Record<string, unknown>>(
+      `/api/v1/tickets/${encodeURIComponent(ticketId)}/attachments`,
+      {
+        method: "POST",
+        body: form,
+        skipIdempotency: true,
+      }
+    );
+    const record = isRecord(body.body) ? body.body : {};
+    return {
+      id: typeof record.id === "string" ? record.id : file.name,
+      name: typeof record.filename === "string" ? record.filename : file.name,
+      size: typeof record.size_bytes === "number" ? record.size_bytes : file.size,
+      contentType: typeof record.mime_type === "string" ? record.mime_type : file.type,
+      field,
+    };
   }
 
   async restoreSession(): Promise<User | null> {
@@ -147,7 +248,7 @@ export class ApiCampusDataGateway implements CampusDataGateway {
     this.client.setAccessToken(token);
     try {
       const me = await this.client.get("/api/v1/me", { skipIdempotency: true });
-      return this.mapToUser(me);
+      return this.enrichUser(this.mapToUser(me));
     } catch (err) {
       if (err instanceof DataGatewayError && err.reason === "unauthorized") {
         this.client.clearAccessTokenIfCurrent(token);
@@ -214,6 +315,7 @@ export class ApiCampusDataGateway implements CampusDataGateway {
 
   async getTickets(): Promise<Ticket[]> {
     const role = this.actorRole();
+    if (role === "admin") return [];
     const path = role === "officer" ? "/api/v1/officer/tickets" : "/api/v1/tickets";
     return this.collectPages(path, mapWireTicket);
   }
@@ -272,16 +374,22 @@ export class ApiCampusDataGateway implements CampusDataGateway {
     throw new UnsupportedOperationError("updateTicketStatus");
   }
 
-  async updateOfficerDraft(_id: string, _draft: string): Promise<void> {
-    // G2: officer draft stays in the browser session. No P0 draft endpoint.
+  async updateOfficerDraft(id: string, draft: string): Promise<void> {
+    await this.client.request(`/api/v1/officer/tickets/${encodeURIComponent(id)}/workspace`, {
+      method: "PATCH",
+      body: { officer_draft: draft },
+    });
   }
 
-  async resetOfficerDraft(_id: string): Promise<void> {
-    // G2: local draft only.
+  async resetOfficerDraft(id: string): Promise<void> {
+    await this.updateOfficerDraft(id, "");
   }
 
-  async toggleChecklistItem(_ticketId: string, _itemId: string): Promise<void> {
-    throw new UnsupportedOperationError("toggleChecklistItem");
+  async toggleChecklistItem(ticketId: string, itemId: string): Promise<void> {
+    await this.client.request(`/api/v1/officer/tickets/${encodeURIComponent(ticketId)}/workspace`, {
+      method: "PATCH",
+      body: { toggle_checklist_id: itemId },
+    });
   }
 
   async addTicketMessage(
@@ -478,16 +586,25 @@ export class ApiCampusDataGateway implements CampusDataGateway {
   }
 
   // --- Certificates ---
-  async runTicketVerification(_ticketId: string): Promise<void> {
-    throw new UnsupportedOperationError("runTicketVerification");
+  async runTicketVerification(ticketId: string): Promise<void> {
+    await this.client.request(`/api/v1/tickets/${encodeURIComponent(ticketId)}/verifications`, {
+      method: "POST",
+      body: {},
+    });
   }
 
-  async retryCriterionVerification(_ticketId: string, _criterionId: string): Promise<void> {
-    throw new UnsupportedOperationError("retryCriterionVerification");
+  async retryCriterionVerification(ticketId: string, _criterionId: string): Promise<void> {
+    await this.runTicketVerification(ticketId);
   }
 
-  async confirmCriterionReview(_ticketId: string, _criterionId: string, _note?: string): Promise<void> {
-    throw new UnsupportedOperationError("confirmCriterionReview");
+  async confirmCriterionReview(ticketId: string, criterionId: string, note?: string): Promise<void> {
+    await this.client.request(
+      `/api/v1/tickets/${encodeURIComponent(ticketId)}/verifications/${encodeURIComponent(criterionId)}/confirm`,
+      {
+        method: "POST",
+        body: { note: note ?? null },
+      }
+    );
   }
 
   async updateCertificateDraft(_ticketId: string, _edits: Partial<IssuedCertificateDocument>): Promise<void> {
@@ -525,48 +642,137 @@ export class ApiCampusDataGateway implements CampusDataGateway {
     // Lock comes from ChatResult.conversation_state, not a client write.
   }
 
+  private mapReviewCase(raw: unknown): ReviewCase {
+    if (!isRecord(raw)) {
+      throw new DataGatewayError("validation", "Invalid review case");
+    }
+    const payload = isRecord(raw.payload) ? raw.payload : raw;
+    const status = raw.status;
+    if (status !== "draft" && status !== "in_review" && status !== "waiting_supplement" && status !== "completed") {
+      throw new DataGatewayError("validation", "Invalid review status");
+    }
+    const merged = {
+      ...(payload as ReviewCase),
+      id: typeof raw.id === "string" ? raw.id : payload.id,
+      code: typeof raw.code === "string" ? raw.code : payload.code,
+      status,
+      studentId: typeof raw.student_id === "string" ? raw.student_id : payload.studentId,
+      createdAt: typeof raw.created_at === "string" ? raw.created_at : payload.createdAt,
+      updatedAt: typeof raw.updated_at === "string" ? raw.updated_at : payload.updatedAt,
+      revision: typeof raw.revision === "number" ? raw.revision : payload.revision,
+    };
+    return merged as ReviewCase;
+  }
+
   // --- Reviews ---
   async getReviewCases(): Promise<ReviewCase[]> {
-    throw new UnsupportedOperationError("getReviewCases");
+    return this.collectPages("/api/v1/reviews", (item) => this.mapReviewCase(item));
   }
 
-  async getReviewCase(_id: string): Promise<ReviewCase | undefined> {
-    throw new UnsupportedOperationError("getReviewCase");
+  async getReviewCase(id: string): Promise<ReviewCase | undefined> {
+    try {
+      const body = await this.client.get(`/api/v1/reviews/${encodeURIComponent(id)}`, { skipIdempotency: true });
+      return this.mapReviewCase(body);
+    } catch (err) {
+      if (err instanceof DataGatewayError && err.reason === "not_found") return undefined;
+      throw err;
+    }
   }
 
-  async createReviewCase(_data: Partial<ReviewCase>): Promise<ReviewCase> {
-    throw new UnsupportedOperationError("createReviewCase");
+  async createReviewCase(data: Partial<ReviewCase>): Promise<ReviewCase> {
+    const response = await this.client.request("/api/v1/reviews", {
+      method: "POST",
+      body: {
+        student_id: data.studentId,
+        target_course_code: data.targetCourseCode,
+        target_course_name: data.targetCourseName,
+        prior_course_code: data.priorCourseCode,
+        prior_course_name: data.priorCourseName,
+        target_course_credits: data.targetCourseCredits ?? 0,
+        target_department: data.targetDepartment ?? null,
+        prior_course_credits: data.priorCourseCredits ?? 0,
+        prior_institution: data.priorInstitution ?? null,
+        prior_academic_year: data.priorAcademicYear ?? null,
+        prior_grade: data.priorGrade ?? null,
+        criteria_set_id: data.criteriaSetId ?? null,
+        criteria_set_name: data.criteriaSetName ?? null,
+      },
+    });
+    return this.mapReviewCase(response.body);
   }
 
-  async runAiReview(_caseId: string): Promise<void> {
-    throw new UnsupportedOperationError("runAiReview");
+  async runAiReview(caseId: string): Promise<void> {
+    await this.client.request(`/api/v1/reviews/${encodeURIComponent(caseId)}/ai`, {
+      method: "POST",
+      body: {},
+    });
   }
 
   async updateFindingReview(
-    _caseId: string,
-    _findingId: string,
-    _updates: {
+    caseId: string,
+    findingId: string,
+    updates: {
       officerStatus: FindingOfficerStatus;
       officerAdjustedLabel?: FindingAiLabel;
       officerNote?: string;
-    }
+    },
+    _actor?: User,
+    expectedSnapshot?: string
   ): Promise<void> {
-    throw new UnsupportedOperationError("updateFindingReview");
+    await this.client.request(
+      `/api/v1/reviews/${encodeURIComponent(caseId)}/findings/${encodeURIComponent(findingId)}`,
+      {
+        method: "PATCH",
+        body: {
+          officer_status: updates.officerStatus,
+          officer_adjusted_label: updates.officerAdjustedLabel ?? null,
+          officer_note: updates.officerNote ?? null,
+          expected_revision: expectedSnapshot ? Number(expectedSnapshot) || null : null,
+        },
+      }
+    );
   }
 
-  async sendSupplementRequest(_caseId: string, _request: SupplementRequest): Promise<void> {
-    throw new UnsupportedOperationError("sendSupplementRequest");
+  async sendSupplementRequest(caseId: string, request: SupplementRequest): Promise<void> {
+    await this.client.request(`/api/v1/reviews/${encodeURIComponent(caseId)}/supplements`, {
+      method: "POST",
+      body: {
+        subject: request.subject,
+        message_body: request.messageBody,
+        requested_documents: request.requestedDocuments,
+        findings_involved: request.findingsInvolved,
+      },
+    });
   }
 
   async submitStudentSupplement(
-    _caseId: string,
-    _payload: { note: string; docTitle?: string; fileName?: string; versionToActivate?: number }
+    caseId: string,
+    payload: { note: string; docTitle?: string; fileName?: string; versionToActivate?: number }
   ): Promise<void> {
-    throw new UnsupportedOperationError("submitStudentSupplement");
+    await this.client.request(`/api/v1/reviews/${encodeURIComponent(caseId)}/student-supplement`, {
+      method: "POST",
+      body: {
+        note: payload.note,
+        doc_title: payload.docTitle ?? null,
+        file_name: payload.fileName ?? null,
+      },
+    });
   }
 
-  async finalizeReviewCase(_caseId: string, _report: NonNullable<ReviewCase["finalReport"]>): Promise<void> {
-    throw new UnsupportedOperationError("finalizeReviewCase");
+  async finalizeReviewCase(caseId: string, report: NonNullable<ReviewCase["finalReport"]>): Promise<void> {
+    const current = await this.getReviewCase(caseId);
+    const revision =
+      current && typeof (current as ReviewCase & { revision?: number }).revision === "number"
+        ? (current as ReviewCase & { revision?: number }).revision
+        : 1;
+    await this.client.request(`/api/v1/reviews/${encodeURIComponent(caseId)}/finalize`, {
+      method: "POST",
+      body: {
+        decision_recommendation: report.decisionRecommendation,
+        conclusion_summary: report.conclusionSummary,
+        expected_revision: revision ?? 1,
+      },
+    });
   }
 
   async getDemoUsers(): Promise<User[]> {

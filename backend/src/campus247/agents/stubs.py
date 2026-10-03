@@ -1,6 +1,7 @@
 """Contract-faithful stubs. They do not invent L1 citations or ticket codes."""
 
 from campus247.agents.metadata import STUB_MODEL_NAME
+from campus247.agents.nodes.intake_l2 import MSG_L2_REVIEW, MSG_L2_SELF_SUBMIT, asks_to_submit_on_behalf
 from campus247.agents.provenance import deterministic_facts
 from campus247.models.contracts_v1 import (
     Intake,
@@ -136,7 +137,7 @@ def _certificate(context: IntakeContext, text: str) -> IntakeResult:
     return IntakeResult(
         route="L2",
         outcome="preview_ready",
-        reply="Bạn hãy kiểm tra thông tin trước khi gửi.",
+        reply=MSG_L2_SELF_SUBMIT if asks_to_submit_on_behalf(text) else MSG_L2_REVIEW,
         citations=[],
         intake=intake,
         handover=None,

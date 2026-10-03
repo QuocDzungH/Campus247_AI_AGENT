@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ArrowLeft, Download, MessageSquare, Paperclip } from "lucide-react";
-import { hasIssuedDocument, latestOfficerReply, receiptHtml, requestDate as formatDate, requestStates, requestStatusLabel, validateSupplementFile, type RequestItem } from "@/lib/my-requests";
+import { hasIssuedDocument, latestOfficerReply, receiptHtml, requestDate as formatDate, requestStates, requestStatusLabel, ticketThreadSenderLabel, ticketThreadTitle, validateSupplementFile, type RequestItem } from "@/lib/my-requests";
 import { fieldClass, primaryButton, secondaryButton } from "./StudentFlowUI";
 import { saveLocalAttachments } from "@/lib/local-attachments";
 import type { StoredAttachment } from "@/lib/types";
@@ -159,15 +159,15 @@ export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement
     </section>
 
     <section className={section} aria-labelledby="conversation-title">
-      <h3 id="conversation-title" className="text-lg font-semibold">Trao đổi với cán bộ</h3>
+      <h3 id="conversation-title" className="text-lg font-semibold">{item.kind === "ticket" ? ticketThreadTitle(item.record.messages) : "Trao đổi với cán bộ"}</h3>
       {item.kind === "ticket" ? <>
-        <div className="mt-4 space-y-3">{item.record.messages.filter((m) => m.senderRole === "officer" || m.senderRole === "student").map((m) => <div key={m.id} className={`rounded-xl p-4 ${m.senderRole === "student" ? "bg-blue-50 dark:bg-blue-950" : "bg-slate-50 dark:bg-slate-800"}`}>
-          <p className="text-sm font-semibold">{m.senderRole === "student" ? "Bạn" : `Cán bộ · ${m.senderName}`}</p>
+        <div className="mt-4 space-y-3">{item.record.messages.filter((m) => m.content.trim()).map((m) => <div key={m.id} className={`rounded-xl p-4 ${m.senderRole === "student" ? "bg-blue-50 dark:bg-blue-950" : m.senderRole === "officer" ? "bg-slate-50 dark:bg-slate-800" : "bg-indigo-50 dark:bg-indigo-950"}`}>
+          <p className="text-sm font-semibold">{ticketThreadSenderLabel(m)}</p>
           <p className={`mt-1 ${muted}`}>{formatDate(m.timestamp)}</p>
           <p className="mt-2 whitespace-pre-wrap break-words text-base leading-relaxed">{m.content}</p>
           {m.attachments?.map((attachment, index) => <p key={index} className={`mt-2 flex items-start gap-2 ${muted}`}><Paperclip className="mt-1 h-4 w-4 shrink-0" aria-hidden="true" /><span className="break-all">{attachment.name} · Chưa có tệp đính kèm để tải</span></p>)}
         </div>)}</div>
-        {!item.record.messages.some((m) => m.senderRole === "officer" || m.senderRole === "student") && <p className={`mt-3 ${muted}`}>Chưa có trao đổi. Bạn có thể gửi câu hỏi về hồ sơ này.</p>}
+        {!item.record.messages.some((m) => m.content.trim()) && <p className={`mt-3 ${muted}`}>Chưa có hội thoại trên hồ sơ này.</p>}
         <form onSubmit={sendMessage} className="mt-5 space-y-3">
           <label htmlFor="request-message" className="block text-sm font-semibold">Tin nhắn về hồ sơ {item.code}</label>
           <textarea id="request-message" value={text} disabled={busy} onChange={(e) => setText(e.target.value)} required maxLength={4000} rows={3} className={fieldClass} aria-describedby="request-message-hint" />

@@ -18,11 +18,43 @@ from campus247.models.contracts_v1 import FieldIssue, Fields, Intake, IntakeCont
 
 VAGUE_PURPOSE = {"gấp", "gap", "nhanh", "asap", "gấp luôn", "gấp gáp"}
 
+MSG_L2_REVIEW = "Bạn hãy kiểm tra thông tin trước khi gửi."
+MSG_L2_SELF_SUBMIT = (
+    "Bạn sẽ phải tự nhấn Nộp yêu cầu (Submit 1) sau khi xác nhận thông tin đã đúng. "
+    "Trợ lý không gửi hộ."
+)
+
+_SEND_ON_BEHALF_MARKERS = (
+    "gửi giúp",
+    "gửi hộ",
+    "gửi dùm",
+    "nộp giúp",
+    "nộp hộ",
+    "nộp dùm",
+    "tự gửi",
+    "tự nộp",
+    "bạn gửi",
+    "gửi luôn",
+    "hãy gửi",
+    "gửi đi",
+    "giúp tôi gửi",
+    "giúp mình gửi",
+    "submit giúp",
+    "submit hộ",
+)
+
 _FIELD_QUESTIONS: dict[CertificateField, str] = {
     "purpose": "mục đích sử dụng giấy",
     "destination_org": "nơi nộp giấy",
     "receive_method": "hình thức nhận (bản điện tử PDF hoặc bản giấy đóng dấu)",
 }
+
+
+def asks_to_submit_on_behalf(message: str | None) -> bool:
+    if not message:
+        return False
+    text = " ".join(message.casefold().split())
+    return any(marker in text for marker in _SEND_ON_BEHALF_MARKERS)
 
 
 def _usable(field: CertificateField, value: str | None) -> tuple[bool, str | None]:
@@ -84,9 +116,17 @@ def merge_certificate_fields(
     return fields, invalid
 
 
-def build_l2_reply(missing: list[str], invalid: list[FieldIssue], *, preview_ready: bool) -> str:
+def build_l2_reply(
+    missing: list[str],
+    invalid: list[FieldIssue],
+    *,
+    preview_ready: bool,
+    user_message: str | None = None,
+) -> str:
     if preview_ready:
-        return "Bạn hãy kiểm tra thông tin trước khi gửi."
+        if asks_to_submit_on_behalf(user_message):
+            return MSG_L2_SELF_SUBMIT
+        return MSG_L2_REVIEW
     needed: list[str] = []
     for item in invalid:
         needed.append(_FIELD_QUESTIONS[item.field])
@@ -151,7 +191,12 @@ def make_l2_node(model: Any, *, provider_timeout: float = PROVIDER_CALL_TIMEOUT_
         result = IntakeResult(
             route="L2",
             outcome="preview_ready" if preview_ready else "collecting",
-            reply=build_l2_reply(missing, invalid, preview_ready=preview_ready),
+            reply=build_l2_reply(
+                missing,
+                invalid,
+                preview_ready=preview_ready,
+                user_message=context.message.content,
+            ),
             citations=[],
             intake=intake,
             handover=None,

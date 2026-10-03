@@ -62,9 +62,27 @@ async def health():
 
 @app.get("/ready")
 async def ready():
+    from fastapi.responses import JSONResponse
+
+    from campus247.services.runtime import get_agent, get_rag
+
+    payload = {
+        "status": "ready",
+        "database": "ok",
+        "agent_mode": settings.agent_mode,
+        "rag_mode": settings.rag_mode,
+        "agent": type(get_agent()).__name__,
+        "index_version": getattr(get_rag(), "index_version", None),
+    }
     try:
         with get_engine().connect() as connection:
             connection.execute(text("SELECT 1"))
-        return {"status": "ready", "database": "ok"}
     except Exception:
-        return {"status": "not_ready", "database": "error"}
+        payload.update({"status": "not_ready", "database": "error"})
+        return JSONResponse(payload, status_code=503)
+    if settings.app_env == "production" and settings.agent_mode != "langgraph":
+        payload["status"] = "not_ready"
+        payload["agent_config"] = "misconfigured"
+        return JSONResponse(payload, status_code=503)
+    payload["agent_config"] = "configured" if settings.agent_mode == "langgraph" else "stub"
+    return payload

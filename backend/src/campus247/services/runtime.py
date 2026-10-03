@@ -27,6 +27,8 @@ def set_rag(rag: RagPort) -> None:
 def init_runtime(settings: Settings | None = None) -> None:
     """Wire RagPort always; build CampusAgent when AGENT_MODE=langgraph. Stub mode does not open a model."""
     resolved = settings or get_settings()
+    if resolved.app_env == "production" and resolved.agent_mode != "langgraph":
+        raise RuntimeError("APP_ENV=production requires AGENT_MODE=langgraph; StubAgent is not a production fallback.")
     from campus247.rag.factory import create_rag
 
     set_rag(create_rag(resolved))

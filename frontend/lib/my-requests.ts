@@ -72,6 +72,18 @@ export function latestOfficerReply(item: RequestItem) {
   return item.record.finalReport?.conclusionSummary || request?.messageBody;
 }
 
+export function ticketThreadTitle(messages: { senderRole: string }[]): string {
+  if (messages.some((message) => message.senderRole === "officer")) return "Hội thoại hồ sơ";
+  return "Trao đổi với trợ lý học vụ";
+}
+
+export function ticketThreadSenderLabel(message: { senderRole: string; senderName: string }): string {
+  if (message.senderRole === "student") return "Bạn";
+  if (message.senderRole === "officer") return `Cán bộ · ${message.senderName}`;
+  if (message.senderRole === "ai") return "Trợ lý học vụ";
+  return "Hệ thống";
+}
+
 export function requestDate(value: string): string {
   if (/^\d{2}:\d{2}(?::\d{2})?$/.test(value)) return `${value} (chưa có ngày trong dữ liệu)`;
   const legacy = value.match(/^(\d{2}:\d{2}(?::\d{2})?) · (\d{2})\/(\d{2})\/(\d{4})$/);

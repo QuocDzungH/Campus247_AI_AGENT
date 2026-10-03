@@ -18,7 +18,7 @@ function isWireUser(value: unknown): value is WireUser {
     isRecord(value) &&
     typeof value.id === "string" &&
     typeof value.name === "string" &&
-    (value.role === "student" || value.role === "officer")
+    (value.role === "student" || value.role === "officer" || value.role === "admin")
   );
 }
 

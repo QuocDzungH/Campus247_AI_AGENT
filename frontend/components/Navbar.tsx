@@ -45,6 +45,7 @@ export function Navbar() {
   if (!currentUser) return null;
 
   const isStudent = currentUser.role === "student";
+  const isAdmin = currentUser.role === "admin";
 
   const affiliation = currentUser.department || currentUser.major || currentUser.classYear;
 
@@ -55,6 +56,8 @@ export function Navbar() {
         { href: "/student/assistant", label: "Trợ lý học vụ", icon: MessageCircle },
         { href: "/my-requests", label: "Hồ sơ của tôi", icon: FileText },
       ]
+    : isAdmin
+    ? [{ href: "/admin", label: "Quản trị tài khoản", icon: LayoutDashboard }]
     : [
         { href: "/dashboard", label: "Hàng chờ hồ sơ", icon: LayoutDashboard },
         { href: "/reviews", label: "Rà soát học phần", icon: FileSearch },
@@ -64,7 +67,7 @@ export function Navbar() {
     <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
       <div className={`${isStudent ? "max-w-[1120px]" : "max-w-7xl"} mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4`}>
         {/* ── Left: Brand ── */}
-        <Link href={isStudent ? "/student" : "/dashboard"} className="flex min-h-11 items-center gap-2.5 shrink-0 group">
+        <Link href={isStudent ? "/student" : isAdmin ? "/admin" : "/dashboard"} className="flex min-h-11 items-center gap-2.5 shrink-0 group">
           <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-sm group-hover:shadow-md transition-shadow">
             <GraduationCap className="w-4.5 h-4.5" />
           </div>

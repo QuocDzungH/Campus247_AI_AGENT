@@ -82,8 +82,13 @@ export function reasonFromStatusAndCode(status: number, code?: string): ErrorRea
   }
 }
 
-function serializeBody(body: unknown): string | undefined {
+function isFormDataBody(body: unknown): body is FormData {
+  return typeof FormData !== "undefined" && body instanceof FormData;
+}
+
+function serializeBody(body: unknown): string | FormData | undefined {
   if (body === undefined) return undefined;
+  if (isFormDataBody(body)) return body;
   return JSON.stringify(body);
 }
 
@@ -170,7 +175,10 @@ export class ApiClient {
     const url = `${this.baseUrl}${path}`;
     const serializedBody = serializeBody(options.body);
     const headers = headerMap(options.headers);
-    if (!Object.keys(headers).some((key) => key.toLowerCase() === "content-type")) {
+    if (
+      !isFormDataBody(options.body) &&
+      !Object.keys(headers).some((key) => key.toLowerCase() === "content-type")
+    ) {
       headers["Content-Type"] = "application/json";
     }
 
@@ -183,7 +191,12 @@ export class ApiClient {
       isMutation &&
       !options.skipIdempotency &&
       !Object.keys(headers).some((key) => key.toLowerCase() === "idempotency-key");
-    const pendingBody = serializedBody ?? "";
+    const pendingBody =
+      typeof serializedBody === "string"
+        ? serializedBody
+        : isFormDataBody(options.body)
+          ? `[form:${options.body.get("field") || "file"}]`
+          : "";
     const usedIdempotencyKey = sendIdempotency
       ? this.pendingStore.peekOrCreate(method, path, pendingBody, options.idempotencyKey)
       : undefined;

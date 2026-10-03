@@ -1,6 +1,12 @@
 import pytest
 
-from campus247.agents.nodes.intake_l2 import merge_certificate_fields
+from campus247.agents.nodes.intake_l2 import (
+    MSG_L2_REVIEW,
+    MSG_L2_SELF_SUBMIT,
+    asks_to_submit_on_behalf,
+    build_l2_reply,
+    merge_certificate_fields,
+)
 from campus247.agents.state import FieldExtraction
 from campus247.models.contracts_v1 import FieldIssue, Fields
 from tests.test_agents.helpers import make_agent, make_context, make_preview
@@ -124,6 +130,42 @@ async def test_l4_while_l2_preview_switches_route():
     assert result.route == "L4"
     assert result.intake is None
     assert result.handover is not None
+
+
+def test_preview_ready_asks_user_to_self_submit():
+    assert asks_to_submit_on_behalf("Tôi đã xác nhận ok rồi gửi giúp tôi")
+    assert asks_to_submit_on_behalf("Mình tự gửi nhé")
+    assert not asks_to_submit_on_behalf("Nơi tôi nộp giấy là công ty FPT software")
+    assert build_l2_reply([], [], preview_ready=True) == MSG_L2_REVIEW
+    assert (
+        build_l2_reply([], [], preview_ready=True, user_message="Tôi đã xác nhận ok rồi gửi giúp tôi")
+        == MSG_L2_SELF_SUBMIT
+    )
+    assert (
+        build_l2_reply(
+            ["destination_org"],
+            [],
+            preview_ready=False,
+            user_message="Gửi giúp tôi",
+        )
+        == "Bạn cho biết nơi nộp giấy."
+    )
+
+
+@pytest.mark.asyncio
+async def test_complete_preview_send_on_behalf_does_not_submit():
+    agent, _ = _agent_with_extraction(_extract(provided_fields=[]))
+    preview = make_preview(
+        purpose="xin giấy xác nhận sinh viên giỏi",
+        destination_org="công ty FPT software",
+        receive_method="paper_stamped",
+    )
+    result = await agent.run_intake(
+        make_context("Tôi đã xác nhận ok rồi gửi giúp tôi", preview=preview)
+    )
+    assert result.route == "L2"
+    assert result.outcome == "preview_ready"
+    assert result.reply == MSG_L2_SELF_SUBMIT
 
 
 def test_merge_does_not_overwrite_with_none():
