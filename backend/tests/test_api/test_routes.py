@@ -19,3 +19,7 @@ async def test_chat_empty_message(client):
 async def test_agent_status(client):
     response = await client.get("/api/v1/status")
     assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "ready"
+    assert "agent_mode" in data
+    assert "rag_mode" in data

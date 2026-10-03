@@ -44,6 +44,9 @@ function validSource(source: GuidanceSource): boolean {
     typeof source.title === "string" &&
     typeof source.section === "string" &&
     typeof source.quote === "string" &&
+    (source.documentId == null || typeof source.documentId === "string") &&
+    (source.documentVersion == null || typeof source.documentVersion === "string") &&
+    (source.chunkId == null || typeof source.chunkId === "string") &&
     (!source.href || isSafeCitationHref(source.href) || Object.values(VINUNI_SOURCES).includes(source.href))
   );
 }
@@ -116,6 +119,9 @@ export function exchangesFromChatMessages(messages: ChatMessage[]): StudentChatE
         section: citation.locator || citation.chunkId || citation.documentId,
         quote: citation.quote,
         href: citation.url && isSafeCitationHref(citation.url) ? citation.url : undefined,
+        documentId: citation.documentId,
+        documentVersion: citation.documentVersion,
+        chunkId: citation.chunkId,
       })) ?? undefined;
     exchanges.push({
       id: message.id,

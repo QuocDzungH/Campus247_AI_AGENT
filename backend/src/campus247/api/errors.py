@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -5,6 +7,8 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from campus247.models.contracts_v1 import ErrorBody, ErrorDetails, ErrorEnvelope, MissingItem
 from campus247.services.errors import ApiError
+
+logger = logging.getLogger("campus247.api")
 
 
 def install_error_handlers(app: FastAPI) -> None:
@@ -38,6 +42,7 @@ def install_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(SQLAlchemyError)
     async def db_handler(request: Request, exc: SQLAlchemyError) -> JSONResponse:
         request_id = getattr(request.state, "request_id", "req_unknown")
+        logger.exception("persistence_unavailable request_id=%s", request_id)
         payload = ErrorEnvelope(
             error=ErrorBody(
                 code="PERSISTENCE_UNAVAILABLE",

@@ -23,12 +23,23 @@ ErrorCode = Literal[
 ]
 Stage = Literal["retrieval", "generation", "routing", "intake", "brief", "validation"]
 
-_RETRYABLE = {
-    "PROVIDER_TIMEOUT",
-    "PROVIDER_UNAVAILABLE",
-    "PROVIDER_RATE_LIMITED",
-    "INDEX_UNAVAILABLE",
-}
+RETRYABLE_MODULE_CODES = frozenset(
+    {
+        "PROVIDER_TIMEOUT",
+        "PROVIDER_UNAVAILABLE",
+        "PROVIDER_RATE_LIMITED",
+        "INDEX_UNAVAILABLE",
+    }
+)
+NON_RETRYABLE_MODULE_CODES = frozenset(
+    {
+        "OUTPUT_SCHEMA_INVALID",
+        "SOURCE_REFERENCE_INVALID",
+        "POLICY_SCOPE_DENIED",
+    }
+)
+MODULE_ERROR_CODES = RETRYABLE_MODULE_CODES | NON_RETRYABLE_MODULE_CODES
+_RETRYABLE = RETRYABLE_MODULE_CODES
 
 
 def module_error(

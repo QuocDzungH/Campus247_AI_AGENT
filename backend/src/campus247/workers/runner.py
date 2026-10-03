@@ -17,17 +17,18 @@ def run_once() -> bool:
             return False
         session.commit()
         job_id = job.id
-    return asyncio.run(_process(job_id))
+        owner_attempts = job.attempts
+    return asyncio.run(_process(job_id, owner_attempts))
 
 
-async def _process(job_id: str) -> bool:
+async def _process(job_id: str, owner_attempts: int) -> bool:
     from campus247.db.models import Job
 
     with session_scope() as session:
         job = session.get(Job, job_id)
         if job is None:
             return False
-        await process_job(session, job, get_agent())
+        await process_job(session, job, get_agent(), owner_attempts=owner_attempts)
         return True
 
 

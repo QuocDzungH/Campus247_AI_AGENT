@@ -40,7 +40,7 @@ campus247-worker = "campus247.workers.runner:run_forever"
 where = ["src"]
 
 [tool.setuptools.package-data]
-campus247 = ["db/seed_data/*.json"]
+campus247 = ["db/seed_data/*.json", "rag/data/*.json"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src", ".."]

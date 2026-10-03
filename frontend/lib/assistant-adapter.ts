@@ -40,11 +40,18 @@ export function isAssistantResult(value: unknown): value is AssistantResult {
     (!result.edit || (typeof result.edit.field === "string" && typeof result.edit.value === "string" && result.edit.value.length <= 4000)));
 }
 
+function optionalString(value: unknown): boolean {
+  return value == null || typeof value === "string";
+}
+
 function validGuidanceSource(source: GuidanceSource): boolean {
   return Boolean(
     typeof source.title === "string" &&
       typeof source.section === "string" &&
       typeof source.quote === "string" &&
+      optionalString(source.documentId) &&
+      optionalString(source.documentVersion) &&
+      optionalString(source.chunkId) &&
       (!source.href || isSafeCitationHref(source.href) || Object.values(VINUNI_SOURCES).includes(source.href))
   );
 }
@@ -56,6 +63,9 @@ export function citationToSource(citation: WireCitation): GuidanceSource {
     section: citation.locator || citation.chunk_id || citation.document_id,
     quote: citation.quote,
     href,
+    documentId: citation.document_id,
+    documentVersion: citation.document_version,
+    chunkId: citation.chunk_id,
   };
 }
 

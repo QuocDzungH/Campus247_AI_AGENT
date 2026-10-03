@@ -45,6 +45,7 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     openai_base_url: str = ""
     agent_mode: Literal["stub", "langgraph"] = "stub"
+    rag_mode: Literal["stub", "corpus"] = "stub"
 
     # Database
     database_url: str = "sqlite:///./data/app.db"
@@ -54,6 +55,7 @@ class Settings(BaseSettings):
     idempotency_ttl_seconds: int = Field(default=24 * 3600, ge=60)
     worker_lease_seconds: int = Field(default=60, ge=5)
     worker_max_attempts: int = Field(default=3, ge=1)
+    worker_retrieval_timeout_seconds: int = Field(default=15, ge=1)
 
     # Vector Store
     chroma_persist_dir: str = "./data/chroma"

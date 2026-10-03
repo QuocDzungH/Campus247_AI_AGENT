@@ -23,6 +23,13 @@ export function CitationList({
           <p className="text-xs text-slate-500">
             {item.title === "Hướng dẫn sử dụng Campus 24/7 — bản mẫu" ? "Hướng dẫn sử dụng Campus 24/7" : item.title}
           </p>
+          {item.documentId ? (
+            <p className="text-xs text-slate-500" data-testid="citation-provenance">
+              {item.documentId}
+              {item.documentVersion ? ` · ${item.documentVersion}` : ""}
+              {item.chunkId ? ` · ${item.chunkId}` : ""}
+            </p>
+          ) : null}
           <blockquote className="my-3 border-l-2 border-blue-200 pl-3">{item.quote}</blockquote>
           {item.href ? (
             <a

@@ -46,6 +46,28 @@ def test_langgraph_init_runtime_uses_campus_agent(monkeypatch):
         assert meta["model_name"] == "gpt-4o-mini"
         assert "officer-dossier-v2" in (meta["prompt_version"] or "")
         assert meta["template_version"] == "officer-safe-template-v1"
+        assert meta["index_version"] == "stub-v0"
+        assert isinstance(get_rag(), StubRag)
+    finally:
+        set_agent(original_agent)
+        set_rag(original_rag)
+
+
+def test_langgraph_init_runtime_wires_corpus_rag(monkeypatch):
+    from campus247.rag.corpus import CorpusRag
+
+    original_agent = get_agent()
+    original_rag = get_rag()
+    monkeypatch.setattr("campus247.services.llm.create_chat_model", lambda settings: SimpleNamespace(name="fake"))
+    try:
+        set_agent(StubAgent())
+        set_rag(StubRag())
+        init_runtime(_settings(agent_mode="langgraph", rag_mode="corpus"))
+        rag = get_rag()
+        assert isinstance(rag, CorpusRag)
+        agent = get_agent()
+        assert isinstance(agent, CampusAgent)
+        assert agent.brief_artifact_metadata()["index_version"] == "edu14-demo-academic-v1"
     finally:
         set_agent(original_agent)
         set_rag(original_rag)

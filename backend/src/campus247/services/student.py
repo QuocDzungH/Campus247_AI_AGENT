@@ -3,6 +3,7 @@ from datetime import timedelta
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from campus247.agents.errors import NON_RETRYABLE_MODULE_CODES
 from campus247.config import get_settings
 from campus247.db.models import (
     AuditEntry,
@@ -192,9 +193,6 @@ async def _send_message(
     if handle.outcome == "replay":
         session.commit()
         return handle.http_status or 200, handle.body or {}
-    if handle.outcome == "processing":
-        session.commit()
-        return 202, processing_body(handle.record.id)
 
     conversation = lock_conversation(session, conversation_id)
     if conversation is None or conversation.owner_id != actor.id:
@@ -226,9 +224,36 @@ async def _send_message(
             IntakeOperation.payload_hash == hash_payload(payload),
         )
     ).scalar_one_or_none()
+    if handle.outcome == "processing":
+        if existing_op is None or existing_op.state == "processing":
+            session.commit()
+            return 202, processing_body(handle.record.id)
+        if existing_op.state == "terminal_failed":
+            session.commit()
+            if handle.record is not None and handle.record.http_status and handle.record.response_json:
+                return handle.record.http_status, handle.record.response_json
+            raise ApiError(
+                422,
+                "AI_OUTPUT_INVALID",
+                f"Phản hồi AI không hợp lệ ({existing_op.last_error or 'OUTPUT_SCHEMA_INVALID'}). Tin nhắn của bạn đã được lưu.",
+                retryable=False,
+                details=c.ErrorDetails(conversation_id=conversation.id, user_message_id=existing_op.user_message_id),
+            )
+        if existing_op.state != "retryable_failed":
+            session.commit()
+            return 202, processing_body(handle.record.id)
+
     if existing_op is not None and existing_op.user_message_id:
         operation_row = existing_op
         user_message = session.get(Message, existing_op.user_message_id)
+        if user_message is None:
+            raise not_found()
+        if operation_row.state == "retryable_failed":
+            operation_row.state = "processing"
+            operation_row.last_error = None
+            operation_row.request_id = request_id
+            operation_row.updated_at = now
+            session.flush()
     else:
         user_message = _add_message(
             session,
@@ -265,15 +290,15 @@ async def _send_message(
         context = _intake_context(session, actor, conversation, user_message, ticket, request_id)
         result = await agent.run_intake(context)
     except c.ModuleCallError as exc:
-        _mark_operation(session, operation_row, "retryable_failed", exc.error.code)
+        api_error = _intake_module_error(exc, conversation.id, user_message.id)
+        op_state = "terminal_failed" if exc.error.code in NON_RETRYABLE_MODULE_CODES else "retryable_failed"
+        _mark_operation(session, operation_row, op_state, exc.error.code)
+        if op_state == "terminal_failed" and handle.record is not None:
+            complete_idempotent(
+                session, handle.record, api_error.status_code, api_error.envelope(request_id).model_dump(mode="json")
+            )
         session.commit()
-        raise ApiError(
-            503,
-            "AI_UNAVAILABLE",
-            "Chưa tạo được phản hồi. Tin nhắn của bạn đã được lưu.",
-            retryable=True,
-            details=c.ErrorDetails(conversation_id=conversation.id, user_message_id=user_message.id),
-        ) from exc
+        raise api_error from exc
 
     if ticket is not None and result.route != "L4":
         return _supplement_without_l4(session, conversation, ticket, user_message, operation_row, handle, request_id)
@@ -954,6 +979,26 @@ def _busy(session, conversation_id: str) -> bool:
             )
         ).scalar_one_or_none()
         is not None
+    )
+
+
+def _intake_module_error(exc: c.ModuleCallError, conversation_id: str, user_message_id: str) -> ApiError:
+    code = exc.error.code
+    details = c.ErrorDetails(conversation_id=conversation_id, user_message_id=user_message_id)
+    if code in NON_RETRYABLE_MODULE_CODES:
+        return ApiError(
+            422,
+            "AI_OUTPUT_INVALID",
+            f"Phản hồi AI không hợp lệ ({code}). Tin nhắn của bạn đã được lưu.",
+            retryable=False,
+            details=details,
+        )
+    return ApiError(
+        503,
+        "AI_UNAVAILABLE",
+        f"Chưa tạo được phản hồi ({code}). Tin nhắn của bạn đã được lưu.",
+        retryable=True,
+        details=details,
     )
 
 

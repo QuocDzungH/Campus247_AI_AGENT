@@ -6,6 +6,9 @@ export interface GuidanceSource {
   section: string;
   quote: string;
   href?: string;
+  documentId?: string;
+  documentVersion?: string;
+  chunkId?: string;
 }
 
 export interface AssistantReply {

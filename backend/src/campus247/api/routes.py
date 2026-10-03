@@ -17,5 +17,14 @@ async def chat(request: ChatRequest) -> ChatResponse:
 
 @router.get("/status")
 async def agent_status():
+    from campus247.services.runtime import get_agent, get_rag
+
     settings = get_settings()
-    return {"status": "ready", "agent": "CampusAgent", "agent_mode": settings.agent_mode}
+    rag = get_rag()
+    return {
+        "status": "ready",
+        "agent": type(get_agent()).__name__,
+        "agent_mode": settings.agent_mode,
+        "rag_mode": settings.rag_mode,
+        "index_version": getattr(rag, "index_version", None),
+    }

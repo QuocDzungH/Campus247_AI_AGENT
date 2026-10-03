@@ -91,7 +91,7 @@ const {
 const { pollUntil } = loadTypeScriptModule(path.join(frontendDir, "lib/data/api/replay.ts"));
 const { mapBrief, mapWireTicket, mapChatResult } = loadTypeScriptModule(path.join(frontendDir, "lib/data/api/mappers.ts"));
 const { mapChatTurnToAssistantResult } = loadTypeScriptModule(path.join(frontendDir, "lib/assistant-adapter.ts"));
-const { createStudentChatStore } = loadTypeScriptModule(path.join(frontendDir, "lib/student-chat.ts"));
+const { createStudentChatStore, exchangesFromChatMessages } = loadTypeScriptModule(path.join(frontendDir, "lib/student-chat.ts"));
 const { OfficerFactSheet } = loadTypeScriptModule(path.join(frontendDir, "components/staff/OfficerFactSheet.tsx"));
 const { CitationList } = loadTypeScriptModule(path.join(frontendDir, "components/student/CitationList.tsx"));
 const { ApiCampusDataGateway } = loadTypeScriptModule(path.join(frontendDir, "lib/data/api/api-gateway.ts"));
@@ -686,6 +686,40 @@ test("Fact Sheet and citation list render facts and every citation", () => {
     })
   );
   assert.equal(mapped.reply.sources.length, 2);
+  assert.equal(mapped.reply.sources[0].documentId, "doc_1");
+  assert.equal(mapped.reply.sources[0].documentVersion, "v1");
+  assert.equal(mapped.reply.sources[0].chunkId, "c1");
+  assert.equal(mapped.reply.sources[1].documentId, "doc_2");
+  const provenance = renderToStaticMarkup(
+    React.createElement(CitationList, {
+      sources: mapped.reply.sources,
+    })
+  );
+  assert.match(provenance, /doc_1/);
+  assert.match(provenance, /doc_2/);
+  assert.match(provenance, /c1/);
+  const history = exchangesFromChatMessages([
+    { id: "u1", sender: "user", text: "Quy trình cấp giấy?", timestamp: "2026-10-03T04:00:00Z" },
+    {
+      id: "a1",
+      sender: "bot",
+      text: "Theo quy chế",
+      timestamp: "2026-10-03T04:00:01Z",
+      citations: [
+        {
+          documentId: "demo-qc-giay-001",
+          documentTitle: "[Demo] Quy chế",
+          documentVersion: "2026.09-demo",
+          chunkId: "demo-qc-giay-001-c01",
+          locator: "Điều 5 khoản 1",
+          quote: "sinh viên đăng ký trên Campus 24/7",
+        },
+      ],
+    },
+  ]);
+  assert.equal(history[0].reply.sources[0].documentId, "demo-qc-giay-001");
+  assert.equal(history[0].reply.sources[0].documentVersion, "2026.09-demo");
+  assert.equal(history[0].reply.sources[0].chunkId, "demo-qc-giay-001-c01");
 });
 
 test("missing receive_method stays empty and claim locks when assigned to another officer", () => {

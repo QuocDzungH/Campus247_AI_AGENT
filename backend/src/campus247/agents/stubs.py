@@ -22,8 +22,10 @@ CERTIFICATE = ("giấy xác nhận", "xin giấy", "cấp giấy")
 
 
 class StubRag:
+    index_version = "stub-v0"
+
     async def retrieve_policy(self, request: RetrievalRequest) -> RetrievalResult:
-        return RetrievalResult(status="empty", passages=[], index_version="stub-v0")
+        return RetrievalResult(status="empty", passages=[], index_version=self.index_version)
 
     async def answer_question(self, request: RagRequest) -> RagResult:
         return RagResult(status="insufficient_evidence", answer=MSG_L1_EMPTY, citations=[])

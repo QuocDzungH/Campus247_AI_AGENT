@@ -28,10 +28,14 @@ env/
 .DS_Store
 Thumbs.db
 
-# Data (never commit large data)
-data/
+# Local runtime data at repo root (SQLite, chroma). Packaged corpus is source.
+/data/
 *.db
 *.sqlite3
+
+# Packaged RAG JSON must stay tracked even if a nested data/ rule is added later.
+!backend/src/campus247/rag/data/
+!backend/src/campus247/rag/data/*.json
 
 # Logs
 logs/
