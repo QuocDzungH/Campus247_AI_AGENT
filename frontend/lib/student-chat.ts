@@ -27,9 +27,11 @@ export interface StudentChatThread {
   apiPreview?: CampusPreview | null;
   apiLocked?: boolean;
   apiTicket?: { id: string; code: string } | null;
+  apiPendingTicketId?: string;
+  createIntentKey?: string;
 }
 export interface ChatSnapshot { threads: StudentChatThread[]; activeId: string; issue: string | null }
-export type ThreadFlowPatch = Partial<Pick<StudentChatThread, "conversationId" | "apiPreview" | "apiLocked" | "apiTicket">>;
+export type ThreadFlowPatch = Partial<Pick<StudentChatThread, "conversationId" | "apiPreview" | "apiLocked" | "apiTicket" | "apiPendingTicketId" | "createIntentKey">>;
 export interface ServerConversationSeed {
   conversationId: string;
   title: string;
@@ -91,7 +93,9 @@ function validThread(thread: StudentChatThread): boolean {
     (!thread.conversationId || typeof thread.conversationId === "string") &&
     (thread.apiPreview == null || validPreview(thread.apiPreview)) &&
     (thread.apiTicket == null || validTicketRef(thread.apiTicket)) &&
-    (thread.apiLocked == null || typeof thread.apiLocked === "boolean")
+    (thread.apiLocked == null || typeof thread.apiLocked === "boolean") &&
+    (!thread.apiPendingTicketId || typeof thread.apiPendingTicketId === "string") &&
+    (!thread.createIntentKey || typeof thread.createIntentKey === "string")
   );
 }
 
@@ -194,7 +198,9 @@ export function createStudentChatStore(key: string, legacyKey?: string) {
     bindConversation(threadId: string, conversationId: string) {
       update({
         ...snapshot,
-        threads: snapshot.threads.map((thread) => (thread.id === threadId ? { ...thread, conversationId } : thread)),
+        threads: snapshot.threads.map((thread) =>
+          thread.id === threadId ? { ...thread, conversationId, createIntentKey: undefined } : thread
+        ),
       });
     },
     setFlow(threadId: string, patch: ThreadFlowPatch) {
@@ -222,11 +228,17 @@ export function createStudentChatStore(key: string, legacyKey?: string) {
         if (!seed) return thread;
         const nextLocked = thread.apiLocked || !!seed.locked;
         const nextTicket = thread.apiTicket || seed.ticket || null;
-        if (nextLocked === Boolean(thread.apiLocked) && nextTicket?.id === thread.apiTicket?.id && nextTicket?.code === thread.apiTicket?.code) {
+        const nextPending = nextTicket ? undefined : thread.apiPendingTicketId;
+        if (
+          nextLocked === Boolean(thread.apiLocked) &&
+          nextTicket?.id === thread.apiTicket?.id &&
+          nextTicket?.code === thread.apiTicket?.code &&
+          nextPending === thread.apiPendingTicketId
+        ) {
           return thread;
         }
         changed = true;
-        return { ...thread, apiLocked: nextLocked, apiTicket: nextTicket };
+        return { ...thread, apiLocked: nextLocked, apiTicket: nextTicket, apiPendingTicketId: nextPending };
       });
       for (const seed of seeds) {
         if (byConversation.has(seed.conversationId)) continue;

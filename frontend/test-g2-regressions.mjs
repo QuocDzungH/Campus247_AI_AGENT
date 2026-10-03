@@ -81,6 +81,12 @@ const {
   claimDisabled,
   assignedToOtherOfficer,
   receiveMethodDisplay,
+  resolveSubmittedTicket,
+  reuseOrMintIntentKey,
+  shouldCommitLoginSession,
+  shouldRetainIntentKey,
+  submittedPreviewResult,
+  isDisplayTicketCode,
 } = loadTypeScriptModule(path.join(frontendDir, "lib/data/api/g2-flow.ts"));
 const { pollUntil } = loadTypeScriptModule(path.join(frontendDir, "lib/data/api/replay.ts"));
 const { mapBrief, mapWireTicket, mapChatResult } = loadTypeScriptModule(path.join(frontendDir, "lib/data/api/mappers.ts"));
@@ -104,6 +110,71 @@ function jsonResponse(status, body) {
     headers: { "Content-Type": "application/json", "X-Request-Id": "req_test" },
   });
 }
+
+test("logout during hydrate failure does not keep the logging-in user", async () => {
+  let current = true;
+  const result = await loginThenHydrate({
+    isCurrent: () => current,
+    login: async () => ({ id: "OF-DEMO-01", name: "Officer" }),
+    hydrate: async () => {
+      current = false;
+      throw new DataGatewayError("network", "offline");
+    },
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.stage, "auth");
+  assert.equal("user" in result, false);
+});
+
+test("repro: logout while hydrating officer does not restore OF-DEMO-01", async () => {
+  let generation = 1;
+  let currentUser = null;
+  const result = await loginThenHydrate({
+    isCurrent: () => generation === 1,
+    login: async () => ({ id: "OF-DEMO-01", name: "Officer" }),
+    hydrate: async () => {
+      generation += 1;
+      currentUser = null;
+      throw new DataGatewayError("network", "offline");
+    },
+  });
+  if (shouldCommitLoginSession(1, generation, result)) {
+    currentUser = result.ok ? result.user : result.user;
+  }
+  assert.equal(result.ok, false);
+  assert.equal(result.stage, "auth");
+  assert.equal("user" in result, false);
+  assert.equal(shouldCommitLoginSession(1, generation, result), false);
+  assert.equal(currentUser, null);
+});
+
+test("repro: logout after officer hydrate still does not write OF-DEMO-01", async () => {
+  let generation = 1;
+  const result = await loginThenHydrate({
+    isCurrent: () => generation === 1,
+    login: async () => ({ id: "OF-DEMO-01", name: "Officer" }),
+    hydrate: async () => ({ tickets: [{ id: "tkt_officer" }], chatSessions: [] }),
+  });
+  generation += 1;
+  assert.equal(result.ok, true);
+  assert.equal(result.user.id, "OF-DEMO-01");
+  assert.equal(shouldCommitLoginSession(1, generation, result), false);
+});
+
+test("logout during login failure does not keep an aborted auth error", async () => {
+  let current = true;
+  const result = await loginThenHydrate({
+    isCurrent: () => current,
+    login: async () => {
+      current = false;
+      throw new DataGatewayError("network", "aborted");
+    },
+    hydrate: async () => ({ tickets: [], chatSessions: [] }),
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.stage, "auth");
+  assert.equal(result.error, undefined);
+});
 
 test("login success then hydrate failure keeps the new user and is a connection error", async () => {
   const tokenHolder = { value: null };
@@ -157,6 +228,62 @@ test("two threads keep distinct preview and L4 lock state", () => {
   assert.equal(threads[second].apiPreview, null);
   chat.select(first);
   assert.equal(chat.getSnapshot().threads.find((thread) => thread.id === chat.getSnapshot().activeId).apiPreview.id, "prv_a");
+});
+
+test("delayed preview response writes to the thread that started the mutation", () => {
+  installStorage();
+  const chat = createStudentChatStore("g2-preview-target");
+  const origin = chat.getSnapshot().activeId;
+  const preview = {
+    id: "prv_hold",
+    version: 2,
+    canSubmit: true,
+    expiresAt: "2026-10-02T12:00:00Z",
+    serviceType: "student_certificate",
+    fields: { purpose: "origin", destinationOrg: "Bank", receiveMethod: "digital_pdf" },
+    missingFields: [],
+    invalidFields: [],
+  };
+  chat.start();
+  const newer = chat.getSnapshot().activeId;
+  chat.setFlow(origin, { apiPreview: preview, apiTicket: { id: "tkt_hold", code: "TKT-2026-0099" } });
+  chat.setFlow(origin, { apiPendingTicketId: "tkt_hold" });
+  const threads = Object.fromEntries(chat.getSnapshot().threads.map((thread) => [thread.id, thread]));
+  assert.equal(threads[origin].apiPreview.id, "prv_hold");
+  assert.equal(threads[origin].apiTicket.code, "TKT-2026-0099");
+  assert.equal(threads[origin].apiPendingTicketId, "tkt_hold");
+  assert.equal(threads[newer].apiPreview ?? null, null);
+  assert.equal(threads[newer].apiTicket ?? null, null);
+  assert.equal(threads[newer].apiPendingTicketId ?? undefined, undefined);
+});
+
+test("repro: held PATCH then new chat writes preview/submit/conflict to the origin thread", () => {
+  installStorage();
+  const chat = createStudentChatStore("g2-held-patch");
+  const origin = chat.getSnapshot().activeId;
+  const threadId = origin;
+  chat.start();
+  const newer = chat.getSnapshot().activeId;
+  assert.notEqual(newer, origin);
+  const delayed = {
+    id: "prv_hold",
+    version: 3,
+    canSubmit: true,
+    expiresAt: "2026-10-03T12:00:00Z",
+    serviceType: "student_certificate",
+    fields: { purpose: "origin after patch", destinationOrg: "Bank", receiveMethod: "digital_pdf" },
+    missingFields: [],
+    invalidFields: [],
+  };
+  chat.setFlow(threadId, { apiPreview: delayed });
+  chat.setFlow(threadId, { apiPreview: { ...delayed, version: 4 } });
+  chat.setFlow(threadId, { apiPreview: null, apiTicket: { id: "tkt_hold", code: "TKT-2026-0099" } });
+  const threads = Object.fromEntries(chat.getSnapshot().threads.map((thread) => [thread.id, thread]));
+  assert.equal(threads[origin].apiPreview, null);
+  assert.equal(threads[origin].apiTicket.code, "TKT-2026-0099");
+  assert.equal(threads[newer].apiPreview ?? null, null);
+  assert.equal(threads[newer].apiTicket ?? null, null);
+  assert.equal(chat.getSnapshot().activeId, newer);
 });
 
 test("prepare poll ignores stale brief from a previous revision", async () => {
@@ -214,6 +341,224 @@ test("ticket message commit stays success when detail refetch fails", async () =
   });
   assert.equal(result.messages[0].id, "msg_u");
   assert.equal(result.messages.length, 1);
+});
+
+test("already submitted without a display code does not fabricate a ticket", () => {
+  const fake = { id: "tkt_existing", code: "tkt_existing" };
+  assert.equal(resolveSubmittedTicket("tkt_existing", fake, undefined), undefined);
+  const cached = { id: "tkt_existing", code: "TKT-2026-0400", title: "Giấy xác nhận" };
+  assert.equal(resolveSubmittedTicket("tkt_existing", fake, cached).code, "TKT-2026-0400");
+  const fetched = { id: "tkt_existing", code: "TKT-2026-0401" };
+  assert.equal(resolveSubmittedTicket("tkt_existing", fetched, cached).code, "TKT-2026-0401");
+  assert.equal(isDisplayTicketCode("tkt_existing", "tkt_existing"), false);
+  assert.equal(isDisplayTicketCode("TKT-2026-0400", "tkt_existing"), true);
+  const pending = submittedPreviewResult("tkt_existing", fake, undefined);
+  assert.equal(pending.status, "pending_sync");
+  assert.equal(pending.ticketId, "tkt_existing");
+  const ready = submittedPreviewResult("tkt_existing", fake, cached);
+  assert.equal(ready.status, "submitted");
+  assert.equal(ready.ticket.code, "TKT-2026-0400");
+});
+
+test("repro: 409 PREVIEW_ALREADY_SUBMITTED then GET fail does not upsert tkt_ as ticket code", () => {
+  const error = new DataGatewayError("conflict", "Yêu cầu này đã được nộp.", {
+    code: "PREVIEW_ALREADY_SUBMITTED",
+    details: { ticket_id: "tkt_3b32a5fdf65b479380f8983122e68838" },
+  });
+  error.code = "PREVIEW_ALREADY_SUBMITTED";
+  const ticketId = alreadySubmittedTicketId(error);
+  assert.equal(ticketId, "tkt_3b32a5fdf65b479380f8983122e68838");
+  const sessionTickets = [];
+  const fakeDetail = { id: ticketId, code: ticketId };
+  const result = submittedPreviewResult(ticketId, fakeDetail, undefined);
+  if (result.status === "submitted") sessionTickets.push(result.ticket);
+  assert.equal(result.status, "pending_sync");
+  assert.equal(result.ticketId, ticketId);
+  assert.equal(sessionTickets.length, 0);
+  assert.equal(isDisplayTicketCode(ticketId, ticketId), false);
+  const cached = {
+    id: ticketId,
+    code: "TKT-2026-0400",
+    title: "Giấy xác nhận sinh viên",
+    studentId: "SV-DEMO-001",
+  };
+  const recovered = submittedPreviewResult(ticketId, undefined, cached);
+  if (recovered.status === "submitted") sessionTickets.push(recovered.ticket);
+  assert.equal(recovered.status, "submitted");
+  assert.equal(sessionTickets.length, 1);
+  assert.equal(sessionTickets[0].code, "TKT-2026-0400");
+  assert.equal(sessionTickets[0].code === sessionTickets[0].id, false);
+});
+
+test("create conversation intent key is reused until success or a non-retryable error", () => {
+  const first = reuseOrMintIntentKey(null);
+  assert.equal(reuseOrMintIntentKey(first), first);
+  const network = new DataGatewayError("network", "lost response");
+  network.retryable = true;
+  assert.equal(shouldRetainIntentKey(network), true);
+  const conflict = new DataGatewayError("conflict", "exists");
+  conflict.retryable = false;
+  assert.equal(shouldRetainIntentKey(conflict), false);
+  assert.equal(shouldRetainIntentKey(undefined), false);
+});
+
+function makeConversationGateway() {
+  return new ApiCampusDataGateway("https://api.example.test", {
+    client: (() => {
+      const client = new ApiClient("https://api.example.test", { pendingStore: createMemoryPendingStore() });
+      client.setAccessToken("tok");
+      return client;
+    })(),
+    sessionStore: createMemorySessionStore({
+      access_token: "tok",
+      token_type: "Bearer",
+      expires_at: new Date(Date.now() + 3600_000).toISOString(),
+      user: { id: "SV-DEMO-001", role: "student", name: "SV" },
+      remember: true,
+    }),
+  });
+}
+
+async function storeStyleCreateConversation(gateway, pendingRef) {
+  const key = reuseOrMintIntentKey(pendingRef.current);
+  pendingRef.current = key;
+  try {
+    const conversation = await gateway.createConversation({ idempotencyKey: key });
+    pendingRef.current = null;
+    return conversation;
+  } catch (error) {
+    if (!shouldRetainIntentKey(error)) pendingRef.current = null;
+    throw error;
+  }
+}
+
+test("createConversation retry after lost response reuses Idempotency-Key", async () => {
+  const keys = [];
+  let attempts = 0;
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (input, init = {}) => {
+    const url = String(input);
+    if (String(init.method || "GET").toUpperCase() === "POST" && url.endsWith("/api/v1/conversations")) {
+      keys.push(new Headers(init.headers).get("Idempotency-Key"));
+      attempts += 1;
+      if (attempts === 1) throw new TypeError("Failed to fetch");
+      return jsonResponse(201, {
+        id: "conv_same",
+        revision: 1,
+        ticket_id: null,
+        status: "active",
+        ai_response_locked: false,
+        handover_status: "none",
+        created_at: "2026-10-02T10:00:00+00:00",
+        updated_at: "2026-10-02T10:00:00+00:00",
+      });
+    }
+    throw new Error(url);
+  };
+  const gateway = new ApiCampusDataGateway("https://api.example.test", {
+    client: (() => {
+      const client = new ApiClient("https://api.example.test", { pendingStore: createMemoryPendingStore() });
+      client.setAccessToken("tok");
+      return client;
+    })(),
+    sessionStore: createMemorySessionStore({
+      access_token: "tok",
+      token_type: "Bearer",
+      expires_at: new Date(Date.now() + 3600_000).toISOString(),
+      user: { id: "SV-DEMO-001", role: "student", name: "SV" },
+      remember: true,
+    }),
+  });
+  let pendingKey = reuseOrMintIntentKey(null);
+  try {
+    try {
+      await gateway.createConversation({ idempotencyKey: pendingKey });
+      assert.fail("expected lost response");
+    } catch (error) {
+      assert.equal(shouldRetainIntentKey(error), true);
+      pendingKey = reuseOrMintIntentKey(pendingKey);
+    }
+    const conversation = await gateway.createConversation({ idempotencyKey: pendingKey });
+    assert.equal(conversation.id, "conv_same");
+    assert.equal(attempts, 2);
+    assert.equal(keys.length, 2);
+    assert.ok(keys[0]);
+    assert.equal(keys[0], keys[1]);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("repro: lost createConversation response retries with the same Idempotency-Key", async () => {
+  const keys = [];
+  const minted = new Map();
+  let attempts = 0;
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (input, init = {}) => {
+    const url = String(input);
+    if (String(init.method || "GET").toUpperCase() === "POST" && url.endsWith("/api/v1/conversations")) {
+      const key = new Headers(init.headers).get("Idempotency-Key");
+      keys.push(key);
+      attempts += 1;
+      if (attempts === 1) throw new TypeError("Failed to fetch");
+      if (!minted.has(key)) minted.set(key, `conv_${minted.size + 1}`);
+      return jsonResponse(201, {
+        id: minted.get(key),
+        revision: 1,
+        ticket_id: null,
+        status: "active",
+        ai_response_locked: false,
+        handover_status: "none",
+        created_at: "2026-10-03T10:00:00+00:00",
+        updated_at: "2026-10-03T10:00:00+00:00",
+      });
+    }
+    throw new Error(url);
+  };
+  const gateway = makeConversationGateway();
+  const pendingRef = { current: null };
+  try {
+    try {
+      await storeStyleCreateConversation(gateway, pendingRef);
+      assert.fail("expected lost response");
+    } catch (error) {
+      assert.equal(shouldRetainIntentKey(error), true);
+      assert.ok(pendingRef.current);
+    }
+    const conversation = await storeStyleCreateConversation(gateway, pendingRef);
+    assert.equal(attempts, 2);
+    assert.equal(keys.length, 2);
+    assert.equal(keys[0], keys[1]);
+    assert.equal(conversation.id, "conv_1");
+    assert.equal(minted.size, 1);
+    assert.equal(pendingRef.current, null);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("thread create intent key survives retry and clears after bind", () => {
+  installStorage();
+  const chat = createStudentChatStore("g2-create-key");
+  const threadId = chat.getSnapshot().activeId;
+  const first = reuseOrMintIntentKey(undefined);
+  chat.setFlow(threadId, { createIntentKey: first });
+  assert.equal(reuseOrMintIntentKey(chat.getSnapshot().threads[0].createIntentKey), first);
+  chat.bindConversation(threadId, "conv_1");
+  assert.equal(chat.getSnapshot().threads[0].conversationId, "conv_1");
+  assert.equal(chat.getSnapshot().threads[0].createIntentKey, undefined);
+});
+
+test("non-retryable create failure drops the thread intent key", () => {
+  installStorage();
+  const chat = createStudentChatStore("g2-create-key-drop");
+  const threadId = chat.getSnapshot().activeId;
+  const key = reuseOrMintIntentKey(undefined);
+  chat.setFlow(threadId, { createIntentKey: key });
+  const conflict = new DataGatewayError("conflict", "exists");
+  conflict.retryable = false;
+  if (!shouldRetainIntentKey(conflict)) chat.setFlow(threadId, { createIntentKey: undefined });
+  assert.equal(chat.getSnapshot().threads[0].createIntentKey, undefined);
 });
 
 test("PREVIEW_ALREADY_SUBMITTED exposes ticket_id from error details", () => {

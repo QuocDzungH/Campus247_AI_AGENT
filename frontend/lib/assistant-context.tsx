@@ -9,6 +9,7 @@ import { guidanceAdapter, isAssistantResult, mapChatTurnToAssistantResult, type 
 import { collectRequests, latestOfficerReply, requestStatusLabel } from "./my-requests";
 import type { VinUniTask } from "./vinuni-forms";
 import type { CampusPreview } from "./data/api/mappers";
+import { isDisplayTicketCode, reuseOrMintIntentKey, shouldRetainIntentKey } from "./data/api/g2-flow";
 
 function subscribeURL(notify: () => void) {
   window.addEventListener("popstate", notify); window.addEventListener("campus-requests-navigation", notify);
@@ -36,11 +37,17 @@ function useAssistantRuntime(adapter: AssistantAdapter) {
   const apiPreview = active.apiPreview ?? null;
   const apiLocked = active.apiLocked === true;
   const apiTicket = active.apiTicket ?? null;
-  function setApiPreview(preview: CampusPreview | null) {
-    chat.setFlow(chat.getSnapshot().activeId, { apiPreview: preview });
+  const apiPendingTicketId = active.apiPendingTicketId ?? null;
+  function setApiPreview(preview: CampusPreview | null, threadId: string) {
+    chat.setFlow(threadId, { apiPreview: preview });
   }
-  function setApiTicket(ticket: { id: string; code: string } | null) {
-    chat.setFlow(chat.getSnapshot().activeId, { apiTicket: ticket });
+  function setApiTicket(ticket: { id: string; code: string } | null, threadId: string) {
+    if (ticket) chat.setFlow(threadId, { apiTicket: ticket, apiPendingTicketId: undefined });
+    else chat.setFlow(threadId, { apiTicket: null });
+  }
+  function setApiPendingTicket(ticketId: string | null, threadId: string) {
+    if (ticketId) chat.setFlow(threadId, { apiPendingTicketId: ticketId, apiTicket: null });
+    else chat.setFlow(threadId, { apiPendingTicketId: undefined });
   }
   const requests = useRef(new Map<string, AbortController>());
   const isChat = pathname === "/student/assistant";
@@ -113,7 +120,12 @@ function useAssistantRuntime(adapter: AssistantAdapter) {
     if (!isChat && routeTask !== formTask) { setOpen(false); router.push(`/student/${formTask}`); }
   }
   function resetApiFlow() {
-    chat.setFlow(chat.getSnapshot().activeId, { apiPreview: null, apiLocked: false, apiTicket: null });
+    chat.setFlow(chat.getSnapshot().activeId, {
+      apiPreview: null,
+      apiLocked: false,
+      apiTicket: null,
+      apiPendingTicketId: undefined,
+    });
   }
   function returnToStart() {
     setFormExpanded(false);
@@ -143,21 +155,37 @@ function useAssistantRuntime(adapter: AssistantAdapter) {
         const thread = chat.getSnapshot().threads.find(item => item.id === threadId);
         let conversationId = thread?.conversationId;
         if (!conversationId) {
-          const conversation = await createConversation();
+          const key = reuseOrMintIntentKey(thread?.createIntentKey);
+          if (thread?.createIntentKey !== key) chat.setFlow(threadId, { createIntentKey: key });
+          try {
+            const conversation = await createConversation({ idempotencyKey: key });
+            chat.bindConversation(threadId, conversation.id);
+            conversationId = conversation.id;
+          } catch (failure) {
+            if (!shouldRetainIntentKey(failure)) chat.setFlow(threadId, { createIntentKey: undefined });
+            throw failure;
+          }
           if (controller.signal.aborted) return;
-          chat.bindConversation(threadId, conversation.id);
-          conversationId = conversation.id;
         }
         const turn = await sendConversationMessage(conversationId, question.trim(), { signal: controller.signal });
         if (controller.signal.aborted) return;
         const mapped = mapChatTurnToAssistantResult(turn);
         chat.send(question, mapped.reply, undefined, threadId);
+        const current = chat.getSnapshot().threads.find((item) => item.id === threadId);
+        const ticketRef =
+          turn.ticket && isDisplayTicketCode(turn.ticket.code, turn.ticket.id)
+            ? { id: turn.ticket.id, code: turn.ticket.code }
+            : current?.apiTicket ?? null;
         chat.setFlow(threadId, {
           apiPreview: turn.preview,
           apiLocked: turn.conversationState.aiResponseLocked,
-          apiTicket: turn.ticket ? { id: turn.ticket.id, code: turn.ticket.code } : chat.getSnapshot().threads.find((item) => item.id === threadId)?.apiTicket ?? null,
+          apiTicket: ticketRef,
+          apiPendingTicketId: ticketRef ? undefined : current?.apiPendingTicketId,
         });
-        if (turn.preview || turn.conversationState.aiResponseLocked) {
+        if (
+          (turn.preview || turn.conversationState.aiResponseLocked) &&
+          chat.getSnapshot().activeId === threadId
+        ) {
           setTab("form");
           setFormExpanded(true);
         }
@@ -200,7 +228,7 @@ function useAssistantRuntime(adapter: AssistantAdapter) {
   }
   return { chat, state, active, open, setOpen, show, isChat, task, context, contextKey, routeTask, tab, setTab, formExpanded, setFormExpanded, fieldTarget,
     pending: pending.includes(active.id), error, send, cancel, openForm, returnToStart, selectThread, apply, undo, focusField, helpField, composerFocus,
-    isApiMode, apiPreview, setApiPreview, apiLocked, apiTicket, setApiTicket, resetApiFlow };
+    isApiMode, apiPreview, setApiPreview, apiLocked, apiTicket, setApiTicket, apiPendingTicketId, setApiPendingTicket, resetApiFlow };
 }
 type Runtime = ReturnType<typeof useAssistantRuntime>;
 const Context = createContext<Runtime | null>(null);

@@ -37,6 +37,11 @@ import {
   decideReviewedBriefVersion,
   isConnectionError,
   loginThenHydrate,
+  reuseOrMintIntentKey,
+  shouldCommitLoginSession,
+  shouldRetainIntentKey,
+  submittedPreviewResult,
+  type SubmitPreviewResult,
 } from "./data/api/g2-flow";
 
 export type DataStatus =
@@ -258,14 +263,14 @@ interface StoreContextType {
   >;
   lastUpdatedField: "reason" | "receiveMethod" | null;
   updateGate1Field: (field: "reason" | "receiveMethod" | "destinationOrg", value: string) => void;
-  createConversation: () => Promise<ConversationView>;
+  createConversation: (options?: { idempotencyKey?: string }) => Promise<ConversationView>;
   sendConversationMessage: (
     conversationId: string,
     content: string,
     options?: { signal?: AbortSignal; idempotencyKey?: string }
   ) => Promise<ChatTurnResult>;
   patchPreview: (previewId: string, expectedVersion: number, fields: PreviewFieldsPatch) => Promise<CampusPreview>;
-  submitPreview: (previewId: string, previewVersion: number) => Promise<Ticket>;
+  submitPreview: (previewId: string, previewVersion: number) => Promise<SubmitPreviewResult>;
   claimTicket: (ticketId: string) => Promise<Ticket>;
   prepareBrief: (ticketId: string) => Promise<BriefView>;
   refreshTicket: (ticketId: string) => Promise<Ticket | undefined>;
@@ -366,6 +371,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const authGeneration = useRef(0);
   const authRestored = useRef(false);
   const loadGeneration = useRef(0);
+  const pendingCreateConversationKey = useRef<string | null>(null);
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -549,11 +555,20 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         return { tickets, chatSessions };
       },
     });
-    if (!result.ok && result.stage === "auth") {
-      if (result.error && isConnectionError(result.error)) throw result.error;
+    if (!shouldCommitLoginSession(generation, authGeneration.current, result)) {
+      if (
+        generation === authGeneration.current &&
+        !result.ok &&
+        result.stage === "auth" &&
+        result.error &&
+        isConnectionError(result.error)
+      ) {
+        throw result.error;
+      }
       return false;
     }
-    const sessionUser = result.ok ? result.user : result.user;
+    if (!result.ok && result.stage === "auth") return false;
+    const sessionUser = result.user;
     writeMockRememberedUser(dataConfig?.mode, remember, sessionUser.id);
     setCurrentUser(sessionUser);
     authRestored.current = true;
@@ -570,6 +585,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     ++authGeneration.current;
     authRestored.current = true;
+    pendingCreateConversationKey.current = null;
     gateway?.abortRequests?.();
     if (dataConfig?.mode === "api") {
       clearApiAccountState();
@@ -723,10 +739,22 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const createConversation = async (): Promise<ConversationView> => {
+  const createConversation = async (options?: { idempotencyKey?: string }): Promise<ConversationView> => {
     return executeGateway(async (activeGateway) => {
       if (!activeGateway.createConversation) throw new UnsupportedOperationError("createConversation");
-      return activeGateway.createConversation({ idempotencyKey: crypto.randomUUID() });
+      const key = reuseOrMintIntentKey(options?.idempotencyKey ?? pendingCreateConversationKey.current);
+      if (!options?.idempotencyKey) pendingCreateConversationKey.current = key;
+      try {
+        const conversation = await activeGateway.createConversation({ idempotencyKey: key });
+        if (!options?.idempotencyKey) pendingCreateConversationKey.current = null;
+        return conversation;
+      } catch (error) {
+        const mapped = toDataGatewayError(error);
+        if (!options?.idempotencyKey && !shouldRetainIntentKey(mapped)) {
+          pendingCreateConversationKey.current = null;
+        }
+        throw mapped;
+      }
     });
   };
 
@@ -763,7 +791,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const submitPreview = async (previewId: string, previewVersion: number): Promise<Ticket> => {
+  const submitPreview = async (previewId: string, previewVersion: number): Promise<SubmitPreviewResult> => {
     return executeGateway(async (activeGateway) => {
       if (!activeGateway.submitPreview) throw new UnsupportedOperationError("submitPreview");
       try {
@@ -773,20 +801,22 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           activeGateway.getTicketDetail ? activeGateway.getTicketDetail(ticket.id) : ticket
         );
         upsertTicket(reconciled);
-        return reconciled;
+        return { status: "submitted", ticket: reconciled };
       } catch (error) {
         const existingId = alreadySubmittedTicketId(error);
         if (!existingId) throw error;
-        const existing = await commitThenReconcile(
-          {
-            id: existingId,
-            code: existingId,
-          } as Ticket,
-          async () => (activeGateway.getTicketDetail ? activeGateway.getTicketDetail(existingId) : activeGateway.getTicket(existingId))
-        );
-        if (existing?.id) upsertTicket(existing);
-        if (!existing?.code) throw error;
-        return existing;
+        const cached = getTicket(existingId);
+        let fetched: Ticket | undefined;
+        try {
+          fetched = activeGateway.getTicketDetail
+            ? await activeGateway.getTicketDetail(existingId)
+            : await activeGateway.getTicket(existingId);
+        } catch {
+          fetched = undefined;
+        }
+        const result = submittedPreviewResult(existingId, fetched, cached);
+        if (result.status === "submitted") upsertTicket(result.ticket);
+        return result;
       }
     });
   };

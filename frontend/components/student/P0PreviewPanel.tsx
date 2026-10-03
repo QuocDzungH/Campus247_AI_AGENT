@@ -7,6 +7,7 @@ import { useAssistant } from "@/lib/assistant-context";
 import { useStore } from "@/lib/store";
 import { DataGatewayError } from "@/lib/data/errors";
 import { errorDetails, fieldsFromForm, type CampusPreview } from "@/lib/data/api/mappers";
+import { alreadySubmittedTicketId, isDisplayTicketCode } from "@/lib/data/api/g2-flow";
 import { primaryButton, secondaryButton } from "./StudentFlowUI";
 
 function formFromPreview(preview: CampusPreview) {
@@ -23,6 +24,8 @@ export function P0PreviewPanel() {
   const preview = assistant.apiPreview;
   const locked = assistant.apiLocked;
   const ticket = assistant.apiTicket;
+  const displayCode = ticket && isDisplayTicketCode(ticket.code, ticket.id) ? ticket.code : null;
+  const pendingTicketId = assistant.apiPendingTicketId;
   const [edit, setEdit] = useState<{ previewId: string; form: ReturnType<typeof formFromPreview> } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -45,11 +48,13 @@ export function P0PreviewPanel() {
         <p className="mt-3 text-sm leading-relaxed text-amber-900 dark:text-amber-100">
           Yêu cầu đã được bàn giao cho cán bộ. Bạn vẫn có thể gửi thông tin bổ sung trong chat; phản hồi sẽ đến từ cán bộ.
         </p>
-        {ticket && (
+        {displayCode ? (
           <p className="mt-3 font-mono text-sm">
-            Mã hồ sơ: {ticket.code}
+            Mã hồ sơ: {displayCode}
           </p>
-        )}
+        ) : pendingTicketId ? (
+          <p className="mt-3 text-sm">Đã nộp yêu cầu. Đang đồng bộ mã hồ sơ.</p>
+        ) : null}
         <Link href="/my-requests" className={`${primaryButton} mt-4`}>
           Mở Yêu cầu của tôi
         </Link>
@@ -57,11 +62,15 @@ export function P0PreviewPanel() {
     );
   }
 
-  if (ticket && !preview) {
+  if ((displayCode || pendingTicketId) && !preview) {
     return (
       <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 dark:border-emerald-900 dark:bg-emerald-950">
         <h2 className="font-semibold text-emerald-900 dark:text-emerald-100">Đã nộp yêu cầu</h2>
-        <p className="mt-2 font-mono text-sm">{ticket.code}</p>
+        {displayCode ? (
+          <p className="mt-2 font-mono text-sm">{displayCode}</p>
+        ) : (
+          <p className="mt-2 text-sm">Đang đồng bộ mã hồ sơ.</p>
+        )}
         <p className="mt-2 text-sm leading-relaxed text-emerald-900 dark:text-emerald-100">
           Ticket đã vào hệ thống. Bước này không phát hành giấy xác nhận. Theo dõi phản hồi của cán bộ trong Yêu cầu của tôi.
         </p>
@@ -99,14 +108,15 @@ export function P0PreviewPanel() {
 
   async function savePreview() {
     if (!preview || busy) return;
+    const threadId = assistant.active.id;
     setBusy(true); setError(""); setNotice("");
     try {
       const next = await persistIfDirty(preview);
-      assistant.setApiPreview(next);
+      assistant.setApiPreview(next, threadId);
       setEdit({ previewId: next.id, form: formFromPreview(next) });
       setNotice("Đã cập nhật preview. Hãy kiểm tra rồi nộp khi đủ 3 trường.");
     } catch (failure) {
-      handleConflict(failure);
+      handleConflict(failure, threadId);
     } finally {
       setBusy(false);
     }
@@ -114,36 +124,49 @@ export function P0PreviewPanel() {
 
   async function submit() {
     if (!preview || busy) return;
+    const threadId = assistant.active.id;
     setBusy(true); setError(""); setNotice("");
     try {
       const latest = await persistIfDirty(preview);
-      assistant.setApiPreview(latest);
+      assistant.setApiPreview(latest, threadId);
       if (!latest.canSubmit) {
         setError("Preview chưa đủ mục đích, nơi nhận và cách nhận.");
         return;
       }
       const ticketResult = await submitPreview(latest.id, latest.version);
-      assistant.setApiPreview(null);
-      assistant.setApiTicket({ id: ticketResult.id, code: ticketResult.code });
+      assistant.setApiPreview(null, threadId);
+      if (
+        ticketResult.status === "submitted" &&
+        isDisplayTicketCode(ticketResult.ticket.code, ticketResult.ticket.id)
+      ) {
+        assistant.setApiTicket({ id: ticketResult.ticket.id, code: ticketResult.ticket.code }, threadId);
+        setNotice(`Đã nộp yêu cầu ${ticketResult.ticket.code}. Đây chưa phải giấy đã phát hành.`);
+      } else {
+        const pendingId = ticketResult.status === "submitted" ? ticketResult.ticket.id : ticketResult.ticketId;
+        assistant.setApiPendingTicket(pendingId, threadId);
+        setNotice("Đã nộp yêu cầu. Đang đồng bộ mã hồ sơ.");
+      }
       setEdit(null);
-      setNotice(`Đã nộp yêu cầu ${ticketResult.code}. Đây chưa phải giấy đã phát hành.`);
     } catch (failure) {
-      handleConflict(failure);
+      handleConflict(failure, threadId);
     } finally {
       setBusy(false);
     }
   }
 
-  function handleConflict(failure: unknown) {
+  function handleConflict(failure: unknown, threadId: string) {
     const err = failure instanceof DataGatewayError ? failure : null;
     const details = err ? errorDetails(err) : undefined;
     if (err?.code === "STALE_PREVIEW" && preview && typeof details?.current_version === "number") {
-      assistant.setApiPreview({ ...preview, version: details.current_version });
+      assistant.setApiPreview({ ...preview, version: details.current_version }, threadId);
       setError("Preview đã thay đổi trên máy chủ. Nội dung bạn đang sửa được giữ; hãy kiểm tra rồi cập nhật lại.");
       return;
     }
     if (err?.code === "PREVIEW_ALREADY_SUBMITTED") {
-      setError("Yêu cầu này đã được nộp.");
+      const pendingId = alreadySubmittedTicketId(err);
+      assistant.setApiPreview(null, threadId);
+      if (pendingId) assistant.setApiPendingTicket(pendingId, threadId);
+      setNotice("Đã nộp yêu cầu. Đang đồng bộ mã hồ sơ.");
       return;
     }
     if (err?.code === "CONVERSATION_LOCKED") {

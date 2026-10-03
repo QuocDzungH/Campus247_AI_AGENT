@@ -34,6 +34,7 @@ export async function loginThenHydrate<TUser, TTickets, TSessions>(options: {
   try {
     user = await options.login();
   } catch (error) {
+    if (!options.isCurrent()) return { ok: false, stage: "auth" };
     return { ok: false, stage: "auth", error };
   }
   if (!options.isCurrent() || !user) return { ok: false, stage: "auth" };
@@ -42,8 +43,67 @@ export async function loginThenHydrate<TUser, TTickets, TSessions>(options: {
     if (!options.isCurrent()) return { ok: false, stage: "auth" };
     return { ok: true, user, tickets: data.tickets, chatSessions: data.chatSessions };
   } catch (error) {
+    if (!options.isCurrent()) return { ok: false, stage: "auth" };
     return { ok: false, stage: "hydrate", user, error };
   }
+}
+
+export function shouldCommitLoginSession(
+  startedGeneration: number,
+  currentGeneration: number,
+  result: LoginHydrateResult<unknown, unknown, unknown>
+): boolean {
+  if (startedGeneration !== currentGeneration) return false;
+  if (!result.ok && result.stage === "auth") return false;
+  return true;
+}
+
+export function reuseOrMintIntentKey(existing?: string | null): string {
+  if (typeof existing === "string" && existing.length > 0) return existing;
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  return `idem-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+export function shouldRetainIntentKey(error: unknown | undefined): boolean {
+  if (error == null) return false;
+  if (!(error instanceof DataGatewayError)) return true;
+  if (error.retryable === false) return false;
+  if (error.retryable === true) return true;
+  if (error.reason === "network" || error.reason === "server") return true;
+  if (typeof error.status === "number" && (error.status >= 500 || error.status === 429)) return true;
+  return false;
+}
+
+export function isDisplayTicketCode(code: string | undefined | null, ticketId?: string): boolean {
+  return typeof code === "string" && code.trim().length > 0 && code !== ticketId && !/^tkt_/i.test(code);
+}
+
+export function resolveSubmittedTicket(
+  ticketId: string,
+  fetched: Ticket | undefined,
+  cached: Ticket | undefined
+): Ticket | undefined {
+  if (fetched && (fetched.id === ticketId || fetched.code === ticketId) && isDisplayTicketCode(fetched.code, fetched.id)) {
+    return fetched;
+  }
+  if (cached && (cached.id === ticketId || cached.code === ticketId) && isDisplayTicketCode(cached.code, cached.id)) {
+    return cached;
+  }
+  return undefined;
+}
+
+export type SubmitPreviewResult =
+  | { status: "submitted"; ticket: Ticket }
+  | { status: "pending_sync"; ticketId: string };
+
+export function submittedPreviewResult(
+  ticketId: string,
+  fetched: Ticket | undefined,
+  cached: Ticket | undefined
+): SubmitPreviewResult {
+  const ticket = resolveSubmittedTicket(ticketId, fetched, cached);
+  if (ticket) return { status: "submitted", ticket };
+  return { status: "pending_sync", ticketId };
 }
 
 export async function commitThenReconcile<T>(committed: T, refetch: () => Promise<T | undefined>): Promise<T> {

@@ -59,15 +59,39 @@ async function sendAssistant(page, text) {
   await page.getByRole("button", { name: "Gửi câu hỏi" }).click();
 }
 
-async function runMock(page, requests) {
+async function runMockStudent(page) {
   await login(page, "student");
-  await page.goto(`${baseUrl}/student`, { waitUntil: "domcontentloaded" });
-  await page.goto(`${baseUrl}/dashboard`, { waitUntil: "domcontentloaded" });
+  await page.getByRole("heading", { name: /Bạn cần hỗ trợ việc gì/ }).waitFor({ timeout: 15000 });
+  await page.getByRole("link", { name: /Xin giấy xác nhận/ }).first().click();
+  await page.getByRole("heading", { name: /Yêu cầu tài liệu VinUni|Xin giấy xác nhận sinh viên/ }).waitFor({ timeout: 15000 });
+  await page.goto(`${baseUrl}/student/assistant`, { waitUntil: "domcontentloaded" });
+  await sendAssistant(page, "Xin giấy xác nhận cần thông tin gì?");
+  await page.getByText(/tài liệu học vụ|bản điện tử \(PDF\)|Registrar/i).first().waitFor({ timeout: 20000 });
+  await page.goto(`${baseUrl}/my-requests`, { waitUntil: "domcontentloaded" });
+  await page.getByRole("heading", { name: "Hồ sơ của tôi" }).waitFor({ timeout: 15000 });
+  await page.getByText("TKT-2026-0098").first().waitFor({ timeout: 10000 });
+  await logout(page);
+}
+
+async function runMockOfficer(page) {
+  await login(page, "officer");
+  await page.getByRole("heading", { name: "Hàng chờ hồ sơ" }).waitFor({ timeout: 20000 });
+  await page.getByRole("link", { name: "TKT-2026-0098", exact: true }).click();
+  await page.waitForURL(/\/tickets\//, { timeout: 15000 });
+  await page.getByText("TKT-2026-0098").first().waitFor({ timeout: 10000 });
+  await page.getByRole("heading", { name: /Khiếu nại điểm/ }).waitFor({ timeout: 10000 });
   await page.goto(`${baseUrl}/reviews`, { waitUntil: "domcontentloaded" });
+  await page.getByText(/Rà soát/i).first().waitFor({ timeout: 15000 });
+  await logout(page);
+}
+
+async function runMock(page, requests) {
+  await runMockStudent(page);
+  await runMockOfficer(page);
   if (requests.length) {
     throw new Error(`mock offline smoke saw backend requests: ${requests.join(", ")}`);
   }
-  return { backendRequests: requests.length, finalUrl: page.url() };
+  return { roles: ["student", "officer"], backendRequests: requests.length, finalUrl: page.url() };
 }
 
 async function runApi(page) {
@@ -97,10 +121,29 @@ async function runApi(page) {
   await submit1.waitFor({ timeout: 10000 });
   report.steps.push("return-keeps-preview");
 
+  await page.getByLabel("Mục đích").fill(`nộp hồ sơ vay vốn ngân hàng ${marker} (giữ PATCH)`);
+  let releasePatch = () => {};
+  const holdPatch = new Promise((resolve) => {
+    releasePatch = resolve;
+  });
+  const patchRoute = "**/api/v1/previews/**";
+  await page.route(patchRoute, async (route) => {
+    if (route.request().method() === "PATCH") await holdPatch;
+    await route.continue();
+  });
+  await page.getByRole("button", { name: "Cập nhật preview" }).click();
   await page.getByRole("button", { name: "Mở lịch sử hội thoại" }).click();
   const previewThread = page.locator("nav[aria-label='Lịch sử hội thoại'] button[aria-current='true']");
   const previewTitle = ((await previewThread.innerText()) || "").split("\n")[0].trim();
   await page.getByRole("button", { name: "Trò chuyện mới" }).click();
+  const patchDone = page.waitForResponse((response) => response.request().method() === "PATCH" && /\/previews\//.test(response.url()), { timeout: 20000 });
+  releasePatch();
+  await patchDone;
+  await page.unroute(patchRoute);
+  if ((await page.getByRole("button", { name: "Nộp yêu cầu (Submit 1)" }).count()) > 0) {
+    throw new Error("delayed PATCH preview leaked onto the new thread");
+  }
+  report.steps.push("delayed-patch-stays-on-origin");
   await sendAssistant(page, "Tôi muốn khiếu nại điểm thi học phần Cấu trúc Dữ liệu.");
   await page.getByText("Trợ lý AI đã khóa", { exact: false }).first().waitFor({ timeout: 40000 });
   report.steps.push("second-thread-l4");

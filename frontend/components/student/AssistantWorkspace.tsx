@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { ArrowLeft, History, MessageCircle, Plus, X } from "lucide-react";
 import { useAssistant } from "@/lib/assistant-context";
 import { useVinUniForms } from "@/lib/vinuni-workspace";
+import { isDisplayTicketCode } from "@/lib/data/api/g2-flow";
 import { AccessibleDialog } from "@/components/shared/AccessibleDialog";
 import { AssistantConversation } from "./AssistantConversation";
 import { VinUniForm } from "./VinUniForm";
@@ -12,6 +13,10 @@ import { P0PreviewPanel } from "./P0PreviewPanel";
 export function AssistantWorkspace() {
   const assistant = useAssistant();
   const { state: forms } = useVinUniForms();
+  const ticketCode =
+    assistant.apiTicket && isDisplayTicketCode(assistant.apiTicket.code, assistant.apiTicket.id)
+      ? assistant.apiTicket.code
+      : null;
   const [historyOpen, setHistoryOpen] = useState(false);
   const [readMessages, setReadMessages] = useState(0);
   const [supportExpanded, setSupportExpanded] = useState(true);
@@ -19,7 +24,7 @@ export function AssistantWorkspace() {
   const formTab = useRef<HTMLButtonElement>(null);
   const task = assistant.active.formTask;
   const hasForm = assistant.isApiMode
-    ? Boolean(assistant.apiPreview || assistant.apiLocked || assistant.apiTicket)
+    ? Boolean(assistant.apiPreview || assistant.apiLocked || assistant.apiTicket || assistant.apiPendingTicketId)
     : Boolean(task);
   // A task remains mounted under mobile tabs so file selection and errors survive.
   const showForm = hasForm && assistant.formExpanded;
@@ -35,7 +40,7 @@ export function AssistantWorkspace() {
     <header className="flex min-h-14 shrink-0 flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-4 py-1 dark:border-slate-700">
       <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
         {hasForm && <button type="button" onClick={assistant.returnToStart} className="inline-flex min-h-11 items-center gap-2 rounded-lg px-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"><ArrowLeft className="h-4 w-4" />Trở về</button>}
-        <div className="min-w-0"><h1 className="font-semibold">{showForm ? assistant.isApiMode ? assistant.apiLocked ? "Bàn giao cán bộ" : "Preview giấy xác nhận" : task === "certificate" ? "Yêu cầu tài liệu VinUni" : "Khiếu nại điểm học phần" : "Trợ lý học vụ"}</h1>{!assistant.isApiMode && (!showForm || forms[task!].submission) && <p className="text-xs text-slate-600 dark:text-slate-400">{showForm ? `Mã hồ sơ: ${forms[task!].submission!.ticketCode}` : "Hướng dẫn thủ tục và hỗ trợ điền hồ sơ"}</p>}{assistant.isApiMode && <p className="text-xs text-slate-600 dark:text-slate-400">{assistant.apiTicket ? `Mã hồ sơ: ${assistant.apiTicket.code}` : "Chat P0 với backend stub · 3 trường giấy xác nhận"}</p>}</div>
+        <div className="min-w-0"><h1 className="font-semibold">{showForm ? assistant.isApiMode ? assistant.apiLocked ? "Bàn giao cán bộ" : "Preview giấy xác nhận" : task === "certificate" ? "Yêu cầu tài liệu VinUni" : "Khiếu nại điểm học phần" : "Trợ lý học vụ"}</h1>{!assistant.isApiMode && (!showForm || forms[task!].submission) && <p className="text-xs text-slate-600 dark:text-slate-400">{showForm ? `Mã hồ sơ: ${forms[task!].submission!.ticketCode}` : "Hướng dẫn thủ tục và hỗ trợ điền hồ sơ"}</p>}{assistant.isApiMode && <p className="text-xs text-slate-600 dark:text-slate-400">{ticketCode ? `Mã hồ sơ: ${ticketCode}` : assistant.apiPendingTicketId ? "Đã nộp yêu cầu. Đang đồng bộ mã hồ sơ." : "Chat P0 với backend stub · 3 trường giấy xác nhận"}</p>}</div>
       </div>
       <div className="flex items-center gap-1"><button type="button" onClick={() => setHistoryOpen(true)} aria-label="Mở lịch sử hội thoại" className="flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm hover:bg-slate-100 dark:hover:bg-slate-800"><History className="h-4 w-4" /><span className="hidden sm:inline">Cuộc trò chuyện</span></button>
         {showForm && <button type="button" aria-expanded={showSupport} aria-controls="workspace-chat" onClick={() => { setSupportExpanded(!showSupport); choose("form"); }} className="hidden min-h-11 items-center gap-2 rounded-lg px-3 text-sm text-blue-700 lg:flex dark:text-blue-300"><MessageCircle className="h-4 w-4" />{showSupport ? "Thu gọn trợ lý" : "Hỏi trợ lý"}</button>}

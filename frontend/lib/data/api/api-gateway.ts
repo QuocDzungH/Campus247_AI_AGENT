@@ -501,7 +501,7 @@ export class ApiCampusDataGateway implements CampusDataGateway {
   }
 
   async createChatSession(): Promise<ChatSession> {
-    const conversation = await this.createConversation({ idempotencyKey: crypto.randomUUID() });
+    const conversation = await this.createConversation();
     return mapConversationToSession(conversation);
   }
 
