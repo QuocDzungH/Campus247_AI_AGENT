@@ -25,24 +25,94 @@ import {
   AlertCircle,
   FileCheck,
   Edit3,
-  ExternalLink,
-  Info,
+  History,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { useStore } from "@/lib/store";
+import { LoadingState } from "@/components/shared/LoadingState";
+import { DataAccessState } from "@/components/shared/DataAccessState";
+import { Ticket } from "@/lib/types";
+import { AccessibleDialog } from "@/components/shared/AccessibleDialog";
 import { SystemVerificationItem, IssuedCertificateDocument } from "@/lib/types";
 import {
   downloadCertificateFile,
   openCertificatePrintWindow,
   buildDefaultCertificate,
 } from "@/lib/certificate-service";
+import { useDraftSession, useTicketDraftSession } from "@/lib/draft-context";
+import { StaffTicketWorkspace } from "@/components/staff/StaffTicketWorkspace";
 
-export default function TicketDetailPage() {
-  const params = useParams();
-  const ticketId = params?.ticketId as string;
+function StudentTicketView({ ticket }: { ticket: Ticket }) {
+  const statusLabel =
+    ticket.status === "open"
+      ? "Mới tiếp nhận"
+      : ticket.status === "pending_officer"
+      ? "Đang được cán bộ xử lý"
+      : "Đã hoàn tất";
 
+  return (
+    <div className="min-h-screen flex flex-col bg-transparent">
+      <Navbar />
+      <main className="w-full max-w-4xl mx-auto flex-1 p-4 sm:p-6 lg:p-8">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <div>
+            <p className="font-mono text-xs text-blue-600 dark:text-blue-400">{ticket.code}</p>
+            <h1 className="mt-1 text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
+              Theo dõi hồ sơ của bạn
+            </h1>
+          </div>
+          <Link
+            href={`/my-requests?ticket=${encodeURIComponent(ticket.id)}`}
+            className="inline-flex items-center justify-center min-h-11 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm"
+          >
+            Mở trong Yêu cầu của tôi
+          </Link>
+        </div>
+
+        <section aria-labelledby="student-ticket-title" className="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm p-5 sm:p-6 space-y-5">
+          <div>
+            <h2 id="student-ticket-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+              {ticket.title}
+            </h2>
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+              <span role="status" className="px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900/60 font-semibold">
+                {statusLabel}
+              </span>
+              <span className="text-slate-500 dark:text-slate-400">Gửi lúc: {ticket.submittedAt}</span>
+            </div>
+          </div>
+
+          <dl className="grid gap-3 sm:grid-cols-2 text-xs">
+            <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/70 p-3">
+              <dt className="text-slate-500 dark:text-slate-400">Nơi nhận</dt>
+              <dd className="mt-1 font-semibold text-slate-900 dark:text-white">{ticket.destinationOrg}</dd>
+            </div>
+            <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/70 p-3">
+              <dt className="text-slate-500 dark:text-slate-400">Mục đích</dt>
+              <dd className="mt-1 font-semibold text-slate-900 dark:text-white">{ticket.purpose}</dd>
+            </div>
+          </dl>
+
+          <div className="space-y-3" aria-labelledby="student-ticket-messages">
+            <h3 id="student-ticket-messages" className="text-sm font-bold text-slate-900 dark:text-white">Trao đổi gần đây</h3>
+            {ticket.messages.slice(-5).map((message) => (
+              <article key={message.id} className="rounded-2xl border border-slate-200 dark:border-slate-800 p-3 text-xs">
+                <div className="flex flex-wrap justify-between gap-2 font-semibold text-slate-700 dark:text-slate-300">
+                  <span>{message.senderName}</span>
+                  <time className="font-mono text-[11px] text-slate-400">{message.timestamp}</time>
+                </div>
+                <p className="mt-1.5 whitespace-pre-line leading-relaxed text-slate-600 dark:text-slate-400">{message.content}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}
+
+function TicketEditor({ ticket }: { ticket: Ticket }) {
   const {
-    getTicket,
     updateOfficerDraft,
     resetOfficerDraft,
     toggleChecklistItem,
@@ -54,55 +124,52 @@ export default function TicketDetailPage() {
     issueCertificate,
   } = useStore();
 
-  const ticket = getTicket(ticketId) || getTicket("TKT-2026-0142");
+  const {
+    getDraft,
+    setDraft,
+    clearDraft,
+    acquireOperation,
+    releaseOperation,
+  } = useDraftSession();
+  const ticketDraftSession = useTicketDraftSession(ticket.id);
+  const existingDraft = ticketDraftSession.draft;
+  const pendingOperation = ticketDraftSession.operation;
+  const isSavingDraft = pendingOperation?.kind === "save";
+  const isSyncing = pendingOperation?.kind === "sync";
+  const isSubmittingGate2 = pendingOperation?.kind === "submit";
 
   const [draftContent, setDraftContent] = useState(() =>
-    ticket ? ticket.officerDraft || ticket.officerDraftDefault : ""
+    ticket.officerDraft || ticket.officerDraftDefault || ""
   );
 
-  // Right column view toggle: Certificate Draft vs Reply Message
   const [activeRightTab, setActiveRightTab] = useState<"certificate" | "message">("certificate");
 
-  // Certificate edit fields state (synchronized with ticket.issuedCertificate)
   const [certDestinationOrg, setCertDestinationOrg] = useState(
-    () => ticket?.issuedCertificate?.destinationOrg || ticket?.destinationOrg || "Ngân hàng Chính sách Xã hội Chi nhánh Q. Thủ Đức"
+    () => existingDraft?.certDestinationOrg ?? (ticket.issuedCertificate?.destinationOrg || ticket.destinationOrg || "Ngân hàng Chính sách Xã hội Chi nhánh Q. Thủ Đức")
   );
   const [certPurpose, setCertPurpose] = useState(
-    () => ticket?.issuedCertificate?.purpose || ticket?.purpose || "Bổ sung hồ sơ vay vốn Ngân hàng Chính sách Xã hội kỳ 2 năm học 2025 - 2026"
+    () => existingDraft?.certPurpose ?? (ticket.issuedCertificate?.purpose || ticket.purpose || "Bổ sung hồ sơ vay vốn Ngân hàng Chính sách Xã hội kỳ 2 năm học 2025 - 2026")
   );
   const [certValidUntil, setCertValidUntil] = useState(
-    () => ticket?.issuedCertificate?.validUntil || "Có giá trị sử dụng trong 30 ngày kể từ ngày cấp"
+    () => existingDraft?.certValidUntil ?? (ticket.issuedCertificate?.validUntil || "Có giá trị sử dụng trong 30 ngày kể từ ngày cấp")
   );
   const [certNotes, setCertNotes] = useState(
-    () => ticket?.issuedCertificate?.customOfficerNotes || "Sinh viên chấp hành tốt nội quy trường học và hoàn thành đầy đủ nghĩa vụ học kỳ."
+    () => existingDraft?.certNotes ?? (ticket.issuedCertificate?.customOfficerNotes || "Sinh viên chấp hành tốt nội quy trường học và hoàn thành đầy đủ nghĩa vụ học kỳ.")
   );
 
-  // Modals
   const [showPreflightModal, setShowPreflightModal] = useState(false);
   const [modalActionType, setModalActionType] = useState<"respond" | "request_info" | "resolve">("respond");
   const [viewingEvidenceItem, setViewingEvidenceItem] = useState<SystemVerificationItem | null>(null);
 
-  // Toast / notifications
-  const [notificationDismissed, setNotificationDismissed] = useState(false);
   const [syncToast, setSyncToast] = useState(false);
   const [downloadSuccessToast, setDownloadSuccessToast] = useState(false);
-
-  if (!ticket) {
-    return (
-      <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#0B0F17]">
-        <Navbar />
-        <div className="max-w-4xl mx-auto p-12 text-center text-xs">
-          <p className="text-slate-500">Không tìm thấy mã hồ sơ: {ticketId}</p>
-          <Link href="/dashboard" className="text-blue-600 underline mt-2 inline-block">
-            Quay lại Hàng chờ
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  const [certUpdateError, setCertUpdateError] = useState<string | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const [gate2Error, setGate2Error] = useState<string | null>(null);
+  const hasUnsavedChanges = existingDraft?.hasUnsavedChanges ?? false;
+  const draftRevision = existingDraft?.revision ?? 0;
 
   const isL4 = ticket.isL4 || ticket.code === "TKT-2026-0098";
-  const checkedCount = ticket.checklist.filter((c) => c.checked).length;
 
   // Active certificate representation
   const activeCert: IssuedCertificateDocument = ticket.issuedCertificate || buildDefaultCertificate(ticket, {
@@ -116,8 +183,6 @@ export default function TicketDetailPage() {
   const verifications = ticket.systemVerifications || [];
   const hasErrorVerif = verifications.some((v) => v.status === "error");
   const hasInsufficientVerif = verifications.some((v) => v.status === "insufficient");
-  const allVerifsPassed = verifications.length > 0 && verifications.every((v) => v.status === "passed");
-  const allOfficerConfirmed = verifications.length > 0 && verifications.every((v) => v.officerReviewStatus === "confirmed");
 
   const handleDraftChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;
@@ -131,37 +196,129 @@ export default function TicketDetailPage() {
   };
 
   const handleCertFieldChange = (field: "destinationOrg" | "purpose" | "validUntil" | "customOfficerNotes", val: string) => {
-    if (field === "destinationOrg") setCertDestinationOrg(val);
-    if (field === "purpose") setCertPurpose(val);
-    if (field === "validUntil") setCertValidUntil(val);
-    if (field === "customOfficerNotes") setCertNotes(val);
+    if (isSavingDraft || isSyncing || isSubmittingGate2) {
+      setCertUpdateError("Đang có tiến trình chạy (lưu/đồng bộ/phát hành). Không thể sửa.");
+      return;
+    }
 
-    updateCertificateDraft(ticket.id, { [field]: val });
+    let dest = certDestinationOrg, purp = certPurpose, vUntil = certValidUntil, notes = certNotes;
+
+    if (field === "destinationOrg") { setCertDestinationOrg(val); dest = val; }
+    if (field === "purpose") { setCertPurpose(val); purp = val; }
+    if (field === "validUntil") { setCertValidUntil(val); vUntil = val; }
+    if (field === "customOfficerNotes") { setCertNotes(val); notes = val; }
+
+    setCertUpdateError(null);
+
+    const newRev = (getDraft(ticket.id)?.revision ?? draftRevision) + 1;
+
+    setDraft(ticket.id, {
+      certDestinationOrg: dest,
+      certPurpose: purp,
+      certValidUntil: vUntil,
+      certNotes: notes,
+      hasUnsavedChanges: true,
+      revision: newRev,
+    });
   };
 
-  const handleAiSync = () => {
-    runTicketVerification(ticket.id);
-    setSyncToast(true);
-    setTimeout(() => setSyncToast(false), 2500);
+  const handleSaveDraft = async () => {
+    if (isSavingDraft || isSyncing || isSubmittingGate2) {
+      setCertUpdateError("Không thể lưu khi đang có tiến trình khác chạy.");
+      return;
+    }
+    if (!hasUnsavedChanges) return;
+
+    const operationToken = acquireOperation(ticket.id, "save");
+    if (!operationToken) {
+      setCertUpdateError("Không thể lưu khi hồ sơ đang có tiến trình khác chạy.");
+      return;
+    }
+
+    setCertUpdateError(null);
+    const snapRev = getDraft(ticket.id)?.revision ?? draftRevision;
+
+    try {
+      await updateCertificateDraft(ticket.id, {
+        destinationOrg: certDestinationOrg,
+        purpose: certPurpose,
+        validUntil: certValidUntil,
+        customOfficerNotes: certNotes,
+      });
+
+      const latestDraft = getDraft(ticket.id);
+      if (latestDraft && latestDraft.revision === snapRev) {
+        setDraft(ticket.id, { ...latestDraft, hasUnsavedChanges: false });
+      }
+    } catch (error) {
+      setCertUpdateError(error instanceof Error ? error.message : "Không thể cập nhật biểu mẫu");
+    } finally {
+      releaseOperation(ticket.id, operationToken);
+    }
+  };
+
+  const handleAiSync = async () => {
+    if (isSyncing || isSavingDraft || isSubmittingGate2) {
+      setSyncError("Hệ thống đang xử lý tác vụ khác.");
+      return;
+    }
+
+    const operationToken = acquireOperation(ticket.id, "sync");
+    if (!operationToken) {
+      setSyncError("Hệ thống đang xử lý tác vụ khác.");
+      return;
+    }
+
+    setSyncError(null);
+    try {
+      await runTicketVerification(ticket.id);
+      setSyncToast(true);
+      setTimeout(() => setSyncToast(false), 2500);
+    } catch (error) {
+      setSyncError(error instanceof Error ? error.message : "Đã có lỗi xảy ra");
+    } finally {
+      releaseOperation(ticket.id, operationToken);
+    }
   };
 
   const triggerAction = (type: "respond" | "request_info" | "resolve") => {
+    if (isSavingDraft || isSyncing || isSubmittingGate2) {
+      return;
+    }
     setModalActionType(type);
     setShowPreflightModal(true);
   };
 
-  const confirmSubmitGate2 = () => {
-    if (modalActionType === "resolve" && ticket.type === "certificate") {
-      const issued = issueCertificate(ticket.id);
-      if (issued) {
+  const confirmSubmitGate2 = async () => {
+    if (hasUnsavedChanges || isSavingDraft || isSyncing || isSubmittingGate2) {
+      setGate2Error("Bạn có thay đổi chưa lưu trên bản thảo, hoặc đang có tiến trình chạy.");
+      return;
+    }
+
+    const operationToken = acquireOperation(ticket.id, "submit");
+    if (!operationToken) {
+      setGate2Error("Hồ sơ đang có tiến trình khác chạy. Vui lòng chờ hoàn tất.");
+      return;
+    }
+
+    setGate2Error(null);
+    try {
+      if (modalActionType === "resolve" && ticket.type === "certificate") {
+        const issued = await issueCertificate(ticket.id);
+        if (!issued) throw new Error("Không thể phát hành giấy xác nhận cho hồ sơ này.");
         downloadCertificateFile(issued);
         setDownloadSuccessToast(true);
         setTimeout(() => setDownloadSuccessToast(false), 4000);
+      } else {
+        await submitGate2Response(ticket.id, modalActionType, draftContent);
       }
-    } else {
-      submitGate2Response(ticket.id, modalActionType, draftContent);
+      clearDraft(ticket.id);
+      setShowPreflightModal(false);
+    } catch (error) {
+      setGate2Error(error instanceof Error ? error.message : "Đã có lỗi xảy ra");
+    } finally {
+      releaseOperation(ticket.id, operationToken);
     }
-    setShowPreflightModal(false);
   };
 
   const handleDirectDownload = () => {
@@ -287,10 +444,15 @@ export default function TicketDetailPage() {
                 Trigger: DISPUTED_GRADE_EVENT
               </span>
             </div>
-            <p className="text-xs leading-relaxed text-rose-200/90">
-              {ticket.l4TriggerReason ||
-                "Hệ thống AI đã lập tức dừng đối thoại tự động sau khi phát hiện khiếu nại điểm môn Cấu trúc Dữ liệu. Toàn bộ lược sử tương tác và hồ sơ đối soát được đóng gói niêm phong chuyển sang Cán bộ OF001 kiểm duyệt độc lập."}
-            </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-2">
+              <p className="text-xs leading-relaxed text-rose-200/90 flex-1">
+                {ticket.l4TriggerReason ||
+                  "Hệ thống AI đã lập tức dừng đối thoại tự động sau khi phát hiện khiếu nại điểm môn Cấu trúc Dữ liệu. Toàn bộ lược sử tương tác và hồ sơ đối soát được đóng gói niêm phong chuyển sang Cán bộ OF001 kiểm duyệt độc lập."}
+              </p>
+              <button className="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-semibold text-xs transition-colors shrink-0 whitespace-nowrap shadow-md">
+                Tiếp nhận thụ lý ca L4 này
+              </button>
+            </div>
           </div>
         )}
 
@@ -309,19 +471,27 @@ export default function TicketDetailPage() {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={handleAiSync}
-              className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs shadow-sm flex items-center gap-2 transition-colors shrink-0"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>Chạy lại đối soát tự động</span>
-            </button>
+            <div className="flex flex-col items-end gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleAiSync}
+                disabled={isSavingDraft || isSyncing || isSubmittingGate2}
+                className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs shadow-sm flex items-center gap-2 transition-colors disabled:opacity-50"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>{isSyncing ? "Đang đối soát..." : "Chạy lại đối soát tự động"}</span>
+              </button>
+              {syncError && (
+                <div role="alert" className="text-red-600 dark:text-red-400 font-semibold text-xs text-right w-full">
+                  {syncError}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
         {/* Student Profile Banner */}
-        <div className="p-4 sm:p-5 rounded-3xl glass-surface shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-xl bg-blue-600/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-bold text-base flex items-center justify-center border border-blue-200 dark:border-blue-800">
               {ticket.studentName.charAt(0)}
@@ -346,16 +516,23 @@ export default function TicketDetailPage() {
             </div>
           </div>
 
-          <div className="text-left sm:text-right sm:border-l sm:border-slate-200 sm:dark:border-slate-800 sm:pl-6">
-            <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
-              MỤC TIÊU YÊU CẦU &amp; BIỂU MẪU
+          <div className="text-left sm:text-right sm:border-l sm:border-slate-200 sm:dark:border-slate-800 sm:pl-6 space-y-2">
+            <div>
+              <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
+                MỤC TIÊU YÊU CẦU &amp; BIỂU MẪU
+              </div>
+              <div className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">
+                {ticket.title}
+              </div>
+              <div className="text-[11px] text-blue-600 dark:text-blue-400 font-medium">
+                Biểu mẫu: BM-03/CTSV · Tiếp nhận: {ticket.receiveMethod === "digital_pdf" ? "Bản điện tử (PDF)" : "Bản giấy tại văn phòng"}
+              </div>
             </div>
-            <div className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">
-              {ticket.title}
-            </div>
-            <div className="text-[11px] text-blue-600 dark:text-blue-400 font-medium">
-              Biểu mẫu: BM-03/CTSV · Tiếp nhận: {ticket.receiveMethod === "digital_pdf" ? "Bản điện tử (PDF)" : "Bản giấy tại văn phòng"}
-            </div>
+
+            <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 text-[11px] font-semibold text-slate-700 dark:text-slate-300 transition-colors">
+              <History className="w-3.5 h-3.5" />
+              <span>Xem lịch sử yêu cầu (3)</span>
+            </button>
           </div>
         </div>
 
@@ -387,16 +564,23 @@ export default function TicketDetailPage() {
           {/* Left Column (7 cols): System Automated Verification Pre-check, Facts, Audit */}
           <div className="lg:col-span-7 space-y-5">
             {/* AI Copilot Brief */}
-            <div className="p-5 rounded-3xl glass-surface space-y-3.5">
+            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 space-y-3.5">
               <div className="flex items-center justify-between border-b border-white/50 dark:border-white/10 pb-2">
                 <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-xs">
                   <Sparkles className="w-4 h-4 text-blue-500" />
                   <span>AI COPILOT TÓM TẮT &amp; CHUẨN BỊ CA XỬ LÝ</span>
                 </div>
-                <span className="font-mono text-[10px] text-slate-400">
-                  Engine v4.2 · Conf. {ticket.aiSummary.confidence}
+                <span
+                  className="inline-flex items-center gap-1 font-mono text-[11px] text-slate-500 dark:text-slate-400"
+                  title="Bản mẫu chưa có thước đo tin cậy được hiệu chuẩn."
+                >
+                  AI tham khảo · Chưa hiệu chuẩn độ tin cậy
                 </span>
               </div>
+
+              <p className="text-xs text-slate-600 dark:text-slate-300">
+                Tóm tắt từ dữ liệu mẫu. Xem nguồn và thời điểm đối soát ở từng điều kiện bên dưới; cán bộ kiểm tra bằng chứng trước khi quyết định.
+              </p>
 
               <div className="space-y-2.5 text-xs text-slate-700 dark:text-slate-300">
                 <div>
@@ -430,7 +614,7 @@ export default function TicketDetailPage() {
 
             {/* BẢNG KẾT QUẢ ĐỐI SOÁT TỰ ĐỘNG CỦA HỆ THỐNG (System Automated Pre-check) */}
             {!isL4 && (
-              <div className="p-5 rounded-3xl glass-surface space-y-4">
+              <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/60 dark:border-slate-800 pb-3">
                   <div>
                     <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-xs sm:text-sm">
@@ -598,7 +782,7 @@ export default function TicketDetailPage() {
 
             {/* Facts & Evidence Section (If L4) */}
             {isL4 && ticket.l4EvidenceVerification && (
-              <div className="p-5 rounded-2xl glass-surface space-y-4">
+              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                   <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-xs">
                     <ShieldCheck className="w-4 h-4 text-indigo-500" />
@@ -662,7 +846,7 @@ export default function TicketDetailPage() {
             )}
 
             {/* Checklist Thẩm định Nghiệp vụ (với L4) hoặc Thông tin hồ sơ đính kèm */}
-            <div className="p-5 rounded-2xl glass-surface space-y-3.5">
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 space-y-3.5">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                 <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-xs">
                   <CheckSquare className="w-4 h-4 text-emerald-500" />
@@ -701,13 +885,13 @@ export default function TicketDetailPage() {
             </div>
 
             {/* Audit Log */}
-            <div className="p-5 rounded-2xl glass-surface space-y-3">
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 space-y-3">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                 <span className="font-bold text-slate-900 dark:text-white text-xs">
                   Nhật ký Trách nhiệm &amp; Audit Log
                 </span>
                 <span className="font-mono text-[10px] text-slate-400">
-                  BLOCKCHAIN INTEGRITY LOG
+                  NHẬT KÝ THAO TÁC MẪU
                 </span>
               </div>
 
@@ -730,7 +914,7 @@ export default function TicketDetailPage() {
 
           {/* Right Column (5 cols): Submit 2 Gate - Certificate Draft Preview & Officer Review */}
           <div className="lg:col-span-5 space-y-5 sticky top-20">
-            <div className="p-5 rounded-3xl glass-surface shadow-2xl space-y-4">
+            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
               {/* Header with Switcher Tabs */}
               <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-3">
                 <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-xs">
@@ -829,56 +1013,85 @@ export default function TicketDetailPage() {
                       </div>
                     </div>
 
+                    {certUpdateError && (
+                      <div role="alert" className="p-2.5 rounded-xl bg-red-50 text-red-700 text-[11px] border border-red-200">
+                        {certUpdateError}
+                      </div>
+                    )}
+
                     {/* Editable Fields by Officer */}
                     <div className="space-y-2.5 text-[11px]">
                       <div>
-                        <label className="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1">
+                        <label htmlFor="certDestinationOrg" className="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1">
                           <Edit3 className="w-3 h-3 text-blue-500" />
                           <span>Cơ quan / Đơn vị tiếp nhận văn bản:</span>
                         </label>
                         <input
+                          id="certDestinationOrg"
                           type="text"
                           value={certDestinationOrg}
                           onChange={(e) => handleCertFieldChange("destinationOrg", e.target.value)}
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white focus:ring-1 focus:ring-blue-500"
+                          disabled={isSavingDraft || isSyncing || isSubmittingGate2}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1">
+                        <label htmlFor="certPurpose" className="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1">
                           <Edit3 className="w-3 h-3 text-blue-500" />
                           <span>Mục đích cấp giấy (Chuẩn hóa câu chữ):</span>
                         </label>
                         <textarea
+                          id="certPurpose"
                           rows={2}
                           value={certPurpose}
                           onChange={(e) => handleCertFieldChange("purpose", e.target.value)}
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white focus:ring-1 focus:ring-blue-500"
+                          disabled={isSavingDraft || isSyncing || isSubmittingGate2}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">
+                        <label htmlFor="certValidUntil" className="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">
                           Thời hạn có giá trị:
                         </label>
                         <input
+                          id="certValidUntil"
                           type="text"
                           value={certValidUntil}
                           onChange={(e) => handleCertFieldChange("validUntil", e.target.value)}
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white"
+                          disabled={isSavingDraft || isSyncing || isSubmittingGate2}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white disabled:opacity-50"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">
+                        <label htmlFor="certNotes" className="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">
                           Ghi chú bổ sung của Cán bộ:
                         </label>
                         <input
+                          id="certNotes"
                           type="text"
                           value={certNotes}
                           onChange={(e) => handleCertFieldChange("customOfficerNotes", e.target.value)}
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white"
+                          disabled={isSavingDraft || isSyncing || isSubmittingGate2}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white disabled:opacity-50"
                         />
+                      </div>
+                      <div className="flex flex-col items-end pt-2 gap-1.5">
+                        <button
+                          type="button"
+                          onClick={handleSaveDraft}
+                          disabled={!hasUnsavedChanges || isSavingDraft || isSyncing || isSubmittingGate2}
+                          className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-[10px] font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-2xs"
+                        >
+                          {isSavingDraft ? "Đang lưu..." : "Lưu bản thảo"}
+                        </button>
+                        {hasUnsavedChanges && (
+                          <span className="text-[10px] text-amber-600 dark:text-amber-500 max-w-xs text-right">
+                            Bản thảo chưa lưu sẽ bị xóa khi kết thúc phiên đăng nhập hiện tại.
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -929,6 +1142,29 @@ export default function TicketDetailPage() {
                     </button>
                   </div>
 
+                  {/* Predefined Templates */}
+                  <div className="flex flex-wrap items-center gap-2 pb-1">
+                    <span className="text-[10px] text-slate-500 font-semibold mr-1">Mẫu nhanh:</span>
+                    <button
+                      onClick={() => setDraftContent("Chào em, hồ sơ của em đã được tiếp nhận và đang trong quá trình xử lý. Phòng Đào tạo sẽ phản hồi kết quả trong vòng 2 ngày làm việc.")}
+                      className="px-2 py-1 rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[10px] text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    >
+                      Đã tiếp nhận
+                    </button>
+                    <button
+                      onClick={() => setDraftContent("Chào em, em vui lòng bổ sung thêm bản chụp CMND/CCCD và Đơn xin xác nhận có chữ ký tay để Phòng Đào tạo có đủ căn cứ giải quyết.")}
+                      className="px-2 py-1 rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[10px] text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    >
+                      Yêu cầu bổ sung
+                    </button>
+                    <button
+                      onClick={() => setDraftContent("Chào em, yêu cầu của em đã được giải quyết. Giấy xác nhận bản điện tử đã được đính kèm vào hồ sơ này. Em có thể tải về để sử dụng.")}
+                      className="px-2 py-1 rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[10px] text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    >
+                      Đã giải quyết
+                    </button>
+                  </div>
+
                   <textarea
                     rows={8}
                     value={draftContent}
@@ -962,7 +1198,8 @@ export default function TicketDetailPage() {
                 <button
                   type="button"
                   onClick={() => triggerAction("respond")}
-                  className="w-full py-2 px-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-xs flex items-center justify-center gap-2 transition-colors"
+                  disabled={isSavingDraft || isSyncing || isSubmittingGate2}
+                  className="w-full py-2 px-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-xs flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
                 >
                   <Send className="w-3.5 h-3.5 text-blue-500" />
                   <span>Gửi tin nhắn phản hồi (Chờ cán bộ)</span>
@@ -972,7 +1209,8 @@ export default function TicketDetailPage() {
                 <button
                   type="button"
                   onClick={() => triggerAction("request_info")}
-                  className="w-full py-2 px-4 rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/50 dark:bg-amber-950/20 hover:bg-amber-100 dark:hover:bg-amber-950/40 text-amber-800 dark:text-amber-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
+                  disabled={isSavingDraft || isSyncing || isSubmittingGate2}
+                  className="w-full py-2 px-4 rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/50 dark:bg-amber-950/20 hover:bg-amber-100 dark:hover:bg-amber-950/40 text-amber-800 dark:text-amber-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50"
                 >
                   <HelpCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                   <span>Yêu cầu sinh viên bổ sung hồ sơ</span>
@@ -982,7 +1220,8 @@ export default function TicketDetailPage() {
                 <button
                   type="button"
                   onClick={() => triggerAction("resolve")}
-                  className={`w-full py-2.5 px-4 rounded-xl text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-md transition-all ${
+                  disabled={isSavingDraft || isSyncing || isSubmittingGate2}
+                  className={`w-full py-2.5 px-4 rounded-xl text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-md transition-all disabled:opacity-50 ${
                     ticket.status === "resolved"
                       ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20"
                       : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/20"
@@ -1031,11 +1270,16 @@ export default function TicketDetailPage() {
 
       {/* Modal: Bằng chứng Tra cứu CSDL (Evidence Viewer) */}
       {viewingEvidenceItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fade-in">
+        <AccessibleDialog
+          open={Boolean(viewingEvidenceItem)}
+          onClose={() => setViewingEvidenceItem(null)}
+          labelledBy="ticket-evidence-dialog-title"
+          className="w-full max-w-xl"
+        >
           <div className="max-w-xl w-full p-6 rounded-3xl glass-surface shadow-2xl border border-white/20 space-y-4">
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="font-bold text-slate-900 dark:text-white text-sm">
+                <h3 id="ticket-evidence-dialog-title" className="font-bold text-slate-900 dark:text-white text-sm">
                   Bằng chứng Tra cứu Hệ thống &amp; CSDL
                 </h3>
                 <p className="text-xs text-slate-500 font-mono mt-0.5">
@@ -1045,6 +1289,7 @@ export default function TicketDetailPage() {
               <button
                 type="button"
                 onClick={() => setViewingEvidenceItem(null)}
+                aria-label="Đóng bằng chứng tra cứu hệ thống"
                 className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >
                 <X className="w-5 h-5" />
@@ -1096,24 +1341,32 @@ export default function TicketDetailPage() {
               </button>
             </div>
           </div>
-        </div>
+        </AccessibleDialog>
       )}
 
       {/* Modal: Xác nhận Cổng Kiểm duyệt 2 (Pre-Flight Check) */}
       {showPreflightModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fade-in">
+        <AccessibleDialog
+          open={showPreflightModal}
+          onClose={() => setShowPreflightModal(false)}
+          preventClose={isSubmittingGate2}
+          labelledBy="ticket-preflight-dialog-title"
+          className="w-full max-w-md"
+        >
           <div className="max-w-md w-full p-6 rounded-3xl glass-surface shadow-2xl border border-white/20 space-y-4">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-indigo-600" />
-                <h3 className="font-bold text-slate-900 dark:text-white text-sm">
+                <h3 id="ticket-preflight-dialog-title" className="font-bold text-slate-900 dark:text-white text-sm">
                   Xác nhận Phê duyệt Cổng Kiểm duyệt 2
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowPreflightModal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
+                disabled={isSubmittingGate2}
+                aria-label="Đóng xác nhận hành động hồ sơ"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 disabled:opacity-50"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1155,25 +1408,85 @@ export default function TicketDetailPage() {
               )}
             </div>
 
+            {gate2Error && (
+              <div role="alert" className="p-3 rounded-xl bg-red-50 text-red-700 text-xs mt-2 border border-red-200">
+                {gate2Error}
+              </div>
+            )}
+
             <div className="flex items-center justify-end gap-2.5 pt-2">
               <button
                 type="button"
                 onClick={() => setShowPreflightModal(false)}
-                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 transition-colors"
+                disabled={isSubmittingGate2}
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 transition-colors disabled:opacity-50"
               >
                 Hủy bỏ
               </button>
               <button
                 type="button"
+                disabled={isSubmittingGate2}
                 onClick={confirmSubmitGate2}
-                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all"
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Xác nhận thực hiện
+                {isSubmittingGate2 ? "Đang xử lý..." : "Xác nhận thực hiện"}
               </button>
             </div>
           </div>
-        </div>
+        </AccessibleDialog>
       )}
     </div>
   );
+}
+
+export default function TicketDetailPage() {
+  const params = useParams();
+  const ticketId = params?.ticketId as string;
+  const { getTicket, currentUser, isDataLoading } = useStore();
+
+  const ticket = getTicket(ticketId);
+
+  if (isDataLoading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-transparent">
+        <Navbar />
+        <LoadingState title="Đang tải hồ sơ..." description="Hệ thống đang đồng bộ dữ liệu hồ sơ." />
+      </div>
+    );
+  }
+
+  if (!currentUser) return <DataAccessState />;
+
+  if (!ticket) {
+    return (
+      <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#0B0F17]">
+        <Navbar />
+        <div className="max-w-4xl mx-auto p-12 text-center text-xs">
+          <p className="text-slate-500">Không tìm thấy mã hồ sơ: {ticketId}</p>
+          <Link href={currentUser.role === "officer" ? "/dashboard" : "/my-requests"} className="text-blue-600 underline mt-2 inline-block">
+            {currentUser.role === "officer" ? "Quay lại Hàng chờ" : "Quay lại Yêu cầu của tôi"}
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (currentUser.role !== "officer") {
+    if (ticket.studentId !== currentUser.id) {
+      return (
+        <div className="min-h-screen flex flex-col bg-transparent">
+          <Navbar />
+          <main className="max-w-2xl mx-auto w-full p-8 text-center">
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">Bạn không có quyền xem hồ sơ này</h1>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Hãy quay lại danh sách hồ sơ của bạn để tiếp tục.</p>
+            <Link href="/my-requests" className="inline-flex mt-5 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold">Quay lại Yêu cầu của tôi</Link>
+          </main>
+        </div>
+      );
+    }
+    return <StudentTicketView ticket={ticket} />;
+  }
+
+  void TicketEditor;
+  return <StaffTicketWorkspace key={`${currentUser.id}-${ticket.id}`} ticket={ticket} />;
 }

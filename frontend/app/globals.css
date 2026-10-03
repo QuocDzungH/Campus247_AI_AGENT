@@ -1,19 +1,23 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
   :root {
-    --bg-page: #F5F7FB;
+    --bg-page: #F7F8FC;
     --surface-card: #FFFFFF;
     --surface-subtle: #F8FAFC;
-    --border-color: #E2E8F0;
-    --border-highlight: #CBD5E1;
-    --text-primary: #172033;
-    --text-secondary: #475569;
-    --text-muted: #64748B;
-    --accent-blue: #2457D6;
-    --accent-blue-hover: #1D46B0;
+    --border-color: #E5E7EB;
+    --border-highlight: #D1D5DB;
+    --text-primary: #111827;
+    --text-secondary: #4B5563;
+    --text-muted: #6B7280;
+    --accent-blue: #2563EB;
+    --accent-blue-hover: #1D4ED8;
     --accent-cyan: #0284C7;
-    --grid-dot: rgba(0, 0, 0, 0.05);
+    --status-green: #059669;
+    --status-amber: #D97706;
+    --status-red: #DC2626;
+    --focus-ring: #2563EB;
   }
 
   .dark {
@@ -21,14 +25,17 @@
     --surface-card: #111827;
     --surface-subtle: #161F30;
     --border-color: #1F2937;
-    --border-highlight: #2C3B53;
-    --text-primary: #F1F5F9;
-    --text-secondary: #CBD5E1;
-    --text-muted: #94A3B8;
+    --border-highlight: #374151;
+    --text-primary: #F3F4F6;
+    --text-secondary: #D1D5DB;
+    --text-muted: #9CA3AF;
     --accent-blue: #3B82F6;
     --accent-blue-hover: #2563EB;
     --accent-cyan: #38BDF8;
-    --grid-dot: rgba(255, 255, 255, 0.07);
+    --status-green: #10B981;
+    --status-amber: #F59E0B;
+    --status-red: #EF4444;
+    --focus-ring: #60A5FA;
   }
 
   * {
@@ -39,101 +46,43 @@
     background-color: var(--bg-page);
     color: var(--text-primary);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  button:not(:disabled), select:not(:disabled) {
+    cursor: pointer;
   }
 }
 
-.bg-dot-pattern {
-  background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
-  background-size: 20px 20px;
+
+
+/* Clean CSS for standard inputs */
+.staff-workspace,
+.campus-dialog {
+  overflow-wrap: anywhere;
 }
 
-/* Frosted Glassmorphism Styles (Apple Liquid Glass Tier) */
-.glass-surface {
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(24px) saturate(190%);
-  -webkit-backdrop-filter: blur(24px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.80);
-  box-shadow: 
-    0 12px 36px 0 rgba(31, 38, 135, 0.09),
-    0 2px 6px 0 rgba(0, 0, 0, 0.03),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.03);
+/* Metadata carries status and source information, including inside portals. */
+.staff-workspace .text-slate-500,
+.campus-dialog .text-slate-500 {
+  color: var(--text-secondary);
 }
 
-.dark .glass-surface {
-  background: rgba(13, 20, 36, 0.65);
-  backdrop-filter: blur(28px) saturate(190%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 
-    0 16px 44px 0 rgba(0, 0, 0, 0.55),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.22),
-    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.35);
-}
-
-.glass-nav {
-  background: rgba(255, 255, 255, 0.70);
-  backdrop-filter: blur(20px) saturate(190%);
-  -webkit-backdrop-filter: blur(20px) saturate(190%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.dark .glass-nav {
-  background: rgba(7, 10, 16, 0.70);
-  backdrop-filter: blur(20px) saturate(190%);
-  -webkit-backdrop-filter: blur(20px) saturate(190%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
-  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
-
-.glass-card-interactive {
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.glass-card-interactive:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 36px 0 rgba(31, 38, 135, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-}
-
-.dark .glass-card-interactive:hover {
-  box-shadow: 0 12px 36px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.glass-pill {
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-}
-
-.dark .glass-pill {
-  background: rgba(30, 41, 59, 0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+.dark .staff-workspace .text-slate-500,
+.dark .campus-dialog .text-slate-500 {
+  color: var(--text-muted);
 }
 
 .glass-input {
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.dark .glass-input {
-  background: rgba(17, 24, 39, 0.65);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.glass-banner-overlay {
-  background: linear-gradient(135deg, rgba(11, 15, 23, 0.88) 0%, rgba(15, 23, 42, 0.72) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-}
-
-:root:not(.dark) .glass-banner-overlay {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.90) 0%, rgba(240, 244, 255, 0.75) 100%);
+  background: var(--surface-card);
 }
 
 /* Custom Scrollbar */
@@ -150,4 +99,25 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(156, 163, 175, 0.6);
+}
+
+/* Kept for backward compat but unused in new design */
+.bg-dot-pattern {
+  background-image: none;
+}
+
+@layer utilities {
+  /* Keep information-bearing metadata readable on narrow Vietnamese layouts. */
+  .text-\[9px\] { font-size: 0.75rem; line-height: 1rem; }
+  .text-\[10px\] { font-size: 0.75rem; line-height: 1rem; }
+  .text-\[11px\] { font-size: 0.75rem; line-height: 1.25rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

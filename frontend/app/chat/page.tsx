@@ -2,14 +2,13 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { formatDate } from "@/lib/format-date";
 import {
   Send,
   Paperclip,
   Bot,
   BookOpen,
   FileText,
-  AlertTriangle,
-  ExternalLink,
   ShieldAlert,
   ArrowRight,
   Plus,
@@ -25,6 +24,9 @@ import { Submit1Modal } from "@/components/student/Submit1Modal";
 import { StudentWorkspaceHub } from "@/components/student/StudentWorkspaceHub";
 import { TicketSuccessCard } from "@/components/student/TicketSuccessCard";
 import { useStore } from "@/lib/store";
+import { LoadingState } from "@/components/shared/LoadingState";
+import { DataAccessState } from "@/components/shared/DataAccessState";
+import { AccessibleDialog } from "@/components/shared/AccessibleDialog";
 
 export default function ChatPage() {
   const {
@@ -43,17 +45,59 @@ export default function ChatPage() {
     updateGate1Field,
     createTicket,
     tickets,
+    isDataLoading,
   } = useStore();
 
   const [input, setInput] = useState("");
   const [mobileTab, setMobileTab] = useState<"chat" | "workspace">("chat");
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [historySearch, setHistorySearch] = useState("");
+  const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
+  const [isDeletingSession, setIsDeletingSession] = useState(false);
+  const [deleteSessionError, setDeleteSessionError] = useState<string | null>(null);
+
+  const handleDeleteSession = async () => {
+    if (!sessionToDelete || isDeletingSession) return;
+    setIsDeletingSession(true);
+    setDeleteSessionError(null);
+    try {
+      await deleteChatSession(sessionToDelete);
+      setSessionToDelete(null);
+    } catch (error) {
+      setDeleteSessionError(error instanceof Error ? error.message : "Đã có lỗi xảy ra");
+    } finally {
+      setIsDeletingSession(false);
+    }
+  };
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages, isGate1Open]);
+
+  if (isDataLoading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-transparent">
+        <Navbar />
+        <LoadingState title="Đang tải Trợ lý Học vụ..." description="Đang đồng bộ phiên tư vấn của bạn." />
+      </div>
+    );
+  }
+
+  if (!currentUser) return <DataAccessState requiredRole="student" />;
+
+  if (currentUser.role !== "student") {
+    return (
+      <div className="min-h-screen flex flex-col bg-transparent">
+        <Navbar />
+        <main className="max-w-2xl mx-auto w-full p-8 text-center">
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">Trợ lý Học vụ dành cho sinh viên</h1>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Tài khoản cán bộ có thể xử lý hồ sơ tại Hàng chờ.</p>
+          <Link href="/dashboard" className="inline-flex mt-5 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold">Mở Hàng chờ cán bộ</Link>
+        </main>
+      </div>
+    );
+  }
 
   const sessions = chatSessions || [];
   const filteredSessions = sessions.filter((s) => {
@@ -87,10 +131,10 @@ export default function ChatPage() {
       addChatMessage({
         sender: "bot",
         level: "L1",
-        text: "Chào bạn Nguyễn Văn An! Theo Quy chế Đào tạo L1 (Điều 14, Khoản 2) ban hành năm 2024:\n\n• Bản điện tử (PDF ký số hợp lệ): Tự động xuất sau khi Cán bộ đối soát CSDL đào tạo (tối đa 4 giờ làm việc).\n• Bản giấy (Đóng dấu mộc đỏ): Nhận tại Bộ phận Một Cửa - Phòng Đào tạo (Bàn số 3, Tòa A1) sau 24h kể từ khi cán bộ duyệt.",
+        text: "Chào bạn Nguyễn Văn An! Theo Quy chế Đào tạo (Điều 14, Khoản 2) ban hành năm 2024:\n\n• Bản điện tử (PDF ký số hợp lệ): Tự động xuất sau khi cán bộ đối soát dữ liệu đào tạo, tối đa 4 giờ làm việc.\n• Bản giấy: Nhận tại Bộ phận Một Cửa - Phòng Đào tạo (Bàn số 3, Tòa A1) sau 24 giờ kể từ khi cán bộ duyệt.",
         citation: {
           code: "QC-ĐT-2024-Đ14-K2",
-          title: "Quy Chế Đào tạo Đại học số 245/QĐ-ĐH (Minh họa)",
+          title: "Quy Chế Đào tạo Đại học số 245/QĐ-ĐH",
           quote:
             "Sinh viên nộp yêu cầu trực tuyến qua Cổng dịch vụ Campus 24/7. Thời gian xử lý dự kiến: 24–48 giờ làm việc. Phòng Đào tạo & CTSV sẽ thực hiện đối soát tự động tình trạng hồ sơ trước khi cán bộ duyệt.",
           source: "Trích xuất từ Cơ sở tri thức Học vụ V5.2",
@@ -109,7 +153,7 @@ export default function ChatPage() {
       addChatMessage({
         sender: "bot",
         level: "L2",
-        text: "Campus 24/7 đã tự động trích xuất lý lịch học vụ của sinh viên Nguyễn Văn An từ CSDL trường và mở Cổng Kiểm duyệt 1 (Cột bên phải).\n\nBạn có thể yêu cầu tôi sửa tiếp thông tin (ví dụ: 'đổi sang bản giấy' hoặc 'đổi lý do thành...') hoặc bấm trực tiếp nút bên dưới để chỉnh sửa.",
+        text: "Campus 24/7 đã tự động điền thông tin học vụ của bạn và mở biểu mẫu ở bên phải.\n\nBạn có thể yêu cầu tôi sửa tiếp thông tin, ví dụ: 'đổi sang bản giấy' hoặc 'đổi lý do thành...', hoặc mở biểu mẫu để tự chỉnh sửa.",
         actionCard: "submit1_prompt",
       });
       setGate1Open(true);
@@ -144,7 +188,7 @@ export default function ChatPage() {
       addChatMessage({
         sender: "bot",
         level: "L4",
-        text: "HỆ THỐNG AI ĐÃ KÍCH HOẠT CHẾ ĐỘ NGẮT TỰ ĐỘNG (L4 HANDOVER) THEO QUY CHẾ AN TOÀN HỌC THUẬT.\n\nNhận diện yêu cầu khiếu nại điểm thi môn IT3011 (trigger: DISPUTED_GRADE_EVENT). Theo nguyên tắc an toàn, Trợ lý AI không được phép can thiệp hoặc kết luận điểm số. Toàn bộ hồ sơ kèm biên bản và lịch sử đối thoại đã được niêm phong chuyển thẳng sang Bàn làm việc Cán bộ OF001 (ThS. Trần Thu Hà) để giải quyết.",
+        text: "Yêu cầu khiếu nại điểm thi môn IT3011 cần được cán bộ phụ trách kiểm tra trực tiếp. Trợ lý AI không can thiệp hoặc kết luận điểm số. Hồ sơ, biên bản và lịch sử trao đổi đã được chuyển cho ThS. Trần Thu Hà - Phòng Đào tạo để giải quyết.",
         actionCard: "l4_handover",
         ticketId: "TKT-2026-0098",
       });
@@ -164,7 +208,7 @@ export default function ChatPage() {
       addChatMessage({
         sender: "bot",
         level: "L2",
-        text: `Đã cập nhật biểu mẫu bên phải!\n\n• Lý do & Nơi gửi: "${newReason}"\n\nBiểu mẫu ở Cột kiểm duyệt 1 (bên phải) đã đồng bộ tức thời và có hiệu ứng nháy sáng xác nhận. Bạn hãy kiểm tra lại và bấm "Xác nhận gửi hồ sơ" nhé!`,
+        text: `Đã cập nhật biểu mẫu bên phải!\n\n• Lý do và nơi gửi: "${newReason}"\n\nBạn hãy kiểm tra lại thông tin rồi chọn "Gửi yêu cầu".`,
         actionCard: "submit1_prompt",
       });
     }, 300);
@@ -175,7 +219,7 @@ export default function ChatPage() {
     addChatMessage({
       sender: "user",
       text: isPaper
-        ? "Đổi phương thức nhận sang: Bản giấy (Dấu đỏ)"
+        ? "Đổi phương thức nhận sang: Bản giấy"
         : "Đổi phương thức nhận sang: Bản điện tử (PDF ký số)",
     });
     updateGate1Field("receiveMethod", method);
@@ -186,8 +230,8 @@ export default function ChatPage() {
         sender: "bot",
         level: "L2",
         text: isPaper
-          ? "Đã chuyển phương thức nhận sang: Bản giấy (Dấu đỏ)\n\n• Địa điểm: Nhận tại Bộ phận Một Cửa (Bàn số 3, Tòa A1 - Phòng Đào tạo) sau 24h kể từ khi Cán bộ duyệt.\n\nBiểu mẫu ở cột bên phải đã tự động tích chọn Bản giấy!"
-          : "Đã chuyển phương thức nhận sang: Bản điện tử (PDF)\n\n• Phương thức: Nhận qua Cổng dịch vụ SV có Chữ ký số CA hợp lệ sau tối đa 4 giờ làm việc kể từ khi cán bộ đối soát CSDL đào tạo.\n\nBiểu mẫu ở cột bên phải đã tự động tích chọn Bản điện tử!",
+          ? "Đã chuyển phương thức nhận sang: Bản giấy\n\n• Địa điểm: Nhận tại Bộ phận Một Cửa (Bàn số 3, Tòa A1 - Phòng Đào tạo) sau 24 giờ kể từ khi cán bộ duyệt.\n\nBiểu mẫu bên phải đã được cập nhật."
+          : "Đã chuyển phương thức nhận sang: Bản điện tử (PDF)\n\n• Phương thức: Nhận qua Cổng dịch vụ sinh viên sau tối đa 4 giờ làm việc kể từ khi cán bộ đối soát dữ liệu đào tạo.\n\nBiểu mẫu bên phải đã được cập nhật.",
         actionCard: "submit1_prompt",
       });
     }, 300);
@@ -231,7 +275,7 @@ export default function ChatPage() {
         addChatMessage({
           sender: "bot",
           level: "L2",
-          text: `Đã cập nhật biểu mẫu cấp giấy cho bạn:\n\n• Lý do & Nơi gửi: "${newReason}"\n\nBiểu mẫu ở Cột kiểm duyệt bên phải đã đồng bộ tức thời. Bạn hãy kiểm tra lại và bấm "Xác nhận gửi hồ sơ" nhé!`,
+          text: `Đã cập nhật biểu mẫu cấp giấy cho bạn:\n\n• Lý do và nơi gửi: "${newReason}"\n\nBạn hãy kiểm tra lại thông tin ở bên phải rồi chọn "Gửi yêu cầu".`,
           actionCard: "submit1_prompt",
         });
       }, 350);
@@ -252,7 +296,7 @@ export default function ChatPage() {
         addChatMessage({
           sender: "bot",
           level: "L2",
-          text: "Đã cập nhật phương thức nhận sang: Bản giấy (Dấu đỏ) - Nhận tại Bộ phận Một Cửa (Bàn số 3, Tòa A1 - Phòng Đào tạo) sau 24h kể từ khi Cán bộ duyệt.\n\nBiểu mẫu ở cột bên phải đã tự động tích chọn Bản giấy!",
+          text: "Đã cập nhật phương thức nhận sang: Bản giấy - Nhận tại Bộ phận Một Cửa (Bàn số 3, Tòa A1 - Phòng Đào tạo) sau 24 giờ kể từ khi cán bộ duyệt.\n\nBiểu mẫu bên phải đã được cập nhật.",
           actionCard: "submit1_prompt",
         });
       }, 350);
@@ -272,7 +316,7 @@ export default function ChatPage() {
         addChatMessage({
           sender: "bot",
           level: "L2",
-          text: "Đã cập nhật phương thức nhận sang: Bản điện tử (PDF có ký số CA) - Tự động xuất qua Cổng SV trong tối đa 4 giờ làm việc sau khi cán bộ đối soát.\n\nBiểu mẫu ở cột bên phải đã tự động tích chọn Bản điện tử!",
+          text: "Đã cập nhật phương thức nhận sang: Bản điện tử (PDF có ký số) - Tự động xuất qua Cổng dịch vụ sinh viên trong tối đa 4 giờ làm việc sau khi cán bộ đối soát.\n\nBiểu mẫu bên phải đã được cập nhật.",
           actionCard: "submit1_prompt",
         });
       }, 350);
@@ -326,7 +370,7 @@ export default function ChatPage() {
         addChatMessage({
           sender: "bot",
           level: "L2",
-          text: "Tôi đã trích xuất lý lịch học vụ và mở sẵn Cổng Kiểm duyệt 1 (Cột bên phải) cho bạn.\n\nBạn có thể kiểm tra trực tiếp thông tin bên phải hoặc ra lệnh cho tôi sửa tiếp bất cứ trường nào (VD: 'đổi sang bản giấy' hoặc 'đổi lý do thành...').",
+          text: "Tôi đã điền sẵn thông tin học vụ và mở biểu mẫu ở bên phải cho bạn.\n\nBạn có thể kiểm tra trực tiếp hoặc nhờ tôi sửa bất kỳ trường nào, ví dụ: 'đổi sang bản giấy' hoặc 'đổi lý do thành...'.",
           actionCard: "submit1_prompt",
         });
       }, 350);
@@ -338,7 +382,7 @@ export default function ChatPage() {
       addChatMessage({
         sender: "bot",
         level: "L1",
-        text: `Cảm ơn câu hỏi của bạn về: "${userText}". Trợ lý Học vụ Campus 24/7 đang kiểm tra cơ sở dữ liệu quy chế đào tạo... Hiện tại hệ thống hỗ trợ tốt nhất cho 2 dịch vụ chính:\n\n1. Xin cấp Giấy xác nhận sinh viên (L2) - Có hỗ trợ điền và sửa form trực tiếp bằng chat!\n2. Tiếp nhận điều phối khiếu nại học vụ (L4).\n\nBạn có thể thử gõ "đổi sang bản giấy" hoặc "đổi lý do thành..." để trải nghiệm trợ lý chỉnh sửa form bên phải.`,
+        text: `Cảm ơn câu hỏi của bạn về: "${userText}". Trợ lý Học vụ Campus 24/7 đang kiểm tra quy chế đào tạo... Hiện tại hệ thống hỗ trợ tốt nhất cho 2 dịch vụ chính:\n\n1. Xin cấp Giấy xác nhận sinh viên - Có hỗ trợ điền và sửa biểu mẫu trực tiếp bằng chat.\n2. Tiếp nhận và điều phối khiếu nại học vụ.\n\nBạn có thể thử gõ "đổi sang bản giấy" hoặc "đổi lý do thành..." để trợ lý cập nhật biểu mẫu bên phải.`,
       });
     }, 400);
   };
@@ -355,98 +399,77 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="h-screen max-h-screen flex flex-col bg-transparent transition-colors overflow-hidden">
+    <div className="min-h-screen h-[100dvh] flex flex-col bg-transparent transition-colors overflow-hidden">
       <div className="shrink-0">
         <Navbar />
       </div>
 
       {/* Subheader: Student Info Bar */}
-      <div className="shrink-0 w-full border-b border-white/50 dark:border-white/10 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md px-4 sm:px-6 lg:px-8 py-2.5">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-blue-600/10 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 font-bold flex items-center justify-center border border-blue-200/60 dark:border-blue-800/60 text-sm">
-              NA
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-slate-900 dark:text-white text-sm">
-                  {currentUser.name}
-                </span>
-                <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-white/60 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border border-white/60 dark:border-slate-700 font-semibold backdrop-blur-xs">
-                  {currentUser.id} · {currentUser.classYear || "K18 KTPM"}
-                </span>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Tín chỉ: {currentUser.credits || "114 / 138 TC"}
-                </span>
-              </div>
-              <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-2 mt-0.5">
-                <span>MSSV: {currentUser.mssv || currentUser.id}</span>
-                <span>•</span>
-                <span>{currentUser.major || "Khoa Công nghệ Phần mềm"}</span>
-                <span>•</span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                  Trạng thái học vụ: {currentUser.academicStatus || "Bình thường"}
-                </span>
-              </div>
-            </div>
+      <div className="shrink-0 w-full border-b border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-900/95 px-4 sm:px-6 lg:px-8 py-2">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 text-[13px]">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="font-medium text-gray-900 dark:text-white truncate">
+              {currentUser.name}
+            </span>
+            <span className="text-gray-400">·</span>
+            <span className="text-gray-500 dark:text-gray-400 truncate">
+              {currentUser.mssv || currentUser.id} · {currentUser.major || "Khoa CNPM"}
+            </span>
           </div>
 
-          <div className="flex items-center gap-2.5">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-blue-50/80 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800 backdrop-blur-xs">
-              <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
-              <span>Phân tích tự động: 3 Cấp độ (L1 / L2 / L4)</span>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                setGate1Open(!isGate1Open);
-                setMobileTab("workspace");
-              }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-sm shadow-blue-500/20 transition-all"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>{isGate1Open ? "Đang mở Cổng 1" : "Tạo yêu cầu mới"}</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setGate1Open(!isGate1Open);
+              setMobileTab("workspace");
+            }}
+            className={`inline-flex min-h-[44px] items-center gap-1.5 px-3.5 py-1.5 rounded-lg border font-medium text-[13px] transition-colors shrink-0 ${
+              isGate1Open
+                ? "border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300"
+                : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+            }`}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>{isGate1Open ? "Đang mở biểu mẫu" : "Yêu cầu mới"}</span>
+          </button>
         </div>
       </div>
 
-      {/* Mobile Screen Switcher (<1024px) */}
-      <div className="shrink-0 lg:hidden max-w-7xl w-full mx-auto px-4 pt-2.5 flex gap-2">
+      {/* Mobile and tablet screen switcher (<1280px) */}
+      <div className="shrink-0 xl:hidden max-w-7xl w-full mx-auto px-4 pt-2.5 flex gap-2">
         <button
           type="button"
           onClick={() => setMobileTab("chat")}
-          className={`flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+          className={`flex-1 min-h-[44px] py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
             mobileTab === "chat"
               ? "bg-blue-600 text-white shadow-sm"
-              : "glass-surface text-slate-600 dark:text-slate-400"
+              : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
           }`}
         >
           <Bot className="w-3.5 h-3.5" />
-          <span>Trợ lý AI Campus</span>
+          <span>Trợ lý AI</span>
         </button>
         <button
           type="button"
           onClick={() => setMobileTab("workspace")}
-          className={`flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+          className={`flex-1 min-h-[44px] py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
             mobileTab === "workspace"
               ? "bg-blue-600 text-white shadow-sm"
-              : "glass-surface text-slate-600 dark:text-slate-400"
+              : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
           }`}
         >
           <FileText className="w-3.5 h-3.5" />
-          <span>{isGate1Open ? "Cổng Kiểm duyệt 1 (Đơn)" : "Bàn làm việc & Hồ sơ"}</span>
+          <span>{isGate1Open ? "Biểu mẫu yêu cầu" : "Hồ sơ & biểu mẫu"}</span>
         </button>
       </div>
 
       {/* Main Workspace Area: Consistent Two-Column Layout on Desktop */}
-      <div className="flex-1 min-h-0 max-w-7xl w-full mx-auto p-3 sm:p-4 lg:p-5 flex flex-col lg:flex-row gap-4 lg:gap-6 overflow-hidden">
-        {/* Left Column: Chat Workspace (Always 58% on Desktop) */}
+      <div className="flex-1 min-h-0 max-w-7xl w-full mx-auto p-3 sm:p-4 lg:p-5 flex flex-col xl:flex-row gap-4 xl:gap-6 overflow-hidden">
+        {/* Left Column: Chat Workspace */}
         <div
-          className={`relative flex flex-col h-full min-h-0 glass-surface rounded-3xl shadow-2xl overflow-hidden transition-all duration-300 lg:w-[58%] w-full ${
-            mobileTab === "workspace" ? "hidden lg:flex" : "flex"
-          }`}
+          className={`relative flex flex-col h-full min-h-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm overflow-hidden transition-all duration-300 w-full ${
+            mobileTab === "workspace" ? "hidden xl:flex" : "flex"
+          } xl:w-[55%]`}
         >
           {/* Collapsible History Drawer Backdrop */}
           {isHistoryOpen && (
@@ -461,6 +484,8 @@ export default function ChatPage() {
             className={`absolute inset-y-0 left-0 z-40 w-72 sm:w-80 flex flex-col bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-r border-white/60 dark:border-slate-800 shadow-2xl transition-transform duration-300 ease-out ${
               isHistoryOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
             }`}
+            hidden={!isHistoryOpen}
+            aria-hidden={!isHistoryOpen}
           >
             {/* Drawer Header */}
             <div className="p-3.5 border-b border-white/40 dark:border-slate-800 flex items-center justify-between">
@@ -476,6 +501,7 @@ export default function ChatPage() {
               <button
                 type="button"
                 onClick={() => setIsHistoryOpen(false)}
+                aria-label="Đóng lịch sử chat"
                 className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 title="Đóng lịch sử"
               >
@@ -498,6 +524,7 @@ export default function ChatPage() {
                 <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
                 <input
                   type="text"
+                  aria-label="Tìm kiếm phiên chat"
                   value={historySearch}
                   onChange={(e) => setHistorySearch(e.target.value)}
                   placeholder="Tìm kiếm phiên chat..."
@@ -507,6 +534,7 @@ export default function ChatPage() {
                   <button
                     type="button"
                     onClick={() => setHistorySearch("")}
+                    aria-label="Xóa tìm kiếm phiên chat"
                     className="absolute right-2 top-2 text-slate-400 hover:text-slate-600 text-xs"
                   >
                     ×
@@ -516,7 +544,7 @@ export default function ChatPage() {
             </div>
 
             {/* Session List */}
-            <div className="flex-1 overflow-y-auto p-2.5 space-y-1 text-xs">
+            <div className="flex-1 overflow-y-auto overscroll-contain p-2.5 space-y-1 text-xs">
               {filteredSessions.length === 0 ? (
                 <div className="text-center py-8 text-slate-400 text-xs">
                   Không tìm thấy cuộc trò chuyện nào
@@ -527,15 +555,33 @@ export default function ChatPage() {
                   const tagColors: Record<string, string> = {
                     L1: "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800",
                     L2: "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800",
-                    L4: "bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800",
+                    L4: "bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800",
                     Chung: "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700",
                   };
                   const badgeClass = tagColors[sess.tag || "Chung"] || tagColors.Chung;
+                  const tagLabel =
+                    sess.tag === "L1"
+                      ? "Tra cứu quy chế"
+                      : sess.tag === "L2"
+                      ? "Cấp giấy"
+                      : sess.tag === "L4"
+                      ? "Khiếu nại"
+                      : "Chung";
 
                   return (
                     <div
                       key={sess.id}
                       onClick={() => handleSelectSession(sess.id)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          handleSelectSession(sess.id);
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-pressed={isActive}
+                      aria-label={`Mở phiên chat ${sess.title}`}
                       className={`group relative p-2.5 rounded-xl border transition-all cursor-pointer ${
                         isActive
                           ? "bg-blue-50/90 dark:bg-blue-950/50 border-blue-300 dark:border-blue-700 shadow-xs"
@@ -544,17 +590,18 @@ export default function ChatPage() {
                     >
                       <div className="flex items-center justify-between gap-1.5 mb-1">
                         <span className={`text-[9px] font-mono px-1.5 py-0.2 rounded border font-semibold ${badgeClass}`}>
-                          {sess.tag || "Chung"}
+                          {tagLabel}
                         </span>
                         <div className="flex items-center gap-1">
-                          <span className="text-[10px] text-slate-400">{sess.updatedAt}</span>
+                          <span className="text-[10px] text-slate-400">{formatDate(sess.updatedAt)}</span>
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              deleteChatSession(sess.id);
+                              setSessionToDelete(sess.id);
                             }}
-                            className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded transition-all"
+                            aria-label={`Xóa phiên chat ${sess.title}`}
+                            className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded transition-all"
                             title="Xoá phiên chat"
                           >
                             <Trash2 className="w-3 h-3" />
@@ -576,7 +623,7 @@ export default function ChatPage() {
                           {sess.messages.length} tin nhắn
                         </span>
                         {sess.isL4HandoverActive && (
-                          <span className="text-rose-600 dark:text-rose-400 font-medium">L4 Đã bàn giao</span>
+                          <span className="text-amber-700 dark:text-amber-300 font-medium">Đã bàn giao cán bộ</span>
                         )}
                       </div>
                     </div>
@@ -594,7 +641,7 @@ export default function ChatPage() {
                     Khác gì với Lịch sử học vụ?
                   </span>
                   <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
-                    Lịch sử chat là trao đổi thử nghiệm với AI. Để xem hồ sơ, đơn từ và ticket đã nộp chính thức kèm chữ ký số:
+                    Lịch sử chat là các trao đổi với trợ lý. Để xem hồ sơ và yêu cầu đã gửi kèm trạng thái xử lý:
                   </p>
                 </div>
               </div>
@@ -611,114 +658,102 @@ export default function ChatPage() {
             </div>
           </div>
 
-          {/* Chat Protocol Top Header */}
-          <div className="shrink-0 p-3.5 sm:p-4 bg-white/30 dark:bg-slate-900/40 backdrop-blur-md border-b border-white/40 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
+          {/* Chat Header */}
+          <div className="shrink-0 p-3 sm:p-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
-              {/* History Drawer Toggle Button */}
               <button
                 type="button"
                 onClick={() => setIsHistoryOpen(!isHistoryOpen)}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[13px] font-medium transition-colors ${
                   isHistoryOpen
-                    ? "bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-500/20"
-                    : "bg-white/60 dark:bg-slate-800/60 border-white/60 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:border-blue-400"
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                 }`}
-                title="Mở lịch sử các đoạn chat"
+                title="Mở lịch sử chat"
               >
-                <History className="w-4 h-4 text-blue-500" />
-                <span className="hidden sm:inline">Lịch sử chat</span>
-                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-semibold">
+                <History className="w-4 h-4" />
+                <span className="hidden sm:inline">Lịch sử</span>
+                <span className="text-[11px] px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-medium">
                   {(chatSessions || []).length}
                 </span>
               </button>
 
-              <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20">
-                <Bot className="w-5 h-5" />
+              <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center">
+                <Bot className="w-4 h-4" />
               </div>
               <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">
-                    Trợ Lý Học vụ Campus 24/7
-                  </span>
-                  <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-semibold border border-blue-200 dark:border-blue-700/50">
-                    L1-L4 PROTOCOL
-                  </span>
+                <div className="font-semibold text-gray-900 dark:text-white text-[14px]">
+                  Trợ lý Học vụ
                 </div>
-                <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Hỗ trợ thủ tục đào tạo, cấp giấy tờ &amp; điều phối khiếu nại học tập tức thời
+                <div className="text-[12px] text-gray-500 dark:text-gray-400">
+                  Hỗ trợ thủ tục đào tạo &amp; cấp giấy tờ
                 </div>
               </div>
             </div>
 
-            {/* Status Pills & Fast Switchers */}
-            <div className="flex items-center gap-1.5 text-xs">
+            <div className="flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={handleNewChat}
-                className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white/60 dark:bg-slate-800/60 border border-white/60 dark:border-slate-700 hover:border-blue-400 text-slate-700 dark:text-slate-300 transition-all shadow-xs cursor-pointer"
+                className="hidden sm:flex min-h-[44px] items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[13px] font-medium border border-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 title="Tạo cuộc trò chuyện mới"
               >
-                <Plus className="w-3.5 h-3.5 text-blue-500" />
-                <span>Chat mới</span>
+                <Plus className="w-3.5 h-3.5" />
+                <span>Trò chuyện mới</span>
               </button>
-
-              <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-mono">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                AI Sẵn sàng
-              </span>
 
               <button
                 type="button"
                 onClick={() => setGate1Open(!isGate1Open)}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
+                className={`min-h-[44px] px-2.5 py-1.5 rounded-lg text-[13px] font-medium transition-colors ${
                   isGate1Open
-                    ? "bg-blue-600 text-white shadow-sm"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
                 }`}
               >
-                {isGate1Open ? "Đóng Cổng 1" : "Mở Cổng 1"}
+                {isGate1Open ? "Đóng biểu mẫu" : "Mở biểu mẫu"}
               </button>
             </div>
           </div>
 
           {/* Quick Scenario Chips */}
-          <div className="px-4 py-2.5 bg-white/20 dark:bg-slate-900/30 border-b border-white/30 dark:border-slate-800 flex items-center gap-2 overflow-x-auto text-[11px] backdrop-blur-xs">
-            <span className="text-slate-400 dark:text-slate-500 font-bold shrink-0">
-              KỊCH BẢN GỢI Ý:
+          <div role="group" aria-label="Gợi ý thao tác nhanh" className="px-4 py-2 bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700 flex flex-nowrap sm:flex-wrap items-center gap-2 overflow-x-auto sm:overflow-visible overscroll-contain text-[12px]">
+            <span className="text-gray-500 dark:text-gray-400 font-medium shrink-0">
+              Bạn có thể bắt đầu với:
             </span>
             <button
               type="button"
               onClick={handleTriggerL1}
-              className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white/60 dark:bg-slate-800/60 border border-white/60 dark:border-slate-700 hover:border-blue-500 text-slate-700 dark:text-slate-300 transition-all shadow-xs backdrop-blur-xs hover:bg-white/90"
+              className="shrink-0 min-h-[44px] flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-blue-400 text-gray-700 dark:text-gray-300 transition-colors"
             >
               <BookOpen className="w-3.5 h-3.5 text-blue-500" />
-              <span>Hỏi quy chế cấp giấy xác nhận (L1)</span>
+              <span>Tra cứu quy chế</span>
             </button>
 
             <button
               type="button"
               onClick={handleTriggerL2}
-              className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white/60 dark:bg-slate-800/60 border border-white/60 dark:border-slate-700 hover:border-blue-500 text-slate-700 dark:text-slate-300 transition-all shadow-xs backdrop-blur-xs hover:bg-white/90"
+              className="shrink-0 min-h-[44px] flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-blue-400 text-gray-700 dark:text-gray-300 transition-colors"
             >
               <FileText className="w-3.5 h-3.5 text-indigo-500" />
-              <span>Tạo yêu cầu cấp Giấy xác nhận (L2)</span>
+              <span>Tạo yêu cầu cấp giấy</span>
             </button>
 
             <button
               type="button"
               onClick={handleTriggerL4}
-              className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white/60 dark:bg-slate-800/60 border border-rose-200/80 dark:border-rose-900/60 hover:border-rose-500 text-rose-700 dark:text-rose-300 transition-all shadow-xs backdrop-blur-xs hover:bg-rose-50/80"
+              className="shrink-0 min-h-[44px] flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-blue-400 text-gray-700 dark:text-gray-300 transition-colors"
             >
-              <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
-              <span>Khiếu nại điểm thi kết thúc HP (L4)</span>
+              <MessageSquare className="w-3.5 h-3.5 text-slate-500" />
+              <span>Khiếu nại điểm thi</span>
             </button>
           </div>
 
           {/* Chat Messages Feed */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 text-xs">
+          <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-5 space-y-4 text-[13px]">
             <div className="text-center">
-              <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-widest px-3 py-1 rounded-full bg-white/40 dark:bg-slate-800/40 border border-white/50 dark:border-slate-700/50 backdrop-blur-xs">
-                PHIÊN GIAO DỊCH HỌC VỤ: #SEC-2026-9041 · ĐỒNG BỘ QUY CHẾ ĐHQG
+              <span className="text-[11px] text-gray-400 dark:text-gray-500 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800">
+                Phiên tư vấn học vụ
               </span>
             </div>
 
@@ -756,7 +791,7 @@ export default function ChatPage() {
                         <div className="flex items-center justify-between text-[11px] font-bold text-blue-700 dark:text-blue-300">
                           <span className="flex items-center gap-1.5">
                             <BookOpen className="w-3.5 h-3.5" />
-                            VĂN BẢN THAM KHẢO (MINH HOẠ)
+                            Văn bản tham khảo
                           </span>
                           <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60">
                             {msg.citation.code}
@@ -768,25 +803,22 @@ export default function ChatPage() {
                         <blockquote className="text-[11px] italic text-slate-600 dark:text-slate-400 border-l-2 border-blue-500 pl-2 my-1">
                           &ldquo;{msg.citation.quote}&rdquo;
                         </blockquote>
-                        <div className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center justify-between pt-1">
-                          <span>{msg.citation.source}</span>
-                          <span className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-0.5">
-                            Xem văn bản gốc <ExternalLink className="w-2.5 h-2.5" />
-                          </span>
+                        <div className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center pt-1">
+                          <span>Nguồn: {msg.citation.source}</span>
                         </div>
                       </div>
                     )}
 
-                    {/* Submit 1 Prompt Card with Live Form Editing Chips */}
+                    {/* Prompt card with live form editing chips */}
                     {msg.actionCard === "submit1_prompt" && (
-                      <div className="mt-3 p-3.5 rounded-2xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border border-white/70 dark:border-slate-700/70 shadow-sm space-y-3">
+                      <div className="mt-3 p-3.5 rounded-2xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border border-white/70 dark:border-slate-700/70 shadow-none space-y-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-xs">
                             <FileText className="w-4 h-4 text-blue-600" />
                             <span>Phiếu yêu cầu: Cấp Giấy xác nhận sinh viên</span>
                           </div>
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/60 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 border border-white/40 dark:border-slate-700">
-                            Mẫu BM-03
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                            Mã biểu mẫu: BM-03
                           </span>
                         </div>
 
@@ -796,9 +828,9 @@ export default function ChatPage() {
 
                         {/* Interactive Agent Quick Controls for Modifying the Form */}
                         <div className="p-2 rounded-xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-xs border border-white/50 dark:border-slate-700/60 space-y-1.5">
-                          <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                          <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1">
                             <Sparkles className="w-3 h-3 text-blue-500" />
-                            <span>Yêu cầu AI sửa nhanh biểu mẫu bên phải:</span>
+                            <span>Điều chỉnh nhanh biểu mẫu:</span>
                           </span>
                           <div className="flex flex-wrap gap-1.5">
                             <button
@@ -810,7 +842,7 @@ export default function ChatPage() {
                               }
                               className="px-2 py-1 rounded-md text-[10px] font-medium bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-blue-600 transition-colors"
                             >
-                              🏛️ Đổi: Tạm hoãn NVQS
+                              Mục đích: Tạm hoãn nghĩa vụ quân sự
                             </button>
                             <button
                               type="button"
@@ -821,21 +853,21 @@ export default function ChatPage() {
                               }
                               className="px-2 py-1 rounded-md text-[10px] font-medium bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-blue-600 transition-colors"
                             >
-                              🏦 Đổi: Vay vốn NHCSXH
+                              Mục đích: Vay vốn ngân hàng
                             </button>
                             <button
                               type="button"
                               onClick={() => handleQuickUpdateMethod("paper_stamped")}
                               className="px-2 py-1 rounded-md text-[10px] font-medium bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-blue-600 transition-colors"
                             >
-                              📄 Nhận: Bản giấy (Dấu đỏ)
+                              Cách nhận: Bản giấy
                             </button>
                             <button
                               type="button"
                               onClick={() => handleQuickUpdateMethod("digital_pdf")}
                               className="px-2 py-1 rounded-md text-[10px] font-medium bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-blue-600 transition-colors"
                             >
-                              💻 Nhận: Bản điện tử (PDF)
+                              Cách nhận: Bản điện tử (PDF)
                             </button>
                           </div>
                         </div>
@@ -847,10 +879,10 @@ export default function ChatPage() {
                               setGate1Open(true);
                               setMobileTab("workspace");
                             }}
-                            className="flex-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center justify-center gap-2 shadow-sm text-xs transition-all"
+                            className="flex-1 min-h-[44px] py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-blue-950/30 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-semibold flex items-center justify-center gap-2 text-xs transition-colors"
                           >
                             <FileText className="w-3.5 h-3.5" />
-                            <span>Kiểm tra &amp; Gửi đơn ở Cột bên phải</span>
+                            <span>Mở lại biểu mẫu</span>
                           </button>
                         </div>
                         <div className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
@@ -876,14 +908,14 @@ export default function ChatPage() {
                       <div className="mt-3 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-900 dark:text-rose-200 space-y-2.5">
                         <div className="flex items-center gap-2 font-bold text-rose-700 dark:text-rose-300 text-xs">
                           <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0" />
-                          <span>Hồ sơ đã được chuyển tiếp sang Cán bộ hỗ trợ (L4)</span>
+                          <span>Hồ sơ đã được chuyển cho cán bộ phụ trách</span>
                         </div>
                         <p className="text-[11px] leading-relaxed text-slate-700 dark:text-slate-300">
-                          Hệ thống đã tự động tạo Ticket khẩn cấp mã <strong>TKT-2026-0098</strong> và bàn giao cho <strong>ThS. Trần Thu Hà (OF001 - Phòng Đào tạo)</strong>.
+                          Hệ thống đã tạo yêu cầu mã <strong>TKT-2026-0098</strong> và bàn giao cho <strong>ThS. Trần Thu Hà - Phòng Đào tạo</strong>.
                         </p>
                         <div className="pt-1 flex items-center justify-between text-[11px]">
                           <span className="text-slate-500 dark:text-slate-400">
-                            SLA xử lý khẩn cấp: Trong vòng 2h15m
+                            Thời gian xử lý dự kiến: trong vòng 2 giờ 15 phút
                           </span>
                           <Link
                             href="/my-requests"
@@ -911,12 +943,12 @@ export default function ChatPage() {
           </div>
 
           {/* Chat Composer */}
-          <div className="shrink-0 p-3 sm:p-4 bg-white/30 dark:bg-slate-900/40 backdrop-blur-md border-t border-white/40 dark:border-slate-800">
+          <div className="shrink-0 p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-white/30 dark:bg-slate-900/40 backdrop-blur-md border-t border-white/40 dark:border-slate-800">
             {isL4HandoverActive && (
               <div className="mb-2 p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-[11px] flex items-center justify-between backdrop-blur-xs">
                 <span className="flex items-center gap-1.5 font-medium">
                   <ShieldAlert className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                  Kênh đã bàn giao cho Cán bộ OF001. AI đã tạm dừng tư vấn tự động trên luồng này.
+                  Kênh đã bàn giao cho cán bộ phụ trách. Trợ lý AI đã tạm dừng tư vấn tự động trên luồng này.
                 </span>
                 <span className="font-mono text-[10px] font-semibold">CHẾ ĐỘ BỔ SUNG THÔNG TIN</span>
               </div>
@@ -926,23 +958,25 @@ export default function ChatPage() {
               <div className="relative flex-1">
                 <input
                   type="text"
+                  aria-label={isL4HandoverActive ? "Gửi thông tin bổ sung" : "Nhập câu hỏi cho trợ lý học vụ"}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder={
                     isL4HandoverActive
                       ? "Gửi thông tin hoặc tài liệu bổ sung cho cán bộ phụ trách..."
-                      : "Nhập câu hỏi, hoặc gõ 'đổi sang bản giấy', 'đổi lý do thành...' (Ctrl + K)"
+                      : "Nhập câu hỏi hoặc viết 'đổi sang bản giấy', 'sửa lý do thành...' (Ctrl + K)"
                   }
-                  className="w-full pl-10 pr-20 py-2.5 sm:py-3 rounded-2xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm border border-white/60 dark:border-slate-700/60 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:bg-white/90 dark:focus:bg-slate-900/90 transition-all shadow-xs"
+                  className="w-full pl-10 pr-20 py-2.5 sm:py-3 min-h-[44px] rounded-2xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm border border-white/60 dark:border-slate-700/60 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:bg-white/90 dark:focus:bg-slate-900/90 transition-all shadow-xs"
                 />
                 <button
                   type="button"
+                  aria-label="Đính kèm chứng từ hoặc tài liệu"
                   title="Đính kèm chứng từ/tài liệu"
-                  className="absolute left-3 top-2.5 sm:top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                  className="absolute left-3 top-3.5 sm:top-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                 >
                   <Paperclip className="w-4 h-4" />
                 </button>
-                <span className="absolute right-3 top-3 sm:top-3.5 text-[10px] font-mono text-slate-400 hidden sm:inline-block">
+                <span className="absolute right-3 top-3 sm:top-3.5 text-[10px] font-mono text-slate-500 dark:text-slate-400 hidden sm:inline-block">
                   Enter để gửi
                 </span>
               </div>
@@ -950,27 +984,29 @@ export default function ChatPage() {
               <button
                 type="submit"
                 disabled={!input.trim()}
-                className="py-2.5 sm:py-3 px-4 sm:px-5 rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold text-xs flex items-center gap-1.5 shadow-md shadow-blue-500/20 transition-all shrink-0"
+                className="py-2.5 sm:py-3 px-4 sm:px-5 min-h-[44px] rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold text-xs flex items-center gap-1.5 shadow-md shadow-blue-500/20 transition-all shrink-0"
               >
                 <span>Gửi</span>
                 <Send className="w-3.5 h-3.5" />
               </button>
             </form>
 
-            <div className="mt-2 flex items-center justify-between text-[10px] text-slate-400 dark:text-slate-500">
+            <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400">
               <span className="flex items-center gap-1">
                 <Sparkles className="w-3 h-3 text-blue-500" />
-                <span>AI Agent hỗ trợ chỉnh sửa và đồng bộ trực tiếp biểu mẫu bên phải theo thời gian thực.</span>
+                <span>Tin nhắn sẽ đồng bộ với biểu mẫu bên phải.</span>
               </span>
-              <span className="font-mono">LLM RAG v4.2</span>
+              <span className="font-mono" title="AI tham khảo dựa trên cơ sở tri thức; cần kiểm tra trước khi gửi hồ sơ.">
+                Kiểm tra trước khi gửi
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Right Column: Student Workspace & Submit 1 (Always 42% on Desktop, NO layout shifts) */}
+        {/* Right Column: Student Workspace */}
         <div
-          className={`lg:w-[42%] w-full h-full min-h-0 shrink-0 transition-all duration-300 ${
-            mobileTab === "chat" ? "hidden lg:flex" : "flex"
+          className={`xl:w-[45%] w-full h-full min-h-0 shrink-0 transition-all duration-300 ${
+            mobileTab === "chat" ? "hidden xl:flex" : "flex"
           } flex-col overflow-hidden`}
         >
           {isGate1Open ? (
@@ -994,6 +1030,51 @@ export default function ChatPage() {
           )}
         </div>
       </div>
+
+      {sessionToDelete && (
+        <AccessibleDialog
+          open={Boolean(sessionToDelete)}
+          onClose={() => setSessionToDelete(null)}
+          preventClose={isDeletingSession}
+          labelledBy="delete-session-dialog-title"
+          className="w-full max-w-sm"
+        >
+          <div className="p-6 bg-white dark:bg-slate-900 rounded-3xl space-y-4">
+            <div className="flex items-center gap-3 text-rose-600 dark:text-rose-500">
+              <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <h2 id="delete-session-dialog-title" className="text-base font-bold text-slate-900 dark:text-white">
+                Xóa phiên trò chuyện?
+              </h2>
+            </div>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Hành động này sẽ xóa vĩnh viễn tin nhắn trong phiên chat này và không thể hoàn tác.
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              {deleteSessionError && (
+                <div role="alert" className="text-xs text-red-500 mr-auto">{deleteSessionError}</div>
+              )}
+              <button
+                type="button"
+                onClick={() => setSessionToDelete(null)}
+                disabled={isDeletingSession}
+                className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteSession}
+                disabled={isDeletingSession}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed focus-visible:opacity-100"
+              >
+                {isDeletingSession ? "Đang xóa..." : "Đồng ý xóa"}
+              </button>
+            </div>
+          </div>
+        </AccessibleDialog>
+      )}
     </div>
   );
 }
