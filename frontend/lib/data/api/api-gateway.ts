@@ -163,6 +163,7 @@ export class ApiCampusDataGateway implements CampusDataGateway {
         major: profile.major || user.major,
         classYear: profile.classYear || user.classYear,
         department: profile.faculty || user.department,
+        academicStatus: profile.studentStatus || user.academicStatus,
       };
     } catch {
       return user;
@@ -175,6 +176,7 @@ export class ApiCampusDataGateway implements CampusDataGateway {
     major?: string;
     classYear?: string;
     faculty?: string;
+    studentStatus?: string;
   }> {
     const body = await this.client.get("/api/v1/me/profile", { skipIdempotency: true });
     if (!isRecord(body)) return {};
@@ -184,6 +186,7 @@ export class ApiCampusDataGateway implements CampusDataGateway {
       major: typeof body.major === "string" ? body.major : undefined,
       classYear: typeof body.class_year === "string" ? body.class_year : undefined,
       faculty: typeof body.faculty === "string" ? body.faculty : undefined,
+      studentStatus: typeof body.student_status === "string" ? body.student_status : undefined,
     };
   }
 

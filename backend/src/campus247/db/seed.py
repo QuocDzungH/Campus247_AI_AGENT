@@ -12,6 +12,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from campus247.db.engine import session_scope
+from campus247.db.identities import seed_operational_identities
 from campus247.db.models import (
     AuditEntry,
     Conversation,
@@ -341,10 +342,25 @@ def main() -> None:
         action="store_true",
         help="Overwrite existing demo rows from packaged edu14_demo.json.",
     )
+    parser.add_argument(
+        "--identities",
+        action="store_true",
+        help="Also upsert operational identities (password login + form prefill). Does not change demo counts.",
+    )
+    parser.add_argument(
+        "--reset-passwords",
+        action="store_true",
+        help="With --identities, overwrite operational password hashes.",
+    )
     args = parser.parse_args()
     with session_scope() as session:
         counts = seed_from_document(session, reset=args.reset)
+        identity_counts = None
+        if args.identities:
+            identity_counts = seed_operational_identities(session, reset_passwords=args.reset_passwords)
     print("Seeded", counts, "reset=" + str(args.reset))
+    if identity_counts is not None:
+        print("Operational identities", identity_counts)
 
 
 if __name__ == "__main__":

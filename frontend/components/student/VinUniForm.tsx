@@ -73,6 +73,8 @@ function VinUniFormContent({ task, review: routeReview = false, embedded = false
   }
   function formNotes() {
     const rows = [`Sinh viên: ${currentUser?.name}`, `Student ID: ${currentUser?.mssv || currentUser?.id}`];
+    if (currentUser?.classYear) rows.push(`Khóa học: ${currentUser.classYear}`);
+    if (currentUser?.major) rows.push(`Ngành: ${currentUser.major}`);
     for (const stage of [0, 1]) for (const f of visibleFields(task, stage, values)) {
       const value = values[f.name] || "";
       rows.push(`${f.label}: ${f.type === "checkbox" ? value === "yes" ? "Có" : "Không" : f.options?.find(([id]) => id === value)?.[1] || value || "Không cung cấp"}`);
@@ -178,6 +180,11 @@ function VinUniFormContent({ task, review: routeReview = false, embedded = false
     {review ? <div className={surfaceClass}>
       <div className="flex items-center gap-2 text-base font-semibold"><FileText className="h-5 w-5 text-blue-600" />{isDocument ? documentTypes.find(([id]) => id === values.documentType)?.[1] : "Grade Appeal"}</div>
       <dl className="mt-3"><SummaryRow label="Sinh viên" editable={false}>{currentUser?.name} · {currentUser?.mssv || currentUser?.id}</SummaryRow>
+        {(currentUser?.classYear || currentUser?.major) && (
+          <SummaryRow label="Khóa học / ngành" editable={false}>
+            {[currentUser?.classYear, currentUser?.major].filter(Boolean).join(" · ")}
+          </SummaryRow>
+        )}
         {[0, 1].map((stage) => <div key={stage}>{visibleFields(task, stage, values).map((field) => <SummaryRow key={field.name} label={field.label} onEdit={() => { goEdit(stage); assistant.focusField(field.name); }}>{field.type === "checkbox" ? values[field.name] === "yes" ? "Đã chọn" : "Không chọn" : field.options?.find(([id]) => id === values[field.name])?.[1] || values[field.name] || "Không cung cấp"}</SummaryRow>)}</div>)}
       </dl>
       {!valid && <div role="alert" className="mt-4 rounded-xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-200"><p className="font-semibold">Hồ sơ chưa đủ thông tin</p><ul className="mt-2 list-disc space-y-1 pl-5">{Object.entries(allErrors).map(([name, text]) => <li key={name}>{text}</li>)}</ul></div>}
@@ -193,7 +200,7 @@ function VinUniFormContent({ task, review: routeReview = false, embedded = false
       </div>
       {!isDocument && <a href={VINUNI_SOURCES.appealForm} target="_blank" rel="noopener noreferrer" className={`${secondaryButton} mt-4 border border-slate-200 dark:border-slate-700`}><ExternalLink className="h-4 w-4" />Xem Grade Appeal Form tham chiếu</a>}
     </div> : <form noValidate onSubmit={advance} className={surfaceClass}>
-      <div className="mb-4 flex items-center gap-3 border-b border-slate-100 pb-4 dark:border-slate-800"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"><Check className="h-4 w-4" /></span><div><p className="text-sm font-medium">{currentUser?.name} · {currentUser?.mssv || currentUser?.id}</p><p className="text-xs text-slate-600 dark:text-slate-400">Thông tin lấy từ tài khoản của bạn</p></div></div>
+      <div className="mb-4 flex items-center gap-3 border-b border-slate-100 pb-4 dark:border-slate-800"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"><Check className="h-4 w-4" /></span><div><p className="text-sm font-medium">{currentUser?.name} · {currentUser?.mssv || currentUser?.id}</p>{(currentUser?.classYear || currentUser?.major) && <p className="text-xs text-slate-600 dark:text-slate-400">{[currentUser?.classYear, currentUser?.major].filter(Boolean).join(" · ")}</p>}<p className="text-xs text-slate-600 dark:text-slate-400">Thông tin lấy từ tài khoản của bạn</p></div></div>
       {!isDocument && draft.stage === 0 && <p className="mb-5 text-sm leading-relaxed text-slate-600 dark:text-slate-300">Chỉ áp dụng điểm tổng kết học phần. Trao đổi với giảng viên qua email trước khi lập khiếu nại chính thức.</p>}
       {isDocument && values.documentType === "GRD" && draft.stage === 0 && <p className="mb-5 text-sm text-amber-700">Xác nhận tốt nghiệp chỉ được cấp sau khi Registrar xác nhận đủ điều kiện. Nếu chưa đủ, liên hệ về xác nhận tốt nghiệp dự kiến.</p>}
       <p className="mb-4 text-xs text-slate-600 dark:text-slate-400">Điền các mục bên dưới; mục tùy chọn có nhãn “không bắt buộc”.</p>

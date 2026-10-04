@@ -32,4 +32,5 @@ def test_import_csv_dry_run_and_leading_zero(tmp_path):
         user = session.get(User, profile.user_id)
         assert user is not None
         assert user.role == "student"
+        assert user.username == "01234567"
         assert user.password_hash is None

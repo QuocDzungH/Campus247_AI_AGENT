@@ -792,6 +792,9 @@ test("API demo accounts map seed IDs and keep officer routing", () => {
   assert.equal(resolveApiDemoUserId("sv-demo-001"), "SV-DEMO-001");
   assert.equal(resolveApiDemoUserId("OF-DEMO-03"), "OF-DEMO-03");
   assert.equal(resolveApiDemoUserId("unknown"), null);
+  assert.equal(resolveApiDemoUserId("20210018"), null);
+  assert.equal(resolveApiDemoUserId("an.nv@vinuni.edu.vn"), null);
+  assert.equal(resolveApiDemoUserId("ha.tt"), null);
   assert.equal(isOfficerDemoUserId("OF-DEMO-01"), true);
   assert.equal(isOfficerDemoUserId("SV-DEMO-001"), false);
 });

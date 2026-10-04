@@ -92,6 +92,7 @@ def import_students_csv(session: Session, path: Path, *, dry_run: bool, on_confl
                 id=new_id("usr"),
                 role="student",
                 name=record["full_name"],
+                username=record["mssv"],
                 email=record.get("email") or None,
                 account_status="active",
                 is_demo=False,
@@ -139,6 +140,10 @@ def import_students_csv(session: Session, path: Path, *, dry_run: bool, on_confl
             profile.verification_status = "imported"
         profile.updated_at = now
         profile.user.name = record["full_name"]
+        if not profile.user.username:
+            profile.user.username = record["mssv"]
+        if record.get("email"):
+            profile.user.email = record["email"]
         profile.user.updated_at = now
     if not dry_run:
         session.commit()

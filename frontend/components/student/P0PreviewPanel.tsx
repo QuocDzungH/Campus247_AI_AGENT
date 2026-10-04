@@ -18,6 +18,33 @@ function formFromPreview(preview: CampusPreview) {
   };
 }
 
+function StudentIdentityCard() {
+  const { currentUser } = useStore();
+  if (!currentUser) return null;
+  const rows = [
+    ["Họ và tên SV", currentUser.name],
+    ["Mã số sinh viên (MSSV)", currentUser.mssv || "—"],
+    ["Khóa học / Lớp sinh hoạt", currentUser.classYear || "—"],
+    ["Khoa quản lý chuyên môn", currentUser.major || currentUser.department || "—"],
+  ] as const;
+  return (
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
+      <div className="mb-3 flex items-center justify-between gap-2 border-b border-slate-200 pb-2 dark:border-slate-700">
+        <p className="text-sm font-semibold">Thông tin sinh viên trên giấy xác nhận</p>
+        <span className="text-[10px] font-mono text-slate-500">Từ hồ sơ tài khoản</span>
+      </div>
+      <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {rows.map(([label, value]) => (
+          <div key={label}>
+            <dt className="text-xs text-slate-500 dark:text-slate-400">{label}</dt>
+            <dd className="mt-0.5 text-sm font-medium text-slate-900 dark:text-slate-100">{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
+}
+
 export function P0PreviewPanel() {
   const assistant = useAssistant();
   const { patchPreview, submitPreview } = useStore();
@@ -190,6 +217,7 @@ export function P0PreviewPanel() {
         )}
       </div>
       <div className="mt-4 space-y-4">
+        <StudentIdentityCard />
         <label className="block text-sm">
           Mục đích
           <textarea

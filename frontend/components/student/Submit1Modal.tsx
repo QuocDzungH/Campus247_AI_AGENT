@@ -136,14 +136,14 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
               <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block">
                 Khóa học / Lớp sinh hoạt:
               </span>
-              <span className="text-xs">{currentUser.classYear || "Khóa 18 (2021 - 2025)"}</span>
+              <span className="text-xs">{currentUser.classYear || "—"}</span>
             </div>
 
             <div>
               <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block">
                 Khoa quản lý chuyên môn:
               </span>
-              <span className="text-xs">{currentUser.major || "Khoa Công nghệ Phần mềm"}</span>
+              <span className="text-xs">{currentUser.major || currentUser.department || "—"}</span>
             </div>
           </div>
 

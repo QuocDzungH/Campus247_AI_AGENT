@@ -5,7 +5,7 @@ Ngày: 2026-10-03. Không chứa secret.
 ## Thay đổi theo chức năng
 
 - **Tài khoản:** identifier (id / username / email / MSSV chuỗi, giữ số 0 đầu) + mật khẩu Argon2id. Phiên Bearer (hash SHA-256, TTL, remember, revoke). Audit `auth_events` không lưu mật khẩu. Khóa sau 8 lần sai / 15 phút. Admin không có quyền hàng chờ học vụ.
-- **CLI:** `campus247-admin bootstrap-admin`, `set-password`, `issue-reset-token`, `import-students`, `ingest-document`. Mật khẩu qua getpass hoặc `CAMPUS_ADMIN_PASSWORD`, không argv.
+- **CLI:** `campus247-admin bootstrap-admin`, `set-password`, `issue-reset-token`, `import-students`, `seed-identities`, `ingest-document`. Mật khẩu qua getpass hoặc `CAMPUS_ADMIN_PASSWORD`/`CAMPUS_SEED_PASSWORD`, không argv.
 - **Hồ sơ:** `/me/profile`, import CSV `imported` (chưa `officer_verified`). Không bịa danh sách sinh viên.
 - **Form / tệp / nháp:** POST `/forms` lưu field P0 + `extras`. Tệp PDF/PNG/JPEG ≤10MB trên `FILES_DIR`. PATCH workspace lưu nháp và checklist cán bộ.
 - **Rà soát học phần:** `/api/v1/reviews` lưu hồ sơ trên DB. Chạy AI chỉ trả `insufficient_evidence` khi chưa có SIS/đề cương chính thức. Phiếu hoàn tất là đề xuất cán bộ, chưa phải quyết định đã ký.
@@ -33,6 +33,7 @@ Frontend chính thức: `NEXT_PUBLIC_DATA_MODE=api`, `NEXT_PUBLIC_ENABLE_DATA_MO
 2. `campus247-admin set-password --identifier SV-...` (mật khẩu ẩn)
 3. `campus247-admin import-students --file students.csv --dry-run` rồi bỏ `--dry-run`
 4. CSV bắt buộc `mssv,full_name`; không tự tạo mật khẩu
+5. `campus247-admin seed-identities` nạp hồ sơ vận hành (MSSV 20210018, …) + mật khẩu Argon2id. Production cần `CAMPUS_SEED_PASSWORD`. Không `--reset` `data/app.db`.
 
 ## Ingest tài liệu
 

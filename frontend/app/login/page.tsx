@@ -17,7 +17,7 @@ import { AuthLayout } from "@/components/AuthLayout";
 import { useStore } from "@/lib/store";
 import { isConnectionError } from "@/lib/data/api/g2-flow";
 import { AccessibleDialog } from "@/components/shared/AccessibleDialog";
-import { API_DEMO_ACCOUNTS, resolveApiDemoUserId } from "@/lib/data/api/demo-accounts";
+import { API_DEMO_ACCOUNTS, OPERATIONAL_ACCOUNTS, resolveApiDemoUserId } from "@/lib/data/api/demo-accounts";
 
 // Set to false when the real authentication flow is ready for release.
 const DEMO_ACCOUNTS_ENABLED = true;
@@ -166,7 +166,7 @@ function LoginForm() {
               aria-describedby={error ? "login-error" : undefined}
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
-              placeholder="Email hoặc mã tài khoản"
+              placeholder="MSSV, email hoặc tên đăng nhập"
               className="w-full pl-9 pr-3 py-2.5 min-h-[44px] text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white transition-all"
             />
           </div>
@@ -230,6 +230,31 @@ function LoginForm() {
         </button>
       </form>
 
+      {isApiMode && (
+        <section className="rounded-xl border border-dashed border-blue-200 bg-blue-50/60 p-3 dark:border-blue-900/60 dark:bg-blue-950/20">
+          <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
+            Tài khoản vận hành (đăng nhập mật khẩu, hồ sơ điền sẵn khi tạo đơn).
+          </p>
+          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {OPERATIONAL_ACCOUNTS.map((account) => (
+              <button
+                key={account.identifier}
+                type="button"
+                onClick={() => handleFillDemo(account.identifier, account.password)}
+                className="flex min-h-[58px] flex-col items-start justify-center rounded-lg border border-blue-200 bg-white px-3 py-2 text-left transition-colors hover:border-blue-400 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-blue-700 dark:hover:bg-blue-950/30"
+              >
+                <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                  Dùng tài khoản {account.label.toLowerCase()}
+                </span>
+                <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                  {account.identifier}
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
       {DEMO_ACCOUNTS_ENABLED && (!isApiMode || demoAuthEnabled) && (
         <section className="rounded-xl border border-dashed border-slate-300 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-900/50">
           <button
@@ -238,14 +263,14 @@ function LoginForm() {
             onClick={() => setDemoAccountsOpen((open) => !open)}
             className="flex w-full items-center justify-between gap-3 text-left text-xs font-semibold text-slate-600 transition-colors hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400"
           >
-            <span>{demoAccountsOpen ? "Ẩn tài khoản mẫu" : "Tài khoản mẫu"}</span>
+            <span>{demoAccountsOpen ? "Ẩn tài khoản demo" : "Tài khoản demo"}</span>
             <ChevronDown className={`h-4 w-4 transition-transform ${demoAccountsOpen ? "rotate-180" : ""}`} />
           </button>
 
           {demoAccountsOpen && (
             <div className="mt-3 space-y-2 border-t border-slate-200 pt-3 dark:border-slate-700">
               <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-                Chọn một tài khoản để điền sẵn thông tin đăng nhập.
+                Chỉ dùng cho E2E / demo-login. Chọn một tài khoản để điền sẵn.
               </p>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {demoAccounts.map((account) => (

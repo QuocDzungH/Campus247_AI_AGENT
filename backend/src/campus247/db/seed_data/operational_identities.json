@@ -1,0 +1,103 @@
+{
+  "metadata": {
+    "dataset_id": "edu14-operational-identities-v1",
+    "provenance": "Synthetic campus identities for password login and form prefill. Not real student records."
+  },
+  "students": [
+    {
+      "id": "usr_sv_20210018",
+      "full_name": "Nguyễn Văn An",
+      "mssv": "20210018",
+      "username": "20210018",
+      "email": "an.nv@vinuni.edu.vn",
+      "faculty": "Khoa Kỹ thuật Máy tính",
+      "major": "Kỹ thuật Phần mềm",
+      "cohort": "K18",
+      "class_year": "Khóa 18 (2021 - 2025) · K18 KTPM",
+      "student_status": "Đang học bình thường"
+    },
+    {
+      "id": "usr_sv_20240019",
+      "full_name": "Lê Bảo Trâm",
+      "mssv": "20240019",
+      "username": "20240019",
+      "email": "tram.lb@vinuni.edu.vn",
+      "faculty": "Khoa Kinh tế và Quản lý",
+      "major": "Tài chính Ngân hàng",
+      "cohort": "K19",
+      "class_year": "Khóa 19 · K19 Ngân hàng",
+      "student_status": "Đang học bình thường"
+    },
+    {
+      "id": "usr_sv_20210045",
+      "full_name": "Phạm Minh Đức",
+      "mssv": "20210045",
+      "username": "20210045",
+      "email": "duc.pm@vinuni.edu.vn",
+      "faculty": "Khoa Kỹ thuật Máy tính",
+      "major": "Khoa học Máy tính",
+      "cohort": "K18",
+      "class_year": "Khóa 18 (2021 - 2025) · K18 KHMT",
+      "student_status": "Đang học bình thường"
+    },
+    {
+      "id": "usr_sv_20220031",
+      "full_name": "Trần Thị Lan",
+      "mssv": "20220031",
+      "username": "20220031",
+      "email": "lan.tt@vinuni.edu.vn",
+      "faculty": "Khoa Kỹ thuật Máy tính",
+      "major": "Kỹ thuật Phần mềm",
+      "cohort": "K19",
+      "class_year": "Khóa 19 (2022 - 2026) · K19 KTPM",
+      "student_status": "Đang học bình thường"
+    },
+    {
+      "id": "usr_sv_20230012",
+      "full_name": "Võ Thanh Hà",
+      "mssv": "20230012",
+      "username": "20230012",
+      "email": "ha.vt@vinuni.edu.vn",
+      "faculty": "Khoa Kinh tế và Quản lý",
+      "major": "Quản trị Kinh doanh",
+      "cohort": "K20",
+      "class_year": "Khóa 20 (2023 - 2027) · K20 QTKD",
+      "student_status": "Đang học bình thường"
+    },
+    {
+      "id": "usr_sv_20210067",
+      "full_name": "Đỗ Gia Bảo",
+      "mssv": "20210067",
+      "username": "20210067",
+      "email": "bao.dg@vinuni.edu.vn",
+      "faculty": "Khoa Kỹ thuật Máy tính",
+      "major": "Kỹ thuật Điện tử",
+      "cohort": "K18",
+      "class_year": "Khóa 18 (2021 - 2025) · K18 ĐTVT",
+      "student_status": "Đang học bình thường"
+    }
+  ],
+  "officers": [
+    {
+      "id": "usr_of_ha_tt",
+      "name": "ThS. Trần Thu Hà",
+      "username": "ha.tt",
+      "email": "ha.tt@vinuni.edu.vn",
+      "team_id": "academic"
+    },
+    {
+      "id": "usr_of_long_nv",
+      "name": "CN. Nguyễn Văn Long",
+      "username": "long.nv",
+      "email": "long.nv@vinuni.edu.vn",
+      "team_id": "academic"
+    },
+    {
+      "id": "usr_of_trang_pt",
+      "name": "ThS. Phạm Thu Trang",
+      "username": "trang.pt",
+      "email": "trang.pt@vinuni.edu.vn",
+      "team_id": "student_support"
+    }
+  ]
+}

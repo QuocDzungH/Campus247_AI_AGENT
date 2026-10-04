@@ -510,6 +510,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     void loadAllData().catch(() => { /* The retry state displays the error. */ });
   }, [loadAllData]);
 
+  useEffect(() => {
+    if (!currentUser || currentUser.role !== "student") return;
+    setGate1FormData((prev) => ({
+      ...prev,
+      fullName: currentUser.name || prev.fullName,
+      mssv: currentUser.mssv || prev.mssv,
+      classYear: currentUser.classYear || prev.classYear,
+      department: currentUser.major || currentUser.department || prev.department,
+      academicStatus: currentUser.academicStatus || prev.academicStatus,
+    }));
+  }, [currentUser]);
+
   const executeGateway = useCallback(
     async <T,>(operation: (activeGateway: CampusDataGateway) => Promise<T>): Promise<T> => {
       try {
