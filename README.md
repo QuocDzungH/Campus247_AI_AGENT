@@ -1,211 +1,185 @@
-# AI20K Agent Template
+# Campus 24/7 — EDU-14 / P-120
 
-Template chính thức cho học viên VinUni AI20K Build Phase: cấu trúc dự án, code
-mẫu và hướng dẫn kỹ thuật để xây dựng một AI Agent hoàn chỉnh — từ kiến trúc,
-code, test cho đến deploy và nộp bài Demo Day.
+Trợ lý học vụ cho sinh viên và cán bộ: tra cứu có nguồn (L1), thu thập yêu cầu
+cấp giấy/khiếu nại và xác nhận Submit 1 (L2), chuẩn bị hồ sơ cho cán bộ review
+và Submit 2 (L3), bàn giao yêu cầu vượt thẩm quyền hoặc cần hỗ trợ (L4).
+AI chuẩn bị hồ sơ; sinh viên xác nhận nộp và cán bộ quyết định xử lý.
 
-Technical Guidebook: <https://phoenix.note.transformerlabs.ai/technical-book>
+**Bộ nộp Gate 2:** [docs/gate-2/README.md](docs/gate-2/README.md).
+**Kiến trúc:** [components và data flow](docs/gate-2/architecture.md).
+**Kiểm thử:** [output thực tế và hướng dẫn manual](docs/gate-2/evaluation.md).
 
-## Template có sẵn những gì
+## Yêu cầu môi trường
 
-- **Cấu trúc thư mục tách lớp** — `agents/`, `api/`, `services/`, `models/` đã
-  chia sẵn, không phải bàn lại từ đầu.
-- **Code mẫu chạy được** — LangGraph agent (state, node, tool), FastAPI routes,
-  Pydantic settings, schema.
-- **Docker và CI** — Dockerfile multi-stage, `docker-compose.yml`, workflow
-  GitHub Actions chạy `ruff` + `pytest` khi push lên `main`/`develop` và khi mở
-  pull request vào `main`.
-- **Technical Guidebook 10 chương** trong `docs/guide/`, đồng thời đọc được
-  online.
-- **Checklist 10 deliverables** của Demo Day.
-- **AI usage logging** — hook cài sẵn cho 6 công cụ AI, log tự động gửi lên
-  grading server mỗi lần `git push`.
+- Python 3.11+ (CI dùng 3.11), Node.js 20.9+ và npm, Git.
+- Docker nếu chạy PostgreSQL qua Compose hoặc test PostgreSQL local.
+- API key của provider chỉ cần khi `AGENT_MODE=langgraph`; chế độ stub không
+  gọi model. Không commit `.env`, token hoặc dữ liệu cá nhân thật.
 
-## Yêu cầu
-
-- Python 3.11 (phiên bản CI đang dùng)
-- Git
-- Docker — tuỳ chọn, chỉ cần nếu chạy `docker compose`
-
-## Bắt đầu
-
-### 1. Clone repo của đội
-
-Khi đội được chốt, hệ thống tự sinh repo cho đội từ template này, nằm trong org
-GitHub của khoá bạn đang học và đặt tên theo mã đội. Copy URL ở trang đội trên
-Phoenix rồi clone về:
+## Setup local (Bash, Linux/macOS)
 
 ```bash
-git clone https://github.com/<ORG-CỦA-KHOÁ>/<MÃ-ĐỘI>.git
-cd <MÃ-ĐỘI>
-```
-
-Không cần `rm -rf .git`, `git init` hay `git remote add`: repo sinh từ template
-đã bắt đầu bằng lịch sử riêng của đội và remote trỏ sẵn đúng chỗ. Chưa thấy repo
-của đội thì báo BTC — repo tự tạo nằm ngoài org sẽ không được chấm.
-
-### 2. Cài môi trường
-
-```bash
-python3.11 -m venv .venv
-source .venv/bin/activate      # Windows: .venv\Scripts\activate
-pip install -e "./backend[dev]"
-```
-
-### 3. Cấu hình biến môi trường
-
-```bash
+git clone https://github.com/AI20K-Build-Phase-Cohort-4/P-120.git
+cd P-120
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e './backend[dev]'
 cp .env.example .env
-```
-
-Mở `.env` và điền `OPENAI_API_KEY`. Riêng `AI_LOG_API_KEY`, mỗi thành viên tự
-tạo key riêng tại [dashboard Phoenix](https://phoenix.note.transformerlabs.ai/api-keys)
-rồi thay vào chỗ `<get-your-api-key-from-dashboard-phoenix>` — giá trị trong
-`.env.example` chỉ là placeholder, để nguyên thì log không vào được hệ thống chấm.
-
-### 4. Cài hook ghi log AI
-
-```bash
-bash scripts/setup_hooks.sh                                      # Linux / macOS / Git Bash
-powershell -ExecutionPolicy Bypass -File scripts\setup_hooks.ps1 # Windows PowerShell
-```
-
-Chạy một lần sau khi clone. Hook ghi lại prompt khi bạn dùng Claude Code, Cursor,
-Codex CLI, Gemini CLI, Antigravity hoặc GitHub Copilot, và cài pre-push hook để
-đẩy log lên server.
-
-### 5. Chạy server
-
-```bash
-uvicorn campus247.main:app --reload --port 8000
-```
-
-Swagger UI ở <http://localhost:8000/docs>. Hoặc dùng `make run`, `make test`,
-`make lint` — xem `Makefile`.
-
-### Database (P0)
-
-Chi tiết schema, ERD và giới hạn SQLite: [`docs/database/README.md`](docs/database/README.md).
-
-```bash
+cp frontend/.env.example frontend/.env.local
+npm ci --prefix frontend
 mkdir -p data
-.venv/bin/alembic -c backend/alembic.ini upgrade head  # migration từ DB rỗng
-.venv/bin/python -m campus247.db.seed                   # seed giả lập, chỉ thêm bản ghi còn thiếu
-.venv/bin/python -m campus247.db.seed --reset           # khôi phục dòng demo từ JSON
-.venv/bin/python -m campus247.workers                   # worker prepare_brief / retry_handover
-.venv/bin/alembic -c backend/alembic.ini downgrade -1   # rollback một revision
 ```
 
-SQLite local: `DATABASE_URL=sqlite:///./data/app.db`. PostgreSQL (Compose): `docker compose up --build`.
+Quick start dùng `APP_ENV=development`, `DEMO_AUTH_ENABLED=true`,
+`AGENT_MODE=stub`, `RAG_MODE=stub` trong `.env`. Đây là luồng API/DB thật với
+agent deterministic; câu hỏi L1 sẽ báo chưa đủ căn cứ, không sinh citation giả.
 
-## Cấu trúc thư mục
-
-```
-backend/
-  src/campus247/
-    agents/            LangGraph agent
-      graph.py         State graph (nodes + edges)
-      state.py         State schema (TypedDict)
-      nodes/           Node functions
-      tools/           Agent tools (@tool)
-    api/routes.py      FastAPI endpoints
-    models/schemas.py  Pydantic schemas
-    services/llm.py    LLM client
-    config.py          Pydantic Settings
-    main.py            App entry point
-  tests/               pytest suite
-  Dockerfile           Multi-stage build
-frontend/              Next.js App Router
-scripts/               Hook ghi log AI + installer
-docs/
-  guide/               Technical Guidebook (nguồn của bản online)
-  architecture/        Sơ đồ và tài liệu kiến trúc
-eval/                  Kết quả evaluation
-presentation/          Slide và video Demo Day
-.claude/ .codex/ .cursor/ .gemini/ .agents/ .github/hooks/
-                       Config hook cho từng công cụ
-.github/workflows/     CI
-docker-compose.yml     Chạy backend bằng Docker
-README_boilerplate.md  Khung README cho dự án của đội
-```
-
-## Technical Guidebook
-
-| Chương | Nội dung | Thời gian |
-|---|---|---|
-| 1 | Lời mở đầu — mục tiêu, cách sử dụng | 15 phút |
-| 2 | Khởi tạo dự án — clone, setup, git workflow | 4 giờ |
-| 3 | Thiết kế kiến trúc — 3-tier, diagram, ADR | 6 giờ |
-| 4 | LangGraph Agent — state, node, edge, tool, RAG | 8 giờ |
-| 5 | FastAPI — routes, validation, error handling, streaming | 6 giờ |
-| 6 | Giao diện — Next.js và Streamlit | 6 giờ |
-| 7 | DevOps — Docker, CI/CD, deploy, logging | 6 giờ |
-| 8 | Kiểm thử — unit test, integration test, RAGAS | 4 giờ |
-| 9 | Demo Day — 10 deliverables, checklist | 2 giờ |
-| 10 | Tài nguyên — khoá học, tài liệu, BMAD method | tham khảo |
-
-Đọc online tại <https://phoenix.note.transformerlabs.ai/technical-book>: đăng
-nhập bằng GitHub (đúng account đã được BTC mời vào org của khoá), chọn tab
-**Technical Book** ở sidebar trái. Bản offline nằm trong `docs/guide/`, mở được
-bằng bất kỳ markdown viewer nào.
-
-## 10 deliverables cho Demo Day
-
-| # | Deliverable | Vị trí | Template lo tới đâu |
-|---|---|---|---|
-| 1 | Source code | `backend/`, `frontend/` | Khung sẵn |
-| 2 | README | copy `README_boilerplate.md` thành `README.md` | Khung sẵn |
-| 3 | Architecture diagram | `docs/architecture/` | Khung sẵn |
-| 4 | AI logs | LangSmith (3 biến môi trường) + auto AI usage logging | Cấu hình sẵn |
-| 5 | Live URL | deploy lên Render/Vercel | CI/CD sẵn |
-| 6 | Video demo | `presentation/` | Đội tự làm |
-| 7 | Pitch deck | `presentation/` | Đội tự làm |
-| 8 | Development journal | `JOURNAL.md` | Khung sẵn |
-| 9 | Worklog | `WORKLOG.md` | Khung sẵn |
-| 10 | Evaluation evidence | `eval/` | Đội tự làm |
-
-## Tech stack
-
-| Lớp | Công nghệ |
-|---|---|
-| Agent | LangGraph + LangChain 0.3 |
-| Backend | FastAPI 0.115 + Uvicorn |
-| LLM | OpenAI, mặc định `gpt-4o-mini` (đổi trong `backend/src/campus247/config.py`) |
-| Giao diện | Next.js hoặc Streamlit (đội tự chọn, hướng dẫn ở chương 6) |
-| Lint / test | ruff + pytest 8 |
-| DevOps | Docker + GitHub Actions |
-
-## AI usage logging
-
-Mọi prompt được ghi vào `.ai-log/session.jsonl` và tự động gửi lên grading server
-ở bước pre-push.
-
-| Công cụ | Cấu hình | Thời điểm ghi |
-|---|---|---|
-| Claude Code | `.claude/settings.json` | mỗi prompt (`UserPromptSubmit`) |
-| Cursor | `.cursor/hooks.json` | mỗi prompt và khi dừng |
-| OpenAI Codex CLI | `.codex/hooks.json` | mỗi prompt và khi dừng |
-| Gemini CLI | `.gemini/settings.json` | mỗi lượt agent chạy |
-| GitHub Copilot | `.github/hooks/hooks.json` | mỗi prompt và cuối session |
-| Antigravity IDE | `.agents/hooks.json` | mỗi prompt, kèm lần quét lại lúc `git push` |
-
-Dùng ChatGPT hay công cụ web khác thì log thủ công:
+SQLite cần **cùng đường dẫn tuyệt đối** cho migration/API/worker, vì đường dẫn
+SQLite tương đối phụ thuộc thư mục chạy. Từ repo root:
 
 ```bash
-bash scripts/_pyrun.sh scripts/log_manual.py --tool chatgpt --prompt "What you asked"
+export DATABASE_URL="sqlite:///$(pwd)/data/gate2.db"
+(cd backend && ../.venv/bin/alembic upgrade head)
+python -m campus247.db.seed --identities
 ```
 
-## Đóng góp
+Đặt giá trị `DATABASE_URL` tuyệt đối này vào `.env` để các terminal dùng cùng
+DB; hoặc export lại trong từng terminal. Seed mặc định chỉ bổ sung dòng thiếu.
+`--reset` ghi đè dữ liệu demo, không dùng để chuẩn bị một DB đang chứa kết quả.
 
-Repo này là open source. Đọc [CONTRIBUTING.md](CONTRIBUTING.md) trước khi mở PR.
+Chạy ba terminal từ repo root, mỗi terminal activate `.venv` và dùng cùng DB:
 
-Nội dung trong `docs/guide/` là nguồn của Technical Book và được đồng bộ lên bản
-online, nên mọi thay đổi ở đó cần review của
-[@AI20K-Build-Phase/book-maintainers](https://github.com/orgs/AI20K-Build-Phase/teams/book-maintainers)
-— xem [.github/CODEOWNERS](.github/CODEOWNERS).
+```bash
+# Terminal 1 — API
+uvicorn campus247.main:app --host 127.0.0.1 --port 8000
+# Terminal 2 — worker (cần để brief/job hoàn tất)
+python -m campus247.workers
+# Terminal 3 — UI
+npm run dev --prefix frontend
+```
 
-Báo lỗ hổng bảo mật theo [SECURITY.md](SECURITY.md), đừng mở public issue.
+Mở UI <http://localhost:3000>, Swagger <http://127.0.0.1:8000/docs>,
+readiness <http://127.0.0.1:8000/ready>. `/health` kiểm tra process; `/ready`
+kiểm tra DB và thông tin runtime, không chứng minh provider LLM đang trả lời.
 
-## License
+Trong API mode có tài khoản demo `SV-DEMO-001` và `OF-DEMO-01`;
+UI điền mật khẩu demo `demo1234`, API demo-login chỉ phục vụ development.
+Seed `--identities` còn tạo tài khoản synthetic có xác thực mật khẩu: sinh viên
+`20210018`, cán bộ `ha.tt`; mật khẩu development mặc định `Campus247-An18`
+hoặc giá trị `CAMPUS_SEED_PASSWORD` khi seed. Nếu đổi mật khẩu seed, nhập giá trị
+đã đặt; nút điền mẫu UI vẫn dùng giá trị development. Admin không có quyền
+hàng chờ cán bộ.
 
-[MIT](LICENSE) — dùng tự do cho mục đích giáo dục.
+## Biến môi trường
+
+Backend đọc `.env` tại root. Frontend đọc `frontend/.env.local` hoặc biến của
+process build/dev; file `.env` ở root không tự cấu hình Next.js.
+
+| Biến | Mặc định / ví dụ | Mục đích |
+| --- | --- | --- |
+| `APP_ENV` | `development` | `development`, `test`, `production` |
+| `DATABASE_URL` | `sqlite:////absolute/path/data/gate2.db` | Cùng DB cho migration, API và worker |
+| `DEMO_AUTH_ENABLED` | `true` | Cho phép demo-login trong development |
+| `AGENT_MODE` | `stub` | `langgraph` để dùng CampusAgent/model thật |
+| `RAG_MODE` | `stub` | `corpus` demo đóng gói; `official` kho ingest; `pipeline` hybrid Markdown |
+| `LLM_PROVIDER` | `openai` | `openai`, `google` (alias `gemini`), `groq`, `openai_compatible` |
+| `LLM_MODEL` | `gpt-4o-mini` | Model phù hợp provider đã chọn |
+| `OPENAI_API_KEY` / `GOOGLE_API_KEY` / `GEMINI_API_KEY` / `GROQ_API_KEY` | Điền riêng trong `.env` | Credential provider; Google ưu tiên `GOOGLE_API_KEY` |
+| `OPENAI_BASE_URL` | Trống | Bắt buộc với `openai_compatible` |
+| `CORS_ORIGINS` | `http://localhost:3000,http://127.0.0.1:3000` | Các origin UI được gọi API; bổ sung nếu đổi port |
+| `FILES_DIR` | `./data/files` | Attachment và PDF; dùng cùng thư mục khi chạy nhiều process |
+| `OFFICIAL_CORPUS_DIR` | `./data/corpus_official` | Kho nguồn được ingest/phê duyệt |
+| `RAG_PIPELINE_DIR` | `./RAG` | Markdown cho hybrid retrieval |
+| `RAG_INDEX_DIR` | `./data/rag_index` | Cache embedding chia sẻ API/worker |
+| `GEMINI_EMBEDDING_MODEL` | `models/gemini-embedding-001` | Embedding khi chọn pipeline; phải tương thích provider |
+| `NEXT_PUBLIC_DATA_MODE` | `api` trong `frontend/.env.example` | Nếu bỏ cấu hình, code UI mặc định `mock` |
+| `NEXT_PUBLIC_API_BASE_URL` | `http://127.0.0.1:8000` | Địa chỉ FastAPI; bắt buộc trong API mode |
+| `NEXT_PUBLIC_ENABLE_DATA_MODE_SWITCH` | `false` | Giữ mode demo theo cấu hình build |
+
+TTL session/preview, lease/retry worker và top-k RAG: xem [.env.example](.env.example)
+và [Settings](backend/src/campus247/config.py). Khi đổi `NEXT_PUBLIC_*` phải
+restart dev hoặc rebuild bản production.
+
+## Chạy AI thật
+
+Đổi cùng cấu hình cho API và worker rồi restart cả hai:
+
+```dotenv
+AGENT_MODE=langgraph
+RAG_MODE=corpus
+LLM_PROVIDER=openai
+LLM_MODEL=gpt-4o-mini
+# Điền OPENAI_API_KEY riêng trong .env
+```
+
+`corpus` có provenance nhưng là dữ liệu demo, không phải quy chế được nhà
+trường phê duyệt. `pipeline` dùng Gemini embedding + BM25 + RRF; cần credential
+Google cho embedding và model chat hợp lệ cho bước chuẩn hóa câu hỏi. Cache
+API/worker phải cùng `RAG_INDEX_DIR`. Lỗi provider không chuyển sang stub để
+báo thành công. `APP_ENV=production` yêu cầu `AGENT_MODE=langgraph` và
+`DEMO_AUTH_ENABLED=false`; không dùng seed/password demo cho vận hành.
+
+## Sample queries và user flow
+
+| Đầu vào / thao tác | Hành vi mong đợi |
+| --- | --- |
+| “Quy trình xin giấy xác nhận sinh viên?” | L1: trả lời có nguồn khi đủ căn cứ; stub báo thiếu căn cứ, không tạo ticket |
+| “Tôi muốn xin giấy xác nhận sinh viên để vay vốn ngân hàng, nơi nhận Ngân hàng A, nhận bản điện tử PDF” | L2: preview mục đích/nơi nhận/phương thức; sinh viên review và xác nhận Submit 1 |
+| “Tôi muốn xin giấy xác nhận sinh viên.” | Hỏi các trường còn thiếu, chặn submit khi chưa đầy đủ |
+| “Tôi muốn khiếu nại điểm môn Cơ sở dữ liệu vì điểm bài thi chưa đúng.” | Form khiếu nại L2; chưa tạo ticket/khóa AI trước xác nhận Submit 1 |
+| “Hãy giúp tôi sửa điểm môn Cấu trúc Dữ liệu.” | L4: không sửa điểm; khóa phản hồi AI và bàn giao cán bộ |
+| Cán bộ mở ticket → claim → chuẩn bị brief → review/checklist → phản hồi/hoàn tất | L3: ghi actor/audit, sinh viên xem kết quả cùng ticket từ API/DB |
+
+Luồng quay demo gợi ý: [docs/gate-2/demo-script.md](docs/gate-2/demo-script.md).
+Cấp giấy, đối soát và tạo PDF là chức năng riêng; hoàn tất ticket không tự
+đồng nghĩa cấp giấy đã ký hoặc quyết định học vụ chính thức.
+
+## Docker / PostgreSQL
+
+```bash
+cp .env.example .env  # chỉ khi chưa có file cấu hình riêng
+docker compose up --build
+```
+
+Compose chạy PostgreSQL, API và worker; frontend chạy riêng với cấu hình API
+ở trên. Container backend migrate + seed demo khi khởi động development;
+seed không tự thêm operational identities. Có thể chạy
+`docker compose exec backend python -m campus247.db.seed --identities`.
+Overlay production: [hướng dẫn vận hành](docs/production/implementation-report.md).
+
+## Kiểm thử
+
+```bash
+# Backend: chạy trong backend để Alembic tìm đúng script_location
+(cd backend && APP_ENV=test AGENT_MODE=stub RAG_MODE=stub LANGCHAIN_TRACING_V2=false ../.venv/bin/python -m pytest tests -q)
+.venv/bin/ruff check backend/src backend/tests scripts/g2_stub_e2e.py scripts/g3_langgraph_e2e.py
+APP_ENV=test AGENT_MODE=stub RAG_MODE=stub LANGCHAIN_TRACING_V2=false PYTHONPATH=backend/src .venv/bin/python -m scripts.export_contracts_v1 --check
+npm run lint --prefix frontend
+npm run test:regression --prefix frontend
+npm run build --prefix frontend
+# E2E tự tạo SQLite tạm, API/worker riêng; không ghi DB demo dùng chung
+.venv/bin/python scripts/g2_stub_e2e.py --port 18010 --output /tmp/gate2-api-cases.json
+```
+
+Test PostgreSQL yêu cầu Docker hoặc `EDU14_TEST_DATABASE_URL` trỏ DB test dùng
+riêng (tên kết thúc `_test`/`_pytest` hoặc `campus24_pytest`).
+Test browser: xem [evaluation Gate 2](docs/gate-2/evaluation.md).
+Eval agent: [eval/agent/README.md](eval/agent/README.md); runner mặc định không gọi LLM.
+
+## Cấu trúc và tài liệu
+
+| Đường dẫn | Nội dung |
+| --- | --- |
+| `frontend/` | Next.js UI, typed gateway, API/mock mode |
+| `backend/src/campus247/` | FastAPI, services, LangGraph, RAG, worker, storage |
+| `backend/alembic/` | Schema migrations |
+| `RAG/data/processed/` | Markdown retrieval corpus |
+| `docs/gate-2/` | Bộ nộp MVP, kiến trúc, evidence, manual checklist, demo script |
+| `docs/contracts/`, `docs/database/` | HTTP contract và DB |
+| `docs/gate-1/` | BRD, PRD và thiết kế Gate 1 |
+| `docs/guide/` | Technical Guidebook của template |
+| `scripts/` | E2E và hook AI logging |
+
+Cài hook AI logging theo [ai-logs/README.md](ai-logs/README.md) và
+`scripts/setup_hooks.sh` (PowerShell: `scripts/setup_hooks.ps1`).
+Đóng góp: [CONTRIBUTING.md](CONTRIBUTING.md). License: [MIT](LICENSE).

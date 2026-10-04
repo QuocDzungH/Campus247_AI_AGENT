@@ -1,46 +1,8 @@
-# Evaluation Report
+# Evaluation — Campus 24/7 Gate 2
 
-> Báo cáo đánh giá chất lượng sản phẩm theo tiêu chí BTC.
+Báo cáo hiện hành: [docs/gate-2/evaluation.md](../../docs/gate-2/evaluation.md).
+Output HTTP/API thực tế: [api-cases.json](../../docs/gate-2/evidence/api-cases.json).
 
----
-
-## 1. Metrics
-
-| Metric | Target | Actual | Status |
-|--------|--------|--------|--------|
-| Response accuracy | >80% | — | ⏳ |
-| Response latency | <3s | — | ⏳ |
-| User satisfaction | >4/5 | — | ⏳ |
-| Test coverage | >60% | — | ⏳ |
-
-## 2. Test Results
-
-### Unit Tests
-```
-pytest tests/ -v
-# Paste output here
-```
-
-### Integration Tests
-```
-# Mô tả test scenarios và kết quả
-```
-
-## 3. User Feedback
-
-| User | Feedback | Rating |
-|------|----------|--------|
-| [User 1] | [feedback] | [1-5] |
-| [User 2] | [feedback] | [1-5] |
-
-## 4. Demo Results
-
-- Ngày demo: [YYYY-MM-DD]
-- Người tham gia: [số người]
-- Feedback chung: [tóm tắt]
-- Issues phát hiện: [danh sách]
-
-## 5. Action Items
-
-- [ ] [Cần cải thiện 1]
-- [ ] [Cần cải thiện 2]
+Các bộ regression/e2e tự động được ghi đúng loại; nghiệm thu manual cần người
+chạy/xác nhận theo checklist Gate 2. Không công bố accuracy/latency/satisfaction
+chưa đo. Eval riêng của agent: [eval/agent/README.md](../agent/README.md).

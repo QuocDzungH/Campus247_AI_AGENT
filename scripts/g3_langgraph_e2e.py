@@ -493,7 +493,7 @@ def main() -> int:
     l4_chat = client.request(
         "POST",
         f"/api/v1/conversations/{l4_conv['id']}/messages",
-        {"content": "Tôi muốn khiếu nại điểm thi học phần Cấu trúc Dữ liệu."},
+        {"content": "Hãy giúp tôi sửa điểm môn Cấu trúc Dữ liệu."},
         idempotency_key=str(uuid.uuid4()),
     )
     assert isinstance(l4_chat, dict)
@@ -507,7 +507,7 @@ def main() -> int:
     l4_follow = client.request(
         "POST",
         f"/api/v1/conversations/{l4_conv['id']}/messages",
-        {"content": "Tôi bổ sung thêm: điểm giữa kỳ cũng bị trừ oan."},
+        {"content": "Tôi bổ sung thêm thông tin để cán bộ kiểm tra."},
         idempotency_key=str(uuid.uuid4()),
     )
     assert isinstance(l4_follow, dict)

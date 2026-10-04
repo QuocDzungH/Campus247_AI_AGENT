@@ -9,7 +9,8 @@
  * API: Submit 1 → Claim → Prepare (new revision) → Submit 2 → student reread.
  */
 import { createRequire } from "node:module";
-import { writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const args = process.argv.slice(2);
@@ -20,6 +21,14 @@ function flag(name, fallback) {
 const mode = flag("mode", "mock");
 const baseUrl = flag("base-url", mode === "api" ? "http://127.0.0.1:3101" : "http://127.0.0.1:3100").replace(/\/$/, "");
 const marker = `G2B-${Date.now().toString(36)}`;
+const outputDir = flag("output-dir", "");
+const startedAt = new Date().toISOString();
+
+async function capture(page, name) {
+  if (!outputDir) return;
+  mkdirSync(outputDir, { recursive: true });
+  await page.screenshot({ path: join(outputDir, `${name}.png`), fullPage: true });
+}
 
 async function loadPlaywright() {
   try {
@@ -38,12 +47,12 @@ async function login(page, role) {
   await page.goto(`${baseUrl}/login`, { waitUntil: "domcontentloaded", timeout: 30000 });
   await page.getByRole("heading", { name: /Đăng nhập/ }).waitFor({ timeout: 15000 });
   const label = role === "officer" ? /Dùng tài khoản cán bộ/ : /Dùng tài khoản sinh viên/;
-  let fillBtn = page.getByRole("button", { name: label }).locator("visible=true").first();
-  if (!(await fillBtn.isVisible().catch(() => false))) {
-    await page.getByRole("button", { name: /Tài khoản (demo|mẫu)/ }).click();
-    fillBtn = page.getByRole("button", { name: label }).locator("visible=true").first();
-  }
-  await fillBtn.click();
+  // Select the demo section explicitly: operational fill buttons have the same labels.
+  const demoToggle = page.getByRole("button", { name: /^(Tài khoản demo|Ẩn tài khoản demo|Tài khoản mẫu)$/ });
+  await demoToggle.waitFor({ timeout: 15000 });
+  if ((await demoToggle.getAttribute("aria-expanded")) !== "true") await demoToggle.click();
+  const demoSection = demoToggle.locator("..");
+  await demoSection.getByRole("button", { name: label }).click();
   await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
   await page.waitForURL(role === "officer" ? /\/dashboard/ : /\/student/, { timeout: 25000 });
 }
@@ -152,6 +161,7 @@ async function runApi(page) {
     throw new Error("ordinary grade complaint locked AI before the student confirmed the form");
   }
   report.steps.push("second-thread-complaint-form");
+  await capture(page, "complaint-before-submit1");
   await page.getByRole("button", { name: "Mở lịch sử hội thoại" }).click();
   const historyNav = page.locator("nav[aria-label='Lịch sử hội thoại']");
   const match = historyNav.getByRole("button", { name: previewTitle ? new RegExp(previewTitle.slice(0, 24)) : /Tôi muốn xin giấy xác nhận sinh viên/ });
@@ -172,6 +182,7 @@ async function runApi(page) {
   if (!/^TKT-\d{4}-\d+$/.test(ticketCode)) throw new Error(`missing ticket code: ${ticketCode}`);
   report.ticketCode = ticketCode;
   report.steps.push("submit1");
+  await capture(page, "certificate-submitted");
 
   await page.getByRole("link", { name: "Mở Yêu cầu của tôi" }).click();
   await page.waitForURL(/\/my-requests/, { timeout: 15000 });
@@ -227,12 +238,13 @@ async function runApi(page) {
   await page.locator("#staff-response").fill(resolveText);
   await page.getByRole("button", { name: "Hoàn tất xử lý" }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Hoàn tất xử lý" }).click();
-  await page.getByText("Đã hoàn tất xử lý hồ sơ", { exact: false }).waitFor({ timeout: 20000 });
+  await page.getByRole("status").filter({ hasText: "Đã hoàn tất xử lý hồ sơ" }).waitFor({ timeout: 20000 });
   if (!submit2Body || typeof submit2Body.reviewed_brief_version !== "number") {
     throw new Error(`Submit 2 missing current reviewed_brief_version: ${JSON.stringify(submit2Body)}`);
   }
   report.reviewedBriefVersion = submit2Body.reviewed_brief_version;
   report.steps.push("submit2");
+  await capture(page, "officer-completed");
 
   await logout(page);
   await login(page, "student");
@@ -245,6 +257,21 @@ async function runApi(page) {
   await page.getByText(resolveText, { exact: false }).first().waitFor({ timeout: 20000 });
   await page.getByText("Hoàn tất", { exact: false }).first().waitFor({ timeout: 10000 });
   report.steps.push("student-reread");
+  // Restore the deep link while account hydration is slow. The list response
+  // must not overwrite a detail that already contains the officer's messages.
+  const hydrationRoute = "**/api/v1/reviews?*";
+  await page.route(hydrationRoute, async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 750));
+    await route.continue();
+  });
+  const hydrationResponse = page.waitForResponse((response) => /\/api\/v1\/reviews\?/.test(response.url()));
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await hydrationResponse;
+  await page.getByRole("heading", { name: "Hồ sơ của tôi", exact: true }).waitFor();
+  await page.getByText(resolveText, { exact: false }).first().waitFor({ timeout: 20000 });
+  await page.unroute(hydrationRoute);
+  report.steps.push("detail-reload-preserves-officer-reply");
+  await capture(page, "student-result");
   report.finalUrl = page.url();
   return report;
 }
@@ -279,7 +306,12 @@ async function main() {
   });
   try {
     const result = mode === "api" ? await runApi(page) : await runMock(page, requests);
-    console.log(JSON.stringify({ ok: true, mode, baseUrl, backendRequests: requests.length, ...result }, null, 2));
+    const report = { ok: true, execution: "automated Playwright browser E2E", startedAt, finishedAt: new Date().toISOString(), mode, baseUrl, backendRequests: requests.length, ...result };
+    if (outputDir) {
+      mkdirSync(outputDir, { recursive: true });
+      writeFileSync(join(outputDir, "report.json"), JSON.stringify(report, null, 2) + "\n");
+    }
+    console.log(JSON.stringify(report, null, 2));
   } catch (error) {
     await dumpFailure(page, error);
     throw error;

@@ -22,6 +22,7 @@ import sys
 import tempfile
 import time
 import uuid
+from datetime import UTC, datetime
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -117,6 +118,10 @@ def start_temp_stack(port: int) -> tuple[str, dict[str, object], list[subprocess
     env = os.environ.copy()
     env["DATABASE_URL"] = database_url
     env["AGENT_MODE"] = "stub"
+    env["RAG_MODE"] = "stub"
+    env["APP_ENV"] = "development"
+    env["DEMO_AUTH_ENABLED"] = "true"
+    env["LANGCHAIN_TRACING_V2"] = "false"
     env["PYTHONPATH"] = str(root / "backend" / "src")
     env["PYTHONUNBUFFERED"] = "1"
     venv_python = root / ".venv" / "bin" / "python"
@@ -172,6 +177,7 @@ def main() -> int:
     parser.add_argument("--base-url", default="")
     parser.add_argument("--live", action="store_true", help="Dùng API đang chạy; có thể ghi vào DB của server đó.")
     parser.add_argument("--port", type=int, default=8010, help="Cổng API tạm khi không dùng --live.")
+    parser.add_argument("--output", type=Path, help="Lưu report JSON (không chứa Bearer token).")
     args = parser.parse_args()
     procs: list[subprocess.Popen[bytes]] = []
     workdir: Path | None = None
@@ -188,6 +194,12 @@ def main() -> int:
         "base_url": base_url,
         "agent_mode": "stub",
         "temp_stack": stack_meta,
+        "started_at": datetime.now(UTC).isoformat(),
+        "source_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo_root(), text=True).strip(),
+        "source_dirty": bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=repo_root(), text=True).strip()),
+        "execution": "automated HTTP E2E; requires separate human manual acceptance",
+        "rag_mode": "stub",
+        "cases": [],
     }
 
     health = client.request("GET", "/health")
@@ -208,6 +220,29 @@ def main() -> int:
     conversation_id = conversation["id"]
     report["conversation_id"] = conversation_id
     report["create_conversation_request_id"] = client.last_request_id
+
+    lookup = client.request("POST", f"/api/v1/conversations/{conversation_id}/messages",
+                            {"content": "Quy trình xin giấy xác nhận sinh viên?"}, idempotency_key=str(uuid.uuid4()))
+    assert isinstance(lookup, dict)
+    assert lookup["route"] == "L1" and lookup["preview"] is None and lookup["ticket"] is None, lookup
+    assert lookup["outcome"] == "insufficient_evidence" and lookup["reply"]["content"], lookup
+    report["cases"].append({"id": "M01", "input": "Quy trình xin giấy xác nhận sinh viên?", "actual": lookup, "result": "PASS"})
+
+    incomplete_conv = client.request("POST", "/api/v1/conversations", {}, idempotency_key=str(uuid.uuid4()))
+    incomplete = client.request("POST", f"/api/v1/conversations/{incomplete_conv['id']}/messages",
+                                {"content": "Tôi muốn xin giấy xác nhận sinh viên."}, idempotency_key=str(uuid.uuid4()))
+    assert isinstance(incomplete, dict)
+    assert incomplete["preview"]["missing_fields"] and not incomplete["preview"]["can_submit"], incomplete
+    assert incomplete["ticket"] is None, incomplete
+    try:
+        client.request("POST", "/api/v1/tickets",
+                       {"preview_id": incomplete["preview"]["id"], "preview_version": incomplete["preview"]["version"], "confirmed": True},
+                       idempotency_key=str(uuid.uuid4()))
+        raise AssertionError("incomplete preview was accepted")
+    except ApiError as exc:
+        assert exc.status == 422, exc
+        incomplete_error = {"status": exc.status, "body": exc.body}
+    report["cases"].append({"id": "M03", "input": "Tôi muốn xin giấy xác nhận sinh viên.", "actual": incomplete, "submit_error": incomplete_error, "result": "PASS"})
 
     replay = client.request("POST", "/api/v1/conversations", {}, idempotency_key=create_key)
     assert isinstance(replay, dict)
@@ -277,13 +312,32 @@ def main() -> int:
     assert isinstance(replay_submit, dict)
     if replay_submit["ticket"]["id"] != ticket["id"]:
         raise SystemExit("idempotent Submit1 created a second ticket")
+    report["cases"].append({"id": "M02", "input": content, "preview": patched, "actual": submitted, "replayed_ticket_id": replay_submit["ticket"]["id"], "result": "PASS"})
+
+    complaint_conv = client.request("POST", "/api/v1/conversations", {}, idempotency_key=str(uuid.uuid4()))
+    complaint_input = "Tôi muốn khiếu nại điểm môn Cơ sở dữ liệu vì điểm bài thi chưa đúng."
+    complaint = client.request("POST", f"/api/v1/conversations/{complaint_conv['id']}/messages",
+                               {"content": complaint_input}, idempotency_key=str(uuid.uuid4()))
+    assert isinstance(complaint, dict)
+    assert complaint["route"] == "L2" and complaint["ticket"] is None, complaint
+    assert not complaint["conversation_state"]["ai_response_locked"], complaint
+    complaint_preview = complaint["preview"]
+    assert complaint_preview["service_type"] == "academic_complaint" and complaint_preview["can_submit"], complaint
+    complaint_body = {"preview_id": complaint_preview["id"], "preview_version": complaint_preview["version"], "confirmed": True}
+    complaint_key = str(uuid.uuid4())
+    complaint_submit = client.request("POST", "/api/v1/tickets", complaint_body, idempotency_key=complaint_key)
+    complaint_replay = client.request("POST", "/api/v1/tickets", complaint_body, idempotency_key=complaint_key)
+    assert complaint_submit["ticket"]["service_type"] == "academic_complaint", complaint_submit
+    assert complaint_submit["ticket"]["status"] == "pending_officer", complaint_submit
+    assert complaint_replay["ticket"]["id"] == complaint_submit["ticket"]["id"]
+    report["cases"].append({"id": "M04", "input": complaint_input, "before_confirm": complaint, "actual": complaint_submit, "replayed_ticket_id": complaint_replay["ticket"]["id"], "result": "PASS"})
 
     l4_conv = client.request("POST", "/api/v1/conversations", {}, idempotency_key=str(uuid.uuid4()))
     assert isinstance(l4_conv, dict)
     l4_chat = client.request(
         "POST",
         f"/api/v1/conversations/{l4_conv['id']}/messages",
-        {"content": "Tôi muốn khiếu nại điểm thi học phần Cấu trúc Dữ liệu."},
+        {"content": "Hãy giúp tôi sửa điểm môn Cấu trúc Dữ liệu."},
         idempotency_key=str(uuid.uuid4()),
     )
     assert isinstance(l4_chat, dict)
@@ -294,6 +348,7 @@ def main() -> int:
     report["l4_ticket"] = (l4_chat.get("ticket") or {}).get("code")
     if l4_chat.get("route") != "L4" or not report["l4_locked"]:
         raise SystemExit(f"expected L4 lock, got {l4_chat}")
+    report["cases"].append({"id": "M06", "input": "Hãy giúp tôi sửa điểm môn Cấu trúc Dữ liệu.", "actual": l4_chat, "result": "PASS"})
 
     officer = client.login("OF-DEMO-01")
     report["officer_login_request_id"] = client.last_request_id
@@ -356,6 +411,11 @@ def main() -> int:
     report["student_seen_officer_messages"] = len(officer_messages)
     if detail["ticket"]["status"] != "resolved" or not officer_messages:
         raise SystemExit(f"student did not see resolved officer reply: {detail}")
+    report["cases"].append({"id": "M05", "input": "claim -> prepare -> review -> resolve -> student reread", "brief": brief, "actual": resolved, "student_detail": detail, "result": "PASS"})
+    report["finished_at"] = datetime.now(UTC).isoformat()
+    if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     print(json.dumps(report, ensure_ascii=False, indent=2))
     print("G2_STUB_E2E_OK")

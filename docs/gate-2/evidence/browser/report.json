@@ -1,0 +1,27 @@
+{
+  "ok": true,
+  "execution": "automated Playwright browser E2E",
+  "startedAt": "2026-10-04T13:32:01.666Z",
+  "finishedAt": "2026-10-04T13:32:10.512Z",
+  "mode": "api",
+  "baseUrl": "http://127.0.0.1:18100",
+  "backendRequests": 72,
+  "marker": "G2B-mutv15vm",
+  "steps": [
+    "preview-ready",
+    "return-keeps-preview",
+    "delayed-patch-stays-on-origin",
+    "second-thread-complaint-form",
+    "switch-back-keeps-preview",
+    "submit1",
+    "message-commit-refetch-fail",
+    "claim",
+    "prepare-ready",
+    "submit2",
+    "student-reread",
+    "detail-reload-preserves-officer-reply"
+  ],
+  "ticketCode": "TKT-2026-0007",
+  "reviewedBriefVersion": 2,
+  "finalUrl": "http://127.0.0.1:18100/my-requests?q=TKT-2026-0007&ticket=tkt_46c8a25be2f94cffb745134c4b93ac0b"
+}
