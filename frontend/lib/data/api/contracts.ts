@@ -9,7 +9,19 @@ export type WireMessageSender = "student" | "officer" | "assistant" | "system";
 export type WireBriefStatus = "pending" | "processing" | "ready" | "failed" | "stale";
 export type WireJobStatus = "pending" | "processing";
 export type WireOfficerAction = "respond" | "request_info" | "resolve";
-export type WirePreviewField = "purpose" | "destination_org" | "receive_method";
+export type WirePreviewField =
+  | "purpose"
+  | "destination_org"
+  | "receive_method"
+  | "complaint_subtype"
+  | "course"
+  | "course_code"
+  | "assessment"
+  | "description"
+  | "requested_outcome"
+  | "evidence";
+export type WireComplaintSubtype = "grade_appeal" | "other";
+export type WireIntakeService = "student_certificate" | "academic_complaint";
 
 export interface WirePage<T> {
   items: T[];
@@ -22,6 +34,14 @@ export interface WireFields {
   purpose: string | null;
   destination_org: string | null;
   receive_method: WireReceiveMethod | null;
+  complaint_subtype?: WireComplaintSubtype | null;
+  course?: string | null;
+  course_code?: string | null;
+  assessment?: string | null;
+  description?: string | null;
+  requested_outcome?: string | null;
+  evidence?: string | null;
+  extras?: Record<string, string>;
 }
 
 export interface WireFieldIssue {
@@ -34,7 +54,7 @@ export interface WirePreview {
   version: number;
   can_submit: boolean;
   expires_at: string;
-  service_type: "student_certificate";
+  service_type: WireIntakeService;
   fields: WireFields;
   missing_fields: WirePreviewField[];
   invalid_fields: WireFieldIssue[];

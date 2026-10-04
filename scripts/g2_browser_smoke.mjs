@@ -38,9 +38,10 @@ async function login(page, role) {
   await page.goto(`${baseUrl}/login`, { waitUntil: "domcontentloaded", timeout: 30000 });
   await page.getByRole("heading", { name: /Đăng nhập/ }).waitFor({ timeout: 15000 });
   const label = role === "officer" ? /Dùng tài khoản cán bộ/ : /Dùng tài khoản sinh viên/;
-  const fillBtn = page.getByRole("button", { name: label });
+  let fillBtn = page.getByRole("button", { name: label }).locator("visible=true").first();
   if (!(await fillBtn.isVisible().catch(() => false))) {
-    await page.getByRole("button", { name: /^Tài khoản mẫu$/ }).click();
+    await page.getByRole("button", { name: /Tài khoản (demo|mẫu)/ }).click();
+    fillBtn = page.getByRole("button", { name: label }).locator("visible=true").first();
   }
   await fillBtn.click();
   await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
@@ -145,8 +146,12 @@ async function runApi(page) {
   }
   report.steps.push("delayed-patch-stays-on-origin");
   await sendAssistant(page, "Tôi muốn khiếu nại điểm thi học phần Cấu trúc Dữ liệu.");
-  await page.getByText("Trợ lý AI đã khóa", { exact: false }).first().waitFor({ timeout: 40000 });
-  report.steps.push("second-thread-l4");
+  await page.getByText("Khiếu nại", { exact: false }).first().waitFor({ timeout: 40000 });
+  await page.getByLabel("Môn học / học phần").waitFor({ timeout: 20000 });
+  if (await page.getByText("Trợ lý AI đã khóa", { exact: false }).count()) {
+    throw new Error("ordinary grade complaint locked AI before the student confirmed the form");
+  }
+  report.steps.push("second-thread-complaint-form");
   await page.getByRole("button", { name: "Mở lịch sử hội thoại" }).click();
   const historyNav = page.locator("nav[aria-label='Lịch sử hội thoại']");
   const match = historyNav.getByRole("button", { name: previewTitle ? new RegExp(previewTitle.slice(0, 24)) : /Tôi muốn xin giấy xác nhận sinh viên/ });
@@ -159,6 +164,7 @@ async function runApi(page) {
 
   await page.getByLabel("Mục đích").fill(`nộp hồ sơ vay vốn ngân hàng ${marker}`);
   await submit1.click();
+  await page.getByRole("button", { name: "Xác nhận gửi" }).click();
   const ticketHeader = page.getByText(/Mã hồ sơ:\s*TKT-/);
   await ticketHeader.first().waitFor({ timeout: 20000 });
   await page.getByRole("heading", { name: "Đã nộp yêu cầu" }).waitFor({ timeout: 10000 });

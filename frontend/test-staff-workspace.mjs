@@ -19,7 +19,7 @@ function load(relative) {
   return testModule.exports;
 }
 const { MockCampusDataGateway } = load("lib/data/mock/mock-gateway.ts");
-const { actionBlock, effectiveFinding, filterTickets, reviewReadiness, reviewSnapshot, ticketSnapshot } = load("lib/staff-policy.ts");
+const { actionBlock, effectiveFinding, filterTickets, reviewReadiness, reviewSnapshot, ticketQueueTypeLabel, ticketSnapshot } = load("lib/staff-policy.ts");
 // Isolated in-memory storage: never access or reset an existing browser database.
 const values = new Map();
 globalThis.window = {};
@@ -59,6 +59,9 @@ console.log("PASS: completion never issues a document, closed tickets reject wri
 const queue = filterTickets([updated, { ...ticket, id: "high", priority: "high", createdAt: "2026-01-02" }, { ...ticket, id: "older", createdAt: "2026-01-01" }], "", "active", "all", "certificate");
 assert.deepEqual(queue.map(t => t.id), ["high", "older"]);
 assert.equal(filterTickets(queue, "", "all", "all", "complaint").length, 0);
+assert.equal(ticketQueueTypeLabel({ type: "complaint", complaintSubtype: "grade_appeal" }), "Khiếu nại · Điểm học phần");
+assert.equal(ticketQueueTypeLabel({ type: "complaint", complaintSubtype: "other" }), "Khiếu nại");
+assert.equal(ticketQueueTypeLabel({ type: "certificate" }), "Xin giấy xác nhận");
 console.log("PASS: queue uses real request types, excludes completed cases, and sorts urgency then age");
 
 let record = await gateway.getReviewCase("REV-2026-001");

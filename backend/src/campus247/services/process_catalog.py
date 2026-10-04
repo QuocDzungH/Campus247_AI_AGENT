@@ -44,7 +44,7 @@ PROCESSES: dict[str, ProcessSpec] = {
     ),
     "academic_complaint": ProcessSpec(
         service_type="academic_complaint",
-        label="Khiếu nại / bàn giao học vụ",
+        label="Khiếu nại",
         process_version="complaint-process-v1",
         issues_document=False,
         template_id=None,

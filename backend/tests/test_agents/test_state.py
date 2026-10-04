@@ -14,9 +14,12 @@ def test_non_l4_forbids_risk_type():
         RouteDecision(route="L1", intent="policy_question", risk_type="wellbeing", reason="sai")
 
 
-def test_l2_intent_must_be_certificate():
+def test_l2_intent_must_be_intake_service():
     with pytest.raises(ValidationError):
         RouteDecision(route="L2", intent="policy_question", reason="sai")
+    complaint = RouteDecision(route="L2", intent="academic_complaint", reason="khiếu nại")
+    assert complaint.intent == "academic_complaint"
+    assert complaint.risk_type is None
 
 
 def test_valid_routes():

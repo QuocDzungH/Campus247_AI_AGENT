@@ -4,6 +4,8 @@ from typing import Annotated, Generic, Literal, Self, TypeVar
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, StringConstraints, model_validator
 
+from campus247.models.intake_fields import missing_fields_for
+
 CONTRACT_VERSION = "P0-contract-v1"
 Id = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=128)]
 Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=10000)]
@@ -100,31 +102,50 @@ class RagResult(Contract):
         return self
 
 
+IntakeFieldName = Literal[
+    "purpose",
+    "destination_org",
+    "receive_method",
+    "complaint_subtype",
+    "course",
+    "course_code",
+    "assessment",
+    "description",
+    "requested_outcome",
+    "evidence",
+]
+
+
 class Fields(Contract):
-    purpose: Annotated[str, StringConstraints(strip_whitespace=True, min_length=5, max_length=1000)] | None
-    destination_org: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=300)] | None
-    receive_method: Method | None
+    purpose: Annotated[str, StringConstraints(strip_whitespace=True, min_length=5, max_length=1000)] | None = None
+    destination_org: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=300)] | None = None
+    receive_method: Method | None = None
+    complaint_subtype: Literal["grade_appeal", "other"] | None = None
+    course: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)] | None = None
+    course_code: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=40)] | None = None
+    assessment: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)] | None = None
+    description: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=4000)] | None = None
+    requested_outcome: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2000)] | None = None
+    evidence: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2000)] | None = None
     extras: dict[str, str] = Field(default_factory=dict)
 
 
 class FieldIssue(Contract):
-    field: Literal["purpose", "destination_org", "receive_method"]
+    field: IntakeFieldName
     reason: Text
 
 
 class Intake(Contract):
-    service_type: Literal["student_certificate"]
+    service_type: Literal["student_certificate", "academic_complaint"]
     fields: Fields
-    missing_fields: list[Literal["purpose", "destination_org", "receive_method"]]
+    missing_fields: list[IntakeFieldName]
     invalid_fields: list[FieldIssue]
 
     @model_validator(mode="after")
     def consistent_missing_fields(self) -> Self:
-        payload = self.fields.model_dump()
-        payload.pop("extras", None)
-        missing = {key for key, value in payload.items() if value is None}
-        if missing != set(self.missing_fields) or len(set(self.missing_fields)) != len(self.missing_fields):
-            raise ValueError("missing_fields must match null fields without duplicates")
+        expected = missing_fields_for(self.service_type, self.fields)
+        if list(self.missing_fields) != expected or len(set(self.missing_fields)) != len(self.missing_fields):
+            raise ValueError("missing_fields must match required empty fields without duplicates")
         return self
 
 

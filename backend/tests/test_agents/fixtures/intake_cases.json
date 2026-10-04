@@ -42,11 +42,18 @@
     "expected_risk": null
   },
   {
-    "id": "l4-complaint-case",
-    "content": "Tôi muốn khiếu nại điểm môn Giải tích của tôi",
-    "expected_route": "L4",
+    "id": "l2-complaint-vague",
+    "content": "Tôi muốn khiếu nại",
+    "expected_route": "L2",
     "expected_intent": "academic_complaint",
-    "expected_risk": "academic_complaint"
+    "expected_risk": null
+  },
+  {
+    "id": "l2-complaint-grade",
+    "content": "Tôi muốn khiếu nại điểm môn Giải tích của tôi",
+    "expected_route": "L2",
+    "expected_intent": "academic_complaint",
+    "expected_risk": null
   },
   {
     "id": "l4-fix-grade",
@@ -70,11 +77,11 @@
     "expected_risk": "wellbeing"
   },
   {
-    "id": "l4-mixed-certificate-complaint",
+    "id": "l2-mixed-certificate-complaint",
     "content": "Tôi muốn xin giấy xác nhận sinh viên và khiếu nại điểm môn Toán của tôi",
-    "expected_route": "L4",
+    "expected_route": "L2",
     "expected_intent": "academic_complaint",
-    "expected_risk": "academic_complaint"
+    "expected_risk": null
   },
   {
     "id": "l4-mixed-certificate-wellbeing",

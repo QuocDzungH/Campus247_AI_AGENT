@@ -22,19 +22,53 @@ import { ErrorBody } from "./types";
 import { auditActionLabel, auditTechnical, displayActorName, roleLabel } from "../../audit-labels";
 import { fieldLabel as sharedFieldLabel, verificationStatusLabel } from "../../field-labels";
 
-export type PreviewFieldKey = "purpose" | "destination_org" | "receive_method";
+export type PreviewFieldKey =
+  | "purpose"
+  | "destination_org"
+  | "receive_method"
+  | "complaint_subtype"
+  | "course"
+  | "course_code"
+  | "assessment"
+  | "description"
+  | "requested_outcome"
+  | "evidence";
+export type ComplaintSubtype = "grade_appeal" | "other";
+export type IntakeServiceType = "student_certificate" | "academic_complaint";
+
+const PREVIEW_FIELD_KEYS: PreviewFieldKey[] = [
+  "purpose",
+  "destination_org",
+  "receive_method",
+  "complaint_subtype",
+  "course",
+  "course_code",
+  "assessment",
+  "description",
+  "requested_outcome",
+  "evidence",
+];
+
+export interface CampusPreviewFields {
+  purpose: string | null;
+  destinationOrg: string | null;
+  receiveMethod: "digital_pdf" | "paper_stamped" | null;
+  complaintSubtype: ComplaintSubtype | null;
+  course: string | null;
+  courseCode: string | null;
+  assessment: string | null;
+  description: string | null;
+  requestedOutcome: string | null;
+  evidence: string | null;
+}
 
 export interface CampusPreview {
   id: string;
   version: number;
   canSubmit: boolean;
   expiresAt: string;
-  serviceType: "student_certificate";
-  fields: {
-    purpose: string | null;
-    destinationOrg: string | null;
-    receiveMethod: "digital_pdf" | "paper_stamped" | null;
-  };
+  serviceType: IntakeServiceType;
+  fields: CampusPreviewFields;
   missingFields: PreviewFieldKey[];
   invalidFields: Array<{ field: PreviewFieldKey; reason: string }>;
 }
@@ -134,6 +168,13 @@ export interface PreviewFieldsPatch {
   purpose: string | null;
   destination_org: string | null;
   receive_method: "digital_pdf" | "paper_stamped" | null;
+  complaint_subtype: ComplaintSubtype | null;
+  course: string | null;
+  course_code: string | null;
+  assessment: string | null;
+  description: string | null;
+  requested_outcome: string | null;
+  evidence: string | null;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -191,24 +232,37 @@ function emptyAiSummary(summary: string): Ticket["aiSummary"] {
   };
 }
 
+function optionalText(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value : null;
+}
+
+function asPreviewFieldKey(value: unknown): PreviewFieldKey | null {
+  return PREVIEW_FIELD_KEYS.includes(value as PreviewFieldKey) ? (value as PreviewFieldKey) : null;
+}
+
 export function mapPreview(raw: unknown): CampusPreview {
   const record = requireRecord(raw, "preview");
   const fields = requireRecord(record.fields, "preview.fields");
   const receive = fields.receive_method;
-  if (receive !== null && receive !== "digital_pdf" && receive !== "paper_stamped") {
+  if (receive !== null && receive !== undefined && receive !== "digital_pdf" && receive !== "paper_stamped") {
     throw new DataGatewayError("validation", "Invalid preview receive_method");
   }
+  const subtype = fields.complaint_subtype;
+  if (subtype !== null && subtype !== undefined && subtype !== "grade_appeal" && subtype !== "other") {
+    throw new DataGatewayError("validation", "Invalid preview complaint_subtype");
+  }
+  const serviceType = record.service_type === "academic_complaint" ? "academic_complaint" : "student_certificate";
   const missing = Array.isArray(record.missing_fields)
-    ? (record.missing_fields.filter(
-        (item) => item === "purpose" || item === "destination_org" || item === "receive_method"
-      ) as PreviewFieldKey[])
+    ? record.missing_fields.flatMap((item): PreviewFieldKey[] => {
+        const key = asPreviewFieldKey(item);
+        return key ? [key] : [];
+      })
     : [];
   const invalid = Array.isArray(record.invalid_fields)
     ? record.invalid_fields.flatMap((item): Array<{ field: PreviewFieldKey; reason: string }> => {
         if (!isRecord(item)) return [];
-        const field = item.field;
-        if (field !== "purpose" && field !== "destination_org" && field !== "receive_method") return [];
-        if (typeof item.reason !== "string") return [];
+        const field = asPreviewFieldKey(item.field);
+        if (!field || typeof item.reason !== "string") return [];
         return [{ field, reason: item.reason }];
       })
     : [];
@@ -217,11 +271,18 @@ export function mapPreview(raw: unknown): CampusPreview {
     version: requireNumber(record.version, "preview.version"),
     canSubmit: record.can_submit === true,
     expiresAt: requireString(record.expires_at, "preview.expires_at"),
-    serviceType: "student_certificate",
+    serviceType,
     fields: {
-      purpose: typeof fields.purpose === "string" ? fields.purpose : null,
-      destinationOrg: typeof fields.destination_org === "string" ? fields.destination_org : null,
-      receiveMethod: receive,
+      purpose: optionalText(fields.purpose),
+      destinationOrg: optionalText(fields.destination_org),
+      receiveMethod: receive === "digital_pdf" || receive === "paper_stamped" ? receive : null,
+      complaintSubtype: subtype === "grade_appeal" || subtype === "other" ? subtype : null,
+      course: optionalText(fields.course),
+      courseCode: optionalText(fields.course_code),
+      assessment: optionalText(fields.assessment),
+      description: optionalText(fields.description),
+      requestedOutcome: optionalText(fields.requested_outcome),
+      evidence: optionalText(fields.evidence),
     },
     missingFields: missing,
     invalidFields: invalid,
@@ -285,6 +346,10 @@ export function mapWireTicket(raw: unknown, extras?: { messages?: TicketMessage[
     ? record.priority_reasons.filter((item): item is string => typeof item === "string")
     : [];
   const isComplaint = category === "complaint" || serviceType === "academic_complaint";
+  const complaintSubtype =
+    requestData?.complaint_subtype === "grade_appeal" || requestData?.complaint_subtype === "other"
+      ? requestData.complaint_subtype
+      : null;
   return {
     id: requireString(record.id, "ticket.id"),
     code: requireString(record.code, "ticket.code"),
@@ -302,7 +367,14 @@ export function mapWireTicket(raw: unknown, extras?: { messages?: TicketMessage[
     createdAt: requireString(record.created_at, "ticket.created_at"),
     submittedAt: requireString(record.created_at, "ticket.created_at"),
     slaDeadline: "",
-    certificateType: serviceType === "student_certificate" ? "Giấy xác nhận sinh viên" : "",
+    certificateType:
+      serviceType === "student_certificate"
+        ? "Giấy xác nhận sinh viên"
+        : complaintSubtype === "grade_appeal"
+          ? "Khiếu nại điểm học phần"
+          : isComplaint
+            ? "Khiếu nại"
+            : "",
     receiveMethod,
     destinationOrg,
     purpose,
@@ -315,7 +387,7 @@ export function mapWireTicket(raw: unknown, extras?: { messages?: TicketMessage[
     officerDraft: "",
     officerDraftDefault: "",
     assignedOfficerId: typeof record.assigned_officer_id === "string" ? record.assigned_officer_id : undefined,
-    isL4: isComplaint,
+    isL4: typeof record.handover_reason === "string" && record.handover_reason.length > 0,
     l4TriggerReason: typeof record.handover_reason === "string" ? record.handover_reason : undefined,
     messages: extras?.messages ?? [],
     auditLogs: extras?.auditLogs ?? [],
@@ -323,6 +395,7 @@ export function mapWireTicket(raw: unknown, extras?: { messages?: TicketMessage[
     conversationId: requireString(record.conversation_id, "ticket.conversation_id"),
     category: category === "complaint" ? "complaint" : "action",
     serviceType,
+    complaintSubtype,
     requestPayload:
       submittedFields.length || summary
         ? {
@@ -908,17 +981,44 @@ export function previewFieldsToPatch(preview: CampusPreview): PreviewFieldsPatch
     purpose: preview.fields.purpose,
     destination_org: preview.fields.destinationOrg,
     receive_method: preview.fields.receiveMethod,
+    complaint_subtype: preview.fields.complaintSubtype,
+    course: preview.fields.course,
+    course_code: preview.fields.courseCode,
+    assessment: preview.fields.assessment,
+    description: preview.fields.description,
+    requested_outcome: preview.fields.requestedOutcome,
+    evidence: preview.fields.evidence,
   };
 }
 
+function blankToNull(value: string | null | undefined): string | null {
+  const text = (value || "").trim();
+  return text ? text : null;
+}
+
 export function fieldsFromForm(fields: {
-  purpose: string;
-  destinationOrg: string;
-  receiveMethod: "digital_pdf" | "paper_stamped" | "";
+  purpose?: string;
+  destinationOrg?: string;
+  receiveMethod?: "digital_pdf" | "paper_stamped" | "";
+  complaintSubtype?: ComplaintSubtype | "";
+  course?: string;
+  courseCode?: string;
+  assessment?: string;
+  description?: string;
+  requestedOutcome?: string;
+  evidence?: string;
 }): PreviewFieldsPatch {
+  const subtype = fields.complaintSubtype;
   return {
-    purpose: fields.purpose.trim() ? fields.purpose.trim() : null,
-    destination_org: fields.destinationOrg.trim() ? fields.destinationOrg.trim() : null,
+    purpose: blankToNull(fields.purpose),
+    destination_org: blankToNull(fields.destinationOrg),
     receive_method: fields.receiveMethod === "digital_pdf" || fields.receiveMethod === "paper_stamped" ? fields.receiveMethod : null,
+    complaint_subtype: subtype === "grade_appeal" || subtype === "other" ? subtype : null,
+    course: blankToNull(fields.course),
+    course_code: blankToNull(fields.courseCode),
+    assessment: blankToNull(fields.assessment),
+    description: blankToNull(fields.description),
+    requested_outcome: blankToNull(fields.requestedOutcome),
+    evidence: blankToNull(fields.evidence),
   };
 }

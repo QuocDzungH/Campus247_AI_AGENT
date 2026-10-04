@@ -1,5 +1,5 @@
-import { VinUniForm } from "@/components/student/VinUniForm";
+import { redirect } from "next/navigation";
 
 export default function CertificateReviewPage() {
-  return <VinUniForm task="certificate" review />;
+  redirect("/student/assistant?intent=certificate");
 }

@@ -35,11 +35,11 @@ export function lookupStudentGuidance(question: string): AssistantReply {
   }
   if (/(khieu nai|phuc khao|diem thi|sai diem|grade appeal)/.test(query)) {
     return { text: "Grade Appeal áp dụng điểm tổng kết học phần. Bạn cần:\n• Liên hệ giảng viên bằng email trước.\n• Chuẩn bị thông tin học phần, căn cứ, minh chứng và chứng từ thanh toán.\n• Đối chiếu hạn 5 ngày làm việc từ khi điểm chính thức đăng trên Canvas với lịch làm việc của trường.\n\nMở biểu mẫu để điền và kiểm tra. Trạng thái kết nối và cách xác nhận được hiển thị trong biểu mẫu.",
-      source: { title: "VinUni — Student Grade Appeal Procedure", section: "PRC-AQA-002-V2.0 · 21/01/2026", quote: "Tóm lược: xem xét điểm tổng kết học phần, yêu cầu trao đổi trước với giảng viên và hồ sơ có minh chứng, chứng từ thanh toán.", href: VINUNI_SOURCES.appeal }, action: { label: "Nộp Grade Appeal", href: "/student/complaint" } };
+      source: { title: "VinUni — Student Grade Appeal Procedure", section: "PRC-AQA-002-V2.0 · 21/01/2026", quote: "Tóm lược: xem xét điểm tổng kết học phần, yêu cầu trao đổi trước với giảng viên và hồ sơ có minh chứng, chứng từ thanh toán.", href: VINUNI_SOURCES.appeal }, action: { label: "Mở form khiếu nại trong chat", href: "/student/assistant?intent=complaint" } };
   }
   if (/(ban giay|ban dien tu|pdf|cach nhan|nhan giay|xin giay|cap giay|xac nhan|bang diem|muc dich|noi nhan|noi gui|transcript)/.test(query)) {
     return { text: "Để yêu cầu tài liệu học vụ, bạn cần chọn:\n• Loại tài liệu và ngôn ngữ.\n• Bản điện tử (PDF) hoặc bản giấy, số bản và người nhận.\n\nTheo hướng dẫn Registrar, PDF gửi tới email VinUni hoặc người nhận được xác minh; bản giấy nhận tại phòng I114 hoặc chuyển phát.\n\nMở biểu mẫu để điền và kiểm tra. Trạng thái kết nối và cách xác nhận được hiển thị trong biểu mẫu.",
-      source: { title: "VinUni Registrar — Request Transcripts & Certifications", section: "Loại tài liệu và cách nhận", quote: "Tóm lược: lựa chọn ngôn ngữ, định dạng, số bản và thông tin người nhận phù hợp với từng loại tài liệu.", href: VINUNI_SOURCES.documents }, action: { label: "Nộp yêu cầu tài liệu", href: "/student/certificate" } };
+      source: { title: "VinUni Registrar — Request Transcripts & Certifications", section: "Loại tài liệu và cách nhận", quote: "Tóm lược: lựa chọn ngôn ngữ, định dạng, số bản và thông tin người nhận phù hợp với từng loại tài liệu.", href: VINUNI_SOURCES.documents }, action: { label: "Mở form xin giấy trong chat", href: "/student/assistant?intent=certificate" } };
   }
   if (/(ho so|trang thai|theo doi|bo sung|yeu cau da gui)/.test(query)) {
     const quote = "Hồ sơ của tôi hiển thị yêu cầu đã gửi, trạng thái xử lý, kết quả và trao đổi với cán bộ. Hồ sơ cần bổ sung được hiển thị trên trang dịch vụ.";
@@ -71,7 +71,7 @@ export function answerStudentQuestion(question: string, task: StudentTask, draft
   }
   if (/(gui yeu cau|gui ho so|gui giay)/.test(query)) {
     return { text: "Kiểm tra thông tin ở bước cuối rồi chọn Nộp yêu cầu. Campus 24/7 sẽ tạo mã hồ sơ để bạn theo dõi trong Hồ sơ của tôi.",
-      action: { label: "Mở yêu cầu cấp giấy", href: "/student/certificate" } };
+      action: { label: "Mở form xin giấy trong chat", href: "/student/assistant?intent=certificate" } };
   }
   return lookupStudentGuidance(question);
 }

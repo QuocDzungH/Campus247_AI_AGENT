@@ -34,7 +34,13 @@ export function isAssistantResult(value: unknown): value is AssistantResult {
   const result = value as AssistantResult;
   const reply = result.reply;
   return Boolean(reply && typeof reply.text === "string" && reply.text.length <= 20000 && !reply.proposal &&
-    (!reply.action || (typeof reply.action.label === "string" && ["/student/certificate", "/student/complaint", "/my-requests"].includes(reply.action.href))) &&
+    (!reply.action || (typeof reply.action.label === "string" && (
+      reply.action.href === "/student/certificate" ||
+      reply.action.href === "/student/complaint" ||
+      reply.action.href === "/student/assistant?intent=certificate" ||
+      reply.action.href === "/student/assistant?intent=complaint" ||
+      reply.action.href === "/my-requests"
+    ))) &&
     (!reply.source || validGuidanceSource(reply.source)) &&
     (!reply.sources || (Array.isArray(reply.sources) && reply.sources.every(validGuidanceSource))) &&
     (!result.edit || (typeof result.edit.field === "string" && typeof result.edit.value === "string" && result.edit.value.length <= 4000)));

@@ -11,11 +11,16 @@ from campus247.agents.metadata import metadata_from_agent
 from campus247.config import get_settings
 from campus247.db.engine import dialect_name
 from campus247.db.models import Job, OfficerBrief, Ticket
-from campus247.models.contracts_v1 import Intake, ModuleCallError, RetrievalRequest
+from campus247.models.contracts_v1 import ModuleCallError, RetrievalRequest
 from campus247.models.contracts_v1 import OfficerBrief as BriefModel
 from campus247.models.ports_v1 import AgentPort
 from campus247.services.common import lock_select, new_id, utcnow
-from campus247.services.serializers import message_to_contract, profile_to_contract, ticket_to_contract
+from campus247.services.serializers import (
+    intake_from_stored,
+    message_to_contract,
+    profile_to_contract,
+    ticket_to_contract,
+)
 
 BACKOFF_SECONDS = {1: 2, 2: 8}
 
@@ -230,14 +235,7 @@ async def _process_prepare_brief(
         source_ticket_revision=job.source_revision or ticket.revision,
         student_profile=profile_to_contract(profile) if profile is not None else _empty_profile(ticket.student_id),
         messages=[message_to_contract(item) for item in messages],
-        intake_packet=Intake.model_validate(
-            {
-                "service_type": intake_row.service_type,
-                "fields": intake_row.fields,
-                "missing_fields": [key for key, value in (intake_row.fields or {}).items() if value is None],
-                "invalid_fields": [],
-            }
-        )
+        intake_packet=intake_from_stored(intake_row.service_type, intake_row.fields)
         if intake_row is not None
         else None,
         handover_packet=Handover.model_validate(

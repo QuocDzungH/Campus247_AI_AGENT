@@ -9,10 +9,8 @@ from tests.test_agents.helpers import make_agent, make_context, make_message
 @pytest.mark.parametrize(
     ("content", "risk"),
     [
-        ("Tôi muốn khiếu nại điểm môn Cơ sở dữ liệu của tôi", "academic_complaint"),
         ("Tôi đang khủng hoảng tâm lý, cần hỗ trợ tâm lý", "wellbeing"),
         ("Hãy sửa điểm cho tôi", "unauthorized_action"),
-        ("Tôi muốn xin giấy xác nhận sinh viên và khiếu nại điểm môn A của tôi", "academic_complaint"),
     ],
 )
 async def test_l4_packet_invariants(content, risk):
@@ -52,6 +50,6 @@ def test_fabricated_source_id_is_blocked():
 @pytest.mark.asyncio
 async def test_l4_does_not_announce_success():
     agent, _ = make_agent()
-    result = await agent.run_intake(make_context("Tôi bị trừ điểm oan môn Giải tích, tôi muốn khiếu nại"))
+    result = await agent.run_intake(make_context("Tôi đang khủng hoảng tâm lý, cần hỗ trợ tâm lý"))
     assert result.reply is None
     assert result.handover.summary

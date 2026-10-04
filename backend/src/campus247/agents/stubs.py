@@ -1,9 +1,18 @@
 """Contract-faithful stubs. They do not invent L1 citations or ticket codes."""
 
 from campus247.agents.metadata import STUB_MODEL_NAME
-from campus247.agents.nodes.intake_l2 import MSG_L2_REVIEW, MSG_L2_SELF_SUBMIT, asks_to_submit_on_behalf
+from campus247.agents.nodes.intake_l2 import (
+    MSG_L2_REVIEW,
+    MSG_L2_SELF_SUBMIT,
+    asks_to_submit_on_behalf,
+    build_l2_reply,
+    complaint_hints,
+    merge_intake_fields,
+)
+from campus247.models.intake_fields import missing_fields_for
 from campus247.agents.provenance import deterministic_facts
 from campus247.models.contracts_v1 import (
+    Fields,
     Intake,
     IntakeContext,
     IntakeResult,
@@ -55,9 +64,10 @@ class StubAgent:
             return _handover(context, "wellbeing", "Có tín hiệu cần hỗ trợ sinh viên.")
         if any(token in text for token in UNAUTHORIZED):
             return _handover(context, "unauthorized_action", "Yêu cầu vượt thẩm quyền hệ thống.")
-        if any(token in text for token in COMPLAINT):
-            return _handover(context, "academic_complaint", "Sinh viên gửi khiếu nại học vụ.")
-        if any(token in text for token in CERTIFICATE):
+        procedure = any(token in text for token in ("thủ tục", "quy trình", "nộp ở đâu", "như thế nào"))
+        if any(token in text for token in COMPLAINT) and not procedure:
+            return _complaint(context)
+        if any(token in text for token in CERTIFICATE) and not procedure:
             return _certificate(context, text)
         return IntakeResult(
             route="L1",
@@ -107,7 +117,11 @@ def _handover(context: IntakeContext, risk: str, reason: str) -> IntakeResult:
 
 
 def _certificate(context: IntakeContext, text: str) -> IntakeResult:
-    current = context.preview.fields if context.preview is not None else None
+    current = (
+        context.preview.fields
+        if context.preview is not None and context.preview.service_type == "student_certificate"
+        else None
+    )
     purpose = current.purpose if current else None
     destination = current.destination_org if current else None
     method = current.receive_method if current else None
@@ -122,8 +136,8 @@ def _certificate(context: IntakeContext, text: str) -> IntakeResult:
             method = "digital_pdf"
         elif "bản giấy" in text or "đóng dấu" in text:
             method = "paper_stamped"
-    fields = {"purpose": purpose, "destination_org": destination, "receive_method": method}
-    missing = [key for key, value in fields.items() if value is None]
+    fields = Fields(purpose=purpose, destination_org=destination, receive_method=method)
+    missing = missing_fields_for("student_certificate", fields)
     intake = Intake(service_type="student_certificate", fields=fields, missing_fields=missing, invalid_fields=[])
     if missing:
         return IntakeResult(
@@ -138,6 +152,35 @@ def _certificate(context: IntakeContext, text: str) -> IntakeResult:
         route="L2",
         outcome="preview_ready",
         reply=MSG_L2_SELF_SUBMIT if asks_to_submit_on_behalf(text) else MSG_L2_REVIEW,
+        citations=[],
+        intake=intake,
+        handover=None,
+    )
+
+
+def _complaint(context: IntakeContext) -> IntakeResult:
+    existing = context.preview.fields if context.preview is not None and context.preview.service_type == "academic_complaint" else None
+    extraction = complaint_hints(context.message.content)
+    fields, invalid = merge_intake_fields(existing, extraction, "academic_complaint")
+    missing = missing_fields_for("academic_complaint", fields)
+    intake = Intake(
+        service_type="academic_complaint",
+        fields=fields,
+        missing_fields=missing,
+        invalid_fields=invalid,
+    )
+    preview_ready = not missing and not invalid
+    return IntakeResult(
+        route="L2",
+        outcome="preview_ready" if preview_ready else "collecting",
+        reply=build_l2_reply(
+            missing,
+            invalid,
+            preview_ready=preview_ready,
+            user_message=context.message.content,
+            service_type="academic_complaint",
+            switched=bool(context.preview is not None and context.preview.service_type != "academic_complaint"),
+        ),
         citations=[],
         intake=intake,
         handover=None,

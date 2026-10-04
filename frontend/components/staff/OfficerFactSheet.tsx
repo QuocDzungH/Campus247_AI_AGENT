@@ -36,8 +36,12 @@ export function OfficerFactSheet({
         </p>
       ) : null}
       {brief.status === "pending" || brief.status === "processing" ? (
-        <p className="text-sm text-slate-500">CampusAgent đang đọc đơn, hồ sơ nguồn và tài liệu được phép. Trang này không tự chạy lại AI.</p>
-      ) : null}
+        <p className="text-sm text-slate-500">
+          CampusAgent đang đọc đơn, hồ sơ nguồn và tài liệu được phép. Trang này không tự chạy lại AI.
+          Nội dung sinh viên đã gửi nằm ở Đơn sinh viên đã gửi bên dưới; các mục tóm tắt chỉ có sau khi AI xong.
+        </p>
+      ) : (
+      <>
       <section>
         <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Mục tiêu sinh viên</h4>
         <p className="mt-1 whitespace-pre-wrap leading-relaxed">{brief.summary || "Chưa có dữ liệu"}</p>
@@ -165,6 +169,8 @@ export function OfficerFactSheet({
           {` · hồ sơ hiện tại: lần ${brief.currentTicketRevision}`}
         </p>
       </details>
+      </>
+      )}
     </section>
   );
 }

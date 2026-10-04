@@ -173,14 +173,40 @@ test("mapPreview maps snake_case P0 fields and submit flag", () => {
   assert.equal(preview.canSubmit, true);
   assert.equal(preview.fields.destinationOrg, "Ngân hàng Chính sách Xã hội");
   assert.equal(preview.fields.receiveMethod, "digital_pdf");
-  assert.deepEqual(previewFieldsToPatch(preview), previewWire.fields);
+  const patch = previewFieldsToPatch(preview);
+  assert.equal(patch.purpose, previewWire.fields.purpose);
+  assert.equal(patch.destination_org, previewWire.fields.destination_org);
+  assert.equal(patch.receive_method, previewWire.fields.receive_method);
+  assert.equal(patch.complaint_subtype, null);
 });
 
 test("fieldsFromForm sends a full snapshot and nulls blank values", () => {
-  assert.deepEqual(
-    fieldsFromForm({ purpose: "  vay vốn  ", destinationOrg: "", receiveMethod: "" }),
-    { purpose: "vay vốn", destination_org: null, receive_method: null }
-  );
+  const patch = fieldsFromForm({ purpose: "  vay vốn  ", destinationOrg: "", receiveMethod: "" });
+  assert.equal(patch.purpose, "vay vốn");
+  assert.equal(patch.destination_org, null);
+  assert.equal(patch.receive_method, null);
+  assert.equal(patch.course, null);
+});
+
+test("mapPreview maps academic_complaint fields without forcing certificate schema", () => {
+  const preview = mapPreview({
+    ...previewWire,
+    service_type: "academic_complaint",
+    can_submit: false,
+    fields: {
+      purpose: null,
+      destination_org: null,
+      receive_method: null,
+      complaint_subtype: "grade_appeal",
+      course: "Cơ sở dữ liệu",
+      description: "Điểm bài thi chưa đúng",
+    },
+    missing_fields: [],
+  });
+  assert.equal(preview.serviceType, "academic_complaint");
+  assert.equal(preview.fields.course, "Cơ sở dữ liệu");
+  assert.equal(preview.fields.complaintSubtype, "grade_appeal");
+  assert.equal(preview.fields.purpose, null);
 });
 
 test("mapChatResult L2 attaches preview and does not lock chat", () => {

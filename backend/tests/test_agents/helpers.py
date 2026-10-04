@@ -44,12 +44,17 @@ def make_message(content: str, *, message_id: str = "msg_current", sender: str =
 
 
 def make_preview(purpose=None, destination_org=None, receive_method=None, **overrides) -> Preview:
-    fields = Fields(purpose=purpose, destination_org=destination_org, receive_method=receive_method)
-    missing = [key for key, value in fields.model_dump().items() if value is None]
+    from campus247.models.intake_fields import missing_fields_for
+
+    fields = overrides.pop("fields", None) or Fields(
+        purpose=purpose, destination_org=destination_org, receive_method=receive_method
+    )
+    service_type = overrides.get("service_type", "student_certificate")
+    missing = missing_fields_for(service_type, fields)
     data = {
         "id": "prv_1",
         "version": 1,
-        "service_type": "student_certificate",
+        "service_type": service_type,
         "fields": fields,
         "missing_fields": missing,
         "invalid_fields": [],

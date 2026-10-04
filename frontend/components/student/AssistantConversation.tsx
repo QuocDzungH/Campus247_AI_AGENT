@@ -48,7 +48,7 @@ export function AssistantConversation({ compact = false }: { compact?: boolean }
         <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{context.requestCode ? "Bạn có thể hỏi về trạng thái, yêu cầu bổ sung và phản hồi đang hiển thị của hồ sơ này." : task ? "Hỏi về bước đang làm hoặc chọn Giải thích cạnh trường bạn cần hỗ trợ." : "Hỏi về thủ tục hoặc mở biểu mẫu để điền và kiểm tra cùng trợ lý."}</p>
         {!task && !context.requestCode && <div className="mt-4 flex flex-wrap gap-2">
           <button type="button" onClick={() => assistant.openForm("certificate")} className={`${secondaryButton} border border-slate-300 dark:border-slate-600`}><FileText className="h-4 w-4" />{assistant.isApiMode ? "Xin giấy xác nhận" : "Mở yêu cầu tài liệu"}</button>
-          <button type="button" onClick={() => assistant.openForm("complaint")} className={`${secondaryButton} border border-slate-300 dark:border-slate-600`}>{assistant.isApiMode ? "Khiếu nại điểm thi" : "Mở khiếu nại điểm"}</button>
+          <button type="button" onClick={() => assistant.openForm("complaint")} className={`${secondaryButton} border border-slate-300 dark:border-slate-600`}>{assistant.isApiMode ? "Khiếu nại" : "Mở khiếu nại"}</button>
         </div>}
       </div>}
       <div className="mx-auto mb-5 flex max-w-2xl flex-wrap gap-2" aria-label="Câu hỏi gợi ý">{suggestions.map(question => <button type="button" key={question} disabled={pending} onClick={() => send(question)} className="min-h-11 rounded-xl border border-slate-200 px-3 py-2 text-left text-xs hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:hover:bg-slate-800">{question}</button>)}</div>
@@ -65,8 +65,8 @@ export function AssistantConversation({ compact = false }: { compact?: boolean }
               </div>
               {exchange.error && <p role="alert" className="mt-2 text-red-700 dark:text-red-300">{exchange.error}</p>}
             </div>}
-            {exchange.reply.action && (exchange.reply.action.href === "/student/certificate" || exchange.reply.action.href === "/student/complaint"
-              ? <button type="button" onClick={() => assistant.openForm(exchange.reply.action!.href.endsWith("certificate") ? "certificate" : "complaint")} className={`${secondaryButton} border border-blue-200 dark:border-blue-800`}>{task === (exchange.reply.action.href.endsWith("certificate") ? "certificate" : "complaint") ? "Tiếp tục hồ sơ" : "Mở biểu mẫu"} · {exchange.reply.action.href.endsWith("certificate") ? "Yêu cầu tài liệu" : "Khiếu nại điểm"}</button>
+            {exchange.reply.action && (exchange.reply.action.href.includes("certificate") || exchange.reply.action.href.includes("complaint")
+              ? <button type="button" onClick={() => assistant.openForm(exchange.reply.action!.href.includes("certificate") ? "certificate" : "complaint")} className={`${secondaryButton} border border-blue-200 dark:border-blue-800`}>{task === (exchange.reply.action.href.includes("certificate") ? "certificate" : "complaint") ? "Tiếp tục hồ sơ" : "Mở biểu mẫu"} · {exchange.reply.action.href.includes("certificate") ? "Xin giấy xác nhận" : "Khiếu nại"}</button>
               : <Link href={exchange.reply.action.href} onClick={() => assistant.setOpen(false)} className={`${secondaryButton} border border-slate-200 dark:border-slate-700`}>{exchange.reply.action.label}</Link>)}
           </div>
         </article>)}

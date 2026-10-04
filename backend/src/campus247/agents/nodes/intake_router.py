@@ -46,9 +46,19 @@ _COMPLAINT = re.compile(
     r"(khiếu nại|khiếu nai|phúc khảo|điểm oan|trừ điểm oan|không đồng ý với điểm)",
     re.IGNORECASE,
 )
+_COMPLAINT_ACTION = re.compile(
+    r"(tôi muốn khiếu nại|muốn khiếu nại|gửi khiếu nại|nộp khiếu nại|"
+    r"khiếu nại điểm|phúc khảo điểm|điểm oan|trừ điểm oan|không đồng ý với điểm|"
+    r"điểm môn .{1,80} của tôi|điểm của tôi)",
+    re.IGNORECASE,
+)
+_GRADE_HINT = re.compile(
+    r"(điểm|phúc khảo|học phần|môn )",
+    re.IGNORECASE,
+)
 _CERT_ACTION = re.compile(
     r"(muốn xin giấy|xin cấp giấy|xin giấy xác nhận|cấp giấy xác nhận|"
-    r"làm giấy xác nhận|giấy xác nhận sinh viên)",
+    r"làm giấy xác nhận|giấy xác nhận sinh viên|cần giấy xác nhận)",
     re.IGNORECASE,
 )
 _CERT_PROCEDURE = re.compile(
@@ -76,9 +86,6 @@ def l4_safety_signal(text: str) -> tuple[Risk, str] | None:
     if _UNAUTHORIZED_ASK.search(lowered) or (_UNAUTHORIZED.search(lowered) and (not procedure or personal)):
         return "unauthorized_action", "Yêu cầu vượt thẩm quyền của hệ thống tự phục vụ."
 
-    negated = bool(_NEGATE_COMPLAINT.search(lowered) and not personal)
-    if not negated and _COMPLAINT.search(lowered) and (personal or not procedure):
-        return "academic_complaint", "Yêu cầu khiếu nại học vụ cần cán bộ tiếp nhận."
     return None
 
 
@@ -91,26 +98,51 @@ def rule_route(text: str) -> RouteDecision | None:
 
     procedure = bool(_PROCEDURE.search(text) or _CERT_PROCEDURE.search(text))
     cert_action = bool(_CERT_ACTION.search(text))
-    if cert_action and not procedure:
-        return RouteDecision(
-            route="L2",
-            intent="student_certificate",
-            reason="Sinh viên muốn tạo yêu cầu giấy xác nhận sinh viên.",
-            confidence=0.9,
-        )
-    if procedure and not cert_action:
+    complaint_action = bool(_COMPLAINT_ACTION.search(text) or (_COMPLAINT.search(text) and not procedure))
+    if _NEGATE_COMPLAINT.search(text) and not _PERSONAL_CASE.search(text):
+        complaint_action = False
+
+    if procedure and not cert_action and not complaint_action:
         return RouteDecision(
             route="L1",
             intent="policy_question",
             reason="Sinh viên hỏi thủ tục, chưa yêu cầu xử lý một ca cụ thể.",
             confidence=0.9,
         )
-    if cert_action and procedure:
+    if procedure and (cert_action or complaint_action) and not _PERSONAL_CASE.search(text):
         return RouteDecision(
             route="L1",
             intent="policy_question",
-            reason="Câu hỏi về thủ tục cấp giấy, chưa phải yêu cầu tạo hồ sơ.",
+            reason="Câu hỏi về thủ tục, chưa phải yêu cầu tạo hồ sơ.",
             confidence=0.8,
+        )
+    if cert_action and complaint_action:
+        if _GRADE_HINT.search(text) and _PERSONAL_CASE.search(text):
+            return RouteDecision(
+                route="L2",
+                intent="academic_complaint",
+                reason="Sinh viên nêu khiếu nại cụ thể; giấy xác nhận có thể đổi loại đơn sau.",
+                confidence=0.8,
+            )
+        return RouteDecision(
+            route="L2",
+            intent="student_certificate",
+            reason="Sinh viên nêu xin giấy; có thể đổi sang khiếu nại nếu đó là nhu cầu chính.",
+            confidence=0.75,
+        )
+    if complaint_action:
+        return RouteDecision(
+            route="L2",
+            intent="academic_complaint",
+            reason="Sinh viên muốn gửi khiếu nại trong hội thoại.",
+            confidence=0.9,
+        )
+    if cert_action:
+        return RouteDecision(
+            route="L2",
+            intent="student_certificate",
+            reason="Sinh viên muốn tạo yêu cầu giấy xác nhận sinh viên.",
+            confidence=0.9,
         )
     if _NEGATE_COMPLAINT.search(text):
         return RouteDecision(
@@ -148,12 +180,14 @@ def make_router_node(model: Any, *, provider_timeout: float = PROVIDER_CALL_TIME
 
         ruled = rule_route(text)
         if ruled is None and context.preview is not None and l4_safety_signal(text) is None:
-            ruled = RouteDecision(
-                route="L2",
-                intent="student_certificate",
-                reason="Tiếp tục thu thập hồ sơ giấy xác nhận sinh viên.",
-                confidence=0.9,
-            )
+            preview_intent = context.preview.service_type
+            if preview_intent in {"student_certificate", "academic_complaint"}:
+                ruled = RouteDecision(
+                    route="L2",
+                    intent=preview_intent,
+                    reason="Tiếp tục thu thập hồ sơ đang mở trong hội thoại.",
+                    confidence=0.9,
+                )
         if ruled is not None:
             return {"context": context, "decision": ruled}
 

@@ -38,28 +38,31 @@ async def test_campus_agent_routes_fixtures(case):
         assert result.handover.risk_type == case["expected_risk"]
         assert result.reply is None
         assert result.intake is None
+    if case["expected_route"] == "L2":
+        assert result.intake is not None
+        assert result.intake.service_type == case["expected_intent"]
+        assert result.handover is None
 
 
 @pytest.mark.asyncio
 async def test_l4_postcheck_overrides_mixed_llm():
-    model = ScriptedChatModel(
+    agent, _ = make_agent(
         {
+            "FieldExtraction": FieldExtraction(provided_fields=[]),
             "RouteDecision": RouteDecision(
                 route="L2",
                 intent="student_certificate",
                 reason="LLM nhầm sang giấy",
-            )
+            ),
         }
     )
-    from campus247.agents.factory import create_agent
-
-    agent = create_agent(model, StubRag())
-    # Ambiguous enough to reach LLM? Mixed cert+complaint is caught by rules.
     result = await agent.run_intake(
         make_context("Tôi muốn xin giấy xác nhận sinh viên và khiếu nại điểm môn Lý của tôi")
     )
-    assert result.route == "L4"
-    assert result.handover.risk_type == "academic_complaint"
+    assert result.route == "L2"
+    assert result.intake is not None
+    assert result.intake.service_type == "academic_complaint"
+    assert result.handover is None
 
 
 @pytest.mark.asyncio
@@ -79,4 +82,13 @@ async def test_invalid_classifier_schema_raises():
 
 def test_l4_signal_skips_procedure_only():
     assert l4_safety_signal("Thủ tục phúc khảo điểm thế nào?") is None
-    assert l4_safety_signal("Tôi muốn khiếu nại điểm môn X của tôi")[0] == "academic_complaint"
+    assert l4_safety_signal("Tôi muốn khiếu nại điểm môn X của tôi") is None
+    assert l4_safety_signal("Hãy sửa điểm cho tôi")[0] == "unauthorized_action"
+
+
+def test_vague_complaint_is_l2_not_ticket():
+    decision = rule_route("Tôi muốn khiếu nại")
+    assert decision is not None
+    assert decision.route == "L2"
+    assert decision.intent == "academic_complaint"
+    assert decision.risk_type is None

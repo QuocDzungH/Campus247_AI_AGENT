@@ -11,6 +11,24 @@ from campus247.services.common import utcnow
 from campus247.services.jobs import enqueue_prepare_brief, heartbeat, lease_next_job, process_job
 from campus247.services.student import create_conversation, send_conversation_message, submit1
 
+COMPLAINT_INTAKE = IntakeResult(
+    route="L2",
+    outcome="preview_ready",
+    reply="Hãy kiểm tra",
+    citations=[],
+    intake=Intake(
+        service_type="academic_complaint",
+        fields=Fields(
+            complaint_subtype="other",
+            description="Cơ sở vật chất phòng 205 bị hỏng màn hình máy chiếu",
+            requested_outcome="thay sớm kịp giờ họp",
+        ),
+        missing_fields=[],
+        invalid_fields=[],
+    ),
+    handover=None,
+)
+
 PREVIEW_INTAKE = IntakeResult(
     route="L2",
     outcome="preview_ready",
@@ -284,6 +302,39 @@ def test_worker_reclaims_expired_lease(db_session):
     assert claimed.id == job.id
     assert claimed.state == "leased"
     assert claimed.attempts == 2
+
+
+@pytest.mark.asyncio
+async def test_prepare_brief_accepts_complaint_intake_with_unused_certificate_keys(db_session, restore_agent):
+    student = _user(db_session, "SV-DEMO-006")
+    _, conv = create_conversation(db_session, student, "cmp-conv", "req-cmp-c")
+    _, chat = await send_conversation_message(
+        db_session,
+        student,
+        conv["id"],
+        "Tôi muốn khiếu nại cơ sở vật chất phòng 205",
+        "cmp-msg",
+        "req-cmp-m",
+        StubAgent(intake_result=COMPLAINT_INTAKE),
+    )
+    _, submitted = submit1(
+        db_session,
+        student,
+        Submit1(preview_id=chat["preview"]["id"], preview_version=chat["preview"]["version"], confirmed=True),
+        "cmp-sub",
+        "req-cmp-s",
+    )
+    ticket = db_session.get(Ticket, submitted["ticket"]["id"])
+    job = db_session.execute(
+        select(Job).where(Job.ticket_id == ticket.id, Job.source_revision == ticket.revision)
+    ).scalar_one()
+    await process_job(db_session, job, StubAgent())
+    stored = db_session.execute(
+        select(OfficerBrief).where(OfficerBrief.ticket_id == ticket.id, OfficerBrief.is_current.is_(True))
+    ).scalar_one()
+    assert stored.status == "ready"
+    job = db_session.get(Job, job.id)
+    assert job.state == "succeeded"
 
 
 async def _certificate_job(db_session, suffix: str):

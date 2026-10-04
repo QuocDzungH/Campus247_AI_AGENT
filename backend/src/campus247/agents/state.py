@@ -30,6 +30,16 @@ Intent = Literal[
     "unauthorized_action",
 ]
 CertificateField = Literal["purpose", "destination_org", "receive_method"]
+ComplaintField = Literal[
+    "complaint_subtype",
+    "course",
+    "course_code",
+    "assessment",
+    "description",
+    "requested_outcome",
+    "evidence",
+]
+IntakeField = CertificateField | ComplaintField
 SourceType = Literal["student_message", "profile", "policy", "tool_result"]
 SourceKey = tuple[SourceType, str]
 
@@ -55,18 +65,25 @@ class RouteDecision(BaseModel):
         else:
             if self.risk_type is not None:
                 raise ValueError("risk_type is only valid for L4")
-            if self.route == "L2" and self.intent != "student_certificate":
-                raise ValueError("L2 is only student_certificate")
+            if self.route == "L2" and self.intent not in {"student_certificate", "academic_complaint"}:
+                raise ValueError("L2 is student_certificate or academic_complaint")
             if self.route == "L1" and self.intent != "policy_question":
                 raise ValueError("L1 is only policy_question")
         return self
 
 
 class FieldExtraction(BaseModel):
-    provided_fields: list[CertificateField] = Field(default_factory=list)
+    provided_fields: list[str] = Field(default_factory=list)
     purpose: str | None = None
     destination_org: str | None = None
     receive_method: Literal["digital_pdf", "paper_stamped"] | None = None
+    complaint_subtype: Literal["grade_appeal", "other"] | None = None
+    course: str | None = None
+    course_code: str | None = None
+    assessment: str | None = None
+    description: str | None = None
+    requested_outcome: str | None = None
+    evidence: str | None = None
     invalid_fields: list[FieldIssue] = Field(default_factory=list)
 
 

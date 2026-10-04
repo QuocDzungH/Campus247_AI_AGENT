@@ -89,7 +89,9 @@ export function StaffTicketWorkspace({ ticket }: { ticket: Ticket }) {
     `${currentUser!.id}:ticket:${ticket.id}:document-destination`,
     ticket.documentDraft?.destinationOrg || ticket.destinationOrg || ""
   );
-  const [right, setRight] = useState<"response" | "document">("document");
+  const isComplaintTicket = ticket.type === "complaint" || ticket.serviceType === "academic_complaint" || ticket.serviceType === "student_support";
+  const issuesDocument = !isComplaintTicket && ticket.process?.issuesDocument !== false;
+  const [right, setRight] = useState<"response" | "document">(issuesDocument ? "document" : "response");
   const [proposal, setProposal] = useState("");
   const [proposalBase, setProposalBase] = useState<{ source: string; text: string } | null>(null);
   const [beforeApply, setBeforeApply] = useState<{ before: string; applied: string } | null>(null);
@@ -234,6 +236,7 @@ export function StaffTicketWorkspace({ ticket }: { ticket: Ticket }) {
           <div>
             <p className="mb-1 text-xs font-medium text-blue-700 dark:text-blue-300">
               {ticket.code} · {process?.label || ticketTypeLabels[ticket.type]}
+              {ticket.complaintSubtype === "grade_appeal" ? " · Điểm học phần" : ""}
             </p>
             <h1 className="text-2xl font-semibold tracking-tight">{ticket.title}</h1>
             <p className="mt-2 text-sm text-slate-500">
@@ -392,11 +395,13 @@ export function StaffTicketWorkspace({ ticket }: { ticket: Ticket }) {
 
         <section className={`${staffSurface} min-w-0`}>
           <div className="flex items-center justify-between gap-2 border-b border-slate-200 p-2 dark:border-slate-800 no-print">
-            <p className="px-2 text-sm font-semibold">Bản duyệt phát hành</p>
+            <p className="px-2 text-sm font-semibold">{issuesDocument ? "Bản duyệt phát hành" : "Trao đổi xử lý"}</p>
             <div className="flex gap-1">
-              <button className={staffButton} aria-pressed={right === "document"} onClick={() => setRight("document")}>
-                <FileText className="h-4 w-4" />Bản giấy xác nhận
-              </button>
+              {issuesDocument && (
+                <button className={staffButton} aria-pressed={right === "document"} onClick={() => setRight("document")}>
+                  <FileText className="h-4 w-4" />Bản giấy xác nhận
+                </button>
+              )}
               <button className={staffButton} aria-pressed={right === "response"} onClick={() => setRight("response")}>Tin nhắn phản hồi</button>
             </div>
           </div>

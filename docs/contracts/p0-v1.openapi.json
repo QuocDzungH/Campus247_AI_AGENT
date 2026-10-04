@@ -8436,7 +8436,14 @@
             "enum": [
               "purpose",
               "destination_org",
-              "receive_method"
+              "receive_method",
+              "complaint_subtype",
+              "course",
+              "course_code",
+              "assessment",
+              "description",
+              "requested_outcome",
+              "evidence"
             ],
             "title": "Field",
             "type": "string"
@@ -8469,6 +8476,7 @@
                 "type": "null"
               }
             ],
+            "default": null,
             "title": "Purpose"
           },
           "destination_org": {
@@ -8482,6 +8490,7 @@
                 "type": "null"
               }
             ],
+            "default": null,
             "title": "Destination Org"
           },
           "receive_method": {
@@ -8497,7 +8506,108 @@
                 "type": "null"
               }
             ],
+            "default": null,
             "title": "Receive Method"
+          },
+          "complaint_subtype": {
+            "anyOf": [
+              {
+                "enum": [
+                  "grade_appeal",
+                  "other"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Complaint Subtype"
+          },
+          "course": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Course"
+          },
+          "course_code": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Course Code"
+          },
+          "assessment": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Assessment"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 4000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "requested_outcome": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Requested Outcome"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Evidence"
           },
           "extras": {
             "additionalProperties": {
@@ -8507,11 +8617,6 @@
             "type": "object"
           }
         },
-        "required": [
-          "purpose",
-          "destination_org",
-          "receive_method"
-        ],
         "title": "Fields",
         "type": "object"
       },
@@ -8580,7 +8685,10 @@
         "additionalProperties": false,
         "properties": {
           "service_type": {
-            "const": "student_certificate",
+            "enum": [
+              "student_certificate",
+              "academic_complaint"
+            ],
             "title": "Service Type",
             "type": "string"
           },
@@ -8592,7 +8700,14 @@
               "enum": [
                 "purpose",
                 "destination_org",
-                "receive_method"
+                "receive_method",
+                "complaint_subtype",
+                "course",
+                "course_code",
+                "assessment",
+                "description",
+                "requested_outcome",
+                "evidence"
               ],
               "type": "string"
             },
@@ -9661,7 +9776,10 @@
         "additionalProperties": false,
         "properties": {
           "service_type": {
-            "const": "student_certificate",
+            "enum": [
+              "student_certificate",
+              "academic_complaint"
+            ],
             "title": "Service Type",
             "type": "string"
           },
@@ -9673,7 +9791,14 @@
               "enum": [
                 "purpose",
                 "destination_org",
-                "receive_method"
+                "receive_method",
+                "complaint_subtype",
+                "course",
+                "course_code",
+                "assessment",
+                "description",
+                "requested_outcome",
+                "evidence"
               ],
               "type": "string"
             },

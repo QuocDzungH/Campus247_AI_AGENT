@@ -41,6 +41,9 @@ export function OriginalRequestPanel({
           <p className="mt-1 text-sm text-slate-500">
             {ticket.code} · {displayValue(ticket.studentName)} · {processLabel} · {fileCount} tệp
           </p>
+          {!open && ticket.title ? (
+            <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-200">{ticket.title}</p>
+          ) : null}
         </div>
         <button
           type="button"

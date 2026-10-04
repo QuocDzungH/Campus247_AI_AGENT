@@ -309,6 +309,7 @@ export interface Ticket {
   conversationId?: string;
   category?: "action" | "complaint";
   serviceType?: "student_certificate" | "academic_complaint" | "student_support";
+  complaintSubtype?: "grade_appeal" | "other" | null;
   reviewedBriefVersion?: number | null;
   briefStatus?: "pending" | "processing" | "ready" | "failed" | "stale" | "none";
   briefLoadError?: string;

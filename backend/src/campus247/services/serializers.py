@@ -136,29 +136,67 @@ def ticket_ref(ticket: Ticket) -> c.TicketRef:
     )
 
 
-def preview_to_contract(preview: Preview, now: datetime | None = None) -> c.Preview:
-    now = now or utcnow()
-    fields = c.Fields(
+def preview_fields_from_row(preview: Preview) -> c.Fields:
+    if preview.fields_payload:
+        try:
+            return c.Fields.model_validate(preview.fields_payload)
+        except Exception:
+            pass
+    return c.Fields(
         purpose=preview.purpose,
         destination_org=preview.destination_org,
         receive_method=preview.receive_method,  # type: ignore[arg-type]
     )
-    missing = list(preview.missing_fields or [])
-    invalid = [c.FieldIssue.model_validate(item) for item in (preview.invalid_fields or [])]
+
+
+def intake_from_stored(service_type: str, fields_payload: object | None) -> c.Intake:
+    from campus247.models.intake_fields import missing_fields_for
+
+    kind = service_type if service_type in {"student_certificate", "academic_complaint"} else "student_certificate"
+    fields = c.Fields.model_validate(fields_payload or {})
+    return c.Intake(
+        service_type=kind,  # type: ignore[arg-type]
+        fields=fields,
+        missing_fields=missing_fields_for(kind, fields),  # type: ignore[arg-type]
+        invalid_fields=[],
+    )
+
+
+def apply_fields_to_preview(preview: Preview, fields: c.Fields) -> None:
+    payload = fields.model_dump(mode="json")
+    preview.fields_payload = payload
+    preview.purpose = fields.purpose
+    preview.destination_org = fields.destination_org
+    preview.receive_method = fields.receive_method
+
+
+def preview_to_contract(preview: Preview, now: datetime | None = None) -> c.Preview:
+    from campus247.models.intake_fields import missing_fields_for
+
+    now = now or utcnow()
+    fields = preview_fields_from_row(preview)
+    service_type = preview.service_type if preview.service_type in {"student_certificate", "academic_complaint"} else "student_certificate"
+    missing = list(preview.missing_fields or missing_fields_for(service_type, fields))
+    invalid = []
+    for item in preview.invalid_fields or []:
+        try:
+            invalid.append(c.FieldIssue.model_validate(item))
+        except Exception:
+            continue
     expires = ensure_utc(preview.expires_at)
+    expected_missing = missing_fields_for(service_type, fields)
     can_submit = (
         preview.status == "active"
-        and not missing
+        and not expected_missing
         and not invalid
         and expires > now
-        and all(value is not None for value in (preview.purpose, preview.destination_org, preview.receive_method))
     )
     return c.Preview(
         id=preview.id,
         version=preview.version,
-        service_type="student_certificate",
+        service_type=service_type,  # type: ignore[arg-type]
         fields=fields,
-        missing_fields=missing,  # type: ignore[arg-type]
+        missing_fields=expected_missing,  # type: ignore[arg-type]
         invalid_fields=invalid,
         can_submit=can_submit,
         expires_at=expires,
