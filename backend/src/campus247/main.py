@@ -16,6 +16,9 @@ from campus247.services.common import new_id
 async def lifespan(app: FastAPI):
     settings = get_settings()
     print(f"Starting {settings.app_name} in {settings.app_env} mode")
+    from campus247.services.runtime import init_runtime
+
+    init_runtime(settings)
     yield
     print("Shutting down...")
 
@@ -35,6 +38,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Request-Id", "Retry-After"],
 )
 
 
@@ -58,9 +62,27 @@ async def health():
 
 @app.get("/ready")
 async def ready():
+    from fastapi.responses import JSONResponse
+
+    from campus247.services.runtime import get_agent, get_rag
+
+    payload = {
+        "status": "ready",
+        "database": "ok",
+        "agent_mode": settings.agent_mode,
+        "rag_mode": settings.rag_mode,
+        "agent": type(get_agent()).__name__,
+        "index_version": getattr(get_rag(), "index_version", None),
+    }
     try:
         with get_engine().connect() as connection:
             connection.execute(text("SELECT 1"))
-        return {"status": "ready", "database": "ok"}
     except Exception:
-        return {"status": "not_ready", "database": "error"}
+        payload.update({"status": "not_ready", "database": "error"})
+        return JSONResponse(payload, status_code=503)
+    if settings.app_env == "production" and settings.agent_mode != "langgraph":
+        payload["status"] = "not_ready"
+        payload["agent_config"] = "misconfigured"
+        return JSONResponse(payload, status_code=503)
+    payload["agent_config"] = "configured" if settings.agent_mode == "langgraph" else "stub"
+    return payload

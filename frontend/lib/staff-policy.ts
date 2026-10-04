@@ -1,8 +1,20 @@
 import type { ReviewCase, ReviewFinding, Ticket, TicketType } from "./types";
 
 export const ticketTypeLabels: Record<TicketType, string> = {
-  certificate: "Yêu cầu tài liệu", transcript: "Bảng điểm", complaint: "Khiếu nại điểm", lookup: "Hỗ trợ học vụ",
+  certificate: "Xin giấy xác nhận", transcript: "Bảng điểm", complaint: "Khiếu nại", lookup: "Hỗ trợ học vụ",
 };
+export function ticketSubtypeLabel(ticket: Ticket): string | null {
+  if (ticket.type !== "complaint") return null;
+  if (ticket.complaintSubtype === "grade_appeal") return "Điểm học phần";
+  const payload = ticket.requestPayload?.submittedFields || [];
+  const subtype = payload.find((field) => field.name === "complaint_subtype" || field.name === "complaintSubtype")?.value;
+  if (subtype === "grade_appeal" || subtype === "Điểm học phần") return "Điểm học phần";
+  return null;
+}
+export function ticketQueueTypeLabel(ticket: Ticket): string {
+  const subtype = ticketSubtypeLabel(ticket);
+  return subtype ? `${ticketTypeLabels[ticket.type]} · ${subtype}` : ticketTypeLabels[ticket.type];
+}
 export const findingLabels = {
   has_evidence: "Có bằng chứng", has_difference: "Có khác biệt", insufficient_evidence: "Chưa đủ căn cứ", contradiction: "Có mâu thuẫn",
 } as const;
@@ -38,7 +50,7 @@ export function actionBlock(ticket: Ticket, action: "respond" | "request_info" |
   if (ticket.status === "resolved") return "Hồ sơ đã hoàn tất; không thể gửi thêm hoặc thực hiện lại.";
   if (!content.trim()) return action === "resolve" ? "Nhập kết quả xử lý trước khi hoàn tất." : "Nhập nội dung gửi sinh viên.";
   if (content.trim().length > 10000) return "Nội dung tối đa 10.000 ký tự.";
-  if (action === "resolve" && ticket.checklist.some(item => !item.checked)) return "Còn mục kiểm tra chưa xác nhận. Hãy kiểm tra hoặc yêu cầu bổ sung.";
+  if (action === "resolve" && !ticket.serviceType && ticket.checklist.some(item => !item.checked)) return "Còn mục kiểm tra chưa xác nhận. Hãy kiểm tra hoặc yêu cầu bổ sung.";
   if (action === "resolve" && ticket.dataChangedSinceLastCheck) return "Dữ liệu đã thay đổi; cần kiểm tra lại trước khi hoàn tất.";
   return "";
 }

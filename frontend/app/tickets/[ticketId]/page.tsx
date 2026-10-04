@@ -525,7 +525,7 @@ function TicketEditor({ ticket }: { ticket: Ticket }) {
                 {ticket.title}
               </div>
               <div className="text-[11px] text-blue-600 dark:text-blue-400 font-medium">
-                Biểu mẫu: BM-03/CTSV · Tiếp nhận: {ticket.receiveMethod === "digital_pdf" ? "Bản điện tử (PDF)" : "Bản giấy tại văn phòng"}
+                Biểu mẫu: BM-03/CTSV · Tiếp nhận: {ticket.receiveMethod === "digital_pdf" ? "Bản điện tử (PDF)" : ticket.receiveMethod === "paper_stamped" ? "Bản giấy tại văn phòng" : "Chưa có dữ liệu"}
               </div>
             </div>
 
@@ -1442,9 +1442,18 @@ function TicketEditor({ ticket }: { ticket: Ticket }) {
 export default function TicketDetailPage() {
   const params = useParams();
   const ticketId = params?.ticketId as string;
-  const { getTicket, currentUser, isDataLoading } = useStore();
+  const { getTicket, currentUser, isDataLoading, dataConfig, refreshTicket } = useStore();
 
   const ticket = getTicket(ticketId);
+
+  React.useEffect(() => {
+    if (dataConfig?.mode !== "api" || !ticketId || !currentUser) return;
+    void refreshTicket(ticketId).catch(() => {
+      /* Detail error is shown via dataError. */
+    });
+    // Load once per ticket/account; refreshTicket identity changes every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ticketId, currentUser?.id, dataConfig?.mode]);
 
   if (isDataLoading) {
     return (

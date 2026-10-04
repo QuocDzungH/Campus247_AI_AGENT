@@ -121,3 +121,84 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+.certificate-a4-frame {
+  container-type: inline-size;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 210 / 297;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  color: #111;
+}
+
+.certificate-a4-page {
+  width: 100%;
+  min-height: 100%;
+  box-sizing: border-box;
+  padding: 1.25rem 1.5rem;
+  padding: 7cqi 8cqi;
+  background: #fff;
+  color: #111;
+}
+
+.certificate-a4-frame.is-large {
+  width: min(100%, 48rem);
+  max-height: 75vh;
+  margin-inline: auto;
+}
+
+.certificate-sheet {
+  font-size: clamp(12px, 3.15cqi, 16px);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.certificate-print-root {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 16mm 18mm;
+  }
+
+  html, body {
+    background: #fff !important;
+    color: #111 !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .certificate-print-root,
+  .certificate-print-root * {
+    visibility: visible !important;
+  }
+
+  .certificate-print-root {
+    display: block !important;
+    position: absolute;
+    inset: 0;
+    width: auto;
+    background: #fff;
+    color: #111;
+    font-size: 12pt;
+    line-height: 1.55;
+  }
+
+  .no-print,
+  .certificate-a4-frame,
+  nav,
+  aside,
+  .staff-workspace header,
+  .staff-workspace textarea,
+  .staff-workspace input,
+  .staff-workspace button {
+    display: none !important;
+  }
+}

@@ -16,15 +16,34 @@ NOW = "2026-09-29T03:00:00Z"
 
 # method, path, request, success code, success response, idempotency
 ENDPOINTS = [
+    ("post", "/auth/login", c.PasswordLogin, 200, c.LoginResult, False),
     ("post", "/auth/demo-login", c.DemoLogin, 200, c.LoginResult, False),
     ("post", "/auth/logout", c.EmptyRequest, 204, None, False),
+    ("post", "/auth/change-password", c.ChangePassword, 204, None, False),
+    ("post", "/auth/reset-password", c.ConsumeResetToken, 204, None, False),
     ("get", "/me", None, 200, c.User, False),
+    ("get", "/me/profile", None, 200, c.StudentProfileView, False),
     ("post", "/conversations", c.EmptyRequest, 201, c.Conversation, True),
     ("get", "/conversations", None, 200, c.Page[c.Conversation], False),
     ("get", "/conversations/{id}/messages", None, 200, c.Page[c.Message], False),
     ("post", "/conversations/{id}/messages", c.SendMessage, 200, c.ChatResult, True),
     ("patch", "/previews/{id}", c.PreviewPatch, 200, c.Preview, True),
+    ("post", "/forms", c.FormSubmit, 201, c.Submit1Result, True),
     ("post", "/tickets", c.Submit1, 201, c.Submit1Result, True),
+    ("patch", "/officer/tickets/{id}/workspace", c.TicketWorkspacePatch, 200, c.TicketWorkspace, False),
+    ("post", "/tickets/{id}/verifications", c.VerificationRunRequest, 200, c.VerificationsResult, False),
+    ("post", "/tickets/{id}/verifications/{criterion_id}/confirm", c.VerificationConfirm, 200, c.VerificationsResult, False),
+    ("patch", "/officer/tickets/{id}/document", c.DocumentDraftPatch, 200, c.DocumentDraftView, False),
+    ("post", "/officer/tickets/{id}/document/issue", c.IssueDocumentRequest, 200, c.IssueDocumentResult, True),
+    ("get", "/tickets/{id}/documents/{document_id}", None, 200, None, False),
+    ("get", "/reviews", None, 200, c.Page[c.ReviewCaseView], False),
+    ("post", "/reviews", c.ReviewCaseCreate, 201, c.ReviewCaseView, False),
+    ("get", "/reviews/{id}", None, 200, c.ReviewCaseView, False),
+    ("post", "/reviews/{id}/ai", c.EmptyRequest, 200, c.ReviewCaseView, False),
+    ("patch", "/reviews/{id}/findings/{finding_id}", c.ReviewFindingPatch, 200, c.ReviewCaseView, False),
+    ("post", "/reviews/{id}/supplements", c.ReviewSupplementRequest, 200, c.ReviewCaseView, False),
+    ("post", "/reviews/{id}/student-supplement", c.ReviewStudentSupplement, 200, c.ReviewCaseView, False),
+    ("post", "/reviews/{id}/finalize", c.ReviewFinalize, 200, c.ReviewCaseView, False),
     ("get", "/tickets", None, 200, c.Page[c.Ticket], False),
     ("get", "/tickets/{id}", None, 200, c.TicketDetail, False),
     ("get", "/tickets/{id}/messages", None, 200, c.Page[c.Message], False),
@@ -243,6 +262,77 @@ def example_cases() -> list[dict]:
         )
         add("chat_" + outcome, c.ChatResult, result)
     add("submit1", c.Submit1, dict(preview_id="preview_001", preview_version=1, confirmed=True))
+    add(
+        "form_submit",
+        c.FormSubmit,
+        dict(
+            service_type="student_certificate",
+            summary="Xin giấy xác nhận sinh viên",
+            fields=fields,
+            extras={"copies": "2"},
+            confirmed=True,
+        ),
+    )
+    add(
+        "workspace_patch",
+        c.TicketWorkspacePatch,
+        dict(officer_draft="Phòng học vụ đã tiếp nhận.", toggle_checklist_id=None, checklist=None),
+    )
+    verification = dict(
+        id="verif_001",
+        criterion_key="academic_status",
+        criterion_label="Tình trạng học tập",
+        condition_applied="Sinh viên đang học chính quy",
+        data_checked="MSSV trên hồ sơ",
+        source_system="SIS (chưa kết nối)",
+        lookup_timestamp=NOW,
+        status="insufficient",
+        reason="Chưa kết nối hệ thống đào tạo.",
+        officer_review_status="pending",
+        officer_note=None,
+    )
+    add("verifications_result", c.VerificationsResult, dict(items=[verification]))
+    add(
+        "document_draft_patch",
+        c.DocumentDraftPatch,
+        dict(expected_revision=2, expected_draft_version=1, purpose="Hồ sơ thực tập", destination_org="Công ty ABC", notes="Bản thảo nội bộ"),
+    )
+    add("issue_document", c.IssueDocumentRequest, dict(expected_revision=3, expected_draft_version=2, confirmed=True))
+    add(
+        "review_create",
+        c.ReviewCaseCreate,
+        dict(
+            student_id="SV-DEMO-001",
+            target_course_code="IT3011",
+            target_course_name="Cấu trúc dữ liệu",
+            prior_course_code="IT2020",
+            prior_course_name="Cấu trúc dữ liệu",
+        ),
+    )
+    add(
+        "review_view",
+        c.ReviewCaseView,
+        dict(
+            id="rev_001",
+            code="REV-2026-0001",
+            status="in_review",
+            student_id="SV-DEMO-001",
+            officer_id="OF-DEMO-01",
+            revision=1,
+            created_at=NOW,
+            updated_at=NOW,
+            payload={"studentId": "SV-DEMO-001", "findings": []},
+        ),
+    )
+    add(
+        "review_finalize",
+        c.ReviewFinalize,
+        dict(
+            decision_recommendation="propose_conditional",
+            conclusion_summary="Cần bổ sung đề cương trước khi đề xuất công nhận.",
+            expected_revision=2,
+        ),
+    )
     add("submit1_success", c.Submit1Result, dict(ticket=ticket, brief_status="pending"))
     add(
         "submit2",
@@ -334,6 +424,14 @@ def openapi_document() -> dict:
         if "{id}" in path:
             parameters.append(
                 dict(name="id", **{"in": "path"}, required=True, schema=dict(type="string", minLength=1, maxLength=128))
+            )
+        if "{document_id}" in path:
+            parameters.append(
+                dict(name="document_id", **{"in": "path"}, required=True, schema=dict(type="string", minLength=1, maxLength=128))
+            )
+        if "{criterion_id}" in path:
+            parameters.append(
+                dict(name="criterion_id", **{"in": "path"}, required=True, schema=dict(type="string", minLength=1, maxLength=128))
             )
         if idempotency:
             parameters.append(

@@ -15,7 +15,14 @@ from campus247.services.common import ensure_utc, utcnow
 
 
 def user_to_contract(user: User) -> c.User:
-    return c.User(id=user.id, role=user.role, name=user.name)  # type: ignore[arg-type]
+    return c.User(
+        id=user.id,
+        role=user.role,  # type: ignore[arg-type]
+        name=user.name,
+        username=user.username,
+        email=user.email,
+        account_status=getattr(user, "account_status", None) or "active",  # type: ignore[arg-type]
+    )
 
 
 def profile_to_contract(profile) -> c.Profile:
@@ -25,7 +32,26 @@ def profile_to_contract(profile) -> c.Profile:
         mssv=profile.mssv,
         faculty=profile.faculty,
         cohort=profile.cohort,
-        is_demo=True,
+        is_demo=bool(profile.is_demo),
+    )
+
+
+def profile_view(profile) -> c.StudentProfileView:
+    return c.StudentProfileView(
+        user_id=profile.user_id,
+        full_name=profile.full_name,
+        mssv=profile.mssv,
+        email=profile.email,
+        faculty=profile.faculty,
+        major=profile.major,
+        cohort=profile.cohort,
+        class_year=profile.class_year,
+        student_status=profile.student_status,
+        verification_status=profile.verification_status or "unverified",  # type: ignore[arg-type]
+        source=profile.source,
+        source_imported_at=profile.source_imported_at,
+        verified_at=profile.verified_at,
+        is_demo=bool(profile.is_demo),
     )
 
 
@@ -77,6 +103,8 @@ def ticket_to_contract(ticket: Ticket) -> c.Ticket:
     request_data = None
     if ticket.request_data is not None:
         request_data = c.Fields.model_validate(ticket.request_data)
+    student = getattr(ticket, "student", None)
+    profile = getattr(student, "profile", None) if student is not None else None
     return c.Ticket(
         id=ticket.id,
         code=ticket.code,
@@ -94,6 +122,8 @@ def ticket_to_contract(ticket: Ticket) -> c.Ticket:
         revision=ticket.revision,
         created_at=ensure_utc(ticket.created_at),
         updated_at=ensure_utc(ticket.updated_at),
+        student_name=(profile.full_name if profile and profile.full_name else (student.name if student else None)),
+        student_mssv=(profile.mssv if profile else None),
     )
 
 
@@ -106,36 +136,73 @@ def ticket_ref(ticket: Ticket) -> c.TicketRef:
     )
 
 
-def preview_to_contract(preview: Preview, now: datetime | None = None) -> c.Preview:
-    now = now or utcnow()
-    fields = c.Fields(
+def preview_fields_from_row(preview: Preview) -> c.Fields:
+    if preview.fields_payload:
+        try:
+            return c.Fields.model_validate(preview.fields_payload)
+        except Exception:
+            pass
+    return c.Fields(
         purpose=preview.purpose,
         destination_org=preview.destination_org,
         receive_method=preview.receive_method,  # type: ignore[arg-type]
     )
-    missing = list(preview.missing_fields or [])
-    invalid = [c.FieldIssue.model_validate(item) for item in (preview.invalid_fields or [])]
+
+
+def intake_from_stored(service_type: str, fields_payload: object | None) -> c.Intake:
+    from campus247.models.intake_fields import missing_fields_for
+
+    kind = service_type if service_type in {"student_certificate", "academic_complaint"} else "student_certificate"
+    fields = c.Fields.model_validate(fields_payload or {})
+    return c.Intake(
+        service_type=kind,  # type: ignore[arg-type]
+        fields=fields,
+        missing_fields=missing_fields_for(kind, fields),  # type: ignore[arg-type]
+        invalid_fields=[],
+    )
+
+
+def apply_fields_to_preview(preview: Preview, fields: c.Fields) -> None:
+    payload = fields.model_dump(mode="json")
+    preview.fields_payload = payload
+    preview.purpose = fields.purpose
+    preview.destination_org = fields.destination_org
+    preview.receive_method = fields.receive_method
+
+
+def preview_to_contract(preview: Preview, now: datetime | None = None) -> c.Preview:
+    from campus247.models.intake_fields import missing_fields_for
+
+    now = now or utcnow()
+    fields = preview_fields_from_row(preview)
+    service_type = preview.service_type if preview.service_type in {"student_certificate", "academic_complaint"} else "student_certificate"
+    invalid = []
+    for item in preview.invalid_fields or []:
+        try:
+            invalid.append(c.FieldIssue.model_validate(item))
+        except Exception:
+            continue
     expires = ensure_utc(preview.expires_at)
+    expected_missing = missing_fields_for(service_type, fields)
     can_submit = (
         preview.status == "active"
-        and not missing
+        and not expected_missing
         and not invalid
         and expires > now
-        and all(value is not None for value in (preview.purpose, preview.destination_org, preview.receive_method))
     )
     return c.Preview(
         id=preview.id,
         version=preview.version,
-        service_type="student_certificate",
+        service_type=service_type,  # type: ignore[arg-type]
         fields=fields,
-        missing_fields=missing,  # type: ignore[arg-type]
+        missing_fields=expected_missing,  # type: ignore[arg-type]
         invalid_fields=invalid,
         can_submit=can_submit,
         expires_at=expires,
     )
 
 
-def audit_to_contract(entry: AuditEntry) -> c.AuditEntry:
+def audit_to_contract(entry: AuditEntry, actor_name: str | None = None) -> c.AuditEntry:
     return c.AuditEntry(
         id=entry.id,
         ticket_id=entry.ticket_id,
@@ -145,7 +212,9 @@ def audit_to_contract(entry: AuditEntry) -> c.AuditEntry:
         from_status=entry.from_status,  # type: ignore[arg-type]
         to_status=entry.to_status,  # type: ignore[arg-type]
         request_id=entry.request_id,
+        details=entry.details,
         created_at=ensure_utc(entry.created_at),
+        actor_name=actor_name,
     )
 
 

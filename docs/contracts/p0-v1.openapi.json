@@ -5,6 +5,191 @@
     "version": "P0-contract-v1"
   },
   "paths": {
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "post_auth_login",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Contract target; runtime implementation is separate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResult"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "401": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "403": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "404": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "409": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "422": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "429": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "502": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "503": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordLogin"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/demo-login": {
       "post": {
         "operationId": "post_auth_demo-login",
@@ -364,6 +549,362 @@
         }
       }
     },
+    "/api/v1/auth/change-password": {
+      "post": {
+        "operationId": "post_auth_change-password",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Contract target; runtime implementation is separate.",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "401": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "403": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "404": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "409": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "422": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "429": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "502": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "503": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePassword"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/reset-password": {
+      "post": {
+        "operationId": "post_auth_reset-password",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Contract target; runtime implementation is separate.",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "401": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "403": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "404": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "409": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "422": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "429": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "502": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "503": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConsumeResetToken"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/me": {
       "get": {
         "operationId": "get_me",
@@ -375,6 +916,181 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/User"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "401": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "403": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "404": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "409": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "422": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "429": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "502": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "503": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ]
+      }
+    },
+    "/api/v1/me/profile": {
+      "get": {
+        "operationId": "get_me_profile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Contract target; runtime implementation is separate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentProfileView"
                 }
               }
             },
@@ -1615,6 +2331,226 @@
         }
       }
     },
+    "/api/v1/forms": {
+      "post": {
+        "operationId": "post_forms",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Contract target; runtime implementation is separate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Submit1Result"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "202": {
+            "description": "Operation already processing; repeat same request/key after Retry-After.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Processing"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "example": 2
+                }
+              },
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "401": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "403": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "404": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "409": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "422": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "429": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "502": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "503": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FormSubmit"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/tickets": {
       "post": {
         "operationId": "post_tickets",
@@ -2046,6 +2982,2763 @@
             "BearerSession": []
           }
         ]
+      }
+    },
+    "/api/v1/officer/tickets/{id}/workspace": {
+      "patch": {
+        "operationId": "patch_officer_tickets_by_id_workspace",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contract target; runtime implementation is separate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketWorkspace"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "401": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "403": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "404": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "409": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "422": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "429": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "502": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "503": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TicketWorkspacePatch"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tickets/{id}/verifications": {
+      "post": {
+        "operationId": "post_tickets_by_id_verifications",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contract target; runtime implementation is separate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationsResult"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "401": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "403": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "404": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "409": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "422": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "429": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "502": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "503": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerificationRunRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tickets/{id}/verifications/{criterion_id}/confirm": {
+      "post": {
+        "operationId": "post_tickets_by_id_verifications_{criterion_id}_confirm",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "criterion_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contract target; runtime implementation is separate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationsResult"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "401": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "403": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "404": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "409": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "422": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "429": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "502": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "503": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerificationConfirm"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/officer/tickets/{id}/document": {
+      "patch": {
+        "operationId": "patch_officer_tickets_by_id_document",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contract target; runtime implementation is separate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentDraftView"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "401": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "403": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "404": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "409": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "422": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "429": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "502": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "503": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentDraftPatch"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/officer/tickets/{id}/document/issue": {
+      "post": {
+        "operationId": "post_officer_tickets_by_id_document_issue",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contract target; runtime implementation is separate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueDocumentResult"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "202": {
+            "description": "Operation already processing; repeat same request/key after Retry-After.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Processing"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "example": 2
+                }
+              },
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "401": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "403": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "404": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "409": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "422": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "429": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "502": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "503": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IssueDocumentRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tickets/{id}/documents/{document_id}": {
+      "get": {
+        "operationId": "get_tickets_by_id_documents_{document_id}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contract target; runtime implementation is separate.",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "401": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "403": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "404": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "409": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "422": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "429": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "502": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "503": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ]
+      }
+    },
+    "/api/v1/reviews": {
+      "get": {
+        "operationId": "get_reviews",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contract target; runtime implementation is separate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ReviewCaseView_"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "401": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "403": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "404": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "409": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "422": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "429": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "502": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "503": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "post_reviews",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Contract target; runtime implementation is separate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewCaseView"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "401": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "403": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "404": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "409": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "422": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "429": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "502": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "503": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewCaseCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reviews/{id}": {
+      "get": {
+        "operationId": "get_reviews_by_id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contract target; runtime implementation is separate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewCaseView"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "401": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "403": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "404": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "409": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "422": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "429": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "502": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "503": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ]
+      }
+    },
+    "/api/v1/reviews/{id}/ai": {
+      "post": {
+        "operationId": "post_reviews_by_id_ai",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contract target; runtime implementation is separate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewCaseView"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "401": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "403": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "404": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "409": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "422": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "429": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "502": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "503": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reviews/{id}/findings/{finding_id}": {
+      "patch": {
+        "operationId": "patch_reviews_by_id_findings_{finding_id}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contract target; runtime implementation is separate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewCaseView"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "401": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "403": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "404": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "409": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "422": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "429": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "502": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "503": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewFindingPatch"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reviews/{id}/supplements": {
+      "post": {
+        "operationId": "post_reviews_by_id_supplements",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contract target; runtime implementation is separate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewCaseView"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "401": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "403": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "404": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "409": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "422": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "429": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "502": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "503": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewSupplementRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reviews/{id}/student-supplement": {
+      "post": {
+        "operationId": "post_reviews_by_id_student-supplement",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contract target; runtime implementation is separate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewCaseView"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "401": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "403": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "404": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "409": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "422": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "429": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "502": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "503": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewStudentSupplement"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reviews/{id}/finalize": {
+      "post": {
+        "operationId": "post_reviews_by_id_finalize",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contract target; runtime implementation is separate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewCaseView"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "401": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "403": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "404": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "409": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "422": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "429": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "502": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "503": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewFinalize"
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/tickets/{id}": {
@@ -4355,6 +8048,62 @@
         "title": "Artifact",
         "type": "object"
       },
+      "AttachmentView": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "filename": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Filename",
+            "type": "string"
+          },
+          "mime_type": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Mime Type",
+            "type": "string"
+          },
+          "size_bytes": {
+            "minimum": 0,
+            "title": "Size Bytes",
+            "type": "integer"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Field"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "filename",
+          "mime_type",
+          "size_bytes",
+          "created_at"
+        ],
+        "title": "AttachmentView",
+        "type": "object"
+      },
       "AuditEntry": {
         "additionalProperties": false,
         "properties": {
@@ -4402,7 +8151,14 @@
               "resolve",
               "brief_ready",
               "brief_failed",
-              "claim"
+              "claim",
+              "workspace_update",
+              "attachment",
+              "verification",
+              "review",
+              "document_draft",
+              "document_issue",
+              "prepare"
             ],
             "title": "Action",
             "type": "string"
@@ -4445,10 +8201,37 @@
             "title": "Request Id",
             "type": "string"
           },
+          "details": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Details"
+          },
           "created_at": {
             "format": "date-time",
             "title": "Created At",
             "type": "string"
+          },
+          "actor_name": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Actor Name"
           }
         },
         "required": [
@@ -4588,6 +8371,29 @@
         "title": "BriefEnvelope",
         "type": "object"
       },
+      "ChangePassword": {
+        "additionalProperties": false,
+        "properties": {
+          "current_password": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Current Password",
+            "type": "string"
+          },
+          "new_password": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "New Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "current_password",
+          "new_password"
+        ],
+        "title": "ChangePassword",
+        "type": "object"
+      },
       "ConversationState": {
         "additionalProperties": false,
         "properties": {
@@ -4630,7 +8436,14 @@
             "enum": [
               "purpose",
               "destination_org",
-              "receive_method"
+              "receive_method",
+              "complaint_subtype",
+              "course",
+              "course_code",
+              "assessment",
+              "description",
+              "requested_outcome",
+              "evidence"
             ],
             "title": "Field",
             "type": "string"
@@ -4663,6 +8476,7 @@
                 "type": "null"
               }
             ],
+            "default": null,
             "title": "Purpose"
           },
           "destination_org": {
@@ -4676,6 +8490,7 @@
                 "type": "null"
               }
             ],
+            "default": null,
             "title": "Destination Org"
           },
           "receive_method": {
@@ -4691,14 +8506,117 @@
                 "type": "null"
               }
             ],
+            "default": null,
             "title": "Receive Method"
+          },
+          "complaint_subtype": {
+            "anyOf": [
+              {
+                "enum": [
+                  "grade_appeal",
+                  "other"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Complaint Subtype"
+          },
+          "course": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Course"
+          },
+          "course_code": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Course Code"
+          },
+          "assessment": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Assessment"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 4000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "requested_outcome": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Requested Outcome"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Evidence"
+          },
+          "extras": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Extras",
+            "type": "object"
           }
         },
-        "required": [
-          "purpose",
-          "destination_org",
-          "receive_method"
-        ],
         "title": "Fields",
         "type": "object"
       },
@@ -4767,7 +8685,10 @@
         "additionalProperties": false,
         "properties": {
           "service_type": {
-            "const": "student_certificate",
+            "enum": [
+              "student_certificate",
+              "academic_complaint"
+            ],
             "title": "Service Type",
             "type": "string"
           },
@@ -4779,7 +8700,14 @@
               "enum": [
                 "purpose",
                 "destination_org",
-                "receive_method"
+                "receive_method",
+                "complaint_subtype",
+                "course",
+                "course_code",
+                "assessment",
+                "description",
+                "requested_outcome",
+                "evidence"
               ],
               "type": "string"
             },
@@ -5102,6 +9030,34 @@
             "format": "date-time",
             "title": "Updated At",
             "type": "string"
+          },
+          "student_name": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Student Name"
+          },
+          "student_mssv": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Student Mssv"
           }
         },
         "required": [
@@ -5143,6 +9099,29 @@
           "audit_id"
         ],
         "title": "ClaimResult",
+        "type": "object"
+      },
+      "ConsumeResetToken": {
+        "additionalProperties": false,
+        "properties": {
+          "token": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Token",
+            "type": "string"
+          },
+          "new_password": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "New Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "new_password"
+        ],
+        "title": "ConsumeResetToken",
         "type": "object"
       },
       "Contract": {
@@ -5239,6 +9218,246 @@
           "user_id"
         ],
         "title": "DemoLogin",
+        "type": "object"
+      },
+      "DocumentDraftPatch": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "minimum": 1,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "expected_draft_version": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Expected Draft Version"
+          },
+          "purpose": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Purpose"
+          },
+          "destination_org": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Destination Org"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Notes"
+          }
+        },
+        "required": [
+          "expected_revision"
+        ],
+        "title": "DocumentDraftPatch",
+        "type": "object"
+      },
+      "DocumentDraftView": {
+        "additionalProperties": false,
+        "properties": {
+          "ticket_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Ticket Id",
+            "type": "string"
+          },
+          "version": {
+            "minimum": 0,
+            "title": "Version",
+            "type": "integer"
+          },
+          "template_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Template Id",
+            "type": "string"
+          },
+          "template_version": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Template Version",
+            "type": "string"
+          },
+          "template_status": {
+            "enum": [
+              "approved",
+              "unavailable"
+            ],
+            "title": "Template Status",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "approved",
+              "issued",
+              "unavailable"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "student_snapshot": {
+            "additionalProperties": true,
+            "title": "Student Snapshot",
+            "type": "object"
+          },
+          "purpose": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Purpose"
+          },
+          "destination_org": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Destination Org"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Notes"
+          },
+          "valid_until": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid Until"
+          },
+          "authored_by": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Authored By"
+          },
+          "approved_by": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Approved By"
+          },
+          "content_hash": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Content Hash"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Updated At"
+          }
+        },
+        "required": [
+          "ticket_id",
+          "version",
+          "template_id",
+          "template_version",
+          "template_status",
+          "status"
+        ],
+        "title": "DocumentDraftView",
         "type": "object"
       },
       "EmptyRequest": {
@@ -5384,7 +9603,9 @@
               "AI_OUTPUT_INVALID",
               "HANDOVER_FAILED",
               "PERSISTENCE_UNAVAILABLE",
-              "RATE_LIMITED"
+              "RATE_LIMITED",
+              "GATE_FAILED",
+              "TEMPLATE_UNAVAILABLE"
             ],
             "title": "Code",
             "type": "string"
@@ -5432,6 +9653,51 @@
         "title": "ErrorEnvelope",
         "type": "object"
       },
+      "FormSubmit": {
+        "additionalProperties": false,
+        "properties": {
+          "service_type": {
+            "enum": [
+              "student_certificate",
+              "academic_complaint"
+            ],
+            "title": "Service Type",
+            "type": "string"
+          },
+          "summary": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Summary",
+            "type": "string"
+          },
+          "fields": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Fields",
+            "type": "object"
+          },
+          "extras": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Extras",
+            "type": "object"
+          },
+          "confirmed": {
+            "const": true,
+            "title": "Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "service_type",
+          "summary",
+          "confirmed"
+        ],
+        "title": "FormSubmit",
+        "type": "object"
+      },
       "Handover": {
         "additionalProperties": false,
         "properties": {
@@ -5476,11 +9742,44 @@
         "title": "Handover",
         "type": "object"
       },
+      "InstitutionInfo": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Unit"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "InstitutionInfo",
+        "type": "object"
+      },
       "Intake": {
         "additionalProperties": false,
         "properties": {
           "service_type": {
-            "const": "student_certificate",
+            "enum": [
+              "student_certificate",
+              "academic_complaint"
+            ],
             "title": "Service Type",
             "type": "string"
           },
@@ -5492,7 +9791,14 @@
               "enum": [
                 "purpose",
                 "destination_org",
-                "receive_method"
+                "receive_method",
+                "complaint_subtype",
+                "course",
+                "course_code",
+                "assessment",
+                "description",
+                "requested_outcome",
+                "evidence"
               ],
               "type": "string"
             },
@@ -5578,7 +9884,6 @@
             "title": "Cohort"
           },
           "is_demo": {
-            "const": true,
             "title": "Is Demo",
             "type": "boolean"
           }
@@ -5755,6 +10060,267 @@
         "title": "IntakeResult",
         "type": "object"
       },
+      "IssueDocumentRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "minimum": 1,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "expected_draft_version": {
+            "minimum": 1,
+            "title": "Expected Draft Version",
+            "type": "integer"
+          },
+          "confirmed": {
+            "const": true,
+            "title": "Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "expected_draft_version",
+          "confirmed"
+        ],
+        "title": "IssueDocumentRequest",
+        "type": "object"
+      },
+      "IssuedDocumentView": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "ticket_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Ticket Id",
+            "type": "string"
+          },
+          "draft_version": {
+            "minimum": 1,
+            "title": "Draft Version",
+            "type": "integer"
+          },
+          "template_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Template Id",
+            "type": "string"
+          },
+          "template_version": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Template Version",
+            "type": "string"
+          },
+          "filename": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Filename",
+            "type": "string"
+          },
+          "sha256": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Sha256",
+            "type": "string"
+          },
+          "issued_by": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Issued By",
+            "type": "string"
+          },
+          "issued_at": {
+            "format": "date-time",
+            "title": "Issued At",
+            "type": "string"
+          },
+          "signature_status": {
+            "enum": [
+              "unsigned",
+              "pending_signature",
+              "signed"
+            ],
+            "title": "Signature Status",
+            "type": "string"
+          },
+          "signing_provider": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Signing Provider",
+            "type": "string"
+          },
+          "official": {
+            "const": false,
+            "default": false,
+            "title": "Official",
+            "type": "boolean"
+          },
+          "issued_by_name": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Issued By Name"
+          },
+          "student_snapshot": {
+            "additionalProperties": true,
+            "title": "Student Snapshot",
+            "type": "object"
+          },
+          "purpose": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Purpose"
+          },
+          "destination_org": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Destination Org"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Notes"
+          },
+          "valid_until": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid Until"
+          },
+          "document_number": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Document Number"
+          },
+          "institution_name": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Institution Name"
+          },
+          "institution_unit": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Institution Unit"
+          }
+        },
+        "required": [
+          "id",
+          "ticket_id",
+          "draft_version",
+          "template_id",
+          "template_version",
+          "filename",
+          "sha256",
+          "issued_by",
+          "issued_at",
+          "signature_status",
+          "signing_provider"
+        ],
+        "title": "IssuedDocumentView",
+        "type": "object"
+      },
+      "IssueDocumentResult": {
+        "additionalProperties": false,
+        "properties": {
+          "document": {
+            "$ref": "#/components/schemas/IssuedDocumentView"
+          },
+          "ticket": {
+            "$ref": "#/components/schemas/Ticket"
+          },
+          "audit_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Audit Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document",
+          "ticket",
+          "audit_id"
+        ],
+        "title": "IssueDocumentResult",
+        "type": "object"
+      },
       "JobAccepted": {
         "additionalProperties": false,
         "properties": {
@@ -5805,7 +10371,8 @@
           "role": {
             "enum": [
               "student",
-              "officer"
+              "officer",
+              "admin"
             ],
             "title": "Role",
             "type": "string"
@@ -5814,6 +10381,43 @@
             "maxLength": 10000,
             "minLength": 1,
             "title": "Name",
+            "type": "string"
+          },
+          "username": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Username"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Email"
+          },
+          "account_status": {
+            "default": "active",
+            "enum": [
+              "active",
+              "disabled"
+            ],
+            "title": "Account Status",
             "type": "string"
           }
         },
@@ -5855,6 +10459,118 @@
           "user"
         ],
         "title": "LoginResult",
+        "type": "object"
+      },
+      "OfficerChecklistItem": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
+          },
+          "checked": {
+            "default": false,
+            "title": "Checked",
+            "type": "boolean"
+          },
+          "required": {
+            "default": false,
+            "title": "Required",
+            "type": "boolean"
+          },
+          "source": {
+            "default": "process",
+            "enum": [
+              "process",
+              "ai"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "checked_by": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Checked By"
+          },
+          "checked_at": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Checked At"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Note"
+          },
+          "source_version": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Version"
+          }
+        },
+        "required": [
+          "id",
+          "label"
+        ],
+        "title": "OfficerChecklistItem",
         "type": "object"
       },
       "Page": {
@@ -5963,6 +10679,121 @@
         "title": "Page[Conversation]",
         "type": "object"
       },
+      "ReviewCaseView": {
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "code": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Code",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "in_review",
+              "waiting_supplement",
+              "completed"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "student_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Student Id",
+            "type": "string"
+          },
+          "officer_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Officer Id"
+          },
+          "revision": {
+            "minimum": 1,
+            "title": "Revision",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "title": "Payload",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "status",
+          "student_id",
+          "revision",
+          "created_at",
+          "updated_at",
+          "payload"
+        ],
+        "title": "ReviewCaseView",
+        "type": "object"
+      },
+      "Page_ReviewCaseView_": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewCaseView"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "minimum": 0,
+            "title": "Total",
+            "type": "integer"
+          },
+          "page": {
+            "minimum": 1,
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_size": {
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Page Size",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "page_size"
+        ],
+        "title": "Page[ReviewCaseView]",
+        "type": "object"
+      },
       "Page_Ticket_": {
         "additionalProperties": false,
         "properties": {
@@ -6031,6 +10862,34 @@
         "title": "Passage",
         "type": "object"
       },
+      "PasswordLogin": {
+        "additionalProperties": false,
+        "properties": {
+          "identifier": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Identifier",
+            "type": "string"
+          },
+          "password": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Password",
+            "type": "string"
+          },
+          "remember": {
+            "default": false,
+            "title": "Remember",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "identifier",
+          "password"
+        ],
+        "title": "PasswordLogin",
+        "type": "object"
+      },
       "PrepareRequest": {
         "additionalProperties": false,
         "properties": {
@@ -6064,6 +10923,153 @@
           "fields"
         ],
         "title": "PreviewPatch",
+        "type": "object"
+      },
+      "ProcessChecklistPreview": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
+          },
+          "required": {
+            "default": true,
+            "title": "Required",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "label"
+        ],
+        "title": "ProcessChecklistPreview",
+        "type": "object"
+      },
+      "ProcessInfo": {
+        "additionalProperties": false,
+        "properties": {
+          "service_type": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Service Type",
+            "type": "string"
+          },
+          "label": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
+          },
+          "process_version": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Process Version",
+            "type": "string"
+          },
+          "issues_document": {
+            "title": "Issues Document",
+            "type": "boolean"
+          },
+          "template_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Template Id"
+          },
+          "template_version": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Template Version"
+          },
+          "template_status": {
+            "enum": [
+              "approved",
+              "unavailable"
+            ],
+            "title": "Template Status",
+            "type": "string"
+          },
+          "validity_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Validity Days"
+          },
+          "requires_academic_status": {
+            "default": false,
+            "title": "Requires Academic Status",
+            "type": "boolean"
+          },
+          "requires_financial_clearance": {
+            "default": false,
+            "title": "Requires Financial Clearance",
+            "type": "boolean"
+          },
+          "required_criteria": {
+            "items": {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            "title": "Required Criteria",
+            "type": "array"
+          },
+          "issue_required_criteria": {
+            "items": {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            "title": "Issue Required Criteria",
+            "type": "array"
+          },
+          "planned_checklist": {
+            "items": {
+              "$ref": "#/components/schemas/ProcessChecklistPreview"
+            },
+            "title": "Planned Checklist",
+            "type": "array"
+          }
+        },
+        "required": [
+          "service_type",
+          "label",
+          "process_version",
+          "issues_document",
+          "template_status"
+        ],
+        "title": "ProcessInfo",
         "type": "object"
       },
       "Processing": {
@@ -6235,6 +11241,342 @@
         "title": "RetrievalResult",
         "type": "object"
       },
+      "ReviewCaseCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "student_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Student Id",
+            "type": "string"
+          },
+          "target_course_code": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Target Course Code",
+            "type": "string"
+          },
+          "target_course_name": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Target Course Name",
+            "type": "string"
+          },
+          "prior_course_code": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Prior Course Code",
+            "type": "string"
+          },
+          "prior_course_name": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Prior Course Name",
+            "type": "string"
+          },
+          "target_course_credits": {
+            "default": 0,
+            "maximum": 30,
+            "minimum": 0,
+            "title": "Target Course Credits",
+            "type": "integer"
+          },
+          "target_department": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Target Department"
+          },
+          "prior_course_credits": {
+            "default": 0,
+            "maximum": 30,
+            "minimum": 0,
+            "title": "Prior Course Credits",
+            "type": "integer"
+          },
+          "prior_institution": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Prior Institution"
+          },
+          "prior_academic_year": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Prior Academic Year"
+          },
+          "prior_grade": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Prior Grade"
+          },
+          "criteria_set_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Criteria Set Id"
+          },
+          "criteria_set_name": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Criteria Set Name"
+          }
+        },
+        "required": [
+          "student_id",
+          "target_course_code",
+          "target_course_name",
+          "prior_course_code",
+          "prior_course_name"
+        ],
+        "title": "ReviewCaseCreate",
+        "type": "object"
+      },
+      "ReviewFinalize": {
+        "additionalProperties": false,
+        "properties": {
+          "decision_recommendation": {
+            "enum": [
+              "propose_recognition",
+              "propose_conditional",
+              "propose_rejection"
+            ],
+            "title": "Decision Recommendation",
+            "type": "string"
+          },
+          "conclusion_summary": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Conclusion Summary",
+            "type": "string"
+          },
+          "expected_revision": {
+            "minimum": 1,
+            "title": "Expected Revision",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "decision_recommendation",
+          "conclusion_summary",
+          "expected_revision"
+        ],
+        "title": "ReviewFinalize",
+        "type": "object"
+      },
+      "ReviewFindingPatch": {
+        "additionalProperties": false,
+        "properties": {
+          "officer_status": {
+            "enum": [
+              "unverified",
+              "confirmed",
+              "edited"
+            ],
+            "title": "Officer Status",
+            "type": "string"
+          },
+          "officer_adjusted_label": {
+            "anyOf": [
+              {
+                "enum": [
+                  "has_evidence",
+                  "has_difference",
+                  "insufficient_evidence",
+                  "contradiction"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Officer Adjusted Label"
+          },
+          "officer_note": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Officer Note"
+          },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Expected Revision"
+          }
+        },
+        "required": [
+          "officer_status"
+        ],
+        "title": "ReviewFindingPatch",
+        "type": "object"
+      },
+      "ReviewStudentSupplement": {
+        "additionalProperties": false,
+        "properties": {
+          "note": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Note",
+            "type": "string"
+          },
+          "doc_title": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Doc Title"
+          },
+          "file_name": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "File Name"
+          }
+        },
+        "required": [
+          "note"
+        ],
+        "title": "ReviewStudentSupplement",
+        "type": "object"
+      },
+      "ReviewSupplementRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "subject": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Subject",
+            "type": "string"
+          },
+          "message_body": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Message Body",
+            "type": "string"
+          },
+          "requested_documents": {
+            "items": {
+              "maxLength": 10000,
+              "minLength": 1,
+              "type": "string"
+            },
+            "title": "Requested Documents",
+            "type": "array"
+          },
+          "findings_involved": {
+            "items": {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            "title": "Findings Involved",
+            "type": "array"
+          },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Expected Revision"
+          }
+        },
+        "required": [
+          "subject",
+          "message_body"
+        ],
+        "title": "ReviewSupplementRequest",
+        "type": "object"
+      },
       "SendMessage": {
         "additionalProperties": false,
         "properties": {
@@ -6249,6 +11591,189 @@
           "content"
         ],
         "title": "SendMessage",
+        "type": "object"
+      },
+      "StudentProfileView": {
+        "additionalProperties": false,
+        "properties": {
+          "user_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "User Id",
+            "type": "string"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "mssv": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mssv"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "faculty": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Faculty"
+          },
+          "major": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Major"
+          },
+          "cohort": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cohort"
+          },
+          "class_year": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Class Year"
+          },
+          "student_status": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Student Status"
+          },
+          "verification_status": {
+            "enum": [
+              "unverified",
+              "imported",
+              "officer_verified"
+            ],
+            "title": "Verification Status",
+            "type": "string"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "source_imported_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Imported At"
+          },
+          "verified_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Verified At"
+          },
+          "is_demo": {
+            "title": "Is Demo",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "user_id",
+          "full_name",
+          "mssv",
+          "email",
+          "faculty",
+          "major",
+          "cohort",
+          "class_year",
+          "student_status",
+          "verification_status",
+          "source",
+          "is_demo"
+        ],
+        "title": "StudentProfileView",
         "type": "object"
       },
       "Submit1": {
@@ -6298,6 +11823,59 @@
         "title": "Submit1Result",
         "type": "object"
       },
+      "SupplementItem": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Id"
+          },
+          "label": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Reason"
+          },
+          "status": {
+            "default": "open",
+            "enum": [
+              "open",
+              "fulfilled"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label"
+        ],
+        "title": "SupplementItem",
+        "type": "object"
+      },
       "Submit2": {
         "additionalProperties": false,
         "properties": {
@@ -6337,6 +11915,21 @@
             "const": true,
             "title": "Confirmed",
             "type": "boolean"
+          },
+          "supplement_items": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/SupplementItem"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Supplement Items"
           }
         },
         "required": [
@@ -6371,6 +11964,318 @@
           "audit_id"
         ],
         "title": "Submit2Result",
+        "type": "object"
+      },
+      "SupplementView": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SupplementItem"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "reason": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "open",
+              "fulfilled",
+              "cancelled"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "requested_by": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Requested By",
+            "type": "string"
+          },
+          "requested_at": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Requested At",
+            "type": "string"
+          },
+          "evidence_fingerprint": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Evidence Fingerprint"
+          }
+        },
+        "required": [
+          "id",
+          "reason",
+          "status",
+          "requested_by",
+          "requested_at"
+        ],
+        "title": "SupplementView",
+        "type": "object"
+      },
+      "SystemVerificationItem": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "criterion_key": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Criterion Key",
+            "type": "string"
+          },
+          "criterion_label": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Criterion Label",
+            "type": "string"
+          },
+          "condition_applied": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Condition Applied",
+            "type": "string"
+          },
+          "data_checked": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Data Checked",
+            "type": "string"
+          },
+          "source_system": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Source System",
+            "type": "string"
+          },
+          "lookup_timestamp": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Lookup Timestamp",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "passed",
+              "failed",
+              "insufficient",
+              "error"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "reason": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          },
+          "officer_review_status": {
+            "default": "pending",
+            "enum": [
+              "pending",
+              "confirmed",
+              "overridden"
+            ],
+            "title": "Officer Review Status",
+            "type": "string"
+          },
+          "officer_note": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Officer Note"
+          },
+          "condition_source": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Condition Source"
+          },
+          "data_source": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Data Source"
+          },
+          "source_version": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Version"
+          },
+          "source_hash": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Hash"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Evidence"
+          },
+          "connector_status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "connected",
+                  "not_configured",
+                  "error"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Connector Status"
+          },
+          "applies": {
+            "default": true,
+            "title": "Applies",
+            "type": "boolean"
+          },
+          "stale": {
+            "default": false,
+            "title": "Stale",
+            "type": "boolean"
+          },
+          "officer_resolution": {
+            "anyOf": [
+              {
+                "enum": [
+                  "none",
+                  "viewed",
+                  "manual_pass",
+                  "manual_fail"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Officer Resolution"
+          },
+          "officer_reviewed_by": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Officer Reviewed By"
+          },
+          "officer_reviewed_at": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Officer Reviewed At"
+          }
+        },
+        "required": [
+          "id",
+          "criterion_key",
+          "criterion_label",
+          "condition_applied",
+          "data_checked",
+          "source_system",
+          "lookup_timestamp",
+          "status",
+          "reason"
+        ],
+        "title": "SystemVerificationItem",
         "type": "object"
       },
       "Page_Message_": {
@@ -6409,6 +12314,50 @@
         "title": "Page[Message]",
         "type": "object"
       },
+      "TicketWorkspace": {
+        "additionalProperties": false,
+        "properties": {
+          "ticket_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Ticket Id",
+            "type": "string"
+          },
+          "revision": {
+            "minimum": 1,
+            "title": "Revision",
+            "type": "integer"
+          },
+          "officer_draft": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Officer Draft"
+          },
+          "checklist": {
+            "items": {
+              "$ref": "#/components/schemas/OfficerChecklistItem"
+            },
+            "title": "Checklist",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ticket_id",
+          "revision",
+          "officer_draft",
+          "checklist"
+        ],
+        "title": "TicketWorkspace",
+        "type": "object"
+      },
       "TicketDetail": {
         "additionalProperties": false,
         "properties": {
@@ -6417,6 +12366,118 @@
           },
           "messages": {
             "$ref": "#/components/schemas/Page_Message_"
+          },
+          "attachments": {
+            "items": {
+              "$ref": "#/components/schemas/AttachmentView"
+            },
+            "title": "Attachments",
+            "type": "array"
+          },
+          "workspace": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TicketWorkspace"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "verifications": {
+            "items": {
+              "$ref": "#/components/schemas/SystemVerificationItem"
+            },
+            "title": "Verifications",
+            "type": "array"
+          },
+          "student_profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StudentProfileView"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "assigned_officer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/User"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "process": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProcessInfo"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "document_draft": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DocumentDraftView"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "issued_document": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IssuedDocumentView"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "supplements": {
+            "items": {
+              "$ref": "#/components/schemas/SupplementView"
+            },
+            "title": "Supplements",
+            "type": "array"
+          },
+          "evidence_fingerprint": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Evidence Fingerprint"
+          },
+          "institution": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InstitutionInfo"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
           }
         },
         "required": [
@@ -6506,6 +12567,182 @@
           "request_id"
         ],
         "title": "TicketSnapshot",
+        "type": "object"
+      },
+      "TicketWorkspacePatch": {
+        "additionalProperties": false,
+        "properties": {
+          "officer_draft": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Officer Draft"
+          },
+          "toggle_checklist_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Toggle Checklist Id"
+          },
+          "checklist": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/OfficerChecklistItem"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Checklist"
+          },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Expected Revision"
+          },
+          "checklist_note": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Checklist Note"
+          },
+          "ensure_process_checklist": {
+            "default": false,
+            "title": "Ensure Process Checklist",
+            "type": "boolean"
+          }
+        },
+        "title": "TicketWorkspacePatch",
+        "type": "object"
+      },
+      "VerificationConfirm": {
+        "additionalProperties": false,
+        "properties": {
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Note"
+          },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Expected Revision"
+          },
+          "outcome": {
+            "default": "viewed",
+            "enum": [
+              "viewed",
+              "manual_pass",
+              "manual_fail"
+            ],
+            "title": "Outcome",
+            "type": "string"
+          }
+        },
+        "title": "VerificationConfirm",
+        "type": "object"
+      },
+      "VerificationRunRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Expected Revision"
+          },
+          "criterion_key": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Criterion Key"
+          }
+        },
+        "title": "VerificationRunRequest",
+        "type": "object"
+      },
+      "VerificationsResult": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SystemVerificationItem"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "VerificationsResult",
         "type": "object"
       }
     },

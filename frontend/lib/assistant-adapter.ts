@@ -1,5 +1,7 @@
-import { lookupStudentGuidance, type AssistantReply } from "./student-assistant";
+import { lookupStudentGuidance, type AssistantReply, type GuidanceSource } from "./student-assistant";
 import { VINUNI_SOURCES, type VinUniTask } from "./vinuni-forms";
+import type { CampusPreview, ChatTurnResult } from "./data/api/mappers";
+import type { WireCitation } from "./data/api/contracts";
 
 export interface AssistantRequest {
   question: string;
@@ -8,18 +10,91 @@ export interface AssistantRequest {
 export interface AssistantResult {
   reply: AssistantReply;
   edit?: { field: string; value: string };
+  preview?: CampusPreview | null;
+  ticket?: ChatTurnResult["ticket"];
+  conversationState?: ChatTurnResult["conversationState"];
+  route?: ChatTurnResult["route"];
+  outcome?: string;
+  conversationId?: string;
 }
 /** An API adapter can implement this contract without exposing API keys in the browser. */
 export interface AssistantAdapter { respond(request: AssistantRequest, signal: AbortSignal): Promise<AssistantResult> }
+
+export function isSafeCitationHref(href: string): boolean {
+  try {
+    const url = new URL(href);
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
 
 export function isAssistantResult(value: unknown): value is AssistantResult {
   if (!value || typeof value !== "object") return false;
   const result = value as AssistantResult;
   const reply = result.reply;
   return Boolean(reply && typeof reply.text === "string" && reply.text.length <= 20000 && !reply.proposal &&
-    (!reply.action || (typeof reply.action.label === "string" && ["/student/certificate", "/student/complaint", "/my-requests"].includes(reply.action.href))) &&
-    (!reply.source || (typeof reply.source.title === "string" && typeof reply.source.section === "string" && typeof reply.source.quote === "string" && (!reply.source.href || Object.values(VINUNI_SOURCES).includes(reply.source.href)))) &&
+    (!reply.action || (typeof reply.action.label === "string" && (
+      reply.action.href === "/student/certificate" ||
+      reply.action.href === "/student/complaint" ||
+      reply.action.href === "/student/assistant?intent=certificate" ||
+      reply.action.href === "/student/assistant?intent=complaint" ||
+      reply.action.href === "/my-requests"
+    ))) &&
+    (!reply.source || validGuidanceSource(reply.source)) &&
+    (!reply.sources || (Array.isArray(reply.sources) && reply.sources.every(validGuidanceSource))) &&
     (!result.edit || (typeof result.edit.field === "string" && typeof result.edit.value === "string" && result.edit.value.length <= 4000)));
+}
+
+function optionalString(value: unknown): boolean {
+  return value == null || typeof value === "string";
+}
+
+function validGuidanceSource(source: GuidanceSource): boolean {
+  return Boolean(
+    typeof source.title === "string" &&
+      typeof source.section === "string" &&
+      typeof source.quote === "string" &&
+      optionalString(source.documentId) &&
+      optionalString(source.documentVersion) &&
+      optionalString(source.chunkId) &&
+      (!source.href || isSafeCitationHref(source.href) || Object.values(VINUNI_SOURCES).includes(source.href))
+  );
+}
+
+export function citationToSource(citation: WireCitation): GuidanceSource {
+  const href = citation.url && isSafeCitationHref(citation.url) ? citation.url : undefined;
+  return {
+    title: citation.document_title,
+    section: citation.locator || citation.chunk_id || citation.document_id,
+    quote: citation.quote,
+    href,
+    documentId: citation.document_id,
+    documentVersion: citation.document_version,
+    chunkId: citation.chunk_id,
+  };
+}
+
+export function mapChatTurnToAssistantResult(turn: ChatTurnResult): AssistantResult {
+  const sources = turn.citations.map(citationToSource);
+  const action =
+    turn.conversationState.aiResponseLocked
+      ? { label: "Xem hồ sơ đã bàn giao", href: "/my-requests" }
+      : undefined;
+  return {
+    reply: {
+      text: turn.reply.text,
+      source: sources[0],
+      sources: sources.length ? sources : undefined,
+      action,
+    },
+    preview: turn.preview,
+    ticket: turn.ticket,
+    conversationState: turn.conversationState,
+    route: turn.route,
+    outcome: turn.outcome,
+    conversationId: turn.conversationId,
+  };
 }
 
 export const guidanceAdapter: AssistantAdapter = {

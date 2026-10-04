@@ -24,7 +24,7 @@ function load(relative) {
 }
 const { MockCampusDataGateway } = load("lib/data/mock/mock-gateway.ts");
 const { DEMO_USERS } = load("lib/data/mock/fixtures.ts");
-const { hasIssuedDocument, receiptHtml, collectRequests, requestStatusLabel } = load("lib/my-requests.ts");
+const { hasIssuedDocument, receiptHtml, collectRequests, requestStatusLabel, ticketThreadSenderLabel, ticketThreadTitle } = load("lib/my-requests.ts");
 const { validateAttachment, saveLocalAttachments } = load("lib/local-attachments.ts");
 const originalWindow = globalThis.window;
 const originalStorage = Object.getOwnPropertyDescriptor(globalThis, "localStorage");
@@ -78,7 +78,19 @@ try {
   assert.ok(!/DEMO|UAT|BẢN MẪU/i.test(html));
   assert.ok(html.includes("Không phải giấy xác nhận"));
   assert.equal(requestStatusLabel(item, true), "Đã lưu hồ sơ");
+  assert.equal(
+    ticketThreadTitle([{ senderRole: "student" }, { senderRole: "ai" }]),
+    "Trao đổi với trợ lý học vụ",
+  );
+  assert.equal(
+    ticketThreadTitle([{ senderRole: "student" }, { senderRole: "ai" }, { senderRole: "officer" }]),
+    "Hội thoại hồ sơ",
+  );
+  assert.equal(ticketThreadSenderLabel({ senderRole: "student", senderName: "An" }), "Bạn");
+  assert.equal(ticketThreadSenderLabel({ senderRole: "ai", senderName: "Trợ lý học vụ" }), "Trợ lý học vụ");
+  assert.equal(ticketThreadSenderLabel({ senderRole: "officer", senderName: "Thu Hà" }), "Cán bộ · Thu Hà");
   console.log("PASS: exported receipts escape user text and do not imply official issuance");
+  console.log("PASS: student ticket thread is labeled as assistant chat until an officer replies");
 
   const issued = { ...ticket, type: "certificate", status: "resolved", documentStatus: "issued", issuedCertificate: {
     status: "issued", isDemoSample: true, docNumber: "123", issuedAt: new Date().toISOString(), issuedByOfficerName: "Cán bộ",

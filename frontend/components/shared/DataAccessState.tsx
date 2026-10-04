@@ -4,10 +4,17 @@ import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { useStore } from "@/lib/store";
 
-export function DataAccessState({ requiredRole }: { requiredRole?: "student" | "officer" }) {
+export function DataAccessState({ requiredRole }: { requiredRole?: "student" | "officer" | "admin" }) {
   const { currentUser, dataError } = useStore();
   const wrongRole = Boolean(currentUser && requiredRole && currentUser.role !== requiredRole);
-  const destination = wrongRole && currentUser?.role === "student" ? "/my-requests" : wrongRole ? "/dashboard" : "/login";
+  const destination =
+    wrongRole && currentUser?.role === "student"
+      ? "/my-requests"
+      : wrongRole && currentUser?.role === "admin"
+        ? "/admin"
+        : wrongRole
+          ? "/dashboard"
+          : "/login";
 
   return (
     <div className="min-h-screen flex flex-col bg-transparent">

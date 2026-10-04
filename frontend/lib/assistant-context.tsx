@@ -4,22 +4,25 @@ import { createContext, useContext, useEffect, useRef, useState, useSyncExternal
 import { usePathname, useRouter } from "next/navigation";
 import { useStore } from "./store";
 import { useVinUniForms } from "./vinuni-workspace";
-import { createStudentChatStore, type StudentChatExchange } from "./student-chat";
-import { guidanceAdapter, isAssistantResult, type AssistantAdapter, type AssistantRequest } from "./assistant-adapter";
+import { createStudentChatStore, exchangesFromChatMessages, type StudentChatExchange } from "./student-chat";
+import { guidanceAdapter, isAssistantResult, mapChatTurnToAssistantResult, type AssistantAdapter, type AssistantRequest } from "./assistant-adapter";
 import { collectRequests, latestOfficerReply, requestStatusLabel } from "./my-requests";
 import type { VinUniTask } from "./vinuni-forms";
+import type { CampusPreview } from "./data/api/mappers";
+import { isDisplayTicketCode, reuseOrMintIntentKey, shouldRetainIntentKey } from "./data/api/g2-flow";
 
 function subscribeURL(notify: () => void) {
   window.addEventListener("popstate", notify); window.addEventListener("campus-requests-navigation", notify);
   return () => { window.removeEventListener("popstate", notify); window.removeEventListener("campus-requests-navigation", notify); };
 }
+const consumedAssistantIntents = new Set<string>();
 const readURL = () => window.location.search;
 const emptyURL = () => "";
 
 function useAssistantRuntime(adapter: AssistantAdapter) {
   const pathname = usePathname(); const router = useRouter();
   const query = useSyncExternalStore(subscribeURL, readURL, emptyURL);
-  const { currentUser, dataConfig, tickets, reviewCases } = useStore();
+  const { currentUser, dataConfig, tickets, reviewCases, chatSessions, createConversation, sendConversationMessage, listConversationMessages } = useStore();
   const { store: forms, state: formState } = useVinUniForms();
   const [chat] = useState(() => createStudentChatStore(`campus247_chat_ui_v2:${dataConfig?.mode}:${encodeURIComponent(currentUser!.id)}`, `campus247_chat_ui_v1:${dataConfig?.mode}:${encodeURIComponent(currentUser!.id)}`));
   const state = useSyncExternalStore(chat.subscribe, chat.getSnapshot, chat.getSnapshot);
@@ -31,6 +34,25 @@ function useAssistantRuntime(adapter: AssistantAdapter) {
   const [pending, setPending] = useState<string[]>([]);
   const [error, setError] = useState("");
   const [composerFocus, setComposerFocus] = useState(0);
+  const isApiMode = dataConfig?.mode === "api";
+  const apiPreview = active.apiPreview ?? null;
+  const apiLocked = active.apiLocked === true;
+  const apiTicket = active.apiTicket ?? null;
+  const apiPendingTicketId = active.apiPendingTicketId ?? null;
+  function setApiPreview(preview: CampusPreview | null, threadId: string) {
+    chat.setFlow(threadId, { apiPreview: preview });
+  }
+  function setApiTicket(ticket: { id: string; code: string } | null, threadId: string) {
+    if (ticket) chat.setFlow(threadId, { apiTicket: ticket, apiPendingTicketId: undefined });
+    else chat.setFlow(threadId, { apiTicket: null });
+  }
+  function setApiPendingTicket(ticketId: string | null, threadId: string) {
+    if (ticketId) chat.setFlow(threadId, { apiPendingTicketId: ticketId, apiTicket: null });
+    else chat.setFlow(threadId, { apiPendingTicketId: undefined });
+  }
+  function setApiLocked(locked: boolean, threadId: string) {
+    chat.setFlow(threadId, { apiLocked: locked });
+  }
   const requests = useRef(new Map<string, AbortController>());
   const isChat = pathname === "/student/assistant";
   const routeTask: VinUniTask | undefined = pathname.includes("certificate") ? "certificate" : pathname.includes("complaint") ? "complaint" : undefined;
@@ -50,24 +72,94 @@ function useAssistantRuntime(adapter: AssistantAdapter) {
   const contextLabel = context.label;
   const routeDraftId = routeTask ? formState[routeTask].id : undefined;
 
+  const intentConsumed = useRef(false);
+  useEffect(() => {
+    if (intentConsumed.current || !isChat || !dataConfig) return;
+    const search = window.location.search;
+    const intent = new URLSearchParams(search).get("intent");
+    if (intent !== "complaint" && intent !== "certificate") return;
+    const consumeKey = `${currentUser?.id || "anon"}:${search}`;
+    if (consumedAssistantIntents.has(consumeKey)) return;
+    intentConsumed.current = true;
+    consumedAssistantIntents.add(consumeKey);
+    openForm(intent);
+    router.replace("/student/assistant");
+  }, [isChat, dataConfig, currentUser?.id]);
   useEffect(() => () => { requests.current.forEach(controller => controller.abort()); }, []);
   useEffect(() => {
     if (open && !isChat) chat.context(contextKey, contextLabel, routeTask, routeDraftId);
   }, [chat, open, isChat, contextKey, contextLabel, routeTask, routeDraftId]);
+  useEffect(() => {
+    if (!isApiMode || currentUser?.role !== "student") return;
+    chat.mergeFromServer(
+      chatSessions.map((session) => {
+        const ticket = tickets.find((item) => item.id === session.ticketId || item.conversationId === session.id);
+        return {
+          conversationId: session.id,
+          title: session.title,
+          locked: !!session.isL4HandoverActive,
+          ticket: ticket ? { id: ticket.id, code: ticket.code } : null,
+        };
+      })
+    );
+  }, [isApiMode, currentUser?.role, chat, chatSessions, tickets]);
+  useEffect(() => {
+    if (!isApiMode || !active.conversationId || active.exchanges.length > 0 || pending.includes(active.id) || !listConversationMessages) return;
+    const threadId = active.id;
+    let cancelled = false;
+    void listConversationMessages(active.conversationId)
+      .then((messages) => {
+        if (cancelled || !messages.length) return;
+        const current = chat.getSnapshot().threads.find((item) => item.id === threadId);
+        if (current && current.exchanges.length > 0) return;
+        chat.replaceExchanges(threadId, exchangesFromChatMessages(messages));
+      })
+      .catch(() => {
+        /* Local thread remains usable; retry happens the next time this thread is selected. */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isApiMode, active.id, active.conversationId, active.exchanges.length, pending, listConversationMessages, chat]);
 
   function ensureContext() {
     if (!isChat) chat.context(contextKey, context.label, routeTask, routeTask ? forms.getSnapshot()[routeTask].id : undefined);
   }
   function show() { ensureContext(); setOpen(true); }
   function openForm(formTask: VinUniTask) {
+    if (isApiMode) {
+      const current = chat.getSnapshot().threads.find((thread) => thread.id === chat.getSnapshot().activeId);
+      if (current?.apiLocked || current?.apiTicket || current?.apiPendingTicketId) {
+        chat.start();
+      }
+      const starter = formTask === "certificate"
+        ? "Tôi muốn xin giấy xác nhận sinh viên để nộp hồ sơ vay vốn ngân hàng, nơi nhận Ngân hàng Chính sách Xã hội, nhận bản điện tử PDF"
+        : "Tôi muốn khiếu nại.";
+      setTab("form"); setFormExpanded(true); setError("");
+      void send(starter);
+      return;
+    }
     chat.bindForm(formTask, forms.getSnapshot()[formTask].id);
     setTab("form"); setFormExpanded(true); setError("");
-    if (!isChat && routeTask !== formTask) { setOpen(false); router.push(`/student/${formTask}`); }
+    if (!isChat) { setOpen(false); router.push(`/student/assistant?intent=${formTask}`); }
+  }
+  function resetApiFlow() {
+    chat.setFlow(chat.getSnapshot().activeId, {
+      apiPreview: null,
+      apiLocked: false,
+      apiTicket: null,
+      apiPendingTicketId: undefined,
+    });
   }
   function returnToStart() {
-    chat.context("page:/student/assistant", "Trợ lý học vụ");
-    setTab("chat"); setFormExpanded(true); setError(""); setFieldTarget(null);
-    if (!isChat) { setOpen(false); router.push("/student/assistant"); }
+    setFormExpanded(false);
+    setTab("chat");
+    setError("");
+    setFieldTarget(null);
+    if (!isChat) {
+      setOpen(false);
+      router.push("/student/assistant");
+    }
   }
   function selectThread(id: string) {
     const thread = state.threads.find(thread => thread.id === id);
@@ -83,6 +175,50 @@ function useAssistantRuntime(adapter: AssistantAdapter) {
     const draftBefore = task ? forms.getSnapshot()[task] : undefined;
     setPending(previous => [...previous, threadId]); setError("");
     try {
+      if (isApiMode) {
+        const thread = chat.getSnapshot().threads.find(item => item.id === threadId);
+        let conversationId = thread?.conversationId;
+        if (!conversationId) {
+          const key = reuseOrMintIntentKey(thread?.createIntentKey);
+          if (thread?.createIntentKey !== key) chat.setFlow(threadId, { createIntentKey: key });
+          try {
+            const conversation = await createConversation({ idempotencyKey: key });
+            chat.bindConversation(threadId, conversation.id);
+            conversationId = conversation.id;
+          } catch (failure) {
+            if (!shouldRetainIntentKey(failure)) chat.setFlow(threadId, { createIntentKey: undefined });
+            throw failure;
+          }
+          if (controller.signal.aborted) return;
+        }
+        const turn = await sendConversationMessage(conversationId, question.trim(), { signal: controller.signal });
+        if (controller.signal.aborted) return;
+        const mapped = mapChatTurnToAssistantResult(turn);
+        const existing = chat.getSnapshot().threads.find((item) => item.id === threadId);
+        const alreadyLogged = existing?.exchanges.some(
+          (item) => item.question === question.trim() && item.reply?.text === mapped.reply.text
+        );
+        if (!alreadyLogged) chat.send(question, mapped.reply, undefined, threadId);
+        const current = chat.getSnapshot().threads.find((item) => item.id === threadId);
+        const ticketRef =
+          turn.ticket && isDisplayTicketCode(turn.ticket.code, turn.ticket.id)
+            ? { id: turn.ticket.id, code: turn.ticket.code }
+            : current?.apiTicket ?? null;
+        chat.setFlow(threadId, {
+          apiPreview: turn.preview,
+          apiLocked: turn.conversationState.aiResponseLocked,
+          apiTicket: ticketRef,
+          apiPendingTicketId: ticketRef ? undefined : current?.apiPendingTicketId,
+        });
+        if (
+          (turn.preview || turn.conversationState.aiResponseLocked) &&
+          chat.getSnapshot().activeId === threadId
+        ) {
+          setTab("form");
+          setFormExpanded(true);
+        }
+        return;
+      }
       const result = await adapter.respond({ question: question.trim(), context: { ...context, field } }, controller.signal);
       if (controller.signal.aborted) return;
       if (!isAssistantResult(result)) throw new Error("Invalid assistant response");
@@ -119,7 +255,8 @@ function useAssistantRuntime(adapter: AssistantAdapter) {
     if (!isChat) setOpen(false);
   }
   return { chat, state, active, open, setOpen, show, isChat, task, context, contextKey, routeTask, tab, setTab, formExpanded, setFormExpanded, fieldTarget,
-    pending: pending.includes(active.id), error, send, cancel, openForm, returnToStart, selectThread, apply, undo, focusField, helpField, composerFocus };
+    pending: pending.includes(active.id), error, send, cancel, openForm, returnToStart, selectThread, apply, undo, focusField, helpField, composerFocus,
+    isApiMode, apiPreview, setApiPreview, apiLocked, setApiLocked, apiTicket, setApiTicket, apiPendingTicketId, setApiPendingTicket, resetApiFlow };
 }
 type Runtime = ReturnType<typeof useAssistantRuntime>;
 const Context = createContext<Runtime | null>(null);

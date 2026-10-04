@@ -1,5 +1,5 @@
-import { VinUniForm } from "@/components/student/VinUniForm";
+import { redirect } from "next/navigation";
 
 export default function ComplaintReviewPage() {
-  return <VinUniForm task="complaint" review />;
+  redirect("/student/assistant?intent=complaint");
 }

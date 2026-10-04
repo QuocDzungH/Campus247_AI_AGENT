@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ArrowLeft, Download, MessageSquare, Paperclip } from "lucide-react";
-import { hasIssuedDocument, latestOfficerReply, receiptHtml, requestDate as formatDate, requestStates, requestStatusLabel, validateSupplementFile, type RequestItem } from "@/lib/my-requests";
+import { hasIssuedDocument, latestOfficerReply, receiptHtml, requestDate as formatDate, requestStates, requestStatusLabel, ticketThreadSenderLabel, ticketThreadTitle, validateSupplementFile, type RequestItem } from "@/lib/my-requests";
+import { useStore } from "@/lib/store";
 import { fieldClass, primaryButton, secondaryButton } from "./StudentFlowUI";
 import { saveLocalAttachments } from "@/lib/local-attachments";
 import type { StoredAttachment } from "@/lib/types";
@@ -15,11 +16,15 @@ export function RequestStatus({ item, localOnly = false }: { item: RequestItem; 
 const section = "rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 dark:border-slate-700 dark:bg-slate-900";
 const muted = "text-sm leading-relaxed text-slate-600 dark:text-slate-300";
 
-export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement }: {
+export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement, detailLoading = false, detailError = null, onRetryDetail }: {
   item: RequestItem; localOnly: boolean; onBack: () => void;
   onMessage: (id: string, text: string) => Promise<void>;
   onSupplement: (id: string, payload: { note: string; fileName?: string; docTitle?: string; attachment?: StoredAttachment }) => Promise<void>;
+  detailLoading?: boolean;
+  detailError?: string | null;
+  onRetryDetail?: () => void;
 }) {
+  const { downloadIssuedDocument } = useStore();
   const heading = useRef<HTMLHeadingElement>(null);
   const [text, setText] = useState("");
   const [note, setNote] = useState("");
@@ -119,7 +124,9 @@ export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement
 
     {!pending && <section className={section} aria-labelledby="latest-reply-title">
       <h3 id="latest-reply-title" tabIndex={-1} className="flex items-center gap-2 text-lg font-semibold"><MessageSquare className="h-5 w-5" aria-hidden="true" />Phản hồi gần nhất của cán bộ</h3>
-      <p className={`mt-3 whitespace-pre-wrap break-words ${muted}`}>{latest || "Chưa có phản hồi của cán bộ trong hồ sơ này."}</p>
+      {detailLoading && <p role="status" className={`mt-3 ${muted}`}>Đang tải chi tiết hồ sơ…</p>}
+      {detailError && <p role="alert" className="mt-3 rounded-xl bg-red-50 p-3 text-sm text-red-800 dark:bg-red-950 dark:text-red-200">{detailError} Danh sách hồ sơ vẫn được giữ.{onRetryDetail && <button type="button" className={`${secondaryButton} mt-2`} onClick={onRetryDetail}>Thử tải lại chi tiết</button>}</p>}
+      {!detailLoading && <p className={`mt-3 whitespace-pre-wrap break-words ${muted}`}>{latest || "Chưa có phản hồi của cán bộ trong hồ sơ này."}</p>}
     </section>}
 
     {item.state === "completed" && <section className={section} aria-labelledby="result-title">
@@ -135,12 +142,21 @@ export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement
       <h3 id="document-title" className="text-lg font-semibold">Tài liệu kết quả</h3>
       {hasIssuedDocument(item.record) && !localOnly ? <>
         <p className="mt-3 text-sm font-semibold text-emerald-800 dark:text-emerald-200">Đã ghi nhận phát hành</p>
-        <p className={`mt-2 ${muted}`}>Số văn bản: {item.record.issuedCertificate!.docNumber} · Người phát hành: {item.record.issuedCertificate!.issuedByOfficerName}</p>
-        <p className={muted}>Ngày phát hành: {formatDate(item.record.issuedCertificate!.issuedAt)}</p>
-        <p className={`mt-3 ${muted}`}>Chưa có tệp chính thức để tải trong hồ sơ này. Liên hệ cán bộ phụ trách để nhận tài liệu.</p>
+        <p className={`mt-2 ${muted}`}>Số văn bản: {item.record.issuedDocument?.id || item.record.issuedCertificate?.docNumber} · Người phát hành: {item.record.issuedCertificate?.issuedByOfficerName || item.record.issuedDocument?.issuedBy}</p>
+        <p className={muted}>Ngày phát hành: {formatDate(item.record.issuedDocument?.issuedAt || item.record.issuedCertificate?.issuedAt || "")}</p>
+        {item.record.issuedDocument ? (
+          <>
+            <p className={`mt-2 ${muted}`}>Chữ ký: {item.record.issuedDocument.signatureStatus === "unsigned" ? "chưa ký số" : item.record.issuedDocument.signatureStatus}. Không phải giấy có giá trị chính thức.</p>
+            <button type="button" className={`${primaryButton} mt-3`} onClick={() => void downloadIssuedDocument(item.record.id, item.record.issuedDocument!.id)}>
+              <Download className="h-4 w-4" />Tải bản hệ thống đã phát hành
+            </button>
+          </>
+        ) : (
+          <p className={`mt-3 ${muted}`}>Chưa có tệp chính thức để tải trong hồ sơ này. Liên hệ cán bộ phụ trách để nhận tài liệu.</p>
+        )}
       </> : <>
         <p className={`mt-3 ${muted}`}>Tài liệu chính thức chưa được cung cấp trong hồ sơ này. Bạn sẽ nhận thông báo khi có kết quả.</p>
-        <p className={`mt-2 ${muted}`}>Cách nhận đã khai: {item.record.receiveMethod === "paper_stamped" ? "Bản giấy có đóng dấu" : "Bản điện tử"}. Hãy theo dõi phản hồi của cán bộ.</p>
+        <p className={`mt-2 ${muted}`}>Cách nhận đã khai: {item.record.receiveMethod === "paper_stamped" ? "Bản giấy có đóng dấu" : item.record.receiveMethod === "digital_pdf" ? "Bản điện tử" : "Chưa có dữ liệu"}. Hãy theo dõi phản hồi của cán bộ.</p>
       </>}
     </section>}
 
@@ -154,15 +170,15 @@ export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement
     </section>
 
     <section className={section} aria-labelledby="conversation-title">
-      <h3 id="conversation-title" className="text-lg font-semibold">Trao đổi với cán bộ</h3>
+      <h3 id="conversation-title" className="text-lg font-semibold">{item.kind === "ticket" ? ticketThreadTitle(item.record.messages) : "Trao đổi với cán bộ"}</h3>
       {item.kind === "ticket" ? <>
-        <div className="mt-4 space-y-3">{item.record.messages.filter((m) => m.senderRole === "officer" || m.senderRole === "student").map((m) => <div key={m.id} className={`rounded-xl p-4 ${m.senderRole === "student" ? "bg-blue-50 dark:bg-blue-950" : "bg-slate-50 dark:bg-slate-800"}`}>
-          <p className="text-sm font-semibold">{m.senderRole === "student" ? "Bạn" : `Cán bộ · ${m.senderName}`}</p>
+        <div className="mt-4 space-y-3">{item.record.messages.filter((m) => m.content.trim()).map((m) => <div key={m.id} className={`rounded-xl p-4 ${m.senderRole === "student" ? "bg-blue-50 dark:bg-blue-950" : m.senderRole === "officer" ? "bg-slate-50 dark:bg-slate-800" : "bg-indigo-50 dark:bg-indigo-950"}`}>
+          <p className="text-sm font-semibold">{ticketThreadSenderLabel(m)}</p>
           <p className={`mt-1 ${muted}`}>{formatDate(m.timestamp)}</p>
           <p className="mt-2 whitespace-pre-wrap break-words text-base leading-relaxed">{m.content}</p>
           {m.attachments?.map((attachment, index) => <p key={index} className={`mt-2 flex items-start gap-2 ${muted}`}><Paperclip className="mt-1 h-4 w-4 shrink-0" aria-hidden="true" /><span className="break-all">{attachment.name} · Chưa có tệp đính kèm để tải</span></p>)}
         </div>)}</div>
-        {!item.record.messages.some((m) => m.senderRole === "officer" || m.senderRole === "student") && <p className={`mt-3 ${muted}`}>Chưa có trao đổi. Bạn có thể gửi câu hỏi về hồ sơ này.</p>}
+        {!item.record.messages.some((m) => m.content.trim()) && <p className={`mt-3 ${muted}`}>Chưa có hội thoại trên hồ sơ này.</p>}
         <form onSubmit={sendMessage} className="mt-5 space-y-3">
           <label htmlFor="request-message" className="block text-sm font-semibold">Tin nhắn về hồ sơ {item.code}</label>
           <textarea id="request-message" value={text} disabled={busy} onChange={(e) => setText(e.target.value)} required maxLength={4000} rows={3} className={fieldClass} aria-describedby="request-message-hint" />

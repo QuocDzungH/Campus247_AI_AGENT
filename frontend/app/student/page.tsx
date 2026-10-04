@@ -8,11 +8,11 @@ import { collectRequests } from "@/lib/my-requests";
 import { RequestStatus } from "@/components/student/RequestDetail";
 
 const tasks = [
-  { href: "/student/certificate", title: "Xin giấy xác nhận", description: "Chuẩn bị tài liệu cho Registrar", icon: FileText,
+  { href: "/student/assistant?intent=certificate", title: "Xin giấy xác nhận", description: "Nói với trợ lý rồi điền form trong hội thoại", icon: FileText,
     card: "border-blue-200 bg-blue-50/80 hover:border-blue-400 hover:bg-blue-100/70 dark:border-blue-900 dark:bg-blue-950/40 dark:hover:bg-blue-950/70", accent: "bg-blue-600 text-white", arrow: "text-blue-600 dark:text-blue-300" },
   { href: "/student/lookup", title: "Tra cứu quy chế", description: "Xem câu trả lời kèm nguồn", icon: BookOpen,
     card: "border-indigo-200 bg-indigo-50/80 hover:border-indigo-400 hover:bg-indigo-100/70 dark:border-indigo-900 dark:bg-indigo-950/40 dark:hover:bg-indigo-950/70", accent: "bg-indigo-600 text-white", arrow: "text-indigo-600 dark:text-indigo-300" },
-  { href: "/student/complaint", title: "Khiếu nại điểm học phần", description: "Chuẩn bị Grade Appeal", icon: MessageSquareText,
+  { href: "/student/assistant?intent=complaint", title: "Khiếu nại", description: "Nói nhu cầu trong chat, trợ lý mở đúng form", icon: MessageSquareText,
     card: "border-violet-200 bg-violet-50/80 hover:border-violet-400 hover:bg-violet-100/70 dark:border-violet-900 dark:bg-violet-950/40 dark:hover:bg-violet-950/70", accent: "bg-violet-600 text-white", arrow: "text-violet-600 dark:text-violet-300" },
 ];
 
@@ -24,8 +24,8 @@ export default function StudentHomePage() {
   const supplements = reviewCases.filter((item) => item.studentId === currentUser?.id && item.status === "waiting_supplement");
   const recentTickets = collectRequests(myTickets, [], currentUser?.id || "").slice(0, 3);
   const drafts = [
-    ...(!certificate.submission && (certificate.stage > 0 || certificate.values.purpose || certificate.values.extraRequest || certificate.values.documentType !== "ENR") ? [{ title: "Tài liệu VinUni", href: `/student/certificate${certificate.checked === JSON.stringify(certificate.values) ? "/review" : ""}`, description: certificate.values.purpose || "Đang chuẩn bị thông tin" }] : []),
-    ...(!complaint.submission && (complaint.values.course || complaint.values.courseCode || complaint.values.description) ? [{ title: "Khiếu nại điểm học phần", href: `/student/complaint${complaint.checked === JSON.stringify(complaint.values) ? "/review" : ""}`, description: complaint.values.course || "Đang chuẩn bị thông tin" }] : []),
+    ...(!certificate.submission && (certificate.stage > 0 || certificate.values.purpose || certificate.values.extraRequest || certificate.values.documentType !== "ENR") ? [{ title: "Xin giấy xác nhận", href: "/student/assistant?intent=certificate", description: certificate.values.purpose || "Đang chuẩn bị thông tin" }] : []),
+    ...(!complaint.submission && (complaint.values.course || complaint.values.courseCode || complaint.values.description) ? [{ title: "Khiếu nại", href: "/student/assistant?intent=complaint", description: complaint.values.course || "Đang chuẩn bị thông tin" }] : []),
   ];
 
   return <div className="space-y-6">

@@ -15,8 +15,9 @@ from sqlalchemy import select, text
 
 from alembic import command
 from campus247.db.engine import reset_engine, session_scope
-from campus247.db.models import Ticket
+from campus247.db.models import Base, Ticket
 from campus247.db.seed import seed_from_document
+from campus247.db.types import PortableJSON
 from campus247.models.contracts_v1 import ClaimRequest
 from campus247.services.errors import ApiError
 from campus247.services.staff import claim_ticket
@@ -102,5 +103,12 @@ def test_postgres_json_columns_are_jsonb_and_alembic_check_is_clean(pg_url):
     assert rows
     mismatched = [f"{row.table_name}.{row.column_name}={row.udt_name}" for row in rows if row.udt_name != "jsonb"]
     assert mismatched == []
-    assert len(rows) == 17
+    expected = {
+        (table.name, column.name)
+        for table in Base.metadata.tables.values()
+        for column in table.columns
+        if isinstance(column.type, PortableJSON)
+    }
+    actual = {(row.table_name, row.column_name) for row in rows}
+    assert actual == expected
     command.check(alembic_config(pg_url))

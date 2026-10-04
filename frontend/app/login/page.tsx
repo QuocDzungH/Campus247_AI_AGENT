@@ -15,19 +15,33 @@ import {
 } from "lucide-react";
 import { AuthLayout } from "@/components/AuthLayout";
 import { useStore } from "@/lib/store";
+import { isConnectionError } from "@/lib/data/api/g2-flow";
 import { AccessibleDialog } from "@/components/shared/AccessibleDialog";
+import { API_DEMO_ACCOUNTS, OPERATIONAL_ACCOUNTS, resolveApiDemoUserId } from "@/lib/data/api/demo-accounts";
 
 // Set to false when the real authentication flow is ready for release.
 const DEMO_ACCOUNTS_ENABLED = true;
-const DEMO_ACCOUNTS = [
+const MOCK_DEMO_ACCOUNTS = [
   { label: "Sinh viên", identifier: "SV001", password: "demo1234" },
   { label: "Cán bộ", identifier: "OF001", password: "demo1234" },
 ] as const;
 
+function resolveMockDemoUserId(identifier: string): string | null {
+  const trimmed = identifier.trim().toLowerCase();
+  if (trimmed.includes("an.nv") || trimmed === "sv001" || trimmed === "20210018") return "SV001";
+  if (trimmed.includes("ha.tt") || trimmed === "of001") return "OF001";
+  if (trimmed.includes("tram.lb") || trimmed === "sv024" || trimmed === "20240019") return "SV024";
+  return null;
+}
+
 function LoginForm() {
   const router = useRouter();
 
-  const { login } = useStore();
+  const { login, dataConfig, dataStatus } = useStore();
+  const isApiMode = dataConfig?.mode === "api";
+  const [apiDemoAuthEnabled, setApiDemoAuthEnabled] = useState(false);
+  const demoAuthEnabled = isApiMode ? apiDemoAuthEnabled : true;
+  const demoAccounts = isApiMode ? API_DEMO_ACCOUNTS : MOCK_DEMO_ACCOUNTS;
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -38,6 +52,20 @@ function LoginForm() {
   const [helpDialogOpen, setHelpDialogOpen] = useState(false);
   const [demoAccountsOpen, setDemoAccountsOpen] = useState(false);
   const closeHelpDialog = React.useCallback(() => setHelpDialogOpen(false), []);
+
+  React.useEffect(() => {
+    if (!isApiMode || !dataConfig?.apiBaseUrl) {
+      return;
+    }
+    const controller = new AbortController();
+    fetch(`${dataConfig.apiBaseUrl}/api/v1/status`, { signal: controller.signal })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload) => {
+        setApiDemoAuthEnabled(Boolean(payload && payload.demo_auth_enabled));
+      })
+      .catch(() => setApiDemoAuthEnabled(false));
+    return () => controller.abort();
+  }, [isApiMode, dataConfig?.apiBaseUrl]);
 
   const handleFillDemo = (identifierValue: string, passwordValue: string) => {
     setIdentifier(identifierValue);
@@ -62,41 +90,45 @@ function LoginForm() {
     setLoading(true);
 
     try {
-      // Find matching user
-      let matchedUserId = "";
-      if (trimmed.includes("an.nv") || trimmed === "sv001" || trimmed === "20210018") {
-        matchedUserId = "SV001";
-      } else if (trimmed.includes("ha.tt") || trimmed === "of001") {
-        matchedUserId = "OF001";
-      } else if (trimmed.includes("tram.lb") || trimmed === "sv024" || trimmed === "20240019") {
-        matchedUserId = "SV024";
+      let user = null;
+      if (isApiMode && (!demoAuthEnabled || password !== "demo1234" || !resolveApiDemoUserId(identifier))) {
+        user = await login(identifier.trim(), rememberMe, password);
       } else {
-        setLoading(false);
-        setError("Không tìm thấy tài khoản. Kiểm tra thông tin hoặc chọn tài khoản mẫu bên dưới.");
-        return;
+        const matchedUserId = isApiMode ? resolveApiDemoUserId(identifier) : resolveMockDemoUserId(identifier);
+        if (!matchedUserId) {
+          setLoading(false);
+          setError("Không tìm thấy tài khoản. Kiểm tra thông tin hoặc chọn tài khoản mẫu bên dưới.");
+          return;
+        }
+        if (password !== "demo1234") {
+          setLoading(false);
+          setError("Tài khoản hoặc mật khẩu không chính xác.");
+          return;
+        }
+        user = await login(matchedUserId, rememberMe);
       }
-
-      if (password !== "demo1234") {
-        setLoading(false);
-        setError("Tài khoản hoặc mật khẩu không chính xác.");
-        return;
-      }
-
-      const success = await login(matchedUserId, rememberMe);
       setLoading(false);
 
-      if (success) {
-        if (matchedUserId === "OF001") {
+      if (user) {
+        if (user.role === "officer") {
           router.push("/dashboard");
+        } else if (user.role === "admin") {
+          router.push("/admin");
         } else {
           router.push("/student");
         }
+      } else if (dataStatus === "connection_error") {
+        setError("Không kết nối được máy chủ. Hãy thử lại.");
       } else {
         setError("Tài khoản hoặc mật khẩu không chính xác.");
       }
-    } catch {
+    } catch (failure) {
       setLoading(false);
-      setError("Có lỗi xảy ra, vui lòng thử lại.");
+      setError(
+        isConnectionError(failure)
+          ? "Không kết nối được máy chủ. Hãy thử lại."
+          : "Có lỗi xảy ra, vui lòng thử lại."
+      );
     }
   };
 
@@ -134,7 +166,7 @@ function LoginForm() {
               aria-describedby={error ? "login-error" : undefined}
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
-              placeholder="Email hoặc mã tài khoản"
+              placeholder="MSSV, email hoặc tên đăng nhập"
               className="w-full pl-9 pr-3 py-2.5 min-h-[44px] text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white transition-all"
             />
           </div>
@@ -198,7 +230,32 @@ function LoginForm() {
         </button>
       </form>
 
-      {DEMO_ACCOUNTS_ENABLED && (
+      {isApiMode && (
+        <section className="rounded-xl border border-dashed border-blue-200 bg-blue-50/60 p-3 dark:border-blue-900/60 dark:bg-blue-950/20">
+          <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
+            Tài khoản vận hành (đăng nhập mật khẩu, hồ sơ điền sẵn khi tạo đơn).
+          </p>
+          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {OPERATIONAL_ACCOUNTS.map((account) => (
+              <button
+                key={account.identifier}
+                type="button"
+                onClick={() => handleFillDemo(account.identifier, account.password)}
+                className="flex min-h-[58px] flex-col items-start justify-center rounded-lg border border-blue-200 bg-white px-3 py-2 text-left transition-colors hover:border-blue-400 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-blue-700 dark:hover:bg-blue-950/30"
+              >
+                <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                  Dùng tài khoản {account.label.toLowerCase()}
+                </span>
+                <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                  {account.identifier}
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {DEMO_ACCOUNTS_ENABLED && (!isApiMode || demoAuthEnabled) && (
         <section className="rounded-xl border border-dashed border-slate-300 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-900/50">
           <button
             type="button"
@@ -206,17 +263,17 @@ function LoginForm() {
             onClick={() => setDemoAccountsOpen((open) => !open)}
             className="flex w-full items-center justify-between gap-3 text-left text-xs font-semibold text-slate-600 transition-colors hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400"
           >
-            <span>{demoAccountsOpen ? "Ẩn tài khoản mẫu" : "Tài khoản mẫu"}</span>
+            <span>{demoAccountsOpen ? "Ẩn tài khoản demo" : "Tài khoản demo"}</span>
             <ChevronDown className={`h-4 w-4 transition-transform ${demoAccountsOpen ? "rotate-180" : ""}`} />
           </button>
 
           {demoAccountsOpen && (
             <div className="mt-3 space-y-2 border-t border-slate-200 pt-3 dark:border-slate-700">
               <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-                Chọn một tài khoản để điền sẵn thông tin đăng nhập.
+                Chỉ dùng cho E2E / demo-login. Chọn một tài khoản để điền sẵn.
               </p>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {DEMO_ACCOUNTS.map((account) => (
+                {demoAccounts.map((account) => (
                   <button
                     key={account.identifier}
                     type="button"

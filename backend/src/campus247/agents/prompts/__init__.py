@@ -1,0 +1,21 @@
+from campus247.agents.prompts.intake import (
+    INTAKE_ROUTER_PROMPT_VERSION,
+    L2_EXTRACT_PROMPT_VERSION,
+    L4_HANDOVER_PROMPT_VERSION,
+)
+from campus247.agents.prompts.officer import (
+    DOSSIER_PROMPT_VERSION,
+    DRAFTER_PROMPT_VERSION,
+    OFFICER_PROMPT_VERSION,
+    TRIAGE_PROMPT_VERSION,
+)
+
+PROMPT_VERSIONS = {
+    "intake_router": INTAKE_ROUTER_PROMPT_VERSION,
+    "intake_l2": L2_EXTRACT_PROMPT_VERSION,
+    "intake_l4": L4_HANDOVER_PROMPT_VERSION,
+    "officer": OFFICER_PROMPT_VERSION,
+    "dossier": DOSSIER_PROMPT_VERSION,
+    "triage": TRIAGE_PROMPT_VERSION,
+    "drafter": DRAFTER_PROMPT_VERSION,
+}

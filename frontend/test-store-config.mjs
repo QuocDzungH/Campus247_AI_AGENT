@@ -67,8 +67,17 @@ const { MockCampusDataGateway } = loadTypeScriptModule(
 const { ApiCampusDataGateway } = loadTypeScriptModule(
   path.join(frontendDir, "lib/data/api/api-gateway.ts")
 );
-const { bootstrapData, initializeDataState, statusForError } = loadTypeScriptModule(
-  path.join(frontendDir, "lib/store.tsx")
+const {
+  bootstrapData,
+  initializeDataState,
+  statusForError,
+  dataStateAfterGatewaySuccess,
+  writeMockRememberedUser,
+  clearMockRememberedUser,
+  MOCK_REMEMBERED_USER_KEY,
+} = loadTypeScriptModule(path.join(frontendDir, "lib/store.tsx"));
+const { API_SESSION_STORAGE_KEY } = loadTypeScriptModule(
+  path.join(frontendDir, "lib/data/api/session.ts")
 );
 
 const envKeys = [
@@ -193,7 +202,7 @@ test("configuration failure has no config or gateway", () => {
   return expectDataError(() => bootstrapData(state.config, state.gateway), "configuration");
 });
 
-test("API adapter preserves unsupported capability errors and does not expose demo-users", async () => {
+test("API adapter keeps unimplemented domain operations unsupported while bootstrap stays session-only", async () => {
   removeBrowserGlobals();
   setEnvironment({
     NEXT_PUBLIC_DATA_MODE: "api",
@@ -202,9 +211,16 @@ test("API adapter preserves unsupported capability errors and does not expose de
   });
   const state = initializeDataState();
   assert.equal(state.config.mode, "api");
-  await expectDataError(() => state.gateway.getTickets(), "unsupported");
   await expectDataError(() => state.gateway.getDemoUsers(), "unsupported");
-  await expectDataError(() => bootstrapData(state.config, state.gateway), "unsupported");
+  await expectDataError(() => state.gateway.getReviewCases(), "network");
+  await expectDataError(() => state.gateway.createTicket({ id: "SV-DEMO-001", role: "student", name: "A", email: "" }, { title: "x" }), "unsupported");
+  const bootstrap = await bootstrapData(state.config, state.gateway);
+  assert.equal(bootstrap.status, "ready");
+  assert.equal(bootstrap.currentUser, null);
+  assert.equal(bootstrap.tickets.length, 0);
+  assert.equal(bootstrap.chatSessions.length, 0);
+  assert.equal(bootstrap.reviewCases.length, 0);
+  assert.equal(bootstrap.demoUsers.length, 0);
   assert.ok(new UnsupportedOperationError("probe").reason === "unsupported");
 });
 
@@ -221,6 +237,22 @@ test("mock bootstrap becomes ready only after reads and SV001 login", async () =
 test("network and server reasons map to connection_error", () => {
   assert.equal(statusForError(new DataGatewayError("network", "offline")), "connection_error");
   assert.equal(statusForError(new DataGatewayError("server", "HTTP 503")), "connection_error");
+});
+
+test("successful gateway calls clear API errors in every mode", () => {
+  assert.deepEqual(dataStateAfterGatewaySuccess(), { dataError: null, dataStatus: "ready" });
+});
+
+test("API login and logout leave the remembered mock user untouched", () => {
+  const storage = installStorage({ [MOCK_REMEMBERED_USER_KEY]: "SV001" });
+  writeMockRememberedUser("api", false, "SV-DEMO-001");
+  clearMockRememberedUser("api");
+  assert.equal(storage.getItem(MOCK_REMEMBERED_USER_KEY), "SV001");
+  assert.notEqual(API_SESSION_STORAGE_KEY, MOCK_REMEMBERED_USER_KEY);
+  writeMockRememberedUser("mock", true, "OF001");
+  assert.equal(storage.getItem(MOCK_REMEMBERED_USER_KEY), "OF001");
+  clearMockRememberedUser("mock");
+  assert.equal(storage.getItem(MOCK_REMEMBERED_USER_KEY), null);
 });
 
 test("API user mapper accepts only student and officer roles", () => {

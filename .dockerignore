@@ -12,6 +12,10 @@ docs/
 presentation/
 eval/
 *.md
+!RAG/data/processed/
+!RAG/data/processed/*.md
+RAG/vectorstore/
+!RAG/vectorstore/.gitkeep
 !requirements.txt
 .dockerignore
 Dockerfile

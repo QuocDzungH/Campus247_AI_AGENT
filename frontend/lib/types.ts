@@ -1,4 +1,4 @@
-export type UserRole = "student" | "officer";
+export type UserRole = "student" | "officer" | "admin";
 
 export interface User {
   id: string; // "SV001", "OF001", "SV024"
@@ -43,6 +43,11 @@ export interface AuditLogEntry {
   action: string;
   actor: string;
   details?: string;
+  actorName?: string | null;
+  actorType?: string | null;
+  rawAction?: string;
+  requestId?: string | null;
+  technical?: string;
 }
 
 export interface FactItem {
@@ -60,6 +65,12 @@ export interface ChecklistItem {
   label: string;
   description: string;
   checked: boolean;
+  required?: boolean;
+  source?: "process" | "ai";
+  checkedBy?: string;
+  checkedAt?: string;
+  note?: string;
+  sourceVersion?: string;
 }
 
 export type VerificationResultStatus = "passed" | "failed" | "insufficient" | "error";
@@ -81,6 +92,103 @@ export interface SystemVerificationItem {
   };
   officerReviewStatus: "pending" | "confirmed" | "overridden";
   officerReviewNote?: string;
+  conditionSource?: string;
+  dataSource?: string;
+  sourceVersion?: string;
+  sourceHash?: string;
+  evidence?: Record<string, string>;
+  connectorStatus?: "connected" | "not_configured" | "error";
+  applies?: boolean;
+  stale?: boolean;
+  officerResolution?: "none" | "viewed" | "manual_pass" | "manual_fail";
+  officerReviewedBy?: string;
+  officerReviewedAt?: string;
+}
+
+export interface ProcessInfo {
+  serviceType: string;
+  label: string;
+  processVersion: string;
+  issuesDocument: boolean;
+  templateId?: string | null;
+  templateVersion?: string | null;
+  templateStatus: "approved" | "unavailable";
+  validityDays?: number | null;
+  requiresAcademicStatus: boolean;
+  requiresFinancialClearance: boolean;
+  requiredCriteria: string[];
+  issueRequiredCriteria: string[];
+  plannedChecklist?: Array<{ id: string; label: string; required: boolean }>;
+}
+
+export interface InstitutionInfo {
+  name: string;
+  unit?: string | null;
+}
+
+export interface StudentProfileSnapshot {
+  userId: string;
+  fullName?: string | null;
+  mssv?: string | null;
+  email?: string | null;
+  faculty?: string | null;
+  major?: string | null;
+  cohort?: string | null;
+  classYear?: string | null;
+  studentStatus?: string | null;
+  verificationStatus: string;
+  source?: string | null;
+  isDemo?: boolean;
+}
+
+export interface DocumentDraft {
+  ticketId: string;
+  version: number;
+  templateId: string;
+  templateVersion: string;
+  templateStatus: "approved" | "unavailable";
+  status: "draft" | "approved" | "issued" | "unavailable";
+  studentSnapshot: Record<string, string | null | undefined>;
+  purpose?: string | null;
+  destinationOrg?: string | null;
+  notes?: string | null;
+  validUntil?: string | null;
+  authoredBy?: string | null;
+  approvedBy?: string | null;
+  updatedAt?: string | null;
+}
+
+export interface IssuedDocumentInfo {
+  id: string;
+  ticketId: string;
+  draftVersion: number;
+  templateId: string;
+  templateVersion: string;
+  filename: string;
+  sha256: string;
+  issuedBy: string;
+  issuedAt: string;
+  signatureStatus: "unsigned" | "pending_signature" | "signed";
+  signingProvider: string;
+  official: false;
+  issuedByName?: string | null;
+  studentSnapshot?: Record<string, string | null | undefined>;
+  purpose?: string | null;
+  destinationOrg?: string | null;
+  notes?: string | null;
+  validUntil?: string | null;
+  documentNumber?: string | null;
+  institutionName?: string | null;
+  institutionUnit?: string | null;
+}
+
+export interface SupplementRecord {
+  id: string;
+  items: Array<{ id?: string; label: string; reason?: string | null; status: "open" | "fulfilled" }>;
+  reason: string;
+  status: "open" | "fulfilled" | "cancelled";
+  requestedBy: string;
+  requestedAt: string;
 }
 
 export interface IssuedCertificateDocument {
@@ -132,7 +240,7 @@ export interface Ticket {
   
   // Declaration fields from Gate 1
   certificateType: string;
-  receiveMethod: "digital_pdf" | "paper_stamped";
+  receiveMethod: "digital_pdf" | "paper_stamped" | "";
   destinationOrg: string;
   purpose: string;
   notes?: string;
@@ -196,11 +304,31 @@ export interface Ticket {
   messages: TicketMessage[];
   auditLogs: AuditLogEntry[];
 
+  // P0 API metadata. Absent in mock fixtures; UI treats missing values as chưa có dữ liệu.
+  serverRevision?: number;
+  conversationId?: string;
+  category?: "action" | "complaint";
+  serviceType?: "student_certificate" | "academic_complaint" | "student_support";
+  complaintSubtype?: "grade_appeal" | "other" | null;
+  reviewedBriefVersion?: number | null;
+  briefStatus?: "pending" | "processing" | "ready" | "failed" | "stale" | "none";
+  briefLoadError?: string;
+  auditLoadError?: string;
+  officerBrief?: import("./data/api/mappers").BriefView;
+
   // Real Certificate Issuance & Pre-check Verification
   systemVerifications?: SystemVerificationItem[];
   issuedCertificate?: IssuedCertificateDocument;
   documentStatus?: "not_generated" | "draft" | "approved" | "issued";
   dataChangedSinceLastCheck?: boolean;
+  process?: ProcessInfo;
+  studentProfile?: StudentProfileSnapshot;
+  documentDraft?: DocumentDraft;
+  issuedDocument?: IssuedDocumentInfo;
+  supplements?: SupplementRecord[];
+  evidenceFingerprint?: string;
+  messagesTotal?: number;
+  institution?: InstitutionInfo;
 }
 
 export interface ChatMessage {
@@ -215,6 +343,15 @@ export interface ChatMessage {
     quote: string;
     source: string;
   };
+  citations?: Array<{
+    documentId: string;
+    documentTitle: string;
+    documentVersion: string;
+    chunkId: string;
+    locator: string;
+    quote: string;
+    url?: string;
+  }>;
   actionCard?: "submit1_prompt" | "submit1_success" | "l4_handover";
   ticketId?: string;
   ticketData?: Partial<Ticket>;
@@ -227,6 +364,7 @@ export interface ChatSession {
   updatedAt: string;
   tag: "L1" | "L2" | "L4" | "Chung";
   messages: ChatMessage[];
+  ticketId?: string | null;
   isL4HandoverActive?: boolean;
   gate1FormData?: {
     fullName: string;

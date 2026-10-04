@@ -7,7 +7,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:regression": "node test-store-config.mjs && node test-student-release.mjs && node test-staff-workspace.mjs && node test-staff-audit-regression.mjs"
+    "test:api-p0": "node test-api-p0.mjs",
+    "test:api-auth": "node test-api-auth.mjs",
+    "test:store": "node test-store-config.mjs",
+    "test:g2": "node test-g2-regressions.mjs",
+    "test:regression": "node test-store-config.mjs && node test-student-release.mjs && node test-staff-workspace.mjs && node test-staff-audit-regression.mjs && node test-api-auth.mjs && node test-api-p0.mjs && node test-g2-regressions.mjs && node test-field-labels.mjs",
+    "test:browser:mock": "node ../scripts/g2_browser_smoke.mjs --mode mock --base-url http://127.0.0.1:3100",
+    "test:browser:api": "node ../scripts/g2_browser_smoke.mjs --mode api --base-url http://127.0.0.1:3101"
   },
   "dependencies": {
     "lucide-react": "^1.48.0",
@@ -22,6 +28,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.6",
+    "playwright-core": "^1.63.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

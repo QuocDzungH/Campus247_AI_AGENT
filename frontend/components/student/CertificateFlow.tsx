@@ -85,6 +85,11 @@ export function CertificateFlow({ review = false }: { review?: boolean }) {
       <p className="text-sm text-slate-500 dark:text-slate-400">Yêu cầu cấp giấy xác nhận sinh viên</p>
       <dl className="mt-2">
         <SummaryRow label="Sinh viên" editable={false}>{currentUser.name} · {currentUser.mssv || currentUser.id}</SummaryRow>
+        {(currentUser.classYear || currentUser.major) && (
+          <SummaryRow label="Khóa học / ngành" editable={false}>
+            {[currentUser.classYear, currentUser.major].filter(Boolean).join(" · ")}
+          </SummaryRow>
+        )}
         <SummaryRow label="Mục đích" onEdit={() => editSummary("purpose")}>{data.purpose}</SummaryRow>
         <SummaryRow label="Cơ quan hoặc đơn vị nhận giấy" onEdit={() => editSummary("destinationOrg")}>{data.destinationOrg}</SummaryRow>
         <SummaryRow label="Cách nhận" onEdit={() => editSummary("receiveMethod")}>{receiveMethodLabel(data.receiveMethod)}</SummaryRow>
@@ -102,7 +107,15 @@ export function CertificateFlow({ review = false }: { review?: boolean }) {
     </div> : <form onSubmit={continueToReview} noValidate className={surfaceClass}>
       <div className="mb-7 flex items-start gap-3 border-b border-slate-100 pb-5 dark:border-slate-800">
         <FileText className="mt-1 h-5 w-5 shrink-0 text-slate-500" />
-        <div><p className="text-base font-medium">{currentUser.name}</p><p className="mt-1 text-sm text-slate-500 dark:text-slate-400">MSSV {currentUser.mssv || currentUser.id} · Thông tin từ tài khoản</p></div>
+        <div>
+          <p className="text-base font-medium">{currentUser.name}</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">MSSV {currentUser.mssv || currentUser.id} · Thông tin từ tài khoản</p>
+          {(currentUser.classYear || currentUser.major) && (
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              {[currentUser.classYear, currentUser.major].filter(Boolean).join(" · ")}
+            </p>
+          )}
+        </div>
       </div>
       <div className="space-y-6">
         <div>

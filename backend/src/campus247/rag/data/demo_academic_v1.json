@@ -1,0 +1,109 @@
+{
+  "corpus_id": "edu14-demo-academic-v1",
+  "index_version": "edu14-demo-academic-v1",
+  "is_demo": true,
+  "provenance": "Synthetic demo academic-ops corpus for EDU-14 Campus 24/7 G3. Passages are retrieved from this packaged text. This is not VinUni operational policy and must not be cited as a live quy chế.",
+  "allowed_scopes": ["demo_academic", "academic"],
+  "documents": [
+    {
+      "document_id": "demo-qc-diem-001",
+      "document_title": "[Demo] Quy chế học vụ Campus 24/7 — phúc khảo và khiếu nại điểm",
+      "document_version": "2026.09-demo",
+      "policy_scope": "demo_academic",
+      "effective_from": "2026-01-01T00:00:00+00:00",
+      "effective_to": null,
+      "approved": true,
+      "is_demo": true,
+      "url": null,
+      "chunks": [
+        {
+          "chunk_id": "demo-qc-diem-001-c01",
+          "locator": "Điều 12 khoản 1",
+          "text": "Thủ tục phúc khảo điểm trong tài liệu demo Campus 24/7: sinh viên nộp đơn phúc khảo tại phòng Đào tạo trong năm (05) ngày làm việc kể từ ngày công bố điểm chính thức. Hồ sơ phúc khảo gồm đơn, bản sao bảng điểm lần công bố và giấy tờ tùy thân. Kết quả phúc khảo được thông báo bằng văn bản; hệ thống demo không tự sửa điểm."
+        },
+        {
+          "chunk_id": "demo-qc-diem-001-c02",
+          "locator": "Điều 12 khoản 2",
+          "text": "Khiếu nại điểm nộp ở đâu theo tài liệu demo: đơn khiếu nại điểm học phần được nộp tại quầy một cửa của phòng Đào tạo, không gửi qua email cá nhân giảng viên. Thời hạn nộp khiếu nại là bảy (07) ngày làm việc sau khi công bố điểm. Khiếu nại cá nhân được bàn giao cán bộ, không do trợ lý tự quyết."
+        }
+      ]
+    },
+    {
+      "document_id": "demo-qc-giay-001",
+      "document_title": "[Demo] Quy chế học vụ Campus 24/7 — cấp giấy xác nhận sinh viên",
+      "document_version": "2026.09-demo",
+      "policy_scope": "demo_academic",
+      "effective_from": "2026-01-01T00:00:00+00:00",
+      "effective_to": null,
+      "approved": true,
+      "is_demo": true,
+      "url": null,
+      "chunks": [
+        {
+          "chunk_id": "demo-qc-giay-001-c01",
+          "locator": "Điều 5 khoản 1",
+          "text": "Quy trình cấp giấy xác nhận sinh viên trong tài liệu demo: sinh viên đăng ký trên Campus 24/7, nêu mục đích sử dụng, nơi nhận và hình thức nhận (bản điện tử PDF hoặc bản giấy đóng dấu), kiểm tra preview rồi Submit 1. Cán bộ tiếp nhận hồ sơ ở hàng chờ L3. Bước này tạo yêu cầu trong hệ thống, không phát hành giấy đã ký."
+        },
+        {
+          "chunk_id": "demo-qc-giay-001-c02",
+          "locator": "Điều 5 khoản 2",
+          "text": "Giấy xác nhận sinh viên cần những giấy tờ gì theo bản demo P0: chỉ ba trường mục đích, nơi nhận và cách nhận. Không bắt buộc bản scan CCCD hay hồ sơ chuyển phát trong phạm vi P0. Đây là corpus demo kiểm soát, không phải quy chế vận hành VinUni."
+        }
+      ]
+    },
+    {
+      "document_id": "demo-qc-nghi-001",
+      "document_title": "[Demo] Quy chế học vụ Campus 24/7 — nghỉ học tạm thời",
+      "document_version": "2026.09-demo",
+      "policy_scope": "demo_academic",
+      "effective_from": "2026-01-01T00:00:00+00:00",
+      "effective_to": null,
+      "approved": true,
+      "is_demo": true,
+      "url": null,
+      "chunks": [
+        {
+          "chunk_id": "demo-qc-nghi-001-c01",
+          "locator": "Điều 18",
+          "text": "Hướng dẫn quy định nghỉ học tạm thời trong tài liệu demo: sinh viên đọc điều kiện nghỉ học tạm thời tại mục học vụ demo và nộp đơn trước mười bốn (14) ngày so với ngày bắt đầu nghỉ. Thời gian nghỉ tối đa hai học kỳ liên tiếp. Đơn nghỉ học tạm thời không được dùng để xin sửa điểm hay cấp giấy xác nhận."
+        }
+      ]
+    },
+    {
+      "document_id": "demo-qc-expired-001",
+      "document_title": "[Demo] Quy chế hết hiệu lực — học phí 2020",
+      "document_version": "2020.12-demo",
+      "policy_scope": "demo_academic",
+      "effective_from": "2020-01-01T00:00:00+00:00",
+      "effective_to": "2020-12-31T23:59:59+00:00",
+      "approved": true,
+      "is_demo": true,
+      "url": null,
+      "chunks": [
+        {
+          "chunk_id": "demo-qc-expired-001-c01",
+          "locator": "Phụ lục hết hạn",
+          "text": "Mức học phí demo năm 2020 đã hết hiệu lực. Đoạn này chỉ dùng để kiểm tra bộ lọc ngày hiệu lực và không được trả về khi hỏi quy chế hiện hành."
+        }
+      ]
+    },
+    {
+      "document_id": "demo-qc-unapproved-001",
+      "document_title": "[Demo] Bản nháp chưa duyệt — học bổng",
+      "document_version": "draft",
+      "policy_scope": "demo_academic",
+      "effective_from": "2026-01-01T00:00:00+00:00",
+      "effective_to": null,
+      "approved": false,
+      "is_demo": true,
+      "url": null,
+      "chunks": [
+        {
+          "chunk_id": "demo-qc-unapproved-001-c01",
+          "locator": "Nháp",
+          "text": "Bản nháp học bổng chưa được duyệt. Retrieval không được trả đoạn này dù truy vấn có từ học bổng."
+        }
+      ]
+    }
+  ]
+}

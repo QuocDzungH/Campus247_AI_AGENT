@@ -23,6 +23,26 @@ import {
   DataGatewayError,
   UnsupportedOperationError,
 } from "./data/errors";
+import type {
+  BriefView,
+  CampusPreview,
+  ChatTurnResult,
+  ConversationView,
+  PreviewFieldsPatch,
+} from "./data/api/mappers";
+import {
+  alreadySubmittedTicketId,
+  applyBriefToTicket,
+  commitThenReconcile,
+  decideReviewedBriefVersion,
+  isConnectionError,
+  loginThenHydrate,
+  reuseOrMintIntentKey,
+  shouldCommitLoginSession,
+  shouldRetainIntentKey,
+  submittedPreviewResult,
+  type SubmitPreviewResult,
+} from "./data/api/g2-flow";
 
 export type DataStatus =
   | "loading"
@@ -99,8 +119,18 @@ interface BootstrapData {
   chatSessions: ChatSession[];
   reviewCases: ReviewCase[];
   demoUsers: User[];
-  currentUser: User;
+  currentUser: User | null;
   status: "ready";
+}
+
+export async function hydrateApiAccount(
+  gateway: CampusDataGateway,
+  user: User
+): Promise<{ tickets: Ticket[]; chatSessions: ChatSession[]; reviewCases: ReviewCase[]; demoUsers: User[] }> {
+  const tickets = await gateway.getTickets();
+  const chatSessions = user.role === "student" ? await gateway.getChatSessions() : [];
+  const reviewCases = user.role === "admin" ? [] : await gateway.getReviewCases();
+  return { tickets, chatSessions, reviewCases, demoUsers: [] };
 }
 
 export async function bootstrapData(
@@ -110,11 +140,29 @@ export async function bootstrapData(
   if (!config || !gateway) {
     throw new ConfigurationError("Data bootstrap requires a valid configuration and gateway.");
   }
-  if (config.mode === "api") {
-    throw new UnsupportedOperationError("API data bootstrap");
-  }
 
   const activeGateway = requireGateway(gateway, null);
+
+  if (config.mode === "api") {
+    const currentUser = activeGateway.restoreSession ? await activeGateway.restoreSession() : null;
+    if (!currentUser) {
+      return {
+        tickets: [],
+        chatSessions: [],
+        reviewCases: [],
+        demoUsers: [],
+        currentUser,
+        status: "ready",
+      };
+    }
+    const account = await hydrateApiAccount(activeGateway, currentUser);
+    return {
+      ...account,
+      currentUser,
+      status: "ready",
+    };
+  }
+
   const [tickets, chatSessions, reviewCases, demoUsers] = await Promise.all([
     activeGateway.getTickets(),
     activeGateway.getChatSessions(),
@@ -148,14 +196,17 @@ interface StoreContextType {
   // Auth / Current User
   currentUser: User | null;
   setCurrentUser: (user: User) => void;
-  login: (userId: string, remember?: boolean) => Promise<boolean>;
+  login: (userId: string, remember?: boolean, password?: string) => Promise<User | null>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   logout: () => void;
+  listConversationMessages: (conversationId: string) => Promise<ChatMessage[]>;
   demoUsers: User[];
 
   // Tickets
   tickets: Ticket[];
   getTicket: (id: string) => Ticket | undefined;
   createTicket: (data: Partial<Ticket>) => Promise<Ticket>;
+  uploadTicketFile: (ticketId: string, file: File, field?: string) => Promise<void>;
   updateTicketStatus: (id: string, status: TicketStatus, actorName: string) => Promise<void>;
   updateOfficerDraft: (id: string, draft: string) => Promise<void>;
   resetOfficerDraft: (id: string) => Promise<void>;
@@ -173,11 +224,17 @@ interface StoreContextType {
   resetAllDemoData: () => Promise<void>;
 
   // Certificate Verification & BM-03 Issuance
-  runTicketVerification: (ticketId: string) => Promise<void>;
+  runTicketVerification: (ticketId: string, criterionKey?: string) => Promise<void>;
   retryCriterionVerification: (ticketId: string, criterionId: string) => Promise<void>;
-  confirmCriterionReview: (ticketId: string, criterionId: string, note?: string) => Promise<void>;
+  confirmCriterionReview: (
+    ticketId: string,
+    criterionId: string,
+    note?: string,
+    outcome?: "viewed" | "manual_pass" | "manual_fail"
+  ) => Promise<void>;
   updateCertificateDraft: (ticketId: string, edits: Partial<IssuedCertificateDocument>) => Promise<void>;
   issueCertificate: (ticketId: string) => Promise<IssuedCertificateDocument | null>;
+  downloadIssuedDocument: (ticketId: string, documentId: string) => Promise<void>;
 
   // Chat Assistant State & Sessions
   chatSessions: ChatSession[];
@@ -215,6 +272,18 @@ interface StoreContextType {
   >;
   lastUpdatedField: "reason" | "receiveMethod" | null;
   updateGate1Field: (field: "reason" | "receiveMethod" | "destinationOrg", value: string) => void;
+  createConversation: (options?: { idempotencyKey?: string }) => Promise<ConversationView>;
+  sendConversationMessage: (
+    conversationId: string,
+    content: string,
+    options?: { signal?: AbortSignal; idempotencyKey?: string }
+  ) => Promise<ChatTurnResult>;
+  patchPreview: (previewId: string, expectedVersion: number, fields: PreviewFieldsPatch) => Promise<CampusPreview>;
+  submitPreview: (previewId: string, previewVersion: number) => Promise<SubmitPreviewResult>;
+  claimTicket: (ticketId: string) => Promise<Ticket>;
+  prepareBrief: (ticketId: string) => Promise<BriefView>;
+  refreshTicket: (ticketId: string) => Promise<Ticket | undefined>;
+  ensureProcessChecklist: (ticketId: string) => Promise<Ticket | undefined>;
 
   // Academic Review Cases (Rà soát học phần)
   reviewCases: ReviewCase[];
@@ -251,7 +320,55 @@ interface StoreContextType {
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 const LOCAL_STORAGE_KEY_THEME = "campus247_theme_v2";
-const LOCAL_STORAGE_KEY_USER = "campus247_current_user_v1";
+export const MOCK_REMEMBERED_USER_KEY = "campus247_current_user_v1";
+
+export function writeMockRememberedUser(
+  mode: DataConfig["mode"] | null | undefined,
+  remember: boolean,
+  userId: string
+): void {
+  if (typeof window === "undefined" || mode === "api") return;
+  try {
+    if (remember) localStorage.setItem(MOCK_REMEMBERED_USER_KEY, userId);
+    else localStorage.removeItem(MOCK_REMEMBERED_USER_KEY);
+  } catch {
+    /* Mock remember is best-effort and isolated from the API session. */
+  }
+}
+
+export function clearMockRememberedUser(mode: DataConfig["mode"] | null | undefined): void {
+  if (typeof window === "undefined" || mode === "api") return;
+  try {
+    localStorage.removeItem(MOCK_REMEMBERED_USER_KEY);
+  } catch {
+    /* Keep going; API session storage is untouched. */
+  }
+}
+
+export function dataStateAfterGatewaySuccess(): { dataError: null; dataStatus: "ready" } {
+  return { dataError: null, dataStatus: "ready" };
+}
+
+export async function performGatewayLogin(
+  gateway: CampusDataGateway,
+  userId: string,
+  options: {
+    remember?: boolean;
+    mode?: DataConfig["mode"] | null;
+    isCurrent: () => boolean;
+    password?: string;
+  }
+): Promise<User | null> {
+  gateway.abortRequests?.();
+  if (options.mode === "api" && gateway.endSession) {
+    await gateway.endSession();
+  }
+  if (!options.isCurrent()) return null;
+  if (options.password && gateway.loginWithPassword) {
+    return gateway.loginWithPassword(userId, options.password, { remember: options.remember });
+  }
+  return gateway.login(userId, { remember: options.remember });
+}
 
 // Demo users moved to gateway
 
@@ -268,6 +385,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const authGeneration = useRef(0);
   const authRestored = useRef(false);
   const loadGeneration = useRef(0);
+  const pendingCreateConversationKey = useRef<string | null>(null);
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -293,6 +411,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [lastUpdatedField, setLastUpdatedField] = useState<"reason" | "receiveMethod" | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
+  const clearApiAccountState = () => {
+    setTickets([]);
+    setChatSessions([]);
+    setReviewCases([]);
+    setDemoUsers([]);
+    setChatMessages([]);
+    setActiveSessionId("");
+    setL4HandoverActive(false);
+  };
+
   const loadAllData = useCallback(async () => {
     const run = ++loadGeneration.current;
     const authAtStart = authGeneration.current;
@@ -306,6 +434,37 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setDataConfig(initialized.config);
       setGateway(initialized.gateway);
       if (initialized.error) throw initialized.error;
+      if (initialized.config?.mode === "api") {
+        const restoredUser = initialized.gateway?.restoreSession
+          ? await initialized.gateway.restoreSession()
+          : null;
+        if (run !== loadGeneration.current) return;
+        if (!authRestored.current && authAtStart === authGeneration.current) {
+          setCurrentUser(restoredUser);
+          authRestored.current = true;
+        }
+        if (!restoredUser) {
+          clearApiAccountState();
+          setHasDataLoaded(true);
+          setDataStatus("ready");
+          return;
+        }
+        const account = await hydrateApiAccount(initialized.gateway!, restoredUser);
+        if (run !== loadGeneration.current) return;
+        setTickets(account.tickets);
+        setChatSessions(account.chatSessions);
+        setReviewCases(account.reviewCases);
+        setDemoUsers(account.demoUsers);
+        if (account.chatSessions.length > 0) {
+          setActiveSessionId(account.chatSessions[0].id);
+          setChatMessages(account.chatSessions[0].messages || []);
+          setL4HandoverActive(!!account.chatSessions[0].isL4HandoverActive);
+        }
+        setHasDataLoaded(true);
+        setDataStatus("ready");
+        return;
+      }
+
       const bootstrap = await bootstrapData(initialized.config, initialized.gateway);
       if (run !== loadGeneration.current) return;
       setTickets(bootstrap.tickets);
@@ -324,12 +483,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
       if (!authRestored.current) {
         let restoredUser: User | null = null;
-        const persistedUserId = localStorage.getItem(LOCAL_STORAGE_KEY_USER);
+        const persistedUserId = localStorage.getItem(MOCK_REMEMBERED_USER_KEY);
         if (persistedUserId) {
           restoredUser = await initialized.gateway!.login(persistedUserId);
         }
         if (run !== loadGeneration.current) return;
-        // Login/logout during bootstrap owns the newer in-memory session.
         if (authAtStart === authGeneration.current) setCurrentUser(restoredUser);
         authRestored.current = true;
       }
@@ -359,15 +517,27 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     void loadAllData().catch(() => { /* The retry state displays the error. */ });
   }, [loadAllData]);
 
+  useEffect(() => {
+    if (!currentUser || currentUser.role !== "student") return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setGate1FormData((prev) => ({
+      ...prev,
+      fullName: currentUser.name || prev.fullName,
+      mssv: currentUser.mssv || prev.mssv,
+      classYear: currentUser.classYear || prev.classYear,
+      department: currentUser.major || currentUser.department || prev.department,
+      academicStatus: currentUser.academicStatus || prev.academicStatus,
+    }));
+  }, [currentUser]);
+
   const executeGateway = useCallback(
     async <T,>(operation: (activeGateway: CampusDataGateway) => Promise<T>): Promise<T> => {
       try {
         const activeGateway = requireGateway(gateway, dataError);
         const result = await operation(activeGateway);
-        if (dataConfig?.mode === "mock" && hasDataLoaded) {
-          setDataError(null);
-          setDataStatus("ready");
-        }
+        const successState = dataStateAfterGatewaySuccess();
+        setDataError(successState.dataError);
+        setDataStatus(successState.dataStatus);
         return result;
       } catch (error: unknown) {
         const dataGatewayError = toDataGatewayError(error);
@@ -376,7 +546,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         throw dataGatewayError;
       }
     },
-    [dataConfig, dataError, gateway, hasDataLoaded]
+    [dataError, gateway]
   );
 
   const toggleTheme = () => {
@@ -389,34 +559,102 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const login = async (userId: string, remember = true): Promise<boolean> => {
+  const login = async (userId: string, remember = true, password?: string): Promise<User | null> => {
     const generation = ++authGeneration.current;
-    try {
-      const user = await executeGateway((activeGateway) => activeGateway.login(userId));
-      if (generation !== authGeneration.current) return false;
-      if (typeof window !== "undefined") {
-        if (remember) localStorage.setItem(LOCAL_STORAGE_KEY_USER, user.id);
-        else localStorage.removeItem(LOCAL_STORAGE_KEY_USER);
+    const result = await loginThenHydrate({
+      isCurrent: () => generation === authGeneration.current,
+      login: () =>
+        executeGateway((activeGateway) =>
+          performGatewayLogin(activeGateway, userId, {
+            remember,
+            mode: dataConfig?.mode,
+            isCurrent: () => generation === authGeneration.current,
+            password,
+          })
+        ),
+      hydrate: async (user) => {
+        if (dataConfig?.mode !== "api") return { tickets: [], chatSessions: [] };
+        clearApiAccountState();
+        if (user.role === "admin") return { tickets: [], chatSessions: [] };
+        const tickets = await executeGateway((activeGateway) => activeGateway.getTickets());
+        const chatSessions =
+          user.role === "student"
+            ? await executeGateway((activeGateway) => activeGateway.getChatSessions())
+            : [];
+        return { tickets, chatSessions };
+      },
+    });
+    if (!shouldCommitLoginSession(generation, authGeneration.current, result)) {
+      if (
+        generation === authGeneration.current &&
+        !result.ok &&
+        result.stage === "auth" &&
+        result.error &&
+        isConnectionError(result.error)
+      ) {
+        throw result.error;
       }
-      setCurrentUser(user);
-      authRestored.current = true;
-      return true;
-    } catch {
-      return false;
+      return null;
     }
+    if (!result.ok && result.stage === "auth") return null;
+    const sessionUser = result.user;
+    writeMockRememberedUser(dataConfig?.mode, remember, sessionUser.id);
+    setCurrentUser(sessionUser);
+    authRestored.current = true;
+    if (result.ok) {
+      if (dataConfig?.mode === "api") {
+        setTickets(result.tickets);
+        setChatSessions(result.chatSessions);
+      }
+      return sessionUser;
+    }
+    throw result.error;
   };
 
   const logout = () => {
     ++authGeneration.current;
     authRestored.current = true;
+    pendingCreateConversationKey.current = null;
+    gateway?.abortRequests?.();
+    if (dataConfig?.mode === "api") {
+      clearApiAccountState();
+      void gateway?.endSession?.().catch(() => {
+        /* Local session is already discarded. */
+      });
+    }
     setCurrentUser(null);
-    if (typeof window !== "undefined") localStorage.removeItem(LOCAL_STORAGE_KEY_USER);
+    clearMockRememberedUser(dataConfig?.mode);
+  };
+
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    await executeGateway(async (activeGateway) => {
+      if (!activeGateway.changePassword) {
+        throw new UnsupportedOperationError("changePassword");
+      }
+      await activeGateway.changePassword(currentPassword, newPassword);
+    });
   };
 
   const getTicket = (id: string) => tickets.find((t) => t.id === id || t.code === id);
 
   const reloadData = async () => {
     if (!hasDataLoaded) { await loadAllData(); return; }
+    if (dataConfig?.mode === "api") {
+      await executeGateway(async (activeGateway) => {
+        if (!activeGateway.restoreSession) return;
+        const restored = await activeGateway.restoreSession();
+        setCurrentUser(restored);
+        if (!restored) {
+          clearApiAccountState();
+          return;
+        }
+        const nextTickets = await activeGateway.getTickets();
+        const nextSessions = restored.role === "student" ? await activeGateway.getChatSessions() : [];
+        setTickets(nextTickets);
+        setChatSessions(nextSessions);
+      });
+      return;
+    }
     await executeGateway(async (activeGateway) => {
       const [nextTickets, nextReviews] = await Promise.all([activeGateway.getTickets(), activeGateway.getReviewCases()]);
       setTickets(nextTickets);
@@ -424,12 +662,52 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const upsertTicket = (ticket: Ticket) => {
+    setTickets((previous) => {
+      const without = previous.filter((item) => item.id !== ticket.id && item.code !== ticket.code);
+      return [ticket, ...without];
+    });
+  };
+
   const createTicket = async (data: Partial<Ticket>): Promise<Ticket> => {
     if (!currentUser) throw new DataGatewayError("unauthorized", "Not logged in");
     return executeGateway(async (activeGateway) => {
+      if (dataConfig?.mode === "api") {
+        if (!activeGateway.submitForm) {
+          throw new UnsupportedOperationError("createTicket");
+        }
+        const extras: Record<string, string> = {};
+        for (const field of data.requestPayload?.submittedFields || []) {
+          extras[field.name] = field.value;
+        }
+        const ticket = await activeGateway.submitForm({
+          serviceType: data.type === "complaint" ? "academic_complaint" : "student_certificate",
+          summary: data.title || data.purpose || "Yêu cầu học vụ",
+          fields: {
+            purpose: data.purpose || "",
+            destination_org: data.destinationOrg || "",
+            receive_method: data.receiveMethod || "",
+          },
+          extras,
+        });
+        if (data.attachments?.length && activeGateway.uploadTicketFile) {
+          // Browser File objects are not on StoredAttachment; VinUniForm uploads separately.
+        }
+        setTickets(await activeGateway.getTickets());
+        return ticket;
+      }
       const ticket = await activeGateway.createTicket(currentUser, data);
       setTickets(await activeGateway.getTickets());
       return ticket;
+    });
+  };
+
+  const uploadTicketFile = async (ticketId: string, file: File, field?: string) => {
+    await executeGateway(async (activeGateway) => {
+      if (!activeGateway.uploadTicketFile) {
+        throw new UnsupportedOperationError("uploadTicketFile");
+      }
+      await activeGateway.uploadTicketFile(ticketId, file, field);
     });
   };
 
@@ -445,8 +723,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     const ticket = getTicket(id);
     if (!ticket) throw new DataGatewayError("not_found", "Không tìm thấy hồ sơ.");
     await executeGateway(async (activeGateway) => {
-      await activeGateway.updateOfficerDraft(id, draft, currentUser, officerDraftFor(ticket, currentUser.id));
-      setTickets(await activeGateway.getTickets());
+      await activeGateway.updateOfficerDraft(
+        id,
+        draft,
+        currentUser,
+        officerDraftFor(ticket, currentUser.id),
+        ticket.serverRevision
+      );
+      upsertTicket({ ...ticket, officerDraft: draft });
     });
   };
 
@@ -458,13 +742,45 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const toggleChecklistItem = async (ticketId: string, itemId: string) => {
     await executeGateway(async (activeGateway) => {
-      await activeGateway.toggleChecklistItem(ticketId, itemId);
-      setTickets(await activeGateway.getTickets());
+      const current = getTicket(ticketId);
+      await activeGateway.toggleChecklistItem(ticketId, itemId, current?.serverRevision);
+      if (activeGateway.getTicketDetail) {
+        const detail = await activeGateway.getTicketDetail(ticketId);
+        upsertTicket(detail);
+      } else {
+        setTickets(await activeGateway.getTickets());
+      }
     });
   };
 
   const addTicketMessage = async (ticketId: string, message: { senderId: string; senderName: string; senderRole: "student" | "officer" | "system"; content: string }) => {
     await executeGateway(async (activeGateway) => {
+      if (dataConfig?.mode === "api" && activeGateway.sendTicketMessage) {
+        const turn = await activeGateway.sendTicketMessage(ticketId, message.content);
+        const current = getTicket(ticketId);
+        const committedMessage = {
+          id: turn.userMessageId,
+          senderId: message.senderId,
+          senderName: message.senderName,
+          senderRole: "student" as const,
+          content: message.content,
+          timestamp: new Date().toISOString(),
+        };
+        const committed = current
+          ? {
+              ...current,
+              messages: current.messages.some((item) => item.id === committedMessage.id)
+                ? current.messages
+                : [...current.messages, committedMessage],
+            }
+          : current;
+        if (committed) upsertTicket(committed);
+        const reconciled = await commitThenReconcile(committed ?? current, async () =>
+          activeGateway.getTicketDetail ? activeGateway.getTicketDetail(ticketId) : committed ?? current
+        );
+        if (reconciled) upsertTicket(reconciled);
+        return;
+      }
       await activeGateway.addTicketMessage(ticketId, message);
       setTickets(await activeGateway.getTickets());
     });
@@ -473,41 +789,271 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const submitGate2Response = async (ticketId: string, actionType: "respond" | "request_info" | "resolve", customContent?: string, expectedSnapshot?: string) => {
     if (currentUser?.role !== "officer") throw new DataGatewayError("unauthorized", "Chỉ cán bộ được xử lý hồ sơ.");
     await executeGateway(async (activeGateway) => {
+      if (dataConfig?.mode === "api" && activeGateway.submitOfficerAction) {
+        const ticket = getTicket(ticketId);
+        if (!ticket) throw new DataGatewayError("not_found", "Không tìm thấy hồ sơ.");
+        const briefGate = decideReviewedBriefVersion(ticket, {
+          manualBrief: expectedSnapshot === "manual-brief",
+        });
+        if (!briefGate.ok) throw new DataGatewayError("validation", briefGate.reason);
+        const updated = await activeGateway.submitOfficerAction(ticketId, {
+          action: actionType,
+          content: customContent?.trim() || "Đã xử lý yêu cầu.",
+          expectedRevision: ticket.serverRevision ?? 1,
+          reviewedBriefVersion: briefGate.reviewedBriefVersion,
+          supplementItems:
+            actionType === "request_info"
+              ? [{ label: "Bổ sung theo phản hồi cán bộ", reason: customContent?.trim() || "Cần bổ sung hồ sơ." }]
+              : undefined,
+        });
+        upsertTicket(updated);
+        const reconciled = await commitThenReconcile(updated, async () =>
+          activeGateway.getTicketDetail ? activeGateway.getTicketDetail(ticketId) : updated
+        );
+        upsertTicket(reconciled);
+        return;
+      }
       await activeGateway.submitGate2Response(ticketId, actionType, customContent, currentUser, expectedSnapshot);
       setTickets(await activeGateway.getTickets());
     });
   };
 
-  const runTicketVerification = async (ticketId: string) => {
+  const createConversation = async (options?: { idempotencyKey?: string }): Promise<ConversationView> => {
+    return executeGateway(async (activeGateway) => {
+      if (!activeGateway.createConversation) throw new UnsupportedOperationError("createConversation");
+      const key = reuseOrMintIntentKey(options?.idempotencyKey ?? pendingCreateConversationKey.current);
+      if (!options?.idempotencyKey) pendingCreateConversationKey.current = key;
+      try {
+        const conversation = await activeGateway.createConversation({ idempotencyKey: key });
+        if (!options?.idempotencyKey) pendingCreateConversationKey.current = null;
+        return conversation;
+      } catch (error) {
+        const mapped = toDataGatewayError(error);
+        if (!options?.idempotencyKey && !shouldRetainIntentKey(mapped)) {
+          pendingCreateConversationKey.current = null;
+        }
+        throw mapped;
+      }
+    });
+  };
+
+  const sendConversationMessage = async (
+    conversationId: string,
+    content: string,
+    options?: { signal?: AbortSignal; idempotencyKey?: string }
+  ): Promise<ChatTurnResult> => {
+    return executeGateway(async (activeGateway) => {
+      if (!activeGateway.sendConversationMessage) throw new UnsupportedOperationError("sendConversationMessage");
+      const turn = await activeGateway.sendConversationMessage(conversationId, content, options);
+      if (turn.ticket) {
+        try {
+          const detail = activeGateway.getTicketDetail
+            ? await activeGateway.getTicketDetail(turn.ticket.id)
+            : turn.ticket;
+          upsertTicket(detail);
+        } catch {
+          upsertTicket(turn.ticket);
+        }
+      }
+      return turn;
+    });
+  };
+
+  const patchPreview = async (
+    previewId: string,
+    expectedVersion: number,
+    fields: PreviewFieldsPatch
+  ): Promise<CampusPreview> => {
+    return executeGateway(async (activeGateway) => {
+      if (!activeGateway.patchPreview) throw new UnsupportedOperationError("patchPreview");
+      return activeGateway.patchPreview(previewId, expectedVersion, fields);
+    });
+  };
+
+  const submitPreview = async (previewId: string, previewVersion: number): Promise<SubmitPreviewResult> => {
+    return executeGateway(async (activeGateway) => {
+      if (!activeGateway.submitPreview) throw new UnsupportedOperationError("submitPreview");
+      try {
+        const ticket = await activeGateway.submitPreview(previewId, previewVersion);
+        upsertTicket(ticket);
+        const reconciled = await commitThenReconcile(ticket, async () =>
+          activeGateway.getTicketDetail ? activeGateway.getTicketDetail(ticket.id) : ticket
+        );
+        upsertTicket(reconciled);
+        return { status: "submitted", ticket: reconciled };
+      } catch (error) {
+        const existingId = alreadySubmittedTicketId(error);
+        if (!existingId) throw error;
+        const cached = getTicket(existingId);
+        let fetched: Ticket | undefined;
+        try {
+          fetched = activeGateway.getTicketDetail
+            ? await activeGateway.getTicketDetail(existingId)
+            : await activeGateway.getTicket(existingId);
+        } catch {
+          fetched = undefined;
+        }
+        const result = submittedPreviewResult(existingId, fetched, cached);
+        if (result.status === "submitted") upsertTicket(result.ticket);
+        return result;
+      }
+    });
+  };
+
+  const refreshTicket = useCallback(async (ticketId: string): Promise<Ticket | undefined> => {
+    const activeGateway = requireGateway(gateway, null);
+    try {
+      const detail = activeGateway.getTicketDetail
+        ? await activeGateway.getTicketDetail(ticketId)
+        : await activeGateway.getTicket(ticketId);
+      if (detail) upsertTicket(detail);
+      return detail;
+    } catch (error) {
+      throw toDataGatewayError(error);
+    }
+  }, [gateway]);
+
+  const claimTicket = async (ticketId: string): Promise<Ticket> => {
+    if (currentUser?.role !== "officer") throw new DataGatewayError("unauthorized", "Chỉ cán bộ được nhận ca.");
+    return executeGateway(async (activeGateway) => {
+      if (!activeGateway.claimTicket) throw new UnsupportedOperationError("claimTicket");
+      const current = getTicket(ticketId);
+      const claimed = await activeGateway.claimTicket(ticketId, current?.serverRevision ?? 1);
+      upsertTicket(claimed);
+      const reconciled = await commitThenReconcile(claimed, async () =>
+        activeGateway.getTicketDetail ? activeGateway.getTicketDetail(ticketId) : claimed
+      );
+      upsertTicket(reconciled);
+      return reconciled;
+    });
+  };
+
+  const ensureProcessChecklist = async (ticketId: string): Promise<Ticket | undefined> => {
+    if (currentUser?.role !== "officer") throw new DataGatewayError("unauthorized", "Chỉ cán bộ được bổ sung checklist quy trình.");
+    return executeGateway(async (activeGateway) => {
+      const current = getTicket(ticketId);
+      if (activeGateway.ensureProcessChecklist) {
+        await activeGateway.ensureProcessChecklist(ticketId, current?.serverRevision);
+      }
+      const detail = activeGateway.getTicketDetail
+        ? await activeGateway.getTicketDetail(ticketId)
+        : current;
+      if (detail) upsertTicket(detail);
+      return detail;
+    });
+  };
+
+  const prepareBrief = async (ticketId: string): Promise<BriefView> => {
+    if (currentUser?.role !== "officer") throw new DataGatewayError("unauthorized", "Chỉ cán bộ được chuẩn bị hồ sơ.");
+    return executeGateway(async (activeGateway) => {
+      if (!activeGateway.prepareBrief) throw new UnsupportedOperationError("prepareBrief");
+      const current = getTicket(ticketId);
+      const brief = await activeGateway.prepareBrief(ticketId, current?.serverRevision ?? 1);
+      const detail = await commitThenReconcile(current, async () =>
+        activeGateway.getTicketDetail ? activeGateway.getTicketDetail(ticketId) : current
+      );
+      if (detail) upsertTicket(applyBriefToTicket(detail, brief));
+      return brief;
+    });
+  };
+
+  const listConversationMessages = async (conversationId: string): Promise<ChatMessage[]> => {
+    return executeGateway(async (activeGateway) => {
+      if (!activeGateway.listConversationMessages) throw new UnsupportedOperationError("listConversationMessages");
+      return activeGateway.listConversationMessages(conversationId);
+    });
+  };
+
+  const runTicketVerification = async (ticketId: string, criterionKey?: string) => {
     await executeGateway(async (activeGateway) => {
-      await activeGateway.runTicketVerification(ticketId);
-      setTickets(await activeGateway.getTickets());
+      const current = getTicket(ticketId);
+      await activeGateway.runTicketVerification(ticketId, current?.serverRevision, criterionKey);
+      if (activeGateway.getTicketDetail) {
+        const detail = await activeGateway.getTicketDetail(ticketId);
+        upsertTicket(detail);
+      } else {
+        setTickets(await activeGateway.getTickets());
+      }
     });
   };
 
   const retryCriterionVerification = async (ticketId: string, criterionId: string) => {
     await executeGateway(async (activeGateway) => {
-      await activeGateway.retryCriterionVerification(ticketId, criterionId);
-      setTickets(await activeGateway.getTickets());
+      const current = getTicket(ticketId);
+      await activeGateway.retryCriterionVerification(ticketId, criterionId, current?.serverRevision);
+      if (activeGateway.getTicketDetail) {
+        const detail = await activeGateway.getTicketDetail(ticketId);
+        upsertTicket(detail);
+      } else {
+        setTickets(await activeGateway.getTickets());
+      }
     });
   };
 
-  const confirmCriterionReview = async (ticketId: string, criterionId: string, note?: string) => {
+  const confirmCriterionReview = async (
+    ticketId: string,
+    criterionId: string,
+    note?: string,
+    outcome: "viewed" | "manual_pass" | "manual_fail" = "viewed"
+  ) => {
     await executeGateway(async (activeGateway) => {
-      await activeGateway.confirmCriterionReview(ticketId, criterionId, note);
-      setTickets(await activeGateway.getTickets());
+      const current = getTicket(ticketId);
+      await activeGateway.confirmCriterionReview(ticketId, criterionId, note, outcome, current?.serverRevision);
+      if (activeGateway.getTicketDetail) {
+        const detail = await activeGateway.getTicketDetail(ticketId);
+        upsertTicket(detail);
+      } else {
+        setTickets(await activeGateway.getTickets());
+      }
     });
   };
 
   const updateCertificateDraft = async (ticketId: string, edits: Partial<IssuedCertificateDocument>) => {
     await executeGateway(async (activeGateway) => {
-      await activeGateway.updateCertificateDraft(ticketId, edits);
-      setTickets(await activeGateway.getTickets());
+      const current = getTicket(ticketId);
+      await activeGateway.updateCertificateDraft(
+        ticketId,
+        edits,
+        current?.serverRevision,
+        current?.documentDraft?.version
+      );
+      if (activeGateway.getTicketDetail) {
+        const detail = await activeGateway.getTicketDetail(ticketId);
+        upsertTicket(detail);
+      } else {
+        setTickets(await activeGateway.getTickets());
+      }
     });
   };
 
   const issueCertificate = async (ticketId: string): Promise<IssuedCertificateDocument | null> => {
-    throw new UnsupportedOperationError(`Phát hành tài liệu chính thức cho ${ticketId}`);
+    return executeGateway(async (activeGateway) => {
+      if (!activeGateway.issueCertificate) {
+        throw new UnsupportedOperationError(`Phát hành tài liệu cho ${ticketId}`);
+      }
+      const current = getTicket(ticketId);
+      if (!current?.documentDraft || current.documentDraft.templateStatus !== "approved") {
+        throw new DataGatewayError("conflict", "Loại dịch vụ này chưa có mẫu được phê duyệt.");
+      }
+      const issued = await activeGateway.issueCertificate(ticketId, {
+        expectedRevision: current.serverRevision ?? 1,
+        expectedDraftVersion: current.documentDraft.version,
+      });
+      if (activeGateway.getTicketDetail) {
+        const detail = await activeGateway.getTicketDetail(ticketId);
+        upsertTicket(detail);
+      }
+      return issued;
+    });
+  };
+
+  const downloadIssuedDocument = async (ticketId: string, documentId: string) => {
+    await executeGateway(async (activeGateway) => {
+      if (!activeGateway.downloadIssuedDocument) {
+        throw new UnsupportedOperationError("downloadIssuedDocument");
+      }
+      await activeGateway.downloadIssuedDocument(ticketId, documentId);
+    });
   };
 
   const selectChatSession = (sessionId: string) => {
@@ -589,11 +1135,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setIsAiAnalyzing(true);
     setAiAnalyzingStep(1);
     try {
-      await new Promise((r) => setTimeout(r, 220));
-      setAiAnalyzingStep(2);
-      await new Promise((r) => setTimeout(r, 220));
-      setAiAnalyzingStep(3);
-      await new Promise((r) => setTimeout(r, 220));
       setAiAnalyzingStep(4);
       await executeGateway(async (activeGateway) => {
         await activeGateway.runAiReview(caseId);
@@ -671,11 +1212,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         currentUser,
         setCurrentUser: user => { ++authGeneration.current; authRestored.current = true; setCurrentUser(user); },
         login,
+        changePassword,
         logout,
         demoUsers,
         tickets,
         getTicket,
         createTicket,
+        uploadTicketFile,
         updateTicketStatus,
         updateOfficerDraft,
         resetOfficerDraft,
@@ -688,6 +1231,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         confirmCriterionReview,
         updateCertificateDraft,
         issueCertificate,
+        downloadIssuedDocument,
         chatSessions,
         activeSessionId,
         selectChatSession,
@@ -703,6 +1247,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         setGate1FormData,
         lastUpdatedField,
         updateGate1Field,
+        createConversation,
+        sendConversationMessage,
+        listConversationMessages,
+        patchPreview,
+        submitPreview,
+        claimTicket,
+        prepareBrief,
+        refreshTicket,
+        ensureProcessChecklist,
         reviewCases,
         getReviewCase,
         createReviewCase,

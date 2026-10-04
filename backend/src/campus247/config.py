@@ -1,8 +1,8 @@
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Self
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -21,12 +21,31 @@ class Settings(BaseSettings):
     app_port: int = Field(default=8000, ge=1, le=65535)
     app_host: str = "0.0.0.0"
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
-    cors_origins: str = "http://localhost:3000"
+    cors_origins: str = ",".join(
+        [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:3100",
+            "http://127.0.0.1:3100",
+            "http://localhost:3101",
+            "http://127.0.0.1:3101",
+        ]
+    )
 
-    # LLM
-    openai_api_key: str = ""
+    # LLM. Canonical model name is llm_model; model_name is a compatibility alias.
+    llm_provider: str = "openai"
+    llm_model: str = "gpt-4o-mini"
     model_name: str = "gpt-4o-mini"
-    llm_temperature: float = Field(default=0.7, ge=0.0, le=2.0)
+    llm_temperature: float = Field(default=0.2, ge=0.0, le=2.0)
+    openai_api_key: str = ""
+    google_api_key: str = ""
+    gemini_api_key: str = ""
+    groq_api_key: str = ""
+    deepseek_api_key: str = ""
+    anthropic_api_key: str = ""
+    openai_base_url: str = ""
+    agent_mode: Literal["stub", "langgraph"] = "stub"
+    rag_mode: Literal["stub", "corpus", "official", "pipeline"] = "stub"
 
     # Database
     database_url: str = "sqlite:///./data/app.db"
@@ -36,9 +55,46 @@ class Settings(BaseSettings):
     idempotency_ttl_seconds: int = Field(default=24 * 3600, ge=60)
     worker_lease_seconds: int = Field(default=60, ge=5)
     worker_max_attempts: int = Field(default=3, ge=1)
+    worker_retrieval_timeout_seconds: int = Field(default=15, ge=1)
+    login_max_failures: int = Field(default=8, ge=3, le=30)
+    remember_ttl_seconds: int = Field(default=30 * 24 * 3600, ge=3600)
+    files_dir: str = "./data/files"
+    institution_name: str = "VinUniversity"
+    institution_unit: str = "Phòng Đào tạo"
+    sis_connector_url: str = ""
+    finance_connector_url: str = ""
+    signing_provider: str = "none"
+    official_corpus_dir: str = "./data/corpus_official"
+    rag_pipeline_dir: str = "./RAG"
+    rag_index_dir: str = "./data/rag_index"
+    gemini_embedding_model: str = "models/gemini-embedding-001"
+    rag_semantic_top_k: int = Field(default=8, ge=1, le=32)
+    rag_bm25_top_k: int = Field(default=8, ge=1, le=32)
+    rag_fusion_top_k: int = Field(default=5, ge=1, le=5)
 
-    # Vector Store
+    # Legacy template field; hybrid RAG does not use Chroma.
     chroma_persist_dir: str = "./data/chroma"
+
+    @model_validator(mode="after")
+    def apply_model_name_alias(self) -> Self:
+        """Use MODEL_NAME only when LLM_MODEL was not set. llm_model stays canonical if both exist."""
+        if "llm_model" not in self.model_fields_set and "model_name" in self.model_fields_set:
+            self.llm_model = self.model_name
+        return self
+
+    def resolved_llm_model(self) -> str:
+        """Canonical chat model name. llm_model wins; model_name is a legacy alias."""
+        return (self.llm_model or self.model_name).strip()
+
+    @model_validator(mode="after")
+    def production_requires_real_runtime(self) -> Self:
+        if self.app_env != "production":
+            return self
+        if self.demo_auth_enabled:
+            raise ValueError("APP_ENV=production requires DEMO_AUTH_ENABLED=false")
+        if self.agent_mode != "langgraph":
+            raise ValueError("APP_ENV=production requires AGENT_MODE=langgraph")
+        return self
 
 
 @lru_cache

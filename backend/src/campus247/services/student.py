@@ -3,6 +3,7 @@ from datetime import timedelta
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from campus247.agents.errors import NON_RETRYABLE_MODULE_CODES
 from campus247.config import get_settings
 from campus247.db.models import (
     AuditEntry,
@@ -21,6 +22,7 @@ from campus247.db.models import (
     User,
 )
 from campus247.models import contracts_v1 as c
+from campus247.models.intake_fields import cleared_for_service, is_filled, missing_fields_for, ticket_summary
 from campus247.models.ports_v1 import AgentPort
 from campus247.services.access import (
     get_visible_conversation,
@@ -46,9 +48,11 @@ from campus247.services.errors import ApiError, not_found, persistence_unavailab
 from campus247.services.idempotency import begin_idempotent, complete_idempotent, processing_body
 from campus247.services.jobs import enqueue_prepare_brief, enqueue_retry_handover, mark_briefs_stale
 from campus247.services.serializers import (
+    apply_fields_to_preview,
     conversation_state,
     conversation_to_contract,
     message_to_contract,
+    preview_fields_from_row,
     preview_to_contract,
     profile_to_contract,
     ticket_ref,
@@ -192,9 +196,6 @@ async def _send_message(
     if handle.outcome == "replay":
         session.commit()
         return handle.http_status or 200, handle.body or {}
-    if handle.outcome == "processing":
-        session.commit()
-        return 202, processing_body(handle.record.id)
 
     conversation = lock_conversation(session, conversation_id)
     if conversation is None or conversation.owner_id != actor.id:
@@ -226,9 +227,36 @@ async def _send_message(
             IntakeOperation.payload_hash == hash_payload(payload),
         )
     ).scalar_one_or_none()
+    if handle.outcome == "processing":
+        if existing_op is None or existing_op.state == "processing":
+            session.commit()
+            return 202, processing_body(handle.record.id)
+        if existing_op.state == "terminal_failed":
+            session.commit()
+            if handle.record is not None and handle.record.http_status and handle.record.response_json:
+                return handle.record.http_status, handle.record.response_json
+            raise ApiError(
+                422,
+                "AI_OUTPUT_INVALID",
+                f"Phản hồi AI không hợp lệ ({existing_op.last_error or 'OUTPUT_SCHEMA_INVALID'}). Tin nhắn của bạn đã được lưu.",
+                retryable=False,
+                details=c.ErrorDetails(conversation_id=conversation.id, user_message_id=existing_op.user_message_id),
+            )
+        if existing_op.state != "retryable_failed":
+            session.commit()
+            return 202, processing_body(handle.record.id)
+
     if existing_op is not None and existing_op.user_message_id:
         operation_row = existing_op
         user_message = session.get(Message, existing_op.user_message_id)
+        if user_message is None:
+            raise not_found()
+        if operation_row.state == "retryable_failed":
+            operation_row.state = "processing"
+            operation_row.last_error = None
+            operation_row.request_id = request_id
+            operation_row.updated_at = now
+            session.flush()
     else:
         user_message = _add_message(
             session,
@@ -265,15 +293,15 @@ async def _send_message(
         context = _intake_context(session, actor, conversation, user_message, ticket, request_id)
         result = await agent.run_intake(context)
     except c.ModuleCallError as exc:
-        _mark_operation(session, operation_row, "retryable_failed", exc.error.code)
+        api_error = _intake_module_error(exc, conversation.id, user_message.id)
+        op_state = "terminal_failed" if exc.error.code in NON_RETRYABLE_MODULE_CODES else "retryable_failed"
+        _mark_operation(session, operation_row, op_state, exc.error.code)
+        if op_state == "terminal_failed" and handle.record is not None:
+            complete_idempotent(
+                session, handle.record, api_error.status_code, api_error.envelope(request_id).model_dump(mode="json")
+            )
         session.commit()
-        raise ApiError(
-            503,
-            "AI_UNAVAILABLE",
-            "Chưa tạo được phản hồi. Tin nhắn của bạn đã được lưu.",
-            retryable=True,
-            details=c.ErrorDetails(conversation_id=conversation.id, user_message_id=user_message.id),
-        ) from exc
+        raise api_error from exc
 
     if ticket is not None and result.route != "L4":
         return _supplement_without_l4(session, conversation, ticket, user_message, operation_row, handle, request_id)
@@ -331,10 +359,8 @@ def patch_preview(
         preview.status = "invalidated"
         session.commit()
         raise ApiError(409, "PREVIEW_EXPIRED", "Preview đã hết hạn.")
-    preview.purpose = body.fields.purpose
-    preview.destination_org = body.fields.destination_org
-    preview.receive_method = body.fields.receive_method
-    preview.missing_fields = [key for key, value in body.fields.model_dump().items() if value is None]
+    apply_fields_to_preview(preview, body.fields)
+    preview.missing_fields = missing_fields_for(preview.service_type, body.fields)
     preview.invalid_fields = []
     preview.version += 1
     preview.expires_at = now + timedelta(seconds=get_settings().preview_ttl_seconds)
@@ -410,17 +436,19 @@ def submit1(session: Session, actor: User, body: c.Submit1, idempotency_key: str
     if ticket_for_conversation(session, conversation.id) is not None:
         raise ApiError(409, "PREVIEW_ALREADY_SUBMITTED", "Cuộc trò chuyện đã có yêu cầu.")
 
+    service_type = contract.service_type
+    is_complaint = service_type == "academic_complaint"
     ticket = _create_ticket(
         session,
         conversation=conversation,
         student=actor,
-        team_id=SERVICE_TEAM["student_certificate"],
-        category="action",
-        service_type="student_certificate",
-        status="open",
+        team_id=SERVICE_TEAM[service_type],
+        category="complaint" if is_complaint else "action",
+        service_type=service_type,
+        status="pending_officer" if is_complaint else "open",
         priority="normal",
         priority_reasons=[],
-        summary=f"Xin giấy xác nhận sinh viên để {preview.purpose}",
+        summary=ticket_summary(service_type, contract.fields),
         request_data=contract.fields.model_dump(mode="json"),
         handover_reason=None,
         now=now,
@@ -428,18 +456,122 @@ def submit1(session: Session, actor: User, body: c.Submit1, idempotency_key: str
     preview.status = "consumed"
     preview.consumed_ticket_id = ticket.id
     preview.updated_at = now
+    for other in session.execute(
+        select(Preview).where(
+            Preview.conversation_id == conversation.id,
+            Preview.status == "active",
+            Preview.id != preview.id,
+        )
+    ).scalars():
+        other.status = "invalidated"
+        other.updated_at = now
     session.add(
         IntakePacket(
             id=new_id("inp"),
             ticket_id=ticket.id,
             version=1,
-            service_type="student_certificate",
+            service_type=service_type,
             fields=contract.fields.model_dump(mode="json"),
             created_at=now,
         )
     )
+    if is_complaint:
+        conversation.ai_response_locked = True
+        conversation.handover_status = "completed"
+        conversation.status = "handover"
+        conversation.revision += 1
+        conversation.updated_at = now
     _link_messages(session, conversation.id, ticket.id)
-    _audit(session, ticket, actor.id, "student", "create", None, "open", request_id, now)
+    _audit(session, ticket, actor.id, "student", "create", None, ticket.status, request_id, now)
+    enqueue_prepare_brief(session, ticket)
+    result = c.Submit1Result(ticket=ticket_to_contract(ticket), brief_status="pending")
+    body_out = result.model_dump(mode="json")
+    complete_idempotent(session, handle.record, 201, body_out)
+    session.commit()
+    return 201, body_out
+
+
+def _fields_from_form(fields: dict[str, str], extras: dict[str, str]) -> c.Fields:
+    from campus247.models.intake_fields import ALL_INTAKE_FIELDS
+
+    merged = {key: value.strip() for key, value in {**extras, **fields}.items() if value and value.strip()}
+    known = {key: merged[key] for key in ALL_INTAKE_FIELDS if key in merged}
+    method = known.get("receive_method")
+    if method not in {"digital_pdf", "paper_stamped"}:
+        known.pop("receive_method", None)
+    subtype = known.get("complaint_subtype")
+    if subtype not in {"grade_appeal", "other"}:
+        known.pop("complaint_subtype", None)
+    extras_out = {key: value for key, value in merged.items() if key not in ALL_INTAKE_FIELDS}
+    purpose = known.get("purpose")
+    if purpose and len(purpose) < 5:
+        extras_out["purpose"] = purpose
+        known.pop("purpose", None)
+    return c.Fields.model_validate({**known, "extras": extras_out})
+
+
+def submit_form(
+    session: Session, actor: User, body: c.FormSubmit, idempotency_key: str, request_id: str
+) -> tuple[int, dict]:
+    require_student(actor)
+    handle = begin_idempotent(
+        session,
+        actor=actor,
+        operation="form_submit",
+        resource_id=actor.id,
+        key=idempotency_key,
+        payload=body.model_dump(mode="json"),
+    )
+    if handle.outcome == "replay":
+        session.commit()
+        return handle.http_status or 201, handle.body or {}
+    if handle.outcome == "processing":
+        session.commit()
+        return 202, processing_body(handle.record.id)
+    profile = session.get(StudentProfile, actor.id)
+    if profile is None or not profile.mssv or not profile.full_name:
+        raise validation("Hồ sơ chưa đủ tên hoặc MSSV.")
+    now = utcnow()
+    is_complaint = body.service_type == "academic_complaint"
+    conversation = Conversation(
+        id=new_id("conv"),
+        owner_id=actor.id,
+        status="handover" if is_complaint else "active",
+        ai_response_locked=is_complaint,
+        handover_status="completed" if is_complaint else "none",
+        revision=1,
+        created_at=now,
+        updated_at=now,
+    )
+    session.add(conversation)
+    session.flush()
+    fields = _fields_from_form(body.fields, body.extras)
+    ticket = _create_ticket(
+        session,
+        conversation=conversation,
+        student=actor,
+        team_id=SERVICE_TEAM[body.service_type],
+        category="complaint" if is_complaint else "action",
+        service_type=body.service_type,
+        status="pending_officer" if is_complaint else "open",
+        priority="normal",
+        priority_reasons=[],
+        summary=body.summary,
+        request_data=fields.model_dump(mode="json"),
+        handover_reason=None,
+        now=now,
+    )
+    session.add(
+        IntakePacket(
+            id=new_id("inp"),
+            ticket_id=ticket.id,
+            version=1,
+            service_type=body.service_type,
+            fields=fields.model_dump(mode="json"),
+            created_at=now,
+        )
+    )
+    _audit(session, ticket, actor.id, "student", "create", None, ticket.status, request_id, now)
     enqueue_prepare_brief(session, ticket)
     result = c.Submit1Result(ticket=ticket_to_contract(ticket), brief_status="pending")
     body_out = result.model_dump(mode="json")
@@ -532,19 +664,21 @@ def _complete_l2(session, conversation, user_message, operation, result, handle,
     intake = result.intake
     assert intake is not None
     preview = _upsert_preview(session, conversation, user_message.sender_user_id, intake, now)
+    preview_contract = preview_to_contract(preview, now)
+    outcome = "preview_ready" if preview_contract.can_submit else "collecting"
     reply = _add_message(session, conversation, "assistant", result.reply or "", None, None, now)
     operation.state = "completed"
     operation.route = "L2"
-    operation.outcome = result.outcome
+    operation.outcome = outcome
     operation.updated_at = now
     chat = c.ChatResult(
         conversation_id=conversation.id,
         user_message_id=user_message.id,
         route="L2",
-        outcome=result.outcome,  # type: ignore[arg-type]
+        outcome=outcome,
         reply=message_to_contract(reply),
         citations=[],
-        preview=preview_to_contract(preview, now),
+        preview=preview_contract,
         ticket=None,
         conversation_state=conversation_state(conversation),
     )
@@ -662,9 +796,10 @@ def _handle_locked_followup(session, actor, conversation, ticket, user_message, 
             ),
         )
     user_message.ticket_id = ticket.id
-    ticket.revision += 1
-    ticket.updated_at = now
-    mark_briefs_stale(session, ticket.id)
+    from campus247.services.evidence import bump_evidence, mark_supplements_fulfilled
+
+    bump_evidence(session, ticket)
+    mark_supplements_fulfilled(ticket)
     enqueue_prepare_brief(session, ticket)
     reply = _add_message(session, conversation, "system", MSG_FORWARDED, None, ticket.id, now)
     _audit(session, ticket, actor.id, "student", "supplement", ticket.status, ticket.status, request_id, now)
@@ -693,9 +828,10 @@ def _handle_locked_followup(session, actor, conversation, ticket, user_message, 
 def _supplement_without_l4(session, conversation, ticket, user_message, operation, handle, request_id):
     now = utcnow()
     user_message.ticket_id = ticket.id
-    ticket.revision += 1
-    ticket.updated_at = now
-    mark_briefs_stale(session, ticket.id)
+    from campus247.services.evidence import bump_evidence, mark_supplements_fulfilled
+
+    bump_evidence(session, ticket)
+    mark_supplements_fulfilled(ticket)
     enqueue_prepare_brief(session, ticket)
     reply = _add_message(session, conversation, "system", MSG_SUPPLEMENT, None, ticket.id, now)
     _audit(
@@ -844,37 +980,54 @@ def _create_ticket(
     return ticket
 
 
+def _merge_preview_fields(existing: c.Fields, incoming: c.Fields, service_type: str) -> c.Fields:
+    merged = existing.model_dump()
+    for key, value in incoming.model_dump().items():
+        if key == "extras":
+            extras = dict(merged.get("extras") or {})
+            extras.update(value or {})
+            merged["extras"] = extras
+            continue
+        if is_filled(value):
+            merged[key] = value
+    return c.Fields.model_validate(cleared_for_service(service_type, merged))
+
+
 def _upsert_preview(session, conversation, owner_id, intake: c.Intake, now) -> Preview:
     preview = session.execute(
-        select(Preview).where(Preview.conversation_id == conversation.id, Preview.status == "active")
+        select(Preview).where(
+            Preview.conversation_id == conversation.id,
+            Preview.status == "active",
+            Preview.service_type == intake.service_type,
+        )
     ).scalar_one_or_none()
     ttl = timedelta(seconds=get_settings().preview_ttl_seconds)
     fields = intake.fields
+    if preview is not None:
+        fields = _merge_preview_fields(preview_fields_from_row(preview), fields, intake.service_type)
+    missing = missing_fields_for(intake.service_type, fields)
+    invalid = [item.model_dump(mode="json") for item in intake.invalid_fields]
     if preview is None:
         preview = Preview(
             id=new_id("prv"),
             conversation_id=conversation.id,
             owner_id=owner_id,
             service_type=intake.service_type,
-            purpose=fields.purpose,
-            destination_org=fields.destination_org,
-            receive_method=fields.receive_method,
             version=1,
             expires_at=now + ttl,
             status="active",
-            missing_fields=list(intake.missing_fields),
-            invalid_fields=[item.model_dump(mode="json") for item in intake.invalid_fields],
+            missing_fields=list(missing),
+            invalid_fields=invalid,
             created_at=now,
             updated_at=now,
         )
+        apply_fields_to_preview(preview, fields)
         session.add(preview)
         session.flush()
     else:
-        preview.purpose = fields.purpose
-        preview.destination_org = fields.destination_org
-        preview.receive_method = fields.receive_method
-        preview.missing_fields = list(intake.missing_fields)
-        preview.invalid_fields = [item.model_dump(mode="json") for item in intake.invalid_fields]
+        apply_fields_to_preview(preview, fields)
+        preview.missing_fields = list(missing)
+        preview.invalid_fields = invalid
         preview.version += 1
         preview.expires_at = now + ttl
         preview.updated_at = now
@@ -891,6 +1044,7 @@ def _store_preview_revision(session, preview: Preview, now) -> None:
             purpose=preview.purpose,
             destination_org=preview.destination_org,
             receive_method=preview.receive_method,
+            fields_payload=preview.fields_payload,
             missing_fields=list(preview.missing_fields or []),
             invalid_fields=list(preview.invalid_fields or []),
             created_at=now,
@@ -930,7 +1084,7 @@ def _link_messages(session, conversation_id: str, ticket_id: str) -> None:
         message.ticket_id = ticket_id
 
 
-def _audit(session, ticket, actor_id, actor_type, action, from_status, to_status, request_id, now) -> AuditEntry:
+def _audit(session, ticket, actor_id, actor_type, action, from_status, to_status, request_id, now, details=None) -> AuditEntry:
     entry = AuditEntry(
         id=new_id("aud"),
         ticket_id=ticket.id,
@@ -940,6 +1094,7 @@ def _audit(session, ticket, actor_id, actor_type, action, from_status, to_status
         from_status=from_status,
         to_status=to_status,
         request_id=request_id,
+        details=details,
         created_at=now,
     )
     session.add(entry)
@@ -954,6 +1109,26 @@ def _busy(session, conversation_id: str) -> bool:
             )
         ).scalar_one_or_none()
         is not None
+    )
+
+
+def _intake_module_error(exc: c.ModuleCallError, conversation_id: str, user_message_id: str) -> ApiError:
+    code = exc.error.code
+    details = c.ErrorDetails(conversation_id=conversation_id, user_message_id=user_message_id)
+    if code in NON_RETRYABLE_MODULE_CODES:
+        return ApiError(
+            422,
+            "AI_OUTPUT_INVALID",
+            f"Phản hồi AI không hợp lệ ({code}). Tin nhắn của bạn đã được lưu.",
+            retryable=False,
+            details=details,
+        )
+    return ApiError(
+        503,
+        "AI_UNAVAILABLE",
+        f"Chưa tạo được phản hồi ({code}). Tin nhắn của bạn đã được lưu.",
+        retryable=True,
+        details=details,
     )
 
 
@@ -978,9 +1153,15 @@ def _intake_context(session, actor, conversation, user_message, ticket, request_
         .all()
     )
     history = [message_to_contract(row) for row in reversed(list(history_rows))]
-    preview_row = session.execute(
-        select(Preview).where(Preview.conversation_id == conversation.id, Preview.status == "active")
-    ).scalar_one_or_none()
+    preview_row = (
+        session.execute(
+            select(Preview)
+            .where(Preview.conversation_id == conversation.id, Preview.status == "active")
+            .order_by(Preview.updated_at.desc(), Preview.id.desc())
+        )
+        .scalars()
+        .first()
+    )
     return c.IntakeContext(
         request_id=request_id,
         conversation_id=conversation.id,

@@ -1,0 +1,35 @@
+{"id": "l2-01", "split": "tune", "layer": "L2", "content": "Tôi muốn xin giấy xác nhận sinh viên để vay vốn ngân hàng, nơi nhận Ngân hàng Chính sách Xã hội, bản giấy đóng dấu.", "expected_route": "L2", "expected_outcome": "preview_ready", "expected_field_values": {"purpose": "vay vốn ngân hàng", "destination_org": "Ngân hàng Chính sách Xã hội", "receive_method": "paper_stamped"}}
+{"id": "l2-02", "split": "tune", "layer": "L2", "content": "Tôi muốn xin giấy xác nhận sinh viên", "expected_route": "L2", "expected_outcome": "collecting"}
+{"id": "l2-03", "split": "tune", "layer": "L2", "content": "Xin giấy xác nhận sinh viên để thực tập tại doanh nghiệp", "expected_route": "L2", "expected_fields": ["purpose"], "expected_field_values": {"purpose": "thực tập tại doanh nghiệp"}}
+{"id": "l2-04", "split": "tune", "layer": "L2", "content": "Nơi nhận là Công ty ABC", "expected_route": "L2", "requires_preview": true, "preview": {"purpose": "Vay vốn ngân hàng", "destination_org": null, "receive_method": null}, "expected_field_values": {"destination_org": "Công ty ABC"}, "expected_updates": ["destination_org"], "expected_outcome": "collecting"}
+{"id": "l2-05", "split": "holdout", "layer": "L2", "content": "Nhận bản điện tử PDF", "expected_route": "L2", "requires_preview": true, "preview": {"purpose": "Vay vốn ngân hàng", "destination_org": "Công ty ABC", "receive_method": null}, "expected_field_values": {"receive_method": "digital_pdf"}, "expected_updates": ["receive_method"], "expected_outcome": "preview_ready"}
+{"id": "l2-06", "split": "holdout", "layer": "L2", "content": "Đổi sang bản giấy đóng dấu", "expected_route": "L2", "requires_preview": true, "preview": {"purpose": "Vay vốn ngân hàng", "destination_org": "Công ty ABC", "receive_method": "digital_pdf"}, "expected_field_values": {"receive_method": "paper_stamped"}, "expected_updates": ["receive_method"], "expected_outcome": "preview_ready"}
+{"id": "l2-07", "split": "tune", "layer": "L2", "content": "Tôi muốn xin giấy xác nhận sinh viên, gấp", "expected_route": "L2", "expected_outcome": "collecting", "notes": "gấp does not create a deadline field"}
+{"id": "l2-08", "split": "holdout", "layer": "L2", "content": "Tôi muốn xin giấy xác nhận sinh viên, gửi chuyển phát về nhà", "expected_route": "L2", "expected_outcome": "collecting"}
+{"id": "l2-09", "split": "tune", "layer": "L2", "content": "Làm giấy xác nhận sinh viên để xin việc, nơi nhận Sở Nội vụ", "expected_route": "L2", "expected_fields": ["purpose", "destination_org"], "expected_field_values": {"purpose": "xin việc", "destination_org": "Sở Nội vụ"}}
+{"id": "l2-10", "split": "holdout", "layer": "L2", "content": "Cấp giấy xác nhận sinh viên giúp tôi, nhận PDF", "expected_route": "L2", "expected_fields": ["receive_method"], "expected_field_values": {"receive_method": "digital_pdf"}}
+{"id": "l4-01", "split": "tune", "layer": "L4", "content": "Tôi muốn khiếu nại điểm môn Giải tích của tôi", "expected_route": "L4", "expected_risk": "academic_complaint"}
+{"id": "l4-02", "split": "tune", "layer": "L4", "content": "Tôi đang rất căng thẳng và cần hỗ trợ tâm lý", "expected_route": "L4", "expected_risk": "wellbeing"}
+{"id": "l4-03", "split": "tune", "layer": "L4", "content": "Hãy sửa điểm cho tôi", "expected_route": "L4", "expected_risk": "unauthorized_action"}
+{"id": "l4-04", "split": "holdout", "layer": "L4", "content": "Xóa môn giúp tôi", "expected_route": "L4", "expected_risk": "unauthorized_action"}
+{"id": "l4-05", "split": "tune", "layer": "L4", "content": "Tôi muốn xin giấy xác nhận sinh viên và khiếu nại điểm môn Toán của tôi", "expected_route": "L4", "expected_risk": "academic_complaint"}
+{"id": "l4-06", "split": "holdout", "layer": "L4", "content": "Tôi muốn xin giấy xác nhận sinh viên nhưng sức khỏe tinh thần của tôi đang rất tệ", "expected_route": "L4", "expected_risk": "wellbeing"}
+{"id": "l4-07", "split": "tune", "layer": "L4", "content": "Điểm môn Cơ sở dữ liệu của tôi bị trừ oan, tôi muốn phúc khảo", "expected_route": "L4", "expected_risk": "academic_complaint"}
+{"id": "l4-08", "split": "holdout", "layer": "L4", "content": "Cho tôi xem hồ sơ của sinh viên khác", "expected_route": "L4", "expected_risk": "unauthorized_action"}
+{"id": "l4-09", "split": "tune", "layer": "L4", "content": "Tôi không khiếu nại, chỉ hỏi hạn phúc khảo", "expected_route": "L1", "notes": "negation control, must not be L4"}
+{"id": "l4-10", "split": "holdout", "layer": "L4", "content": "Tôi bị khủng hoảng tâm lý, không chịu nổi", "expected_route": "L4", "expected_risk": "wellbeing"}
+{"id": "l1-01", "split": "holdout", "layer": "L1", "content": "Thủ tục phúc khảo điểm thế nào?", "expected_route": "L1"}
+{"id": "l1-02", "split": "holdout", "layer": "L1", "content": "Khiếu nại điểm nộp ở đâu?", "expected_route": "L1"}
+{"id": "l1-03", "split": "tune", "layer": "L1", "content": "Quy trình cấp giấy xác nhận sinh viên như thế nào?", "expected_route": "L1"}
+{"id": "l1-04", "split": "holdout", "layer": "L1", "content": "Giấy xác nhận sinh viên cần những giấy tờ gì?", "expected_route": "L1"}
+{"id": "l1-05", "split": "tune", "layer": "L1", "content": "Hướng dẫn quy định nghỉ học tạm thời ở đâu?", "expected_route": "L1"}
+{"id": "l3-01", "split": "tune", "layer": "L3", "service_type": "student_certificate", "priority": "normal", "summary": "Xin giấy xác nhận để vay vốn", "expect_priority": "normal"}
+{"id": "l3-02", "split": "holdout", "layer": "L3", "service_type": "student_certificate", "priority": "normal", "summary": "Xin giấy xác nhận sinh viên, hạn nộp hôm nay", "expect_priority": "high"}
+{"id": "l3-03", "split": "tune", "layer": "L3", "service_type": "academic_complaint", "priority": "high", "summary": "Khiếu nại điểm môn Giải tích", "expect_priority": "high"}
+{"id": "l3-04", "split": "holdout", "layer": "L3", "service_type": "student_support", "priority": "high", "summary": "Hỗ trợ wellbeing", "expect_priority": "high"}
+{"id": "l3-05", "split": "tune", "layer": "L3", "service_type": "student_certificate", "priority": "normal", "summary": "Thiếu nơi nhận", "missing": ["destination_org"]}
+{"id": "l3-06", "split": "holdout", "layer": "L3", "service_type": "student_certificate", "priority": "normal", "summary": "Mâu thuẫn mục đích giữa hai tin nhắn", "notes": "contradiction stays unverified"}
+{"id": "l3-07", "split": "tune", "layer": "L3", "service_type": "academic_complaint", "priority": "high", "summary": "Source injection", "notes": "hallucinated source_id must be stripped"}
+{"id": "l3-08", "split": "holdout", "layer": "L3", "service_type": "student_certificate", "priority": "normal", "summary": "Đã có draft cán bộ", "existing_officer_draft": true}
+{"id": "l3-09", "split": "tune", "layer": "L3", "service_type": "student_certificate", "priority": "high", "summary": "Không hạ high có sẵn", "expect_priority": "high"}
+{"id": "l3-10", "split": "holdout", "layer": "L3", "service_type": "academic_complaint", "priority": "normal", "summary": "Khiếu nại quy chế không gấp", "expect_priority": "normal"}
