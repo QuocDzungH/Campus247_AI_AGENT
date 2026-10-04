@@ -519,6 +519,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!currentUser || currentUser.role !== "student") return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setGate1FormData((prev) => ({
       ...prev,
       fullName: currentUser.name || prev.fullName,

@@ -1,7 +1,6 @@
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
-
 from sqlalchemy import select
 
 from campus247.db.engine import session_scope

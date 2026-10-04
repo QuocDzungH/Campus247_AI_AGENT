@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Iterable, Literal
+from typing import Any, Literal
 
 IntakeService = Literal["student_certificate", "academic_complaint"]
 ComplaintSubtype = Literal["grade_appeal", "other"]

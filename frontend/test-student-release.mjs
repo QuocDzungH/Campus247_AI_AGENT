@@ -12,15 +12,15 @@ const cache = new Map();
 function load(relative) {
   const file = path.resolve(root, relative);
   if (cache.has(file)) return cache.get(file).exports;
-  const module = { exports: {} }; cache.set(file, module);
+  const loaded = { exports: {} }; cache.set(file, loaded);
   const compiled = ts.transpileModule(fs.readFileSync(file, "utf8"), { compilerOptions: {
     target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true,
   }, fileName: file }).outputText;
   const localRequire = specifier => specifier.startsWith(".")
     ? load(`${path.relative(root, path.resolve(path.dirname(file), specifier))}.ts`)
     : require(specifier);
-  vm.runInThisContext(`(function(require,module,exports){${compiled}\n})`, { filename: file })(localRequire, module, module.exports);
-  return module.exports;
+  vm.runInThisContext(`(function(require,module,exports){${compiled}\n})`, { filename: file })(localRequire, loaded, loaded.exports);
+  return loaded.exports;
 }
 const { MockCampusDataGateway } = load("lib/data/mock/mock-gateway.ts");
 const { DEMO_USERS } = load("lib/data/mock/fixtures.ts");
