@@ -19,5 +19,7 @@ flows. ESLint exit 0 với 2 warning có sẵn. Log/source hashes trong
 `docs/gate-2/evidence/verification.json`.
 
 Video do thành viên quay sau. GitHub hiện có 9 PR merged; PR này chỉ được tính
-sau review/merge. Phiếu xác nhận manual của thành viên đội chưa được ký;
-Codex/browser checks được ghi đúng hình thức, không thay người nghiệm thu.
+sau review/merge. Bảng kết quả thao tác manual của thành viên đội chưa được điền;
+Browser checks có 5 ca PASS với ảnh/output thật, ghi rõ hình thức bằng công cụ.
+Phân công kiểm tra manual: Hoàng Quốc Dũng (M01–M02), Xuân Vinh (M03–M04),
+Đặng Quang Huy (M05, M06 bổ sung); kết quả của thành viên chờ ghi sau khi chạy.

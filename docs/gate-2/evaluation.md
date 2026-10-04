@@ -1,13 +1,19 @@
 # Evaluation evidence — Gate 2
 
-Ngày: 04/10/2026, múi giờ Asia/Phnom_Penh. Người thực hiện kiểm tra tự động:
-Codex. Phạm vi: API/DB/worker tích hợp và UI API mode; dữ liệu synthetic.
+Ngày: 04/10/2026, múi giờ Asia/Phnom_Penh. Phạm vi: API/DB/worker tích hợp
+và UI API mode; dữ liệu synthetic. Hình thức thực hiện: script tự động và
+điều khiển trình duyệt từng bước bằng công cụ.
+
+**Thành viên phụ trách kiểm tra:** Hoàng Quốc Dũng, Xuân Vinh, Đặng Quang Huy.
+Phân công ở bảng manual bên dưới; đây là người phụ trách chạy/xác nhận,
+chưa phải ghi nhận họ đã thực hiện các lượt chạy có sẵn.
 
 **Có output thực tế cho 6 ca bên dưới.** Report HTTP/browser batch được chạy
-bằng script; có thêm lượt exploratory điều khiển từng bước bởi Codex. Chưa có
-người kiểm thử của đội ký nghiệm thu manual. Bộ hồ sơ đã
-chuẩn bị đầy đủ input/bước/expected/actual để đội chạy lại và ký xác nhận
-manual. Cột manual còn chờ, không được xem là đã đạt yêu cầu “5 test case
+bằng script; có thêm lượt exploratory điều khiển từng bước bằng công cụ. Chưa có
+người trong đội ghi kết quả thao tác trực tiếp. Bộ hồ sơ đã
+chuẩn bị đầy đủ input/bước/expected/actual để đội chạy lại và ghi kết quả
+manual. Không cần chữ ký hoặc người duyệt riêng theo yêu cầu Gate 2 đã cung cấp.
+Cột manual còn chờ, không được xem là đã đạt yêu cầu “5 test case
 manual” cho tới khi có xác nhận của người thực hiện.
 
 ## Runtime và bằng chứng
@@ -25,7 +31,7 @@ manual” cho tới khi có xác nhận của người thực hiện.
 - [Browser report](evidence/browser/report.json) và ảnh trong `evidence/browser/`:
   production UI build, frontend API mode, agent/RAG stub. Browser này không
   chứng minh chất lượng câu trả lời từ model thật.
-- [Exploratory review](exploratory-review.md): 5 đường đi được Codex điều
+- [Exploratory review](exploratory-review.md): 5 đường đi được điều
   khiển từng bước qua browser, đọc UI/response và xem ảnh; có lỗi reload
   phát hiện và kiểm lại sau sửa. Không ghi nhận người trong đội đã nghiệm thu.
 - [verification.json](evidence/verification.json): lệnh, kết quả, môi trường và
@@ -148,19 +154,54 @@ Live E2E còn kiểm tra follow-up trả `forwarded_to_officer`.
 
 **Kết quả tự động:** PASS. **Manual:** chờ người thực hiện xác nhận.
 
+## Kết quả 5 ca kiểm tra qua trình duyệt bằng công cụ
+
+Các kết quả này đã được quan sát thực tế, có ảnh và thời gian trong
+[observations.json](evidence/exploratory/observations.json). Hình thức là
+điều khiển browser từng bước bằng công cụ, không gán người chạy cho thành viên
+đội. Runtime: frontend API, agent/RAG stub; source `26236f1` cùng working-tree
+overlay ghi trong report, M05 kiểm lại sau bản sửa hydration.
+
+| Ca | Thời gian 04/10/2026 (Asia/Phnom_Penh) | Actual quan sát | Evidence | Kết quả kiểm tra bằng công cụ |
+| --- | --- | --- | --- | --- |
+| M01 | 20:23:21 | Thiếu căn cứ nên trả lời rõ; không form/ticket | [Ảnh L1](evidence/exploratory/M01-lookup.png) | PASS trong stub mode |
+| M02 | 20:24:59 | Điền đủ trường, cập nhật preview phiên bản 2; tạo `TKT-2026-0005` sau xác nhận | [Ảnh đã nộp](evidence/exploratory/M02-submitted.png) | PASS |
+| M03 | 20:23:35 | Thiếu mục đích/nơi nhận/cách nhận; Submit 1 bị chặn, chưa có ticket | [Ảnh thiếu dữ kiện](evidence/exploratory/M03-missing.png) | PASS |
+| M04 | 20:25:30 | Trước xác nhận chưa có ticket; sau xác nhận `TKT-2026-0006`, chờ cán bộ, khóa AI | [Trước](evidence/exploratory/M04-preview.png), [sau](evidence/exploratory/M04-submitted.png) | PASS |
+| M05 | 20:32:20 | `TKT-2026-0005` hoàn tất; reload vẫn thấy phản hồi cán bộ và 3 messages | [Ảnh sau reload](evidence/exploratory/M05-student-after-reload.png) | PASS sau sửa |
+
+M05 từng lỗi mất messages trên UI khi reload; giữ nguyên
+[bằng chứng trước sửa](evidence/exploratory/M05-reload-missing-messages.png)
+và [mô tả kiểm lại](exploratory-review.md#lỗi-phát-hiện-và-kiểm-lại).
+M06 có kết quả tự động riêng, chưa có lượt browser từng bước trong bảng này.
+
 ## Phiếu xác nhận manual (đội điền sau khi chạy thực tế)
+
+“Xác nhận” ở đây nghĩa là ghi lại kết quả đã quan sát, không phải thủ tục ký
+nghiệm thu. Một thành viên có thể thực hiện cả 5 ca; không cần 5 người kiểm thử.
+
+1. Mở ứng dụng, chạy M01–M05 theo các bước ở trên.
+2. Với mỗi ca, ghi output thực tế: câu trả lời, trường thiếu, mã ticket,
+   trạng thái hoặc phản hồi cán bộ đã thấy.
+3. Lưu ảnh/response tương ứng và ghi đường dẫn vào bảng.
+4. So sánh với Expected: đúng thì Pass, khác thì Fail và mô tả lỗi.
+5. Ghi người chạy, thời gian và mode/commit để có thể đối chiếu lần kiểm tra.
+
+Ví dụ M02: `Actual: tạo TKT-2026-xxxx sau xác nhận; xuất hiện trong Hồ sơ của
+tôi. Evidence: evidence/manual/M02.png. Result: Pass.` Thay mã và đường dẫn
+bằng dữ liệu của lần chạy thật, không dùng mã minh họa làm evidence.
 
 Chạy ít nhất M01–M05; M06 là ca bổ sung. Người thực hiện tự ghi dữ liệu đã thấy,
 không sao chép cột Actual tự động để thay cho kết quả manual.
 
-| Ca | Người chạy | Thời gian Asia/Phnom_Penh | Commit / agent / RAG | Actual + đường dẫn ảnh/output | Pass/Fail |
-| --- | --- | --- | --- | --- | --- |
-| M01 | Chờ chạy | — | — | — | Chưa xác nhận |
-| M02 | Chờ chạy | — | — | — | Chưa xác nhận |
-| M03 | Chờ chạy | — | — | — | Chưa xác nhận |
-| M04 | Chờ chạy | — | — | — | Chưa xác nhận |
-| M05 | Chờ chạy | — | — | — | Chưa xác nhận |
-| M06 | Chờ chạy | — | — | — | Chưa xác nhận |
+| Ca | Thành viên phụ trách | Người đã chạy | Thời gian Asia/Phnom_Penh | Commit / agent / RAG | Actual + ảnh/output của lượt manual | Pass/Fail manual |
+| --- | --- | --- | --- | --- | --- | --- |
+| M01 | Hoàng Quốc Dũng | Chưa xác nhận | — | — | — | Chưa xác nhận |
+| M02 | Hoàng Quốc Dũng | Chưa xác nhận | — | — | — | Chưa xác nhận |
+| M03 | Xuân Vinh | Chưa xác nhận | — | — | — | Chưa xác nhận |
+| M04 | Xuân Vinh | Chưa xác nhận | — | — | — | Chưa xác nhận |
+| M05 | Đặng Quang Huy | Chưa xác nhận | — | — | — | Chưa xác nhận |
+| M06 (bổ sung) | Đặng Quang Huy | Chưa xác nhận | — | — | — | Chưa xác nhận |
 
 ## Chạy lại các kiểm tra tự động
 

@@ -1,10 +1,10 @@
 # Browser exploratory review — Gate 2
 
-Ngày 04/10/2026, Asia/Phnom_Penh. **Người điều khiển và đọc kết quả: Codex**,
-qua browser Chrome headless/Playwright REPL. Các thao tác được chọn và gửi từng
+Ngày 04/10/2026, Asia/Phnom_Penh. **Hình thức: điều khiển trình duyệt từng bước
+bằng công cụ**, qua Chrome headless/Playwright REPL. Các thao tác được chọn và gửi từng
 bước theo UI đang thấy, đọc lại nội dung/response và xem screenshot; không chạy
 một suite batch cho lượt này. Đây là kiểm tra có hỗ trợ agent, **không phải
-người kiểm thử của đội đã ký nghiệm thu manual**.
+người trong đội đã thao tác và ghi kết quả manual**.
 
 Frontend API mode, agent/RAG stub, SQLite tạm, API/worker riêng. UI là production
 build từ code tích hợp, sau đó áp dụng bản sửa hydration cho lượt kiểm lại M05.
@@ -48,4 +48,6 @@ kiểm tra model thật/citation trên demo corpus.
 
 Đội dùng [phiếu manual](evaluation.md#phiếu-xác-nhận-manual-đội-điền-sau-khi-chạy-thực-tế)
 để chạy/xác nhận theo tiêu chí nộp với đúng commit/mode sẽ quay video. Các ảnh
-và kết quả của Codex là bằng chứng tham chiếu, không thay tên người nghiệm thu.
+và kết quả bằng công cụ là bằng chứng tham chiếu. Thành viên phụ trách kiểm tra:
+Hoàng Quốc Dũng, Xuân Vinh, Đặng Quang Huy; kết quả thao tác của từng thành viên
+được ghi riêng sau khi thực hiện. Metadata gốc của lượt chạy được giữ nguyên.

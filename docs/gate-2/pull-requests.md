@@ -2,6 +2,9 @@
 
 Snapshot GitHub ngày 04/10/2026, Asia/Phnom_Penh. Có **9 PR merged**, cần ít nhất **10**, còn thiếu **1**.
 
+Kiểm lại GitHub: **10 PR tổng cộng**, trong đó **9 merged**; [PR #3](https://github.com/AI20K-Build-Phase-Cohort-4/P-120/pull/3)
+vẫn `OPEN`, `mergedAt=null`. Số thứ tự #10/tổng số PR khác số PR đã merge.
+
 | PR | Nội dung | Nhánh đích | Merged at (UTC) |
 | --- | --- | --- | --- |
 | [#1](https://github.com/AI20K-Build-Phase-Cohort-4/P-120/pull/1) | docs: add EDU-14 Gate 1 project documentation | `main` | 2026-09-18T16:48:44Z |

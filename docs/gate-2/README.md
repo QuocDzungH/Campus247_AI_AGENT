@@ -12,7 +12,10 @@ Asia/Phnom_Penh. Nhánh **`feat/gate-2-mvp`**, đã đồng bộ với nhánh t�
 | Architecture diagram: components, data flow | [Architecture + Mermaid](architecture.md) | Đã cập nhật theo code tích hợp |
 | Repo có ≥10 PR merged | [Snapshot GitHub](merged-prs.json), [chi tiết PR](pull-requests.md) | **9/10**, còn cần 1 PR được merge |
 | README: setup, env vars, sample queries | [README sản phẩm](../../README.md), [frontend config mẫu](../../frontend/.env.example) | Đã hoàn thiện |
-| ≥5 ca manual có output thực tế | [Evaluation và 6 ca](evaluation.md), [lượt điều khiển từng bước](exploratory-review.md) | Có input/bước/expected/actual, HTTP outputs và ảnh UI; kiểm tra bởi Codex, thành viên đội chưa xác nhận manual |
+| ≥5 ca manual có output thực tế | [Evaluation và 6 ca](evaluation.md), [lượt điều khiển từng bước](exploratory-review.md) | 5 ca browser bằng công cụ PASS có ảnh/output; đã phân công thành viên, kết quả manual của thành viên chờ ghi |
+
+Thành viên phụ trách kiểm tra: **Hoàng Quốc Dũng, Xuân Vinh, Đặng Quang Huy**.
+Phân công M01–M06 trong [phiếu manual](evaluation.md#phiếu-xác-nhận-manual-đội-điền-sau-khi-chạy-thực-tế).
 
 Không tuyên bố Gate 2 đã pass khi còn thiếu video, PR thứ 10 và nghiệm thu
 manual của thành viên đội. Các kiểm tra bằng tool được ghi rõ người thực hiện
@@ -59,7 +62,7 @@ docs/gate-2/
   README.md                 Index, checklist và trạng thái nộp
   architecture.md           Components, data flow, LangGraph, runtime modes
   evaluation.md             6 ca với bước/expected/actual và phiếu manual
-  exploratory-review.md     Lượt browser điều khiển từng bước bởi Codex
+  exploratory-review.md     Lượt browser điều khiển từng bước bằng công cụ
   demo-script.md            Kịch bản video 3 phút
   pull-requests.md           9 PR merged, phần cần hoàn tất
   pr-description.md          Nội dung PR Gate 2 để review
