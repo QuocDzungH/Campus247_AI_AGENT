@@ -121,19 +121,16 @@ export function P0PreviewPanel() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-  const [confirming, setConfirming] = useState(false);
+  const [confirmForId, setConfirmForId] = useState<string | null>(null);
   const previousPreview = useRef<CampusPreview | null>(preview);
   const form = preview && edit?.previewId === preview.id ? edit.form : preview ? formFromPreview(preview) : emptyForm();
+  const confirming = Boolean(preview && confirmForId === preview.id);
 
   useEffect(() => {
     const previous = previousPreview.current;
     previousPreview.current = preview;
     if (!preview) {
-      setConfirming(false);
       return;
-    }
-    if (previous?.id !== preview.id) {
-      setConfirming(false);
     }
     if (edit && previous && previous.id === preview.id && edit.previewId === previous.id) {
       setEdit({ previewId: preview.id, form: mergeDirtyForm(previous, preview, edit.form) });
@@ -147,7 +144,7 @@ export function P0PreviewPanel() {
   function changeForm(patch: Partial<FormState>) {
     if (!preview) return;
     setEdit({ previewId: preview.id, form: { ...form, ...patch } });
-    setConfirming(false);
+    setConfirmForId(null);
   }
 
   if (locked) {
@@ -247,11 +244,11 @@ export function P0PreviewPanel() {
       assistant.setApiPreview(latest, threadId);
       if (!latest.canSubmit) {
         setError(isComplaint ? "Chưa đủ nội dung khiếu nại để gửi." : "Preview chưa đủ mục đích, nơi nhận và cách nhận.");
-        setConfirming(false);
+        setConfirmForId(null);
         return;
       }
       if (!confirming) {
-        setConfirming(true);
+        setConfirmForId(preview.id);
         setNotice("Hãy kiểm tra loại đơn và nội dung bên dưới, rồi xác nhận gửi.");
         return;
       }
@@ -270,7 +267,7 @@ export function P0PreviewPanel() {
         setNotice("Đã nộp yêu cầu. Đang đồng bộ mã hồ sơ.");
       }
       setEdit(null);
-      setConfirming(false);
+      setConfirmForId(null);
     } catch (failure) {
       handleConflict(failure, threadId);
     } finally {

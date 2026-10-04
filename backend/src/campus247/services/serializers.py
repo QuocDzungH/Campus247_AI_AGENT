@@ -176,7 +176,6 @@ def preview_to_contract(preview: Preview, now: datetime | None = None) -> c.Prev
     now = now or utcnow()
     fields = preview_fields_from_row(preview)
     service_type = preview.service_type if preview.service_type in {"student_certificate", "academic_complaint"} else "student_certificate"
-    missing = list(preview.missing_fields or missing_fields_for(service_type, fields))
     invalid = []
     for item in preview.invalid_fields or []:
         try:

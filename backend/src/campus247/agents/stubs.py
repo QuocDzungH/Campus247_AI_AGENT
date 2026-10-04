@@ -9,7 +9,6 @@ from campus247.agents.nodes.intake_l2 import (
     complaint_hints,
     merge_intake_fields,
 )
-from campus247.models.intake_fields import missing_fields_for
 from campus247.agents.provenance import deterministic_facts
 from campus247.models.contracts_v1 import (
     Fields,
@@ -23,6 +22,7 @@ from campus247.models.contracts_v1 import (
     RetrievalResult,
     TicketSnapshot,
 )
+from campus247.models.intake_fields import missing_fields_for
 from campus247.services.common import MSG_L1_EMPTY, RISK_ROUTING
 
 WELLBEING = ("căng thẳng", "tinh thần", "sức khỏe tinh thần", "wellbeing")

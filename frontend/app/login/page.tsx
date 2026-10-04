@@ -39,7 +39,8 @@ function LoginForm() {
 
   const { login, dataConfig, dataStatus } = useStore();
   const isApiMode = dataConfig?.mode === "api";
-  const [demoAuthEnabled, setDemoAuthEnabled] = useState(!isApiMode);
+  const [apiDemoAuthEnabled, setApiDemoAuthEnabled] = useState(false);
+  const demoAuthEnabled = isApiMode ? apiDemoAuthEnabled : true;
   const demoAccounts = isApiMode ? API_DEMO_ACCOUNTS : MOCK_DEMO_ACCOUNTS;
 
   const [identifier, setIdentifier] = useState("");
@@ -54,16 +55,15 @@ function LoginForm() {
 
   React.useEffect(() => {
     if (!isApiMode || !dataConfig?.apiBaseUrl) {
-      setDemoAuthEnabled(!isApiMode);
       return;
     }
     const controller = new AbortController();
     fetch(`${dataConfig.apiBaseUrl}/api/v1/status`, { signal: controller.signal })
       .then((response) => (response.ok ? response.json() : null))
       .then((payload) => {
-        setDemoAuthEnabled(Boolean(payload && payload.demo_auth_enabled));
+        setApiDemoAuthEnabled(Boolean(payload && payload.demo_auth_enabled));
       })
-      .catch(() => setDemoAuthEnabled(false));
+      .catch(() => setApiDemoAuthEnabled(false));
     return () => controller.abort();
   }, [isApiMode, dataConfig?.apiBaseUrl]);
 
