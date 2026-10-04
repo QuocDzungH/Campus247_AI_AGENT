@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:regression": "node test-store-config.mjs && node test-student-release.mjs && node test-staff-workspace.mjs && node test-staff-audit-regression.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.48.0",
