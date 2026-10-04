@@ -1,0 +1,25 @@
+{
+  "ok": true,
+  "baseUrl": "http://127.0.0.1:18100",
+  "marker": "UNI-mutuo8t6",
+  "steps": [
+    "old-complaint-url-redirects",
+    "vague-asks-topic",
+    "grade-form-opens",
+    "complaint-submit1",
+    "procedure-is-not-submit",
+    "certificate-submit1",
+    "officer-sees-complaint"
+  ],
+  "screenshots": [
+    "unified/01-vague-complaint-ask.png",
+    "unified/02-grade-form-in-chat.png",
+    "unified/03-complaint-submitted.png",
+    "unified/04-certificate-form-same-chat.png",
+    "unified/05-certificate-submitted.png",
+    "unified/06-officer-complaint-ticket.png"
+  ],
+  "ticketCode": "TKT-2026-0003",
+  "finalUrl": "http://127.0.0.1:18100/tickets/tkt_1c37eeefd6d542a197d5b6f2135c0341",
+  "execution": "automated Playwright unified intake E2E"
+}

@@ -77,7 +77,9 @@ export function StudentRequestsPage() {
   }, [selectedId, selectedKind]);
 
   useEffect(() => {
-    if (dataConfig?.mode !== "api" || selectedKind !== "ticket" || !selectedId) return;
+    // Account hydration replaces list records, which do not contain messages.
+    // Fetch the selected detail after hydration so its thread is not overwritten.
+    if (isDataLoading || currentUser?.role !== "student" || dataConfig?.mode !== "api" || selectedKind !== "ticket" || !selectedId) return;
     let cancelled = false;
     void refreshTicket(selectedId)
       .then(() => {
@@ -95,7 +97,7 @@ export function StudentRequestsPage() {
     return () => {
       cancelled = true;
     };
-  }, [dataConfig?.mode, selectedId, selectedKind, refreshTicket, detailRetry]);
+  }, [isDataLoading, currentUser?.id, currentUser?.role, dataConfig?.mode, selectedId, selectedKind, refreshTicket, detailRetry]);
   const detailLoading =
     dataConfig?.mode === "api" &&
     selectedKind === "ticket" &&

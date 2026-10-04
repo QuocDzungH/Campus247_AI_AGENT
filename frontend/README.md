@@ -1,32 +1,32 @@
-# Campus 24/7 — Prototype Dịch vụ Học vụ & Sinh viên
+# Campus 24/7 — frontend
 
-Hệ thống Trợ lý Ảo và Xử lý Yêu cầu Dịch vụ Học vụ (Cấp Giấy chứng nhận, Bảng điểm, Tiếp nhận Khiếu nại).
-
-## Khởi chạy nhanh (Quick Start)
+Next.js App Router cho cổng sinh viên và cán bộ. Hướng dẫn chạy đầy đủ backend,
+worker, DB và tài khoản: [README gốc](../README.md).
 
 ```bash
-# 1. Cài đặt thư viện
-npm install
-
-# 2. Khởi chạy máy chủ phát triển
+# Từ frontend/
+npm ci
+cp .env.example .env.local
 npm run dev
 ```
 
-Mở trình duyệt: **[http://localhost:3000](http://localhost:3000)**
+Mở <http://localhost:3000>. `.env.local` chọn `NEXT_PUBLIC_DATA_MODE=api`,
+`NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000` và tắt mode switch. API/worker
+phải chạy và DB đã migrate/seed. Đổi public env cần restart/rebuild.
+Nếu muốn review UI độc lập, chọn `NEXT_PUBLIC_DATA_MODE=mock` và ghi rõ phạm vi
+mock trong evidence; code mặc định mock khi không cấu hình.
 
----
+```bash
+npm run lint
+npm run test:regression
+npm run build
+npm run start
+```
 
-## Cấu trúc các phân hệ trong nhánh này
+Routes chính: `/student`, `/student/assistant`, `/my-requests`, `/dashboard`,
+`/tickets/[ticketId]`, `/reviews`. Chat khiếu nại và cấp giấy dùng chung
+assistant, có preview và xác nhận Submit 1.
 
-- `/chat`: Cổng Trợ lý AI Sinh viên (hỗ trợ tạo đơn, điền thông tin tự động, quản lý lịch sử phiên chat).
-- `/my-requests`: Danh sách yêu cầu học vụ và khiếu nại của sinh viên (sinh viên có thể xem chi tiết và chỉnh sửa khiếu nại).
-- `/dashboard`: Bàn làm việc của Cán bộ Học vụ (OF001 - ThS. Trần Thu Hà) để tiếp nhận, xử lý và phê duyệt hồ sơ.
-- `/tickets/[ticketId]`: Chi tiết hồ sơ yêu cầu học vụ.
-
----
-
-## Lưu ý về nhánh phát triển
-
-- Nhánh này (`feat/prototype-ver2`): Tập trung vào nghiệp vụ **Dịch vụ Học vụ & Khiếu nại của Sinh viên**.
-- Nhánh mở rộng (`feat/facility-materials`): Chứa phân hệ mở rộng quản lý **Cơ sở vật chất, Vật tư xuất/hoàn kho & Hóa đơn thuê ngoài**.
-
+[Bộ nộp Gate 2](../docs/gate-2/README.md) ·
+[Architecture](../docs/gate-2/architecture.md) ·
+[Manual/evidence](../docs/gate-2/evaluation.md).

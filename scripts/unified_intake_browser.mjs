@@ -30,12 +30,12 @@ async function login(page, role) {
   await page.goto(`${baseUrl}/login`, { waitUntil: "domcontentloaded", timeout: 30000 });
   await page.getByRole("heading", { name: /Đăng nhập/ }).waitFor({ timeout: 15000 });
   const label = role === "officer" ? /Dùng tài khoản cán bộ/ : /Dùng tài khoản sinh viên/;
-  let fillBtn = page.getByRole("button", { name: label }).locator("visible=true").first();
-  if (!(await fillBtn.isVisible().catch(() => false))) {
-    await page.getByRole("button", { name: /Tài khoản (demo|mẫu)/ }).click();
-    fillBtn = page.getByRole("button", { name: label }).locator("visible=true").first();
-  }
-  await fillBtn.click();
+  // Select the demo section explicitly: operational fill buttons have the same labels.
+  const demoToggle = page.getByRole("button", { name: /^(Tài khoản demo|Ẩn tài khoản demo|Tài khoản mẫu)$/ });
+  await demoToggle.waitFor({ timeout: 15000 });
+  if ((await demoToggle.getAttribute("aria-expanded")) !== "true") await demoToggle.click();
+  const demoSection = demoToggle.locator("..");
+  await demoSection.getByRole("button", { name: label }).click();
   await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
   await page.waitForURL(role === "officer" ? /\/dashboard/ : /\/student/, { timeout: 25000 });
 }

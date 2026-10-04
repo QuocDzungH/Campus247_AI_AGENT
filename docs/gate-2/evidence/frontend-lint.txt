@@ -1,0 +1,12 @@
+
+> campus247-frontend@0.1.0 lint
+> eslint
+
+
+/home/huydqhe182408/CodeLab/P-120/frontend/components/student/P0PreviewPanel.tsx
+  142:6  warning  React Hook useEffect has missing dependencies: 'edit' and 'preview'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/home/huydqhe182408/CodeLab/P-120/frontend/lib/assistant-context.tsx
+  87:6  warning  React Hook useEffect has missing dependencies: 'openForm' and 'router'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+✖ 2 problems (0 errors, 2 warnings)

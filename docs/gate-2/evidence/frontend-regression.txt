@@ -1,0 +1,95 @@
+
+> campus247-frontend@0.1.0 test:regression
+> node test-store-config.mjs && node test-student-release.mjs && node test-staff-workspace.mjs && node test-staff-audit-regression.mjs && node test-api-auth.mjs && node test-api-p0.mjs && node test-g2-regressions.mjs && node test-field-labels.mjs
+
+PASS: mock mode is valid without an API URL
+PASS: API mode requires and normalizes its URL
+PASS: invalid environment mode throws ConfigurationError
+PASS: invalid localStorage mode throws ConfigurationError
+PASS: missing localStorage mode does not override environment mode
+PASS: API runtime override validates the final mode before URL checks
+PASS: configuration failure has no config or gateway
+PASS: API adapter keeps unimplemented domain operations unsupported while bootstrap stays session-only
+PASS: mock bootstrap becomes ready only after reads and SV001 login
+PASS: network and server reasons map to connection_error
+PASS: successful gateway calls clear API errors in every mode
+PASS: API login and logout leave the remembered mock user untouched
+PASS: API user mapper accepts only student and officer roles
+PASS: mock mutations are deterministic and update supplement domain state
+PASS: review mutation errors preserve not_found and conflict reasons
+PASS: attachment references survive reload and submissions are idempotent
+PASS: messages record complete dates
+PASS: storage failure cannot report success or replace previous data
+PASS: supplements retain a downloadable attachment reference and update the workflow
+PASS: exported receipts escape user text and do not imply official issuance
+PASS: student ticket thread is labeled as assistant chat until an officer replies
+PASS: sample and draft certificates cannot be presented as issued documents
+PASS: invalid files and unavailable binary storage fail before a submission is accepted
+PASS: unreadable saved data is preserved instead of reseeding over it
+PASS: new structured forms retain fields and never generate an unrelated BM-03
+PASS: responses stay open, record the actual actor, and reject stale sends without writing
+PASS: completion never issues a document, closed tickets reject writes, and unchecked work blocks completion
+PASS: queue uses real request types, excludes completed cases, and sorts urgency then age
+PASS: review requires actual checks, respects adjusted findings, tracks source changes and actor, and rejects stale/closed mutations
+PASS: independent gateways reject stale writes, keep committed bytes, and refresh reads
+PASS: concurrent writes across instances retain unrelated records under one lock
+PASS: storage failure leaves the committed database unchanged
+PASS: persisted drafts remain private by officer and stale draft saves cannot overwrite newer text
+PASS: supplement audit records actor/full date and stale review sends are rejected
+PASS: login posts user_id and stores Bearer for later requests
+PASS: restore uses GET /me with stored token and does not re-login by user id
+PASS: expired or unauthorized session restore returns null without throwing
+PASS: confirmed mutations get a new Idempotency-Key; retries of unconfirmed intents reuse the pending key
+PASS: pending Idempotency-Key survives a new client after reload
+PASS: ErrorEnvelope nested fields are parsed instead of a top-level message
+PASS: logout sends empty body and clears the stored token
+PASS: logout clears the local session before the server responds
+PASS: browser session keeps an in-memory fallback when storage writes fail
+PASS: confirming one intent keeps another pending key that shares the payload
+PASS: unkeyed retry is rejected when two pending intents share the payload
+PASS: a superseded login attempt does not call login or overwrite the newer session
+PASS: overlapping login HTTP does not persist a superseded token
+PASS: 401 on a stale tab token does not clear a newer session from another tab
+PASS: stale 401 on restoreSession does not clear a newer token on the same gateway
+PASS: 202 JobAccepted confirms the Idempotency-Key; 202 Processing keeps it
+PASS: API demo accounts map seed IDs and keep officer routing
+PASS: mapPreview maps snake_case P0 fields and submit flag
+PASS: fieldsFromForm sends a full snapshot and nulls blank values
+PASS: mapPreview maps academic_complaint fields without forcing certificate schema
+PASS: mapChatResult L2 attaches preview and does not lock chat
+PASS: mapChatResult L4 locks AI and maps committed ticket ref
+PASS: mapWireTicket keeps revision and does not copy AI checklist onto the ticket
+PASS: mapBrief ready envelope exposes version and draft without marking checklist complete
+PASS: replay helpers distinguish Processing from JobAccepted
+PASS: requestUntilComplete replays 202 Processing then returns the completed body
+PASS: student P0 methods post ChatResult, full preview snapshot, and Submit1 payload
+PASS: officer P0 methods claim, prepare/poll brief, and Submit2
+PASS: API gateway still rejects Partial<Ticket> createTicket
+PASS: officer getTickets uses /officer/tickets Page, student uses /tickets
+PASS: STALE_PREVIEW stays a conflict with current_version details
+PASS: logout during hydrate failure does not keep the logging-in user
+PASS: repro: logout while hydrating officer does not restore OF-DEMO-01
+PASS: repro: logout after officer hydrate still does not write OF-DEMO-01
+PASS: logout during login failure does not keep an aborted auth error
+PASS: login success then hydrate failure keeps the new user and is a connection error
+PASS: two threads keep distinct preview and L4 lock state
+PASS: delayed preview response writes to the thread that started the mutation
+PASS: repro: held PATCH then new chat writes preview/submit/conflict to the origin thread
+PASS: prepare poll ignores stale brief from a previous revision
+PASS: brief GET error without manual mode cannot Submit 2
+PASS: mutation commit remains success when refetch fails
+PASS: ticket message commit stays success when detail refetch fails
+PASS: already submitted without a display code does not fabricate a ticket
+PASS: repro: 409 PREVIEW_ALREADY_SUBMITTED then GET fail does not upsert tkt_ as ticket code
+PASS: create conversation intent key is reused until success or a non-retryable error
+PASS: createConversation retry after lost response reuses Idempotency-Key
+PASS: repro: lost createConversation response retries with the same Idempotency-Key
+PASS: thread create intent key survives retry and clears after bind
+PASS: non-retryable create failure drops the thread intent key
+PASS: PREVIEW_ALREADY_SUBMITTED exposes ticket_id from error details
+PASS: Fact Sheet and citation list render facts and every citation
+PASS: missing receive_method stays empty and claim locks when assigned to another officer
+PASS: getTicketDetail does not turn brief HTTP 500 into none
+PASS: applyBriefToTicket keeps facts off the mutation checklist used by resolve
+PASS: mapTicketDetail keeps extras, profile, and viewed verification as insufficient
+PASS: field labels, audit language, certificate enrollment gate, and audit mapping
