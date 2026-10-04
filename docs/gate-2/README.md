@@ -8,7 +8,7 @@ Asia/Phnom_Penh. Nhánh **`feat/gate-2-mvp`**, đã đồng bộ với nhánh t�
 
 | Yêu cầu | Hồ sơ / bằng chứng | Trạng thái |
 | --- | --- | --- |
-| Video MVP 3 phút, flow end-to-end | [Kịch bản 3 phút](demo-script.md) | Người phụ trách quay sau; chưa có video/URL |
+| Video MVP 3 phút, flow end-to-end | [Kịch bản 3 phút](demo-script.md), [thư mục demo](https://drive.google.com/drive/folders/1Kt_3oD4U-mvGSeoJ4X_8dRvP1a4CYB-S?hl=vi) | Đã bổ sung link thư mục; file video, thời lượng và quyền xem chưa kiểm chứng |
 | Architecture diagram: components, data flow | [Architecture + Mermaid](architecture.md) | Đã cập nhật theo code tích hợp |
 | Repo có ≥10 PR merged | [Snapshot GitHub](merged-prs.json), [chi tiết PR](pull-requests.md) | **9/10**, còn cần 1 PR được merge |
 | README: setup, env vars, sample queries | [README sản phẩm](../../README.md), [frontend config mẫu](../../frontend/.env.example) | Đã hoàn thiện |
@@ -79,7 +79,8 @@ hiện hành mâu thuẫn. Bản kiến trúc lịch sử được giữ tại
 
 - [ ] Một PR nữa được **merge thật** để tổng số ≥10; PR mở chưa được tính.
 - [ ] Thành viên chạy/xác nhận ít nhất M01–M05 trên runtime sẽ quay demo.
-- [ ] Video 3 phút: bổ sung URL, ngày quay, commit và mode vào đây.
+- [ ] Video 3 phút: xác nhận file trong thư mục, quyền xem, ngày quay, commit và mode.
 
-Người quay: chưa xác nhận. Video URL: chưa có. Commit/mode của video: điền
-sau khi quay thực tế. Không điền thông tin chưa có bằng chứng.
+Người quay: chưa xác nhận. Thư mục video:
+[Google Drive](https://drive.google.com/drive/folders/1Kt_3oD4U-mvGSeoJ4X_8dRvP1a4CYB-S?hl=vi).
+Link file video trực tiếp, ngày quay và commit/mode: bổ sung khi xác nhận video.

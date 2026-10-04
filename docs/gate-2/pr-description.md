@@ -18,7 +18,8 @@ assertions, production build, HTTP E2E 6 cases, live LangGraph E2E và browser
 flows. ESLint exit 0 với 2 warning có sẵn. Log/source hashes trong
 `docs/gate-2/evidence/verification.json`.
 
-Video do thành viên quay sau. GitHub hiện có 9 PR merged; PR này chỉ được tính
+README có link thư mục Google Drive do thành viên cung cấp; file video, thời
+lượng và quyền xem chưa kiểm chứng. GitHub hiện có 9 PR merged; PR này chỉ được tính
 sau review/merge. Bảng kết quả thao tác manual của thành viên đội chưa được điền;
 Browser checks có 5 ca PASS với ảnh/output thật, ghi rõ hình thức bằng công cụ.
 Phân công kiểm tra manual: Hoàng Quốc Dũng (M01–M02), Xuân Vinh (M03–M04),
