@@ -12,9 +12,10 @@ import {
   FindingAiLabel,
   SupplementRequest,
   IssuedCertificateDocument,
+  StoredAttachment,
 } from "../../types";
 import { UnsupportedOperationError, DataGatewayError } from "../errors";
-import { applyBriefToTicket, decideReviewedBriefVersion, isBriefPollComplete, markBriefLoadFailure } from "./g2-flow";
+import { applyBriefToTicket, isBriefPollComplete, markBriefLoadFailure } from "./g2-flow";
 import { ApiClient, INTAKE_API_TIMEOUT_MS } from "./api-client";
 import { createBrowserSessionStore, SessionStore } from "./session";
 import { LoginResult } from "./types";
@@ -24,14 +25,17 @@ import {
   ChatTurnResult,
   ConversationView,
   PreviewFieldsPatch,
+  issuedInfoToCertificate,
   mapAuditEntry,
   mapBrief,
   mapChatResult,
   mapConversation,
   mapConversationToSession,
+  mapIssuedDocument,
   mapPreview,
   mapTicketDetail,
   mapWireMessageToChat,
+  mapWireMessageToTicketMessage,
   mapWireTicket,
   parsePage,
 } from "./mappers";
@@ -346,6 +350,12 @@ export class ApiCampusDataGateway implements CampusDataGateway {
       }
     }
     let ticket = mapTicketDetail(body, auditLogs);
+    const messages = await this.collectPages(
+      `/api/v1/tickets/${encodeURIComponent(id)}/messages`,
+      mapWireMessageToTicketMessage
+    );
+    ticket.messages = messages;
+    ticket.messagesTotal = messages.length;
     if (auditLoadError) ticket.auditLoadError = auditLoadError;
     if (this.actorRole() === "officer") {
       try {
@@ -377,10 +387,19 @@ export class ApiCampusDataGateway implements CampusDataGateway {
     throw new UnsupportedOperationError("updateTicketStatus");
   }
 
-  async updateOfficerDraft(id: string, draft: string): Promise<void> {
+  async updateOfficerDraft(
+    id: string,
+    draft: string,
+    _actor?: User,
+    _expectedDraft?: string,
+    expectedRevision?: number
+  ): Promise<void> {
     await this.client.request(`/api/v1/officer/tickets/${encodeURIComponent(id)}/workspace`, {
       method: "PATCH",
-      body: { officer_draft: draft },
+      body: {
+        officer_draft: draft,
+        expected_revision: expectedRevision ?? null,
+      },
     });
   }
 
@@ -388,10 +407,10 @@ export class ApiCampusDataGateway implements CampusDataGateway {
     await this.updateOfficerDraft(id, "");
   }
 
-  async toggleChecklistItem(ticketId: string, itemId: string): Promise<void> {
+  async toggleChecklistItem(ticketId: string, itemId: string, expectedRevision?: number): Promise<void> {
     await this.client.request(`/api/v1/officer/tickets/${encodeURIComponent(ticketId)}/workspace`, {
       method: "PATCH",
-      body: { toggle_checklist_id: itemId },
+      body: { toggle_checklist_id: itemId, expected_revision: expectedRevision ?? null },
     });
   }
 
@@ -422,23 +441,16 @@ export class ApiCampusDataGateway implements CampusDataGateway {
   }
 
   async submitGate2Response(
-    ticketId: string,
-    actionType: "respond" | "request_info" | "resolve",
-    customContent?: string,
+    _ticketId: string,
+    _actionType: "respond" | "request_info" | "resolve",
+    _customContent?: string,
     _actor?: User,
-    expectedSnapshot?: string
+    _expectedSnapshot?: string
   ): Promise<void> {
-    const ticket = await this.getTicketDetail(ticketId);
-    const briefGate = decideReviewedBriefVersion(ticket, {
-      manualBrief: expectedSnapshot === "manual-brief",
-    });
-    if (!briefGate.ok) throw new DataGatewayError("validation", briefGate.reason);
-    await this.submitOfficerAction(ticketId, {
-      action: actionType,
-      content: customContent?.trim() || "Đã xử lý yêu cầu.",
-      expectedRevision: ticket.serverRevision ?? 1,
-      reviewedBriefVersion: briefGate.reviewedBriefVersion,
-    });
+    throw new DataGatewayError(
+      "validation",
+      "Submit 2 trên API phải dùng submitOfficerAction với expectedRevision của bản hồ sơ cán bộ đang xem."
+    );
   }
 
   async submitOfficerAction(
@@ -449,6 +461,7 @@ export class ApiCampusDataGateway implements CampusDataGateway {
       expectedRevision: number;
       reviewedBriefVersion: number | null;
       idempotencyKey?: string;
+      supplementItems?: Array<{ label: string; reason?: string }>;
     }
   ): Promise<Ticket> {
     const result = await requestUntilComplete(this.client, `/api/v1/officer/tickets/${encodeURIComponent(ticketId)}/actions`, {
@@ -459,6 +472,13 @@ export class ApiCampusDataGateway implements CampusDataGateway {
         expected_revision: payload.expectedRevision,
         reviewed_brief_version: payload.reviewedBriefVersion,
         confirmed: true,
+        supplement_items:
+          payload.action === "request_info"
+            ? payload.supplementItems?.map((item) => ({
+                label: item.label,
+                reason: item.reason ?? null,
+              })) ?? [{ label: "Bổ sung theo phản hồi cán bộ", reason: payload.content }]
+            : undefined,
       },
       idempotencyKey: payload.idempotencyKey,
     });
@@ -589,29 +609,86 @@ export class ApiCampusDataGateway implements CampusDataGateway {
   }
 
   // --- Certificates ---
-  async runTicketVerification(ticketId: string): Promise<void> {
+  async runTicketVerification(ticketId: string, expectedRevision?: number, criterionKey?: string): Promise<void> {
     await this.client.request(`/api/v1/tickets/${encodeURIComponent(ticketId)}/verifications`, {
       method: "POST",
-      body: {},
+      body: {
+        expected_revision: expectedRevision ?? null,
+        criterion_key: criterionKey ?? null,
+      },
     });
   }
 
-  async retryCriterionVerification(ticketId: string, _criterionId: string): Promise<void> {
-    await this.runTicketVerification(ticketId);
+  async retryCriterionVerification(ticketId: string, criterionId: string, expectedRevision?: number): Promise<void> {
+    await this.runTicketVerification(ticketId, expectedRevision, criterionId);
   }
 
-  async confirmCriterionReview(ticketId: string, criterionId: string, note?: string): Promise<void> {
+  async confirmCriterionReview(
+    ticketId: string,
+    criterionId: string,
+    note?: string,
+    outcome: "viewed" | "manual_pass" | "manual_fail" = "viewed",
+    expectedRevision?: number
+  ): Promise<void> {
     await this.client.request(
       `/api/v1/tickets/${encodeURIComponent(ticketId)}/verifications/${encodeURIComponent(criterionId)}/confirm`,
       {
         method: "POST",
-        body: { note: note ?? null },
+        body: { note: note ?? null, outcome, expected_revision: expectedRevision ?? null },
       }
     );
   }
 
-  async updateCertificateDraft(_ticketId: string, _edits: Partial<IssuedCertificateDocument>): Promise<void> {
-    throw new UnsupportedOperationError("updateCertificateDraft");
+  async updateCertificateDraft(
+    ticketId: string,
+    edits: Partial<IssuedCertificateDocument>,
+    expectedRevision?: number,
+    expectedDraftVersion?: number
+  ): Promise<void> {
+    await this.client.request(`/api/v1/officer/tickets/${encodeURIComponent(ticketId)}/document`, {
+      method: "PATCH",
+      body: {
+        expected_revision: expectedRevision ?? 1,
+        expected_draft_version: expectedDraftVersion ?? null,
+        purpose: edits.purpose,
+        destination_org: edits.destinationOrg,
+        notes: edits.customOfficerNotes,
+      },
+    });
+  }
+
+  async issueCertificate(
+    ticketId: string,
+    payload: { expectedRevision: number; expectedDraftVersion: number }
+  ): Promise<IssuedCertificateDocument> {
+    const result = await this.client.request(`/api/v1/officer/tickets/${encodeURIComponent(ticketId)}/document/issue`, {
+      method: "POST",
+      body: {
+        expected_revision: payload.expectedRevision,
+        expected_draft_version: payload.expectedDraftVersion,
+        confirmed: true,
+      },
+    });
+    const body = result.body;
+    if (!isRecord(body) || !body.document) {
+      throw new DataGatewayError("validation", "Invalid issue result");
+    }
+    const issued = mapIssuedDocument(body.document);
+    if (!issued) throw new DataGatewayError("validation", "Invalid issued document");
+    const ticket = isRecord(body.ticket) ? mapWireTicket(body.ticket) : await this.getTicketDetail(ticketId);
+    return issuedInfoToCertificate(issued, ticket);
+  }
+
+  async downloadIssuedDocument(ticketId: string, documentId: string): Promise<void> {
+    const file = await this.client.requestBinary(
+      `/api/v1/tickets/${encodeURIComponent(ticketId)}/documents/${encodeURIComponent(documentId)}`
+    );
+    const url = URL.createObjectURL(file.blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = file.filename;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
   async getChatSessions(): Promise<ChatSession[]> {
@@ -655,7 +732,7 @@ export class ApiCampusDataGateway implements CampusDataGateway {
       throw new DataGatewayError("validation", "Invalid review status");
     }
     const merged = {
-      ...(payload as ReviewCase),
+      ...payload,
       id: typeof raw.id === "string" ? raw.id : payload.id,
       code: typeof raw.code === "string" ? raw.code : payload.code,
       status,
@@ -664,7 +741,7 @@ export class ApiCampusDataGateway implements CampusDataGateway {
       updatedAt: typeof raw.updated_at === "string" ? raw.updated_at : payload.updatedAt,
       revision: typeof raw.revision === "number" ? raw.revision : payload.revision,
     };
-    return merged as ReviewCase;
+    return merged as unknown as ReviewCase;
   }
 
   // --- Reviews ---

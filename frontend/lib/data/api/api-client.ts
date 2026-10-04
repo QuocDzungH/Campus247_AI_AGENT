@@ -49,6 +49,8 @@ export function reasonFromStatusAndCode(status: number, code?: string): ErrorRea
     case "TICKET_CLOSED":
     case "INVALID_STATUS_TRANSITION":
     case "IDEMPOTENCY_CONFLICT":
+    case "GATE_FAILED":
+    case "TEMPLATE_UNAVAILABLE":
       return "conflict";
     case "AI_UNAVAILABLE":
     case "AI_OUTPUT_INVALID":
@@ -314,5 +316,34 @@ export class ApiClient {
   ): Promise<T | null> {
     const result = await this.request<T>(path, { ...options, method: "PATCH", body });
     return result.body;
+  }
+
+  async requestBinary(path: string): Promise<{ blob: Blob; filename: string; contentType: string }> {
+    const headers: Record<string, string> = {};
+    if (this.accessToken) headers.Authorization = `Bearer ${this.accessToken}`;
+    const response = await fetch(`${this.baseUrl}${path}`, { headers });
+    if (!response.ok) {
+      let body: unknown = null;
+      try {
+        body = JSON.parse(await response.text());
+      } catch {
+        body = null;
+      }
+      const envelope = parseErrorEnvelope(body);
+      const message = envelope?.message ?? fallbackMessage(body, response.status);
+      const error = new DataGatewayError(reasonFromStatusAndCode(response.status, envelope?.code), message, envelope ?? body);
+      error.code = envelope?.code;
+      error.status = response.status;
+      throw error;
+    }
+    const disposition = response.headers.get("content-disposition") || "";
+    const match = /filename\*=UTF-8''([^;]+)|filename="?([^"]+)"?/i.exec(disposition);
+    const encoded = match?.[1] ? decodeURIComponent(match[1]) : undefined;
+    const filename = encoded || match?.[2] || "document.pdf";
+    return {
+      blob: await response.blob(),
+      filename,
+      contentType: response.headers.get("content-type") || "application/pdf",
+    };
   }
 }

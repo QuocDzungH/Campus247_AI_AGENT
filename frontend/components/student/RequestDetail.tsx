@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ArrowLeft, Download, MessageSquare, Paperclip } from "lucide-react";
 import { hasIssuedDocument, latestOfficerReply, receiptHtml, requestDate as formatDate, requestStates, requestStatusLabel, ticketThreadSenderLabel, ticketThreadTitle, validateSupplementFile, type RequestItem } from "@/lib/my-requests";
+import { useStore } from "@/lib/store";
 import { fieldClass, primaryButton, secondaryButton } from "./StudentFlowUI";
 import { saveLocalAttachments } from "@/lib/local-attachments";
 import type { StoredAttachment } from "@/lib/types";
@@ -23,6 +24,7 @@ export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement
   detailError?: string | null;
   onRetryDetail?: () => void;
 }) {
+  const { downloadIssuedDocument } = useStore();
   const heading = useRef<HTMLHeadingElement>(null);
   const [text, setText] = useState("");
   const [note, setNote] = useState("");
@@ -140,9 +142,18 @@ export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement
       <h3 id="document-title" className="text-lg font-semibold">Tài liệu kết quả</h3>
       {hasIssuedDocument(item.record) && !localOnly ? <>
         <p className="mt-3 text-sm font-semibold text-emerald-800 dark:text-emerald-200">Đã ghi nhận phát hành</p>
-        <p className={`mt-2 ${muted}`}>Số văn bản: {item.record.issuedCertificate!.docNumber} · Người phát hành: {item.record.issuedCertificate!.issuedByOfficerName}</p>
-        <p className={muted}>Ngày phát hành: {formatDate(item.record.issuedCertificate!.issuedAt)}</p>
-        <p className={`mt-3 ${muted}`}>Chưa có tệp chính thức để tải trong hồ sơ này. Liên hệ cán bộ phụ trách để nhận tài liệu.</p>
+        <p className={`mt-2 ${muted}`}>Số văn bản: {item.record.issuedDocument?.id || item.record.issuedCertificate?.docNumber} · Người phát hành: {item.record.issuedCertificate?.issuedByOfficerName || item.record.issuedDocument?.issuedBy}</p>
+        <p className={muted}>Ngày phát hành: {formatDate(item.record.issuedDocument?.issuedAt || item.record.issuedCertificate?.issuedAt || "")}</p>
+        {item.record.issuedDocument ? (
+          <>
+            <p className={`mt-2 ${muted}`}>Chữ ký: {item.record.issuedDocument.signatureStatus === "unsigned" ? "chưa ký số" : item.record.issuedDocument.signatureStatus}. Không phải giấy có giá trị chính thức.</p>
+            <button type="button" className={`${primaryButton} mt-3`} onClick={() => void downloadIssuedDocument(item.record.id, item.record.issuedDocument!.id)}>
+              <Download className="h-4 w-4" />Tải bản hệ thống đã phát hành
+            </button>
+          </>
+        ) : (
+          <p className={`mt-3 ${muted}`}>Chưa có tệp chính thức để tải trong hồ sơ này. Liên hệ cán bộ phụ trách để nhận tài liệu.</p>
+        )}
       </> : <>
         <p className={`mt-3 ${muted}`}>Tài liệu chính thức chưa được cung cấp trong hồ sơ này. Bạn sẽ nhận thông báo khi có kết quả.</p>
         <p className={`mt-2 ${muted}`}>Cách nhận đã khai: {item.record.receiveMethod === "paper_stamped" ? "Bản giấy có đóng dấu" : item.record.receiveMethod === "digital_pdf" ? "Bản điện tử" : "Chưa có dữ liệu"}. Hãy theo dõi phản hồi của cán bộ.</p>

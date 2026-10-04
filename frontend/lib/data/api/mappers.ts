@@ -3,7 +3,14 @@ import {
   ChatMessage,
   ChatSession,
   ChecklistItem,
+  DocumentDraft,
   FactItem,
+  IssuedCertificateDocument,
+  IssuedDocumentInfo,
+  ProcessInfo,
+  StudentProfileSnapshot,
+  SupplementRecord,
+  SystemVerificationItem,
   Ticket,
   TicketMessage,
   TicketType,
@@ -84,6 +91,51 @@ export interface BriefView {
   promptVersion: string | null;
   templateVersion: string | null;
   indexVersion: string | null;
+  suggestedPriority: "normal" | "high" | null;
+  priorityReasons: string[];
+}
+
+const FIELD_LABELS: Record<string, string> = {
+  purpose: "Mục đích",
+  destination_org: "Nơi nhận",
+  receive_method: "Cách nhận",
+  extras: "Trường bổ sung",
+  documentType: "Loại giấy",
+  copies: "Số bản",
+  language: "Ngôn ngữ",
+  summary: "Nội dung gốc",
+};
+
+function fieldLabel(name: string): string {
+  return FIELD_LABELS[name] || name;
+}
+
+function stringifyFieldValue(value: unknown): string {
+  if (value == null) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
+function submittedFieldsFromRequest(requestData: Record<string, unknown> | null): { name: string; label: string; value: string }[] {
+  if (!requestData) return [];
+  const fields: { name: string; label: string; value: string }[] = [];
+  for (const [name, value] of Object.entries(requestData)) {
+    if (name === "extras" && isRecord(value)) {
+      for (const [extraName, extraValue] of Object.entries(value)) {
+        const text = stringifyFieldValue(extraValue);
+        if (text) fields.push({ name: `extras.${extraName}`, label: fieldLabel(extraName), value: text });
+      }
+      continue;
+    }
+    const text = stringifyFieldValue(value);
+    if (text) fields.push({ name, label: fieldLabel(name), value: text });
+  }
+  return fields;
 }
 
 export interface PreviewFieldsPatch {
@@ -226,10 +278,7 @@ export function mapWireTicket(raw: unknown, extras?: { messages?: TicketMessage[
     throw new DataGatewayError("validation", "Invalid ticket service_type");
   }
   const requestData = isRecord(record.request_data) ? record.request_data : null;
-  const extraFields = isRecord(requestData?.extras) ? requestData.extras : {};
-  const submittedFields = Object.entries(extraFields)
-    .filter((entry): entry is [string, string] => typeof entry[1] === "string")
-    .map(([name, value]) => ({ name, label: name, value }));
+  const submittedFields = submittedFieldsFromRequest(requestData);
   const purpose = typeof requestData?.purpose === "string" ? requestData.purpose : "";
   const destinationOrg = typeof requestData?.destination_org === "string" ? requestData.destination_org : "";
   const receiveMethod =
@@ -237,6 +286,9 @@ export function mapWireTicket(raw: unknown, extras?: { messages?: TicketMessage[
       ? requestData.receive_method
       : "";
   const summary = requireString(record.summary, "ticket.summary");
+  if (summary && !submittedFields.some((field) => field.name === "summary")) {
+    submittedFields.unshift({ name: "summary", label: "Nội dung gốc", value: summary });
+  }
   const reasons = Array.isArray(record.priority_reasons)
     ? record.priority_reasons.filter((item): item is string => typeof item === "string")
     : [];
@@ -247,8 +299,8 @@ export function mapWireTicket(raw: unknown, extras?: { messages?: TicketMessage[
     title: summary,
     type: asTicketType(serviceType),
     studentId: requireString(record.student_id, "ticket.student_id"),
-    studentName: "",
-    studentMssv: "",
+    studentName: typeof record.student_name === "string" ? record.student_name : "",
+    studentMssv: typeof record.student_mssv === "string" ? record.student_mssv : "",
     studentMajor: "",
     studentClassYear: "",
     studentEmail: "",
@@ -279,13 +331,16 @@ export function mapWireTicket(raw: unknown, extras?: { messages?: TicketMessage[
     conversationId: requireString(record.conversation_id, "ticket.conversation_id"),
     category: category === "complaint" ? "complaint" : "action",
     serviceType,
-    requestPayload: submittedFields.length
-      ? {
-          schemaVersion: 1,
-          task: isComplaint ? "complaint" : "certificate",
-          submittedFields,
-        }
-      : undefined,
+    requestPayload:
+      submittedFields.length || summary
+        ? {
+            schemaVersion: 1,
+            task: isComplaint ? "complaint" : "certificate",
+            submittedFields: submittedFields.length
+              ? submittedFields
+              : [{ name: "summary", label: "Nội dung gốc", value: summary }],
+          }
+        : undefined,
   };
 }
 
@@ -408,20 +463,204 @@ export function mapChatResult(raw: unknown): ChatTurnResult {
 export function mapAuditEntry(raw: unknown): AuditLogEntry {
   const record = requireRecord(raw, "audit");
   const actorType = record.actor_type === "officer" ? "Cán bộ" : record.actor_type === "student" ? "Sinh viên" : "Hệ thống";
+  const extra = isRecord(record.details) ? JSON.stringify(record.details) : undefined;
+  const requestId = typeof record.request_id === "string" ? `request_id ${record.request_id}` : undefined;
   return {
     id: requireString(record.id, "audit.id"),
     timestamp: requireString(record.created_at, "audit.created_at"),
     source: actorType,
     action: requireString(record.action, "audit.action"),
     actor: typeof record.actor_id === "string" ? record.actor_id : actorType,
-    details: record.request_id && typeof record.request_id === "string" ? `request_id ${record.request_id}` : undefined,
+    details: [requestId, extra].filter(Boolean).join(" · ") || undefined,
   };
+}
+
+export function mapProcessInfo(raw: unknown): ProcessInfo | undefined {
+  if (!isRecord(raw)) return undefined;
+  const templateStatus = raw.template_status === "approved" ? "approved" : "unavailable";
+  return {
+    serviceType: typeof raw.service_type === "string" ? raw.service_type : "",
+    label: typeof raw.label === "string" ? raw.label : "",
+    processVersion: typeof raw.process_version === "string" ? raw.process_version : "",
+    issuesDocument: raw.issues_document === true,
+    templateId: typeof raw.template_id === "string" ? raw.template_id : null,
+    templateVersion: typeof raw.template_version === "string" ? raw.template_version : null,
+    templateStatus,
+    validityDays: typeof raw.validity_days === "number" ? raw.validity_days : null,
+    requiresAcademicStatus: raw.requires_academic_status === true,
+    requiresFinancialClearance: raw.requires_financial_clearance === true,
+    requiredCriteria: Array.isArray(raw.required_criteria)
+      ? raw.required_criteria.filter((item): item is string => typeof item === "string")
+      : [],
+    issueRequiredCriteria: Array.isArray(raw.issue_required_criteria)
+      ? raw.issue_required_criteria.filter((item): item is string => typeof item === "string")
+      : [],
+  };
+}
+
+export function mapStudentProfile(raw: unknown): StudentProfileSnapshot | undefined {
+  if (!isRecord(raw)) return undefined;
+  return {
+    userId: typeof raw.user_id === "string" ? raw.user_id : "",
+    fullName: typeof raw.full_name === "string" ? raw.full_name : null,
+    mssv: typeof raw.mssv === "string" ? raw.mssv : null,
+    email: typeof raw.email === "string" ? raw.email : null,
+    faculty: typeof raw.faculty === "string" ? raw.faculty : null,
+    major: typeof raw.major === "string" ? raw.major : null,
+    cohort: typeof raw.cohort === "string" ? raw.cohort : null,
+    classYear: typeof raw.class_year === "string" ? raw.class_year : null,
+    studentStatus: typeof raw.student_status === "string" ? raw.student_status : null,
+    verificationStatus: typeof raw.verification_status === "string" ? raw.verification_status : "unverified",
+    source: typeof raw.source === "string" ? raw.source : null,
+    isDemo: raw.is_demo === true,
+  };
+}
+
+export function mapDocumentDraft(raw: unknown): DocumentDraft | undefined {
+  if (!isRecord(raw)) return undefined;
+  const status =
+    raw.status === "approved" || raw.status === "issued" || raw.status === "unavailable" || raw.status === "draft"
+      ? raw.status
+      : "draft";
+  const snapshot = isRecord(raw.student_snapshot) ? raw.student_snapshot : {};
+  const studentSnapshot: Record<string, string | null | undefined> = {};
+  for (const [key, value] of Object.entries(snapshot)) {
+    studentSnapshot[key] = value == null ? null : String(value);
+  }
+  return {
+    ticketId: typeof raw.ticket_id === "string" ? raw.ticket_id : "",
+    version: typeof raw.version === "number" ? raw.version : 0,
+    templateId: typeof raw.template_id === "string" ? raw.template_id : "none",
+    templateVersion: typeof raw.template_version === "string" ? raw.template_version : "none",
+    templateStatus: raw.template_status === "approved" ? "approved" : "unavailable",
+    status,
+    studentSnapshot,
+    purpose: typeof raw.purpose === "string" ? raw.purpose : null,
+    destinationOrg: typeof raw.destination_org === "string" ? raw.destination_org : null,
+    notes: typeof raw.notes === "string" ? raw.notes : null,
+    validUntil: typeof raw.valid_until === "string" ? raw.valid_until : null,
+    authoredBy: typeof raw.authored_by === "string" ? raw.authored_by : null,
+    approvedBy: typeof raw.approved_by === "string" ? raw.approved_by : null,
+    updatedAt: typeof raw.updated_at === "string" ? raw.updated_at : null,
+  };
+}
+
+export function mapIssuedDocument(raw: unknown): IssuedDocumentInfo | undefined {
+  if (!isRecord(raw)) return undefined;
+  const signature =
+    raw.signature_status === "pending_signature" || raw.signature_status === "signed" || raw.signature_status === "unsigned"
+      ? raw.signature_status
+      : "unsigned";
+  return {
+    id: requireString(raw.id, "issued_document.id"),
+    ticketId: typeof raw.ticket_id === "string" ? raw.ticket_id : "",
+    draftVersion: typeof raw.draft_version === "number" ? raw.draft_version : 1,
+    templateId: typeof raw.template_id === "string" ? raw.template_id : "",
+    templateVersion: typeof raw.template_version === "string" ? raw.template_version : "",
+    filename: typeof raw.filename === "string" ? raw.filename : "document.pdf",
+    sha256: typeof raw.sha256 === "string" ? raw.sha256 : "",
+    issuedBy: typeof raw.issued_by === "string" ? raw.issued_by : "",
+    issuedAt: typeof raw.issued_at === "string" ? raw.issued_at : "",
+    signatureStatus: signature,
+    signingProvider: typeof raw.signing_provider === "string" ? raw.signing_provider : "none",
+    official: false,
+  };
+}
+
+export function issuedInfoToCertificate(
+  issued: IssuedDocumentInfo,
+  ticket: Ticket,
+  draft?: DocumentDraft
+): IssuedCertificateDocument {
+  const snapshot = draft?.studentSnapshot || {};
+  return {
+    id: issued.id,
+    docNumber: issued.id,
+    templateCode: issued.templateId,
+    templateName: ticket.process?.label || issued.templateId,
+    templateVersion: issued.templateVersion,
+    issuedAt: issued.issuedAt,
+    issuedAtFormatted: issued.issuedAt,
+    issuedByOfficerId: issued.issuedBy,
+    issuedByOfficerName: ticket.assignedOfficerName || issued.issuedBy,
+    studentId: ticket.studentId,
+    studentName: snapshot.full_name || ticket.studentName,
+    studentMssv: snapshot.mssv || ticket.studentMssv,
+    studentDob: "",
+    studentGender: "",
+    studentMajor: snapshot.major || ticket.studentMajor,
+    studentClassYear: snapshot.class_year || ticket.studentClassYear,
+    studentFaculty: snapshot.faculty || "",
+    studentAcademicStatus: snapshot.student_status || "",
+    purpose: draft?.purpose || ticket.purpose,
+    destinationOrg: draft?.destinationOrg || ticket.destinationOrg,
+    validUntil: draft?.validUntil || "",
+    customOfficerNotes: draft?.notes || undefined,
+    status: "issued",
+    fileName: issued.filename,
+    isDemoSample: false,
+  };
+}
+
+function mapVerificationItem(item: unknown): SystemVerificationItem[] {
+  if (!isRecord(item) || typeof item.id !== "string") return [];
+  const status = item.status;
+  if (status !== "passed" && status !== "failed" && status !== "insufficient" && status !== "error") return [];
+  const review = item.officer_review_status;
+  const resolution =
+    item.officer_resolution === "viewed" ||
+    item.officer_resolution === "manual_pass" ||
+    item.officer_resolution === "manual_fail" ||
+    item.officer_resolution === "none"
+      ? item.officer_resolution
+      : "none";
+  const evidence = isRecord(item.evidence)
+    ? Object.fromEntries(
+        Object.entries(item.evidence).filter((entry): entry is [string, string] => typeof entry[1] === "string")
+      )
+    : undefined;
+  return [
+    {
+      id: item.id,
+      criterionKey: typeof item.criterion_key === "string" ? item.criterion_key : item.id,
+      criterionLabel: typeof item.criterion_label === "string" ? item.criterion_label : "",
+      conditionApplied: typeof item.condition_applied === "string" ? item.condition_applied : "",
+      dataChecked: typeof item.data_checked === "string" ? item.data_checked : "",
+      sourceSystem: typeof item.source_system === "string" ? item.source_system : "",
+      lookupTimestamp: typeof item.lookup_timestamp === "string" ? item.lookup_timestamp : "",
+      status,
+      reason: typeof item.reason === "string" ? item.reason : "",
+      evidenceDetails: {
+        rawSnippet: typeof item.data_checked === "string" ? item.data_checked : "",
+        verifiedFields: evidence,
+      },
+      officerReviewStatus: review === "confirmed" || review === "overridden" ? review : "pending",
+      officerReviewNote: typeof item.officer_note === "string" ? item.officer_note : undefined,
+      conditionSource: typeof item.condition_source === "string" ? item.condition_source : undefined,
+      dataSource: typeof item.data_source === "string" ? item.data_source : undefined,
+      sourceVersion: typeof item.source_version === "string" ? item.source_version : undefined,
+      sourceHash: typeof item.source_hash === "string" ? item.source_hash : undefined,
+      evidence,
+      connectorStatus:
+        item.connector_status === "connected" ||
+        item.connector_status === "not_configured" ||
+        item.connector_status === "error"
+          ? item.connector_status
+          : undefined,
+      applies: item.applies !== false,
+      stale: item.stale === true,
+      officerResolution: resolution,
+      officerReviewedBy: typeof item.officer_reviewed_by === "string" ? item.officer_reviewed_by : undefined,
+      officerReviewedAt: typeof item.officer_reviewed_at === "string" ? item.officer_reviewed_at : undefined,
+    },
+  ];
 }
 
 export function mapTicketDetail(raw: unknown, auditLogs: AuditLogEntry[] = []): Ticket {
   const record = requireRecord(raw, "ticket_detail");
   const messagesPage = parsePage(record.messages, mapWireMessageToTicketMessage, "ticket_detail.messages");
   const ticket = mapWireTicket(record.ticket, { messages: messagesPage.items, auditLogs });
+  ticket.messagesTotal = messagesPage.total;
   const workspace = isRecord(record.workspace) ? record.workspace : null;
   if (typeof workspace?.officer_draft === "string") {
     ticket.officerDraft = workspace.officer_draft;
@@ -429,7 +668,20 @@ export function mapTicketDetail(raw: unknown, auditLogs: AuditLogEntry[] = []): 
   if (Array.isArray(workspace?.checklist)) {
     ticket.checklist = workspace.checklist.flatMap((item) => {
       if (!isRecord(item) || typeof item.id !== "string" || typeof item.label !== "string") return [];
-      return [{ id: item.id, label: item.label, checked: item.checked === true, description: "" }];
+      return [
+        {
+          id: item.id,
+          label: item.label,
+          checked: item.checked === true,
+          description: typeof item.description === "string" ? item.description : "",
+          required: item.required === true,
+          source: item.source === "ai" ? "ai" : "process",
+          checkedBy: typeof item.checked_by === "string" ? item.checked_by : undefined,
+          checkedAt: typeof item.checked_at === "string" ? item.checked_at : undefined,
+          note: typeof item.note === "string" ? item.note : undefined,
+          sourceVersion: typeof item.source_version === "string" ? item.source_version : undefined,
+        },
+      ];
     });
   }
   if (Array.isArray(record.attachments)) {
@@ -446,29 +698,59 @@ export function mapTicketDetail(raw: unknown, auditLogs: AuditLogEntry[] = []): 
       ];
     });
   }
-  const verifications = Array.isArray(record.verifications) ? record.verifications : [];
-  ticket.systemVerifications = verifications.flatMap((item) => {
+  ticket.systemVerifications = (Array.isArray(record.verifications) ? record.verifications : []).flatMap(mapVerificationItem);
+  ticket.process = mapProcessInfo(record.process);
+  ticket.studentProfile = mapStudentProfile(record.student_profile);
+  if (ticket.studentProfile) {
+    ticket.studentName = ticket.studentProfile.fullName || ticket.studentName;
+    ticket.studentMssv = ticket.studentProfile.mssv || ticket.studentMssv;
+    ticket.studentMajor = ticket.studentProfile.major || ticket.studentMajor;
+    ticket.studentClassYear = ticket.studentProfile.classYear || ticket.studentClassYear;
+    ticket.studentEmail = ticket.studentProfile.email || ticket.studentEmail;
+  }
+  if (isRecord(record.assigned_officer) && typeof record.assigned_officer.name === "string") {
+    ticket.assignedOfficerName = record.assigned_officer.name;
+    if (typeof record.assigned_officer.id === "string") ticket.assignedOfficerId = record.assigned_officer.id;
+  }
+  ticket.documentDraft = mapDocumentDraft(record.document_draft);
+  ticket.issuedDocument = mapIssuedDocument(record.issued_document);
+  if (ticket.documentDraft) {
+    ticket.documentStatus = ticket.documentDraft.status === "unavailable" ? "not_generated" : ticket.documentDraft.status;
+    ticket.purpose = ticket.documentDraft.purpose || ticket.purpose;
+    ticket.destinationOrg = ticket.documentDraft.destinationOrg || ticket.destinationOrg;
+  }
+  if (ticket.issuedDocument) {
+    ticket.documentStatus = "issued";
+    ticket.issuedCertificate = issuedInfoToCertificate(ticket.issuedDocument, ticket, ticket.documentDraft);
+  }
+  ticket.supplements = (Array.isArray(record.supplements) ? record.supplements : []).flatMap((item): SupplementRecord[] => {
     if (!isRecord(item) || typeof item.id !== "string") return [];
-    const status = item.status;
-    if (status !== "passed" && status !== "failed" && status !== "insufficient" && status !== "error") return [];
-    const review = item.officer_review_status;
+    const status = item.status === "fulfilled" || item.status === "cancelled" || item.status === "open" ? item.status : "open";
     return [
       {
         id: item.id,
-        criterionKey: typeof item.criterion_key === "string" ? item.criterion_key : item.id,
-        criterionLabel: typeof item.criterion_label === "string" ? item.criterion_label : "",
-        conditionApplied: typeof item.condition_applied === "string" ? item.condition_applied : "",
-        dataChecked: typeof item.data_checked === "string" ? item.data_checked : "",
-        sourceSystem: typeof item.source_system === "string" ? item.source_system : "",
-        lookupTimestamp: typeof item.lookup_timestamp === "string" ? item.lookup_timestamp : "",
-        status,
         reason: typeof item.reason === "string" ? item.reason : "",
-        officerReviewStatus:
-          review === "confirmed" || review === "overridden" ? review : "pending",
-        officerReviewNote: typeof item.officer_note === "string" ? item.officer_note : undefined,
+        status,
+        requestedBy: typeof item.requested_by === "string" ? item.requested_by : "",
+        requestedAt: typeof item.requested_at === "string" ? item.requested_at : "",
+        items: Array.isArray(item.items)
+          ? item.items.flatMap((entry) => {
+              if (!isRecord(entry) || typeof entry.label !== "string") return [];
+              return [
+                {
+                  id: typeof entry.id === "string" ? entry.id : undefined,
+                  label: entry.label,
+                  reason: typeof entry.reason === "string" ? entry.reason : null,
+                  status: entry.status === "fulfilled" ? "fulfilled" : "open",
+                },
+              ];
+            })
+          : [],
       },
     ];
   });
+  ticket.evidenceFingerprint = typeof record.evidence_fingerprint === "string" ? record.evidence_fingerprint : undefined;
+  ticket.dataChangedSinceLastCheck = ticket.systemVerifications?.some((item) => item.stale) === true;
   return ticket;
 }
 
@@ -571,11 +853,15 @@ export function mapBrief(raw: unknown): BriefView {
         )
       : [],
     qualityStatus: brief?.quality_status === "pass" || brief?.quality_status === "fail" ? brief.quality_status : null,
-    errorMessage: typeof error?.code === "string" ? error.code : null,
+    errorMessage: typeof error?.code === "string" ? `${error.code}${typeof error.message === "string" ? `: ${error.message}` : ""}` : null,
     modelName: typeof artifactMeta?.model_name === "string" ? artifactMeta.model_name : null,
     promptVersion: typeof artifactMeta?.prompt_version === "string" ? artifactMeta.prompt_version : null,
     templateVersion: typeof artifactMeta?.template_version === "string" ? artifactMeta.template_version : null,
     indexVersion: typeof artifactMeta?.index_version === "string" ? artifactMeta.index_version : null,
+    suggestedPriority: brief?.suggested_priority === "high" || brief?.suggested_priority === "normal" ? brief.suggested_priority : null,
+    priorityReasons: Array.isArray(brief?.priority_reasons)
+      ? brief.priority_reasons.filter((item): item is string => typeof item === "string")
+      : [],
   };
 }
 

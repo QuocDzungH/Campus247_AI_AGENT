@@ -90,9 +90,21 @@ async def test_ticket_verification_is_insufficient(client):
     ticket_id = form.json()["ticket"]["id"]
 
     officer = await _auth(client, "OF-DEMO-01")
+    detail = await client.get(f"/api/v1/tickets/{ticket_id}", headers=officer)
+    assert detail.status_code == 200, detail.text
+    revision = detail.json()["ticket"]["revision"]
+    claimed = await client.post(
+        f"/api/v1/officer/tickets/{ticket_id}/claim",
+        headers={**officer, "Idempotency-Key": "claim-verif"},
+        json={"expected_revision": revision, "confirmed": True},
+    )
+    assert claimed.status_code == 200, claimed.text
     result = await client.post(f"/api/v1/tickets/{ticket_id}/verifications", headers=officer, json={})
     assert result.status_code == 200, result.text
     items = result.json()["items"]
     assert items
-    assert all(item["status"] == "insufficient" for item in items)
+    by_key = {item["criterion_key"]: item for item in items}
+    assert "financial_obligation" not in by_key
+    assert by_key["academic_status"]["status"] == "insufficient"
+    assert by_key["academic_status"]["connector_status"] == "not_configured"
     assert all("SELECT" not in item["reason"] for item in items)

@@ -60,6 +60,12 @@ export interface ChecklistItem {
   label: string;
   description: string;
   checked: boolean;
+  required?: boolean;
+  source?: "process" | "ai";
+  checkedBy?: string;
+  checkedAt?: string;
+  note?: string;
+  sourceVersion?: string;
 }
 
 export type VerificationResultStatus = "passed" | "failed" | "insufficient" | "error";
@@ -81,6 +87,88 @@ export interface SystemVerificationItem {
   };
   officerReviewStatus: "pending" | "confirmed" | "overridden";
   officerReviewNote?: string;
+  conditionSource?: string;
+  dataSource?: string;
+  sourceVersion?: string;
+  sourceHash?: string;
+  evidence?: Record<string, string>;
+  connectorStatus?: "connected" | "not_configured" | "error";
+  applies?: boolean;
+  stale?: boolean;
+  officerResolution?: "none" | "viewed" | "manual_pass" | "manual_fail";
+  officerReviewedBy?: string;
+  officerReviewedAt?: string;
+}
+
+export interface ProcessInfo {
+  serviceType: string;
+  label: string;
+  processVersion: string;
+  issuesDocument: boolean;
+  templateId?: string | null;
+  templateVersion?: string | null;
+  templateStatus: "approved" | "unavailable";
+  validityDays?: number | null;
+  requiresAcademicStatus: boolean;
+  requiresFinancialClearance: boolean;
+  requiredCriteria: string[];
+  issueRequiredCriteria: string[];
+}
+
+export interface StudentProfileSnapshot {
+  userId: string;
+  fullName?: string | null;
+  mssv?: string | null;
+  email?: string | null;
+  faculty?: string | null;
+  major?: string | null;
+  cohort?: string | null;
+  classYear?: string | null;
+  studentStatus?: string | null;
+  verificationStatus: string;
+  source?: string | null;
+  isDemo?: boolean;
+}
+
+export interface DocumentDraft {
+  ticketId: string;
+  version: number;
+  templateId: string;
+  templateVersion: string;
+  templateStatus: "approved" | "unavailable";
+  status: "draft" | "approved" | "issued" | "unavailable";
+  studentSnapshot: Record<string, string | null | undefined>;
+  purpose?: string | null;
+  destinationOrg?: string | null;
+  notes?: string | null;
+  validUntil?: string | null;
+  authoredBy?: string | null;
+  approvedBy?: string | null;
+  updatedAt?: string | null;
+}
+
+export interface IssuedDocumentInfo {
+  id: string;
+  ticketId: string;
+  draftVersion: number;
+  templateId: string;
+  templateVersion: string;
+  filename: string;
+  sha256: string;
+  issuedBy: string;
+  issuedAt: string;
+  signatureStatus: "unsigned" | "pending_signature" | "signed";
+  signingProvider: string;
+  official: false;
+}
+
+export interface SupplementRecord {
+  id: string;
+  items: Array<{ id?: string; label: string; reason?: string | null; status: "open" | "fulfilled" }>;
+  reason: string;
+  status: "open" | "fulfilled" | "cancelled";
+  requestedBy: string;
+  requestedAt: string;
 }
 
 export interface IssuedCertificateDocument {
@@ -212,6 +300,13 @@ export interface Ticket {
   issuedCertificate?: IssuedCertificateDocument;
   documentStatus?: "not_generated" | "draft" | "approved" | "issued";
   dataChangedSinceLastCheck?: boolean;
+  process?: ProcessInfo;
+  studentProfile?: StudentProfileSnapshot;
+  documentDraft?: DocumentDraft;
+  issuedDocument?: IssuedDocumentInfo;
+  supplements?: SupplementRecord[];
+  evidenceFingerprint?: string;
+  messagesTotal?: number;
 }
 
 export interface ChatMessage {

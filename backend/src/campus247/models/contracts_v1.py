@@ -168,6 +168,8 @@ class Ticket(TicketRef):
     revision: int = Field(ge=1)
     created_at: AwareDatetime
     updated_at: AwareDatetime
+    student_name: Text | None = None
+    student_mssv: Id | None = None
 
 
 class ConversationState(Contract):
@@ -407,12 +409,20 @@ class Submit1(Contract):
     confirmed: Literal[True]
 
 
+class SupplementItem(Contract):
+    id: Id | None = None
+    label: Text
+    reason: Text | None = None
+    status: Literal["open", "fulfilled"] = "open"
+
+
 class Submit2(Contract):
     action: Literal["respond", "request_info", "resolve"]
     content: Text
     expected_revision: int = Field(ge=1)
     reviewed_brief_version: Annotated[int, Field(ge=1)] | None
     confirmed: Literal[True]
+    supplement_items: list[SupplementItem] | None = None
 
 
 class ClaimRequest(Contract):
@@ -470,6 +480,8 @@ class ErrorBody(Contract):
         "HANDOVER_FAILED",
         "PERSISTENCE_UNAVAILABLE",
         "RATE_LIMITED",
+        "GATE_FAILED",
+        "TEMPLATE_UNAVAILABLE",
     ]
     message: Text
     request_id: Id
@@ -559,12 +571,21 @@ class OfficerChecklistItem(Contract):
     id: Id
     label: Text
     checked: bool = False
+    required: bool = False
+    source: Literal["process", "ai"] = "process"
+    description: Text | None = None
+    checked_by: Id | None = None
+    checked_at: Text | None = None
+    note: Text | None = None
+    source_version: Text | None = None
 
 
 class TicketWorkspacePatch(Contract):
     officer_draft: Annotated[str, StringConstraints(max_length=10000)] | None = None
     toggle_checklist_id: Id | None = None
     checklist: list[OfficerChecklistItem] | None = None
+    expected_revision: Annotated[int, Field(ge=1)] | None = None
+    checklist_note: Text | None = None
 
 
 class TicketWorkspace(Contract):
@@ -635,6 +656,95 @@ class SystemVerificationItem(Contract):
     reason: Text
     officer_review_status: Literal["pending", "confirmed", "overridden"] = "pending"
     officer_note: Text | None = None
+    condition_source: Text | None = None
+    data_source: Text | None = None
+    source_version: Text | None = None
+    source_hash: Text | None = None
+    evidence: dict[str, str] | None = None
+    connector_status: Literal["connected", "not_configured", "error"] | None = None
+    applies: bool = True
+    stale: bool = False
+    officer_resolution: Literal["none", "viewed", "manual_pass", "manual_fail"] | None = None
+    officer_reviewed_by: Id | None = None
+    officer_reviewed_at: Text | None = None
+
+
+class ProcessInfo(Contract):
+    service_type: Id
+    label: Text
+    process_version: Id
+    issues_document: bool
+    template_id: Id | None = None
+    template_version: Id | None = None
+    template_status: Literal["approved", "unavailable"]
+    validity_days: int | None = None
+    requires_academic_status: bool = False
+    requires_financial_clearance: bool = False
+    required_criteria: list[Id] = Field(default_factory=list)
+    issue_required_criteria: list[Id] = Field(default_factory=list)
+
+
+class DocumentDraftView(Contract):
+    ticket_id: Id
+    version: int = Field(ge=0)
+    template_id: Id
+    template_version: Id
+    template_status: Literal["approved", "unavailable"]
+    status: Literal["draft", "approved", "issued", "unavailable"]
+    student_snapshot: dict = Field(default_factory=dict)
+    purpose: Text | None = None
+    destination_org: Text | None = None
+    notes: Text | None = None
+    valid_until: Text | None = None
+    authored_by: Id | None = None
+    approved_by: Id | None = None
+    content_hash: Text | None = None
+    updated_at: Text | None = None
+
+
+class DocumentDraftPatch(Contract):
+    expected_revision: int = Field(ge=1)
+    expected_draft_version: Annotated[int, Field(ge=0)] | None = None
+    purpose: Annotated[str, StringConstraints(max_length=1000)] | None = None
+    destination_org: Annotated[str, StringConstraints(max_length=300)] | None = None
+    notes: Annotated[str, StringConstraints(max_length=10000)] | None = None
+
+
+class IssueDocumentRequest(Contract):
+    expected_revision: int = Field(ge=1)
+    expected_draft_version: int = Field(ge=1)
+    confirmed: Literal[True]
+
+
+class IssuedDocumentView(Contract):
+    id: Id
+    ticket_id: Id
+    draft_version: int = Field(ge=1)
+    template_id: Id
+    template_version: Id
+    filename: Text
+    sha256: Id
+    issued_by: Id
+    issued_at: AwareDatetime
+    signature_status: Literal["unsigned", "pending_signature", "signed"]
+    signing_provider: Id
+    official: Literal[False] = False
+
+
+class IssueDocumentResult(Contract):
+    document: IssuedDocumentView
+    ticket: Ticket
+    audit_id: Id
+
+
+class SupplementView(Contract):
+    id: Id
+    items: list[SupplementItem] = Field(default_factory=list)
+    reason: Text
+    status: Literal["open", "fulfilled", "cancelled"]
+    requested_by: Id
+    requested_at: Text
+    evidence_fingerprint: Id | None = None
 
 
 class TicketDetail(Contract):
@@ -643,10 +753,24 @@ class TicketDetail(Contract):
     attachments: list[AttachmentView] = Field(default_factory=list)
     workspace: TicketWorkspace | None = None
     verifications: list[SystemVerificationItem] = Field(default_factory=list)
+    student_profile: StudentProfileView | None = None
+    assigned_officer: User | None = None
+    process: ProcessInfo | None = None
+    document_draft: DocumentDraftView | None = None
+    issued_document: IssuedDocumentView | None = None
+    supplements: list[SupplementView] = Field(default_factory=list)
+    evidence_fingerprint: Id | None = None
 
 
 class VerificationConfirm(Contract):
     note: Text | None = None
+    expected_revision: Annotated[int, Field(ge=1)] | None = None
+    outcome: Literal["viewed", "manual_pass", "manual_fail"] = "viewed"
+
+
+class VerificationRunRequest(Contract):
+    expected_revision: Annotated[int, Field(ge=1)] | None = None
+    criterion_key: Id | None = None
 
 
 class VerificationsResult(Contract):
@@ -731,10 +855,14 @@ class AuditEntry(Contract):
         "attachment",
         "verification",
         "review",
+        "document_draft",
+        "document_issue",
+        "prepare",
     ]
     from_status: Status | None
     to_status: Status | None
     request_id: Id
+    details: dict | None = None
     created_at: AwareDatetime
 
 

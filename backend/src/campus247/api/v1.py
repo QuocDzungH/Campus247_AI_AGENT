@@ -1,4 +1,4 @@
-from fastapi import APIRouter, File, Form, Query, Request, UploadFile
+from fastapi import APIRouter, Body, File, Form, Query, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse, Response
 
 from campus247.api.deps import Actor, Db, IdempotencyKey, RequestId
@@ -314,10 +314,14 @@ def officer_workspace(
 
 
 @router.post("/tickets/{id}/verifications", status_code=200)
-def run_ticket_verification(id: str, db: Db, actor: Actor, request_id: RequestId) -> JSONResponse:
-    from campus247.services import staff as staff_service
-
-    items = staff_service.run_ticket_verification(db, actor, id)
+def run_ticket_verification(
+    id: str,
+    db: Db,
+    actor: Actor,
+    request_id: RequestId,
+    payload: c.VerificationRunRequest = Body(default_factory=c.VerificationRunRequest),
+) -> JSONResponse:
+    items = staff_service.run_ticket_verification(db, actor, id, payload)
     return _json(200, {"items": [item.model_dump(mode="json") for item in items]}, request_id)
 
 
@@ -330,10 +334,48 @@ def confirm_ticket_verification(
     actor: Actor,
     request_id: RequestId,
 ) -> JSONResponse:
-    from campus247.services import staff as staff_service
-
-    items = staff_service.confirm_ticket_verification(db, actor, id, criterion_id, payload.note)
+    items = staff_service.confirm_ticket_verification(
+        db,
+        actor,
+        id,
+        criterion_id,
+        payload.note,
+        expected_revision=payload.expected_revision,
+        outcome=payload.outcome,
+    )
     return _json(200, {"items": [item.model_dump(mode="json") for item in items]}, request_id)
+
+
+@router.patch("/officer/tickets/{id}/document")
+def patch_document_draft(
+    id: str, payload: c.DocumentDraftPatch, db: Db, actor: Actor, request_id: RequestId
+) -> JSONResponse:
+    result = staff_service.save_document_draft(db, actor, id, payload)
+    return _json(200, result.model_dump(mode="json"), request_id)
+
+
+@router.post("/officer/tickets/{id}/document/issue")
+def issue_document(
+    id: str,
+    payload: c.IssueDocumentRequest,
+    db: Db,
+    actor: Actor,
+    key: IdempotencyKey,
+    request_id: RequestId,
+) -> JSONResponse:
+    status, body = staff_service.issue_ticket_document(db, actor, id, payload, key, request_id)
+    return _json(status, body, request_id)
+
+
+@router.get("/tickets/{id}/documents/{document_id}")
+def download_issued_document(
+    id: str,
+    document_id: str,
+    db: Db,
+    actor: Actor,
+) -> FileResponse:
+    path, row = staff_service.download_issued_document(db, actor, id, document_id)
+    return FileResponse(path, filename=row.filename, media_type=row.mime_type)
 
 
 @router.get("/reviews")

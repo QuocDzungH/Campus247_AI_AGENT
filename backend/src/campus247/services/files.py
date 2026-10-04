@@ -99,6 +99,13 @@ async def save_upload(session: Session, actor: User, ticket_id: str, upload: Upl
     target = disk_path(row)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_bytes(payload)
+    if ticket.status != "resolved":
+        from campus247.services.evidence import bump_evidence, mark_supplements_fulfilled
+        from campus247.services.student import _audit
+
+        bump_evidence(session, ticket)
+        mark_supplements_fulfilled(ticket)
+        _audit(session, ticket, actor.id, actor.role, "attachment", ticket.status, ticket.status, "attachment", now)
     session.commit()
     return attachment_to_contract(row)
 

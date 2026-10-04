@@ -162,10 +162,12 @@ export function applyBriefToTicket(ticket: Ticket, brief: BriefView): Ticket {
     ...ticket,
     briefStatus: brief.status,
     reviewedBriefVersion: brief.status === "ready" ? brief.briefVersion : ticket.reviewedBriefVersion ?? null,
-    officerDraft: brief.draftReply || ticket.officerDraft,
+    officerDraft: ticket.officerDraft || brief.draftReply || "",
     officerDraftDefault: brief.draftReply || ticket.officerDraftDefault,
     facts: brief.facts.length ? brief.facts : ticket.facts,
-    aiSummary: brief.summary ? { ...ticket.aiSummary, context: brief.summary } : ticket.aiSummary,
+    aiSummary: brief.summary
+      ? { ...ticket.aiSummary, target: ticket.aiSummary.target, context: brief.summary }
+      : ticket.aiSummary,
     officerBrief: brief,
     briefLoadError: undefined,
   };

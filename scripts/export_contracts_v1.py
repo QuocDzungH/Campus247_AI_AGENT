@@ -31,8 +31,11 @@ ENDPOINTS = [
     ("post", "/forms", c.FormSubmit, 201, c.Submit1Result, True),
     ("post", "/tickets", c.Submit1, 201, c.Submit1Result, True),
     ("patch", "/officer/tickets/{id}/workspace", c.TicketWorkspacePatch, 200, c.TicketWorkspace, False),
-    ("post", "/tickets/{id}/verifications", c.EmptyRequest, 200, c.VerificationsResult, False),
+    ("post", "/tickets/{id}/verifications", c.VerificationRunRequest, 200, c.VerificationsResult, False),
     ("post", "/tickets/{id}/verifications/{criterion_id}/confirm", c.VerificationConfirm, 200, c.VerificationsResult, False),
+    ("patch", "/officer/tickets/{id}/document", c.DocumentDraftPatch, 200, c.DocumentDraftView, False),
+    ("post", "/officer/tickets/{id}/document/issue", c.IssueDocumentRequest, 200, c.IssueDocumentResult, True),
+    ("get", "/tickets/{id}/documents/{document_id}", None, 200, None, False),
     ("get", "/reviews", None, 200, c.Page[c.ReviewCaseView], False),
     ("post", "/reviews", c.ReviewCaseCreate, 201, c.ReviewCaseView, False),
     ("get", "/reviews/{id}", None, 200, c.ReviewCaseView, False),
@@ -290,6 +293,12 @@ def example_cases() -> list[dict]:
     )
     add("verifications_result", c.VerificationsResult, dict(items=[verification]))
     add(
+        "document_draft_patch",
+        c.DocumentDraftPatch,
+        dict(expected_revision=2, expected_draft_version=1, purpose="Hồ sơ thực tập", destination_org="Công ty ABC", notes="Bản thảo nội bộ"),
+    )
+    add("issue_document", c.IssueDocumentRequest, dict(expected_revision=3, expected_draft_version=2, confirmed=True))
+    add(
         "review_create",
         c.ReviewCaseCreate,
         dict(
@@ -415,6 +424,14 @@ def openapi_document() -> dict:
         if "{id}" in path:
             parameters.append(
                 dict(name="id", **{"in": "path"}, required=True, schema=dict(type="string", minLength=1, maxLength=128))
+            )
+        if "{document_id}" in path:
+            parameters.append(
+                dict(name="document_id", **{"in": "path"}, required=True, schema=dict(type="string", minLength=1, maxLength=128))
+            )
+        if "{criterion_id}" in path:
+            parameters.append(
+                dict(name="criterion_id", **{"in": "path"}, required=True, schema=dict(type="string", minLength=1, maxLength=128))
             )
         if idempotency:
             parameters.append(

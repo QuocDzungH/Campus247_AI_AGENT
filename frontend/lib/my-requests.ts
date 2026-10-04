@@ -29,7 +29,7 @@ export function collectRequests(tickets: Ticket[], reviews: ReviewCase[], studen
       kind: "ticket", record: t, id: t.id, code: t.code, title: t.title,
       type: ({ certificate: "Yêu cầu giấy xác nhận", transcript: "Yêu cầu bảng điểm", complaint: "Khiếu nại điểm", lookup: "Câu hỏi học vụ" })[t.type],
       submittedAt: t.createdAt || t.submittedAt,
-      state: t.status === "resolved" ? "completed" : t.status === "pending_officer" ? "processing" : "new",
+      state: t.status === "resolved" ? "completed" : t.supplements?.some((row) => row.status === "open") ? "supplement" : t.status === "pending_officer" ? "processing" : "new",
     })),
     ...reviews.filter((r) => r.studentId === studentId).map((r): RequestItem => ({
       kind: "review", record: r, id: r.id, code: r.code,
@@ -60,6 +60,7 @@ export function filterRequests(items: RequestItem[], filter: "all" | RequestStat
 }
 
 export function hasIssuedDocument(ticket: Ticket): boolean {
+  if (ticket.issuedDocument?.id) return true;
   const document = ticket.issuedCertificate;
   return (ticket.type === "certificate" || ticket.type === "transcript")
     && ticket.status === "resolved" && ticket.documentStatus === "issued" && document?.status === "issued"

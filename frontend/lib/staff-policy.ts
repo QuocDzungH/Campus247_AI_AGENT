@@ -38,7 +38,7 @@ export function actionBlock(ticket: Ticket, action: "respond" | "request_info" |
   if (ticket.status === "resolved") return "Hồ sơ đã hoàn tất; không thể gửi thêm hoặc thực hiện lại.";
   if (!content.trim()) return action === "resolve" ? "Nhập kết quả xử lý trước khi hoàn tất." : "Nhập nội dung gửi sinh viên.";
   if (content.trim().length > 10000) return "Nội dung tối đa 10.000 ký tự.";
-  if (action === "resolve" && ticket.checklist.some(item => !item.checked)) return "Còn mục kiểm tra chưa xác nhận. Hãy kiểm tra hoặc yêu cầu bổ sung.";
+  if (action === "resolve" && !ticket.serviceType && ticket.checklist.some(item => !item.checked)) return "Còn mục kiểm tra chưa xác nhận. Hãy kiểm tra hoặc yêu cầu bổ sung.";
   if (action === "resolve" && ticket.dataChangedSinceLastCheck) return "Dữ liệu đã thay đổi; cần kiểm tra lại trước khi hoàn tất.";
   return "";
 }

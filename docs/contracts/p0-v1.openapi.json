@@ -3369,7 +3369,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/EmptyRequest"
+                "$ref": "#/components/schemas/VerificationRunRequest"
               }
             }
           }
@@ -3382,6 +3382,16 @@
         "parameters": [
           {
             "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "criterion_id",
             "in": "path",
             "required": true,
             "schema": {
@@ -3570,6 +3580,621 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/officer/tickets/{id}/document": {
+      "patch": {
+        "operationId": "patch_officer_tickets_by_id_document",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contract target; runtime implementation is separate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentDraftView"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "401": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "403": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "404": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "409": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "422": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "429": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "502": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "503": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentDraftPatch"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/officer/tickets/{id}/document/issue": {
+      "post": {
+        "operationId": "post_officer_tickets_by_id_document_issue",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contract target; runtime implementation is separate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueDocumentResult"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "202": {
+            "description": "Operation already processing; repeat same request/key after Retry-After.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Processing"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "example": 2
+                }
+              },
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "401": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "403": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "404": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "409": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "422": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "429": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "502": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "503": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IssueDocumentRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tickets/{id}/documents/{document_id}": {
+      "get": {
+        "operationId": "get_tickets_by_id_documents_{document_id}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contract target; runtime implementation is separate.",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "401": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "403": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "404": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "409": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "422": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "429": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "502": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          },
+          "503": {
+            "description": "See error.code and retryable; not every error applies to every endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Server correlation ID; not an idempotency key."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerSession": []
+          }
+        ]
       }
     },
     "/api/v1/reviews": {
@@ -7530,7 +8155,10 @@
               "workspace_update",
               "attachment",
               "verification",
-              "review"
+              "review",
+              "document_draft",
+              "document_issue",
+              "prepare"
             ],
             "title": "Action",
             "type": "string"
@@ -7572,6 +8200,19 @@
             "minLength": 1,
             "title": "Request Id",
             "type": "string"
+          },
+          "details": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Details"
           },
           "created_at": {
             "format": "date-time",
@@ -8260,6 +8901,34 @@
             "format": "date-time",
             "title": "Updated At",
             "type": "string"
+          },
+          "student_name": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Student Name"
+          },
+          "student_mssv": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Student Mssv"
           }
         },
         "required": [
@@ -8422,6 +9091,246 @@
         "title": "DemoLogin",
         "type": "object"
       },
+      "DocumentDraftPatch": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "minimum": 1,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "expected_draft_version": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Expected Draft Version"
+          },
+          "purpose": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Purpose"
+          },
+          "destination_org": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Destination Org"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Notes"
+          }
+        },
+        "required": [
+          "expected_revision"
+        ],
+        "title": "DocumentDraftPatch",
+        "type": "object"
+      },
+      "DocumentDraftView": {
+        "additionalProperties": false,
+        "properties": {
+          "ticket_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Ticket Id",
+            "type": "string"
+          },
+          "version": {
+            "minimum": 0,
+            "title": "Version",
+            "type": "integer"
+          },
+          "template_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Template Id",
+            "type": "string"
+          },
+          "template_version": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Template Version",
+            "type": "string"
+          },
+          "template_status": {
+            "enum": [
+              "approved",
+              "unavailable"
+            ],
+            "title": "Template Status",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "approved",
+              "issued",
+              "unavailable"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "student_snapshot": {
+            "additionalProperties": true,
+            "title": "Student Snapshot",
+            "type": "object"
+          },
+          "purpose": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Purpose"
+          },
+          "destination_org": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Destination Org"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Notes"
+          },
+          "valid_until": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid Until"
+          },
+          "authored_by": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Authored By"
+          },
+          "approved_by": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Approved By"
+          },
+          "content_hash": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Content Hash"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Updated At"
+          }
+        },
+        "required": [
+          "ticket_id",
+          "version",
+          "template_id",
+          "template_version",
+          "template_status",
+          "status"
+        ],
+        "title": "DocumentDraftView",
+        "type": "object"
+      },
       "EmptyRequest": {
         "additionalProperties": false,
         "properties": {},
@@ -8565,7 +9474,9 @@
               "AI_OUTPUT_INVALID",
               "HANDOVER_FAILED",
               "PERSISTENCE_UNAVAILABLE",
-              "RATE_LIMITED"
+              "RATE_LIMITED",
+              "GATE_FAILED",
+              "TEMPLATE_UNAVAILABLE"
             ],
             "title": "Code",
             "type": "string"
@@ -8980,6 +9891,150 @@
         "title": "IntakeResult",
         "type": "object"
       },
+      "IssueDocumentRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "minimum": 1,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "expected_draft_version": {
+            "minimum": 1,
+            "title": "Expected Draft Version",
+            "type": "integer"
+          },
+          "confirmed": {
+            "const": true,
+            "title": "Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "expected_draft_version",
+          "confirmed"
+        ],
+        "title": "IssueDocumentRequest",
+        "type": "object"
+      },
+      "IssuedDocumentView": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "ticket_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Ticket Id",
+            "type": "string"
+          },
+          "draft_version": {
+            "minimum": 1,
+            "title": "Draft Version",
+            "type": "integer"
+          },
+          "template_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Template Id",
+            "type": "string"
+          },
+          "template_version": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Template Version",
+            "type": "string"
+          },
+          "filename": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Filename",
+            "type": "string"
+          },
+          "sha256": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Sha256",
+            "type": "string"
+          },
+          "issued_by": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Issued By",
+            "type": "string"
+          },
+          "issued_at": {
+            "format": "date-time",
+            "title": "Issued At",
+            "type": "string"
+          },
+          "signature_status": {
+            "enum": [
+              "unsigned",
+              "pending_signature",
+              "signed"
+            ],
+            "title": "Signature Status",
+            "type": "string"
+          },
+          "signing_provider": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Signing Provider",
+            "type": "string"
+          },
+          "official": {
+            "const": false,
+            "default": false,
+            "title": "Official",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "ticket_id",
+          "draft_version",
+          "template_id",
+          "template_version",
+          "filename",
+          "sha256",
+          "issued_by",
+          "issued_at",
+          "signature_status",
+          "signing_provider"
+        ],
+        "title": "IssuedDocumentView",
+        "type": "object"
+      },
+      "IssueDocumentResult": {
+        "additionalProperties": false,
+        "properties": {
+          "document": {
+            "$ref": "#/components/schemas/IssuedDocumentView"
+          },
+          "ticket": {
+            "$ref": "#/components/schemas/Ticket"
+          },
+          "audit_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Audit Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document",
+          "ticket",
+          "audit_id"
+        ],
+        "title": "IssueDocumentResult",
+        "type": "object"
+      },
       "JobAccepted": {
         "additionalProperties": false,
         "properties": {
@@ -9139,6 +10194,90 @@
             "default": false,
             "title": "Checked",
             "type": "boolean"
+          },
+          "required": {
+            "default": false,
+            "title": "Required",
+            "type": "boolean"
+          },
+          "source": {
+            "default": "process",
+            "enum": [
+              "process",
+              "ai"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "checked_by": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Checked By"
+          },
+          "checked_at": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Checked At"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Note"
+          },
+          "source_version": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Version"
           }
         },
         "required": [
@@ -9498,6 +10637,118 @@
           "fields"
         ],
         "title": "PreviewPatch",
+        "type": "object"
+      },
+      "ProcessInfo": {
+        "additionalProperties": false,
+        "properties": {
+          "service_type": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Service Type",
+            "type": "string"
+          },
+          "label": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
+          },
+          "process_version": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Process Version",
+            "type": "string"
+          },
+          "issues_document": {
+            "title": "Issues Document",
+            "type": "boolean"
+          },
+          "template_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Template Id"
+          },
+          "template_version": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Template Version"
+          },
+          "template_status": {
+            "enum": [
+              "approved",
+              "unavailable"
+            ],
+            "title": "Template Status",
+            "type": "string"
+          },
+          "validity_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Validity Days"
+          },
+          "requires_academic_status": {
+            "default": false,
+            "title": "Requires Academic Status",
+            "type": "boolean"
+          },
+          "requires_financial_clearance": {
+            "default": false,
+            "title": "Requires Financial Clearance",
+            "type": "boolean"
+          },
+          "required_criteria": {
+            "items": {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            "title": "Required Criteria",
+            "type": "array"
+          },
+          "issue_required_criteria": {
+            "items": {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            "title": "Issue Required Criteria",
+            "type": "array"
+          }
+        },
+        "required": [
+          "service_type",
+          "label",
+          "process_version",
+          "issues_document",
+          "template_status"
+        ],
+        "title": "ProcessInfo",
         "type": "object"
       },
       "Processing": {
@@ -10251,6 +11502,59 @@
         "title": "Submit1Result",
         "type": "object"
       },
+      "SupplementItem": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Id"
+          },
+          "label": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Reason"
+          },
+          "status": {
+            "default": "open",
+            "enum": [
+              "open",
+              "fulfilled"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label"
+        ],
+        "title": "SupplementItem",
+        "type": "object"
+      },
       "Submit2": {
         "additionalProperties": false,
         "properties": {
@@ -10290,6 +11594,21 @@
             "const": true,
             "title": "Confirmed",
             "type": "boolean"
+          },
+          "supplement_items": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/SupplementItem"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Supplement Items"
           }
         },
         "required": [
@@ -10324,6 +11643,74 @@
           "audit_id"
         ],
         "title": "Submit2Result",
+        "type": "object"
+      },
+      "SupplementView": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SupplementItem"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "reason": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "open",
+              "fulfilled",
+              "cancelled"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "requested_by": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Requested By",
+            "type": "string"
+          },
+          "requested_at": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Requested At",
+            "type": "string"
+          },
+          "evidence_fingerprint": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Evidence Fingerprint"
+          }
+        },
+        "required": [
+          "id",
+          "reason",
+          "status",
+          "requested_by",
+          "requested_at"
+        ],
+        "title": "SupplementView",
         "type": "object"
       },
       "SystemVerificationItem": {
@@ -10410,6 +11797,150 @@
             ],
             "default": null,
             "title": "Officer Note"
+          },
+          "condition_source": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Condition Source"
+          },
+          "data_source": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Data Source"
+          },
+          "source_version": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Version"
+          },
+          "source_hash": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Hash"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Evidence"
+          },
+          "connector_status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "connected",
+                  "not_configured",
+                  "error"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Connector Status"
+          },
+          "applies": {
+            "default": true,
+            "title": "Applies",
+            "type": "boolean"
+          },
+          "stale": {
+            "default": false,
+            "title": "Stale",
+            "type": "boolean"
+          },
+          "officer_resolution": {
+            "anyOf": [
+              {
+                "enum": [
+                  "none",
+                  "viewed",
+                  "manual_pass",
+                  "manual_fail"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Officer Resolution"
+          },
+          "officer_reviewed_by": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Officer Reviewed By"
+          },
+          "officer_reviewed_at": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Officer Reviewed At"
           }
         },
         "required": [
@@ -10539,6 +12070,82 @@
             },
             "title": "Verifications",
             "type": "array"
+          },
+          "student_profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StudentProfileView"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "assigned_officer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/User"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "process": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProcessInfo"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "document_draft": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DocumentDraftView"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "issued_document": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IssuedDocumentView"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "supplements": {
+            "items": {
+              "$ref": "#/components/schemas/SupplementView"
+            },
+            "title": "Supplements",
+            "type": "array"
+          },
+          "evidence_fingerprint": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Evidence Fingerprint"
           }
         },
         "required": [
@@ -10674,6 +12281,33 @@
             ],
             "default": null,
             "title": "Checklist"
+          },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Expected Revision"
+          },
+          "checklist_note": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Checklist Note"
           }
         },
         "title": "TicketWorkspacePatch",
@@ -10695,9 +12329,66 @@
             ],
             "default": null,
             "title": "Note"
+          },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Expected Revision"
+          },
+          "outcome": {
+            "default": "viewed",
+            "enum": [
+              "viewed",
+              "manual_pass",
+              "manual_fail"
+            ],
+            "title": "Outcome",
+            "type": "string"
           }
         },
         "title": "VerificationConfirm",
+        "type": "object"
+      },
+      "VerificationRunRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Expected Revision"
+          },
+          "criterion_key": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Criterion Key"
+          }
+        },
+        "title": "VerificationRunRequest",
         "type": "object"
       },
       "VerificationsResult": {

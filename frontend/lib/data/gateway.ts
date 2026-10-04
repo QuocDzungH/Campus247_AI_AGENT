@@ -52,9 +52,9 @@ export interface CampusDataGateway {
   getTicket(id: string): Promise<Ticket | undefined>;
   createTicket(student: User, data: Partial<Ticket>): Promise<Ticket>;
   updateTicketStatus(id: string, status: TicketStatus, actorName: string): Promise<void>;
-  updateOfficerDraft(id: string, draft: string, actor?: User, expectedDraft?: string): Promise<void>;
+  updateOfficerDraft(id: string, draft: string, actor?: User, expectedDraft?: string, expectedRevision?: number): Promise<void>;
   resetOfficerDraft(id: string): Promise<void>;
-  toggleChecklistItem(ticketId: string, itemId: string): Promise<void>;
+  toggleChecklistItem(ticketId: string, itemId: string, expectedRevision?: number): Promise<void>;
   addTicketMessage(
     ticketId: string,
     message: Omit<TicketMessage, "id" | "timestamp">
@@ -68,10 +68,21 @@ export interface CampusDataGateway {
   ): Promise<void>;
 
   // Certificate Verification & BM-03 Issuance
-  runTicketVerification(ticketId: string): Promise<void>;
-  retryCriterionVerification(ticketId: string, criterionId: string): Promise<void>;
-  confirmCriterionReview(ticketId: string, criterionId: string, note?: string): Promise<void>;
-  updateCertificateDraft(ticketId: string, edits: Partial<IssuedCertificateDocument>): Promise<void>;
+  runTicketVerification(ticketId: string, expectedRevision?: number, criterionKey?: string): Promise<void>;
+  retryCriterionVerification(ticketId: string, criterionId: string, expectedRevision?: number): Promise<void>;
+  confirmCriterionReview(
+    ticketId: string,
+    criterionId: string,
+    note?: string,
+    outcome?: "viewed" | "manual_pass" | "manual_fail",
+    expectedRevision?: number
+  ): Promise<void>;
+  updateCertificateDraft(ticketId: string, edits: Partial<IssuedCertificateDocument>, expectedRevision?: number, expectedDraftVersion?: number): Promise<void>;
+  issueCertificate?(
+    ticketId: string,
+    payload: { expectedRevision: number; expectedDraftVersion: number }
+  ): Promise<IssuedCertificateDocument>;
+  downloadIssuedDocument?(ticketId: string, documentId: string): Promise<void>;
 
   // Chat Assistant State & Sessions
   getChatSessions(): Promise<ChatSession[]>;
@@ -162,6 +173,7 @@ export interface CampusDataGateway {
       expectedRevision: number;
       reviewedBriefVersion: number | null;
       idempotencyKey?: string;
+      supplementItems?: Array<{ label: string; reason?: string }>;
     }
   ): Promise<Ticket>;
 }

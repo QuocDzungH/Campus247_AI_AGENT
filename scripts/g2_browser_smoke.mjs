@@ -211,7 +211,7 @@ async function runApi(page) {
   await page.getByRole("button", { name: "Nhận ca" }).click();
   await page.getByText("Đã nhận ca", { exact: false }).waitFor({ timeout: 15000 });
   report.steps.push("claim");
-  await page.getByRole("button", { name: "Chuẩn bị L3" }).click();
+  await page.getByRole("button", { name: /AI chuẩn bị hồ sơ|Chuẩn bị L3|Chạy lại AI/ }).click();
   await page.getByTestId("officer-fact-sheet").waitFor({ timeout: 45000 });
   await page.getByText("Brief đã sẵn sàng", { exact: false }).waitFor({ timeout: 10000 });
   report.steps.push("prepare-ready");

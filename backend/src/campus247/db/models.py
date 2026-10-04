@@ -336,6 +336,9 @@ class Ticket(Base):
     officer_draft: Mapped[str | None] = mapped_column(Text)
     officer_checklist: Mapped[list] = mapped_column(PortableJSON, nullable=False, default=list)
     system_verifications: Mapped[list] = mapped_column(PortableJSON, nullable=False, default=list)
+    document_draft: Mapped[dict | None] = mapped_column(PortableJSON)
+    supplement_requests: Mapped[list] = mapped_column(PortableJSON, nullable=False, default=list)
+    evidence_fingerprint: Mapped[str | None] = mapped_column(String(64))
     revision: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
@@ -488,6 +491,7 @@ class AuditEntry(Base):
     from_status: Mapped[str | None] = mapped_column(String(32))
     to_status: Mapped[str | None] = mapped_column(String(32))
     request_id: Mapped[str] = mapped_column(ID, nullable=False)
+    details: Mapped[dict | None] = mapped_column(PortableJSON)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
 
 
@@ -552,6 +556,34 @@ class Job(Base):
     last_error: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
+
+
+class IssuedDocument(Base):
+    __tablename__ = "issued_documents"
+    __table_args__ = (
+        UniqueConstraint("ticket_id", name="uq_issued_documents_ticket"),
+        CheckConstraint(
+            "signature_status IN ('unsigned','pending_signature','signed')",
+            name="signature_status",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(ID, primary_key=True)
+    ticket_id: Mapped[str] = mapped_column(ForeignKey("tickets.id"), nullable=False)
+    draft_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    template_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    template_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    filename: Mapped[str] = mapped_column(String(500), nullable=False)
+    mime_type: Mapped[str] = mapped_column(String(200), nullable=False)
+    size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
+    object_key: Mapped[str] = mapped_column(String(1000), nullable=False)
+    sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    payload: Mapped[dict] = mapped_column(PortableJSON, nullable=False)
+    issued_by: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
+    issued_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
+    signature_status: Mapped[str] = mapped_column(String(32), nullable=False, default="unsigned")
+    signing_provider: Mapped[str] = mapped_column(String(64), nullable=False, default="none")
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
 
 
 class ReviewCodeSequence(Base):

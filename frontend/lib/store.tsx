@@ -224,11 +224,17 @@ interface StoreContextType {
   resetAllDemoData: () => Promise<void>;
 
   // Certificate Verification & BM-03 Issuance
-  runTicketVerification: (ticketId: string) => Promise<void>;
+  runTicketVerification: (ticketId: string, criterionKey?: string) => Promise<void>;
   retryCriterionVerification: (ticketId: string, criterionId: string) => Promise<void>;
-  confirmCriterionReview: (ticketId: string, criterionId: string, note?: string) => Promise<void>;
+  confirmCriterionReview: (
+    ticketId: string,
+    criterionId: string,
+    note?: string,
+    outcome?: "viewed" | "manual_pass" | "manual_fail"
+  ) => Promise<void>;
   updateCertificateDraft: (ticketId: string, edits: Partial<IssuedCertificateDocument>) => Promise<void>;
   issueCertificate: (ticketId: string) => Promise<IssuedCertificateDocument | null>;
+  downloadIssuedDocument: (ticketId: string, documentId: string) => Promise<void>;
 
   // Chat Assistant State & Sessions
   chatSessions: ChatSession[];
@@ -715,7 +721,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     const ticket = getTicket(id);
     if (!ticket) throw new DataGatewayError("not_found", "Không tìm thấy hồ sơ.");
     await executeGateway(async (activeGateway) => {
-      await activeGateway.updateOfficerDraft(id, draft, currentUser, officerDraftFor(ticket, currentUser.id));
+      await activeGateway.updateOfficerDraft(
+        id,
+        draft,
+        currentUser,
+        officerDraftFor(ticket, currentUser.id),
+        ticket.serverRevision
+      );
       upsertTicket({ ...ticket, officerDraft: draft });
     });
   };
@@ -728,8 +740,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const toggleChecklistItem = async (ticketId: string, itemId: string) => {
     await executeGateway(async (activeGateway) => {
-      await activeGateway.toggleChecklistItem(ticketId, itemId);
-      setTickets(await activeGateway.getTickets());
+      const current = getTicket(ticketId);
+      await activeGateway.toggleChecklistItem(ticketId, itemId, current?.serverRevision);
+      if (activeGateway.getTicketDetail) {
+        const detail = await activeGateway.getTicketDetail(ticketId);
+        upsertTicket(detail);
+      } else {
+        setTickets(await activeGateway.getTickets());
+      }
     });
   };
 
@@ -781,6 +799,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           content: customContent?.trim() || "Đã xử lý yêu cầu.",
           expectedRevision: ticket.serverRevision ?? 1,
           reviewedBriefVersion: briefGate.reviewedBriefVersion,
+          supplementItems:
+            actionType === "request_info"
+              ? [{ label: "Bổ sung theo phản hồi cán bộ", reason: customContent?.trim() || "Cần bổ sung hồ sơ." }]
+              : undefined,
         });
         upsertTicket(updated);
         const reconciled = await commitThenReconcile(updated, async () =>
@@ -925,36 +947,96 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const runTicketVerification = async (ticketId: string) => {
+  const runTicketVerification = async (ticketId: string, criterionKey?: string) => {
     await executeGateway(async (activeGateway) => {
-      await activeGateway.runTicketVerification(ticketId);
-      setTickets(await activeGateway.getTickets());
+      const current = getTicket(ticketId);
+      await activeGateway.runTicketVerification(ticketId, current?.serverRevision, criterionKey);
+      if (activeGateway.getTicketDetail) {
+        const detail = await activeGateway.getTicketDetail(ticketId);
+        upsertTicket(detail);
+      } else {
+        setTickets(await activeGateway.getTickets());
+      }
     });
   };
 
   const retryCriterionVerification = async (ticketId: string, criterionId: string) => {
     await executeGateway(async (activeGateway) => {
-      await activeGateway.retryCriterionVerification(ticketId, criterionId);
-      setTickets(await activeGateway.getTickets());
+      const current = getTicket(ticketId);
+      await activeGateway.retryCriterionVerification(ticketId, criterionId, current?.serverRevision);
+      if (activeGateway.getTicketDetail) {
+        const detail = await activeGateway.getTicketDetail(ticketId);
+        upsertTicket(detail);
+      } else {
+        setTickets(await activeGateway.getTickets());
+      }
     });
   };
 
-  const confirmCriterionReview = async (ticketId: string, criterionId: string, note?: string) => {
+  const confirmCriterionReview = async (
+    ticketId: string,
+    criterionId: string,
+    note?: string,
+    outcome: "viewed" | "manual_pass" | "manual_fail" = "viewed"
+  ) => {
     await executeGateway(async (activeGateway) => {
-      await activeGateway.confirmCriterionReview(ticketId, criterionId, note);
-      setTickets(await activeGateway.getTickets());
+      const current = getTicket(ticketId);
+      await activeGateway.confirmCriterionReview(ticketId, criterionId, note, outcome, current?.serverRevision);
+      if (activeGateway.getTicketDetail) {
+        const detail = await activeGateway.getTicketDetail(ticketId);
+        upsertTicket(detail);
+      } else {
+        setTickets(await activeGateway.getTickets());
+      }
     });
   };
 
   const updateCertificateDraft = async (ticketId: string, edits: Partial<IssuedCertificateDocument>) => {
     await executeGateway(async (activeGateway) => {
-      await activeGateway.updateCertificateDraft(ticketId, edits);
-      setTickets(await activeGateway.getTickets());
+      const current = getTicket(ticketId);
+      await activeGateway.updateCertificateDraft(
+        ticketId,
+        edits,
+        current?.serverRevision,
+        current?.documentDraft?.version
+      );
+      if (activeGateway.getTicketDetail) {
+        const detail = await activeGateway.getTicketDetail(ticketId);
+        upsertTicket(detail);
+      } else {
+        setTickets(await activeGateway.getTickets());
+      }
     });
   };
 
   const issueCertificate = async (ticketId: string): Promise<IssuedCertificateDocument | null> => {
-    throw new UnsupportedOperationError(`Phát hành tài liệu chính thức cho ${ticketId}`);
+    return executeGateway(async (activeGateway) => {
+      if (!activeGateway.issueCertificate) {
+        throw new UnsupportedOperationError(`Phát hành tài liệu cho ${ticketId}`);
+      }
+      const current = getTicket(ticketId);
+      if (!current?.documentDraft || current.documentDraft.templateStatus !== "approved") {
+        throw new DataGatewayError("conflict", "Loại dịch vụ này chưa có mẫu được phê duyệt.");
+      }
+      const issued = await activeGateway.issueCertificate(ticketId, {
+        expectedRevision: current.serverRevision ?? 1,
+        expectedDraftVersion: current.documentDraft.version,
+      });
+      if (activeGateway.getTicketDetail) {
+        const detail = await activeGateway.getTicketDetail(ticketId);
+        upsertTicket(detail);
+      }
+      return issued;
+    });
+  };
+
+  const downloadIssuedDocument = async (ticketId: string, documentId: string) => {
+    await executeGateway(async (activeGateway) => {
+      if (!activeGateway.downloadIssuedDocument) {
+        throw new UnsupportedOperationError("downloadIssuedDocument");
+      }
+      await activeGateway.downloadIssuedDocument(ticketId, documentId);
+    });
   };
 
   const selectChatSession = (sessionId: string) => {
@@ -1132,6 +1214,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         confirmCriterionReview,
         updateCertificateDraft,
         issueCertificate,
+        downloadIssuedDocument,
         chatSessions,
         activeSessionId,
         selectChatSession,

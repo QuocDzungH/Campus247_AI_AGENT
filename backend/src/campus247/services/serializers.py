@@ -103,6 +103,8 @@ def ticket_to_contract(ticket: Ticket) -> c.Ticket:
     request_data = None
     if ticket.request_data is not None:
         request_data = c.Fields.model_validate(ticket.request_data)
+    student = getattr(ticket, "student", None)
+    profile = getattr(student, "profile", None) if student is not None else None
     return c.Ticket(
         id=ticket.id,
         code=ticket.code,
@@ -120,6 +122,8 @@ def ticket_to_contract(ticket: Ticket) -> c.Ticket:
         revision=ticket.revision,
         created_at=ensure_utc(ticket.created_at),
         updated_at=ensure_utc(ticket.updated_at),
+        student_name=(profile.full_name if profile and profile.full_name else (student.name if student else None)),
+        student_mssv=(profile.mssv if profile else None),
     )
 
 
@@ -171,6 +175,7 @@ def audit_to_contract(entry: AuditEntry) -> c.AuditEntry:
         from_status=entry.from_status,  # type: ignore[arg-type]
         to_status=entry.to_status,  # type: ignore[arg-type]
         request_id=entry.request_id,
+        details=entry.details,
         created_at=ensure_utc(entry.created_at),
     )
 

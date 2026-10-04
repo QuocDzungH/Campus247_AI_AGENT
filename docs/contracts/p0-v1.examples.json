@@ -223,7 +223,9 @@
           "assigned_officer_id": null,
           "revision": 1,
           "created_at": "2026-09-29T03:00:00Z",
-          "updated_at": "2026-09-29T03:00:00Z"
+          "updated_at": "2026-09-29T03:00:00Z",
+          "student_name": null,
+          "student_mssv": null
         },
         "source_ticket_revision": 1,
         "student_profile": {
@@ -612,7 +614,9 @@
       "payload": {
         "officer_draft": "Phòng học vụ đã tiếp nhận.",
         "toggle_checklist_id": null,
-        "checklist": null
+        "checklist": null,
+        "expected_revision": null,
+        "checklist_note": null
       }
     },
     {
@@ -631,9 +635,40 @@
             "status": "insufficient",
             "reason": "Chưa kết nối hệ thống đào tạo.",
             "officer_review_status": "pending",
-            "officer_note": null
+            "officer_note": null,
+            "condition_source": null,
+            "data_source": null,
+            "source_version": null,
+            "source_hash": null,
+            "evidence": null,
+            "connector_status": null,
+            "applies": true,
+            "stale": false,
+            "officer_resolution": null,
+            "officer_reviewed_by": null,
+            "officer_reviewed_at": null
           }
         ]
+      }
+    },
+    {
+      "name": "document_draft_patch",
+      "model": "DocumentDraftPatch",
+      "payload": {
+        "expected_revision": 2,
+        "expected_draft_version": 1,
+        "purpose": "Hồ sơ thực tập",
+        "destination_org": "Công ty ABC",
+        "notes": "Bản thảo nội bộ"
+      }
+    },
+    {
+      "name": "issue_document",
+      "model": "IssueDocumentRequest",
+      "payload": {
+        "expected_revision": 3,
+        "expected_draft_version": 2,
+        "confirmed": true
       }
     },
     {
@@ -707,7 +742,9 @@
           "assigned_officer_id": null,
           "revision": 1,
           "created_at": "2026-09-29T03:00:00Z",
-          "updated_at": "2026-09-29T03:00:00Z"
+          "updated_at": "2026-09-29T03:00:00Z",
+          "student_name": null,
+          "student_mssv": null
         },
         "brief_status": "pending"
       }
@@ -720,7 +757,8 @@
         "content": "Phòng học vụ đã tiếp nhận.",
         "expected_revision": 1,
         "reviewed_brief_version": 1,
-        "confirmed": true
+        "confirmed": true,
+        "supplement_items": null
       }
     },
     {
@@ -756,7 +794,9 @@
           "assigned_officer_id": null,
           "revision": 1,
           "created_at": "2026-09-29T03:00:00Z",
-          "updated_at": "2026-09-29T03:00:00Z"
+          "updated_at": "2026-09-29T03:00:00Z",
+          "student_name": null,
+          "student_mssv": null
         },
         "audit_id": "aud_claim_001"
       }

@@ -89,7 +89,7 @@ const {
   isDisplayTicketCode,
 } = loadTypeScriptModule(path.join(frontendDir, "lib/data/api/g2-flow.ts"));
 const { pollUntil } = loadTypeScriptModule(path.join(frontendDir, "lib/data/api/replay.ts"));
-const { mapBrief, mapWireTicket, mapChatResult } = loadTypeScriptModule(path.join(frontendDir, "lib/data/api/mappers.ts"));
+const { mapBrief, mapWireTicket, mapChatResult, mapTicketDetail } = loadTypeScriptModule(path.join(frontendDir, "lib/data/api/mappers.ts"));
 const { mapChatTurnToAssistantResult } = loadTypeScriptModule(path.join(frontendDir, "lib/assistant-adapter.ts"));
 const { createStudentChatStore, exchangesFromChatMessages } = loadTypeScriptModule(path.join(frontendDir, "lib/student-chat.ts"));
 const { OfficerFactSheet } = loadTypeScriptModule(path.join(frontendDir, "components/staff/OfficerFactSheet.tsx"));
@@ -777,6 +777,7 @@ test("getTicketDetail does not turn brief HTTP 500 into none", async () => {
       });
     }
     if (url.includes("/audit")) return jsonResponse(200, { items: [], total: 0, page: 1, page_size: 100 });
+    if (url.includes("/messages")) return jsonResponse(200, { items: [], total: 0, page: 1, page_size: 100 });
     if (url.includes("/brief")) {
       return jsonResponse(500, {
         error: { code: "PERSISTENCE_UNAVAILABLE", message: "DB down", request_id: "req_x", retryable: true },
@@ -856,13 +857,112 @@ test("applyBriefToTicket keeps facts off the mutation checklist used by resolve"
     },
     error: null,
   });
+  ticket.officerDraft = "Nháp cán bộ đang sửa";
   const next = applyBriefToTicket(ticket, brief);
   assert.equal(next.facts[0].key, "purpose");
   assert.equal(next.checklist.length, 0);
   assert.equal(next.officerBrief.checklist[0].label, "Check");
+  assert.equal(next.officerDraft, "Nháp cán bộ đang sửa");
+  assert.equal(next.officerDraftDefault, "Nháp");
   const failed = markBriefLoadFailure(ticket, new DataGatewayError("server", "HTTP 500"));
   assert.equal(failed.briefStatus, undefined);
   assert.equal(failed.briefLoadError, "HTTP 500");
+});
+
+test("mapTicketDetail keeps extras, profile, and viewed verification as insufficient", () => {
+  const ticket = mapTicketDetail({
+    ticket: {
+      id: "tkt_1",
+      code: "TKT-2026-0400",
+      status: "pending_officer",
+      priority: "normal",
+      conversation_id: "conv_1",
+      student_id: "SV-DEMO-001",
+      category: "action",
+      service_type: "student_certificate",
+      priority_reasons: [],
+      summary: "Xin giấy xác nhận đang theo học",
+      request_data: {
+        purpose: "Ho so thuc tap",
+        destination_org: "Cong ty ABC",
+        receive_method: "digital_pdf",
+        extras: { documentType: "ENR", copies: "2" },
+      },
+      handover_reason: null,
+      assigned_officer_id: "OF-DEMO-01",
+      revision: 3,
+      created_at: "2026-10-02T10:00:00+00:00",
+      updated_at: "2026-10-02T10:00:00+00:00",
+      student_name: "Nguyễn Văn An",
+      student_mssv: "20210018",
+    },
+    messages: { items: [], total: 0, page: 1, page_size: 20 },
+    attachments: [{ id: "att_1", filename: "minh-chung.pdf", mime_type: "application/pdf", size_bytes: 12, field: "evidence", created_at: "2026-10-02T10:00:00+00:00" }],
+    workspace: { ticket_id: "tkt_1", revision: 3, officer_draft: "Nháp cán bộ", checklist: [{ id: "chk_identity", label: "Đối chiếu họ tên", checked: true, required: true, source: "process" }] },
+    verifications: [{
+      id: "verif-academic",
+      criterion_key: "academic_status",
+      criterion_label: "Tình trạng học tập",
+      condition_applied: "Quy trình cấp giấy",
+      data_checked: "sis=false",
+      source_system: "SIS (chưa kết nối)",
+      lookup_timestamp: "2026-10-02T10:00:00+00:00",
+      status: "insufficient",
+      reason: "Chưa kết nối SIS",
+      officer_review_status: "confirmed",
+      officer_resolution: "viewed",
+      connector_status: "not_configured",
+      stale: false,
+    }],
+    student_profile: {
+      user_id: "SV-DEMO-001",
+      full_name: "Nguyễn Văn An",
+      mssv: "20210018",
+      email: "an@example.test",
+      faculty: "Kỹ thuật Phần mềm",
+      major: "KTPM",
+      class_year: "K18",
+      verification_status: "imported",
+      is_demo: false,
+    },
+    process: {
+      service_type: "student_certificate",
+      label: "Giấy xác nhận sinh viên",
+      process_version: "cert-process-v1",
+      issues_document: true,
+      template_id: "student_certificate_vn",
+      template_version: "v1",
+      template_status: "approved",
+      validity_days: null,
+      requires_academic_status: true,
+      requires_financial_clearance: false,
+      required_criteria: ["identity_match"],
+      issue_required_criteria: ["identity_match", "academic_status"],
+    },
+    document_draft: {
+      ticket_id: "tkt_1",
+      version: 1,
+      template_id: "student_certificate_vn",
+      template_version: "v1",
+      template_status: "approved",
+      status: "draft",
+      student_snapshot: { full_name: "Nguyễn Văn An", mssv: "20210018" },
+      purpose: "Ho so thuc tap",
+      destination_org: "Cong ty ABC",
+    },
+    issued_document: null,
+    supplements: [],
+  });
+  assert.equal(ticket.studentName, "Nguyễn Văn An");
+  assert.equal(ticket.studentMssv, "20210018");
+  assert.ok(ticket.requestPayload.submittedFields.some((field) => field.name === "extras.documentType" && field.value === "ENR"));
+  assert.ok(ticket.requestPayload.submittedFields.some((field) => field.name === "purpose"));
+  assert.equal(ticket.attachments[0].name, "minh-chung.pdf");
+  assert.equal(ticket.systemVerifications[0].status, "insufficient");
+  assert.equal(ticket.systemVerifications[0].officerResolution, "viewed");
+  assert.equal(ticket.process.templateStatus, "approved");
+  assert.equal(ticket.documentDraft.status, "draft");
+  assert.equal(ticket.officerDraft, "Nháp cán bộ");
 });
 
 try {

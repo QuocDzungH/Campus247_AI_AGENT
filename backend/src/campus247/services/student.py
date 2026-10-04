@@ -776,9 +776,10 @@ def _handle_locked_followup(session, actor, conversation, ticket, user_message, 
             ),
         )
     user_message.ticket_id = ticket.id
-    ticket.revision += 1
-    ticket.updated_at = now
-    mark_briefs_stale(session, ticket.id)
+    from campus247.services.evidence import bump_evidence, mark_supplements_fulfilled
+
+    bump_evidence(session, ticket)
+    mark_supplements_fulfilled(ticket)
     enqueue_prepare_brief(session, ticket)
     reply = _add_message(session, conversation, "system", MSG_FORWARDED, None, ticket.id, now)
     _audit(session, ticket, actor.id, "student", "supplement", ticket.status, ticket.status, request_id, now)
@@ -807,9 +808,10 @@ def _handle_locked_followup(session, actor, conversation, ticket, user_message, 
 def _supplement_without_l4(session, conversation, ticket, user_message, operation, handle, request_id):
     now = utcnow()
     user_message.ticket_id = ticket.id
-    ticket.revision += 1
-    ticket.updated_at = now
-    mark_briefs_stale(session, ticket.id)
+    from campus247.services.evidence import bump_evidence, mark_supplements_fulfilled
+
+    bump_evidence(session, ticket)
+    mark_supplements_fulfilled(ticket)
     enqueue_prepare_brief(session, ticket)
     reply = _add_message(session, conversation, "system", MSG_SUPPLEMENT, None, ticket.id, now)
     _audit(
@@ -1044,7 +1046,7 @@ def _link_messages(session, conversation_id: str, ticket_id: str) -> None:
         message.ticket_id = ticket_id
 
 
-def _audit(session, ticket, actor_id, actor_type, action, from_status, to_status, request_id, now) -> AuditEntry:
+def _audit(session, ticket, actor_id, actor_type, action, from_status, to_status, request_id, now, details=None) -> AuditEntry:
     entry = AuditEntry(
         id=new_id("aud"),
         ticket_id=ticket.id,
@@ -1054,6 +1056,7 @@ def _audit(session, ticket, actor_id, actor_type, action, from_status, to_status
         from_status=from_status,
         to_status=to_status,
         request_id=request_id,
+        details=details,
         created_at=now,
     )
     session.add(entry)
