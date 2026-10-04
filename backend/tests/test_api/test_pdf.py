@@ -1,8 +1,10 @@
 """Unicode certificate PDF: Vietnamese wrapping, no Latin-1 truncation."""
 
+import re
 import shutil
 import subprocess
 import tempfile
+import zlib
 from pathlib import Path
 
 from campus247.services.pdf import (
@@ -13,19 +15,58 @@ from campus247.services.pdf import (
 )
 
 
+def _parse_tounicode_cmaps(data: bytes) -> list[dict[int, str]]:
+    cmaps: list[dict[int, str]] = []
+    for block in re.finditer(rb"(\d+)\s+beginbfchar(.*?)endbfchar", data, re.S):
+        mapping: dict[int, str] = {}
+        for src, dest in re.findall(rb"<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>", block.group(2)):
+            mapping[int(src, 16)] = bytes.fromhex(dest.decode("ascii")).decode("utf-16-be", errors="ignore")
+        if mapping:
+            cmaps.append(mapping)
+    return cmaps
+
+
+def _pdf_streams(data: bytes) -> list[bytes]:
+    streams: list[bytes] = []
+    for raw in re.findall(rb"stream\r?\n(.*?)\r?\nendstream", data, re.S):
+        try:
+            streams.append(zlib.decompress(raw))
+        except zlib.error:
+            streams.append(raw)
+    return streams
+
+
+def _extract_via_tounicode(data: bytes) -> str:
+    streams = _pdf_streams(data)
+    cmaps = _parse_tounicode_cmaps(data + b"\n".join(streams))
+    if not cmaps:
+        return ""
+    chunks: list[str] = []
+    for stream in streams:
+        for raw in re.findall(rb"\((?:\\.|[^\\)])*\)\s*Tj", stream):
+            payload = raw[1 : raw.rfind(b")")]
+            payload = payload.replace(b"\\(", b"(").replace(b"\\)", b")").replace(b"\\\\", b"\\")
+            if len(payload) < 2 or len(payload) % 2:
+                continue
+            gids = [int.from_bytes(payload[i : i + 2], "big") for i in range(0, len(payload), 2)]
+            for cmap in cmaps:
+                chunks.append("".join(cmap.get(gid, "") for gid in gids))
+    return "\n".join(chunks)
+
+
 def _extract(data: bytes) -> str:
     pdftotext = shutil.which("pdftotext")
-    if not pdftotext:
-        raise RuntimeError("pdftotext is required to verify Unicode PDF text")
-    with tempfile.TemporaryDirectory() as tmp:
-        path = Path(tmp) / "doc.pdf"
-        path.write_bytes(data)
-        result = subprocess.run(
-            [pdftotext, "-layout", str(path), "-"],
-            check=True,
-            capture_output=True,
-        )
-        return result.stdout.decode("utf-8", errors="replace")
+    if pdftotext:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "doc.pdf"
+            path.write_bytes(data)
+            result = subprocess.run(
+                [pdftotext, "-layout", str(path), "-"],
+                check=True,
+                capture_output=True,
+            )
+            return result.stdout.decode("utf-8", errors="replace")
+    return _extract_via_tounicode(data)
 
 
 def _contains(data: bytes, text: str) -> bool:
