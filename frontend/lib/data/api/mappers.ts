@@ -5,6 +5,7 @@ import {
   ChecklistItem,
   DocumentDraft,
   FactItem,
+  InstitutionInfo,
   IssuedCertificateDocument,
   IssuedDocumentInfo,
   ProcessInfo,
@@ -18,6 +19,8 @@ import {
 import { DataGatewayError } from "../errors";
 import type { WireCitation, WirePage, WireTicket } from "./contracts";
 import { ErrorBody } from "./types";
+import { auditActionLabel, auditTechnical, displayActorName, roleLabel } from "../../audit-labels";
+import { fieldLabel as sharedFieldLabel, verificationStatusLabel } from "../../field-labels";
 
 export type PreviewFieldKey = "purpose" | "destination_org" | "receive_method";
 
@@ -95,19 +98,8 @@ export interface BriefView {
   priorityReasons: string[];
 }
 
-const FIELD_LABELS: Record<string, string> = {
-  purpose: "Mục đích",
-  destination_org: "Nơi nhận",
-  receive_method: "Cách nhận",
-  extras: "Trường bổ sung",
-  documentType: "Loại giấy",
-  copies: "Số bản",
-  language: "Ngôn ngữ",
-  summary: "Nội dung gốc",
-};
-
 function fieldLabel(name: string): string {
-  return FIELD_LABELS[name] || name;
+  return sharedFieldLabel(name);
 }
 
 function stringifyFieldValue(value: unknown): string {
@@ -462,16 +454,22 @@ export function mapChatResult(raw: unknown): ChatTurnResult {
 
 export function mapAuditEntry(raw: unknown): AuditLogEntry {
   const record = requireRecord(raw, "audit");
-  const actorType = record.actor_type === "officer" ? "Cán bộ" : record.actor_type === "student" ? "Sinh viên" : "Hệ thống";
-  const extra = isRecord(record.details) ? JSON.stringify(record.details) : undefined;
-  const requestId = typeof record.request_id === "string" ? `request_id ${record.request_id}` : undefined;
+  const actorType =
+    record.actor_type === "officer" ? "officer" : record.actor_type === "student" ? "student" : "system";
+  const actorName = typeof record.actor_name === "string" ? record.actor_name : null;
+  const rawAction = requireString(record.action, "audit.action");
+  const requestId = typeof record.request_id === "string" ? record.request_id : null;
   return {
     id: requireString(record.id, "audit.id"),
     timestamp: requireString(record.created_at, "audit.created_at"),
-    source: actorType,
-    action: requireString(record.action, "audit.action"),
-    actor: typeof record.actor_id === "string" ? record.actor_id : actorType,
-    details: [requestId, extra].filter(Boolean).join(" · ") || undefined,
+    source: roleLabel(actorType),
+    action: auditActionLabel(rawAction, record.details),
+    actor: displayActorName(actorName, actorType),
+    actorName,
+    actorType,
+    rawAction,
+    requestId,
+    technical: auditTechnical(record.details, requestId, rawAction),
   };
 }
 
@@ -494,6 +492,12 @@ export function mapProcessInfo(raw: unknown): ProcessInfo | undefined {
       : [],
     issueRequiredCriteria: Array.isArray(raw.issue_required_criteria)
       ? raw.issue_required_criteria.filter((item): item is string => typeof item === "string")
+      : [],
+    plannedChecklist: Array.isArray(raw.planned_checklist)
+      ? raw.planned_checklist.flatMap((item) => {
+          if (!isRecord(item) || typeof item.id !== "string" || typeof item.label !== "string") return [];
+          return [{ id: item.id, label: item.label, required: item.required !== false }];
+        })
       : [],
   };
 }
@@ -564,6 +568,17 @@ export function mapIssuedDocument(raw: unknown): IssuedDocumentInfo | undefined 
     signatureStatus: signature,
     signingProvider: typeof raw.signing_provider === "string" ? raw.signing_provider : "none",
     official: false,
+    issuedByName: typeof raw.issued_by_name === "string" ? raw.issued_by_name : null,
+    studentSnapshot: isRecord(raw.student_snapshot)
+      ? Object.fromEntries(Object.entries(raw.student_snapshot).map(([key, value]) => [key, value == null ? null : String(value)]))
+      : {},
+    purpose: typeof raw.purpose === "string" ? raw.purpose : null,
+    destinationOrg: typeof raw.destination_org === "string" ? raw.destination_org : null,
+    notes: typeof raw.notes === "string" ? raw.notes : null,
+    validUntil: typeof raw.valid_until === "string" ? raw.valid_until : null,
+    documentNumber: typeof raw.document_number === "string" ? raw.document_number : null,
+    institutionName: typeof raw.institution_name === "string" ? raw.institution_name : null,
+    institutionUnit: typeof raw.institution_unit === "string" ? raw.institution_unit : null,
   };
 }
 
@@ -572,17 +587,17 @@ export function issuedInfoToCertificate(
   ticket: Ticket,
   draft?: DocumentDraft
 ): IssuedCertificateDocument {
-  const snapshot = draft?.studentSnapshot || {};
+  const snapshot = issued.studentSnapshot || draft?.studentSnapshot || {};
   return {
     id: issued.id,
-    docNumber: issued.id,
+    docNumber: issued.documentNumber || issued.id,
     templateCode: issued.templateId,
     templateName: ticket.process?.label || issued.templateId,
     templateVersion: issued.templateVersion,
     issuedAt: issued.issuedAt,
     issuedAtFormatted: issued.issuedAt,
     issuedByOfficerId: issued.issuedBy,
-    issuedByOfficerName: ticket.assignedOfficerName || issued.issuedBy,
+    issuedByOfficerName: issued.issuedByName || ticket.assignedOfficerName || issued.issuedBy,
     studentId: ticket.studentId,
     studentName: snapshot.full_name || ticket.studentName,
     studentMssv: snapshot.mssv || ticket.studentMssv,
@@ -592,10 +607,10 @@ export function issuedInfoToCertificate(
     studentClassYear: snapshot.class_year || ticket.studentClassYear,
     studentFaculty: snapshot.faculty || "",
     studentAcademicStatus: snapshot.student_status || "",
-    purpose: draft?.purpose || ticket.purpose,
-    destinationOrg: draft?.destinationOrg || ticket.destinationOrg,
-    validUntil: draft?.validUntil || "",
-    customOfficerNotes: draft?.notes || undefined,
+    purpose: issued.purpose || draft?.purpose || ticket.purpose,
+    destinationOrg: issued.destinationOrg || draft?.destinationOrg || ticket.destinationOrg,
+    validUntil: issued.validUntil || draft?.validUntil || "",
+    customOfficerNotes: issued.notes || draft?.notes || undefined,
     status: "issued",
     fileName: issued.filename,
     isDemoSample: false,
@@ -751,6 +766,13 @@ export function mapTicketDetail(raw: unknown, auditLogs: AuditLogEntry[] = []): 
   });
   ticket.evidenceFingerprint = typeof record.evidence_fingerprint === "string" ? record.evidence_fingerprint : undefined;
   ticket.dataChangedSinceLastCheck = ticket.systemVerifications?.some((item) => item.stale) === true;
+  if (isRecord(record.institution) && typeof record.institution.name === "string") {
+    const institution: InstitutionInfo = {
+      name: record.institution.name,
+      unit: typeof record.institution.unit === "string" ? record.institution.unit : null,
+    };
+    ticket.institution = institution;
+  }
   return ticket;
 }
 
@@ -786,10 +808,13 @@ export function mapBrief(raw: unknown): BriefView {
   const facts: FactItem[] = Array.isArray(brief?.facts)
     ? brief.facts.flatMap((item, index) => {
         if (!isRecord(item) || typeof item.key !== "string" || typeof item.value !== "string") return [];
+        const rawStatus = typeof item.verification_status === "string" ? item.verification_status : "unverified";
         const statusValue =
-          item.verification_status === "verified" || item.verification_status === "disputed"
-            ? item.verification_status
-            : "unverified";
+          rawStatus === "officer_verified" || rawStatus === "verified"
+            ? "verified"
+            : rawStatus === "disputed"
+              ? "disputed"
+              : "unverified";
         return [
           {
             id: `${item.source_id || item.key}-${index}`,
@@ -797,8 +822,7 @@ export function mapBrief(raw: unknown): BriefView {
             source: typeof item.source_type === "string" ? item.source_type : "",
             value: item.value,
             status: statusValue,
-            statusText:
-              statusValue === "verified" ? "Đã xác minh" : statusValue === "disputed" ? "Đang tranh chấp" : "Chưa xác minh",
+            statusText: verificationStatusLabel(rawStatus),
           },
         ];
       })

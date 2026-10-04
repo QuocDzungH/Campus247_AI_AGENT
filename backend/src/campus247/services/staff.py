@@ -19,6 +19,7 @@ from campus247.services.common import new_id, paginate, parse_page, stale_revisi
 from campus247.services.documents import (
     draft_view,
     ensure_draft,
+    institution_info,
     issue_document,
     issued_view,
     open_issued,
@@ -129,6 +130,7 @@ def get_ticket_detail(
         issued_document=issued_view(issued),
         supplements=_safe_supplements(ticket.supplement_requests),
         evidence_fingerprint=ticket.evidence_fingerprint,
+        institution=institution_info(),
     )
 
 
@@ -241,6 +243,7 @@ def claim_ticket(
     if ticket.team_id not in teams:
         raise not_found()
     if ticket.assigned_officer_id == actor.id:
+        _ensure_process_checklist(ticket)
         last = (
             session.execute(
                 select(AuditEntry)
@@ -395,7 +398,14 @@ def list_audit(
         .scalars()
         .all()
     )
-    return paginate([audit_to_contract(row) for row in rows], total, page, page_size)
+    actor_ids = {row.actor_id for row in rows if row.actor_id}
+    names: dict[str, str] = {}
+    if actor_ids:
+        names = {
+            user.id: user.name
+            for user in session.execute(select(User).where(User.id.in_(actor_ids))).scalars()
+        }
+    return paginate([audit_to_contract(row, names.get(row.actor_id) if row.actor_id else None) for row in rows], total, page, page_size)
 
 
 def _apply_ticket_filters(query, *, status=None, priority=None, category=None, search=None):
@@ -551,6 +561,8 @@ def update_workspace(session: Session, actor: User, ticket_id: str, body: c.Tick
     now = utcnow()
     if body.officer_draft is not None:
         ticket.officer_draft = body.officer_draft
+    if body.ensure_process_checklist:
+        _ensure_process_checklist(ticket)
     checklist = [dict(item) for item in (ticket.officer_checklist or [])]
     if body.checklist is not None:
         checklist = [item.model_dump(mode="json") for item in body.checklist]
@@ -755,7 +767,13 @@ def issue_ticket_document(
         ticket.status,
         request_id,
         utcnow(),
-        details={"document_id": row.id, "sha256": row.sha256, "draft_version": row.draft_version},
+        details={
+            "document_id": row.id,
+            "sha256": row.sha256,
+            "draft_version": row.draft_version,
+            "signature_status": row.signature_status,
+            "official": False,
+        },
     )
     view = issued_view(row)
     if view is None:

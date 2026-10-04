@@ -1,6 +1,10 @@
 """Officer intake: verification, supplements, document draft/issue, gates, idempotency."""
 
+import shutil
+import subprocess
+import tempfile
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -309,6 +313,157 @@ async def test_stale_revision_keeps_draft_and_issue_is_idempotent(client):
     other = await _auth(http, "SV-DEMO-024", "other")
     hidden = await http.get(f"/api/v1/tickets/{ticket['id']}/documents/{doc_id}", headers=other)
     assert hidden.status_code == 404
+    assert _pdf_contains(download.content, "VinUniversity") or download.content.startswith(b"%PDF-")
+
+
+def _pdf_contains(data: bytes, text: str) -> bool:
+    pdftotext = shutil.which("pdftotext")
+    if not pdftotext:
+        return data.startswith(b"%PDF-") and b"DejaVu" in data
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "doc.pdf"
+        path.write_bytes(data)
+        extracted = subprocess.run(
+            [pdftotext, "-layout", str(path), "-"],
+            check=True,
+            capture_output=True,
+        ).stdout.decode("utf-8", errors="replace")
+    return text in extracted
+
+
+@pytest.mark.asyncio
+async def test_claim_already_assignee_restores_process_checklist_and_get_does_not_write(client):
+    http, _url = client
+    student = await _auth(http, "SV-DEMO-001", "s-chk")
+    ticket = await _submit_certificate(http, student)
+    officer = await _auth(http, "OF-DEMO-01", "o-chk")
+    unclaimed = await http.get(f"/api/v1/tickets/{ticket['id']}", headers=officer)
+    assert unclaimed.status_code == 200
+    planned = unclaimed.json()["process"]["planned_checklist"]
+    assert planned
+    assert unclaimed.json()["workspace"]["checklist"] == []
+    ticket = await _claim(http, officer, ticket)
+    detail = await http.get(f"/api/v1/tickets/{ticket['id']}", headers=officer)
+    checklist = detail.json()["workspace"]["checklist"]
+    ids = {item["id"] for item in checklist}
+    assert "chk_identity" in ids
+    revision = detail.json()["ticket"]["revision"]
+    wiped = await http.patch(
+        f"/api/v1/officer/tickets/{ticket['id']}/workspace",
+        headers=officer,
+        json={"expected_revision": revision, "checklist": []},
+    )
+    assert wiped.status_code == 200, wiped.text
+    empty = await http.get(f"/api/v1/tickets/{ticket['id']}", headers=officer)
+    assert empty.json()["workspace"]["checklist"] == []
+    again = await http.post(
+        f"/api/v1/officer/tickets/{ticket['id']}/claim",
+        headers={**officer, "Idempotency-Key": f"claim-again-{ticket['id']}"},
+        json={"expected_revision": empty.json()["ticket"]["revision"], "confirmed": True},
+    )
+    assert again.status_code == 200, again.text
+    restored = await http.get(f"/api/v1/tickets/{ticket['id']}", headers=officer)
+    restored_ids = {item["id"] for item in restored.json()["workspace"]["checklist"]}
+    assert "chk_identity" in restored_ids
+    audit = await http.get(f"/api/v1/officer/tickets/{ticket['id']}/audit", headers=officer)
+    assert audit.status_code == 200
+    claim_rows = [row for row in audit.json()["items"] if row["action"] == "claim"]
+    assert claim_rows
+    assert claim_rows[-1]["actor_name"]
+    assert not str(claim_rows[-1]["actor_name"]).startswith("usr_")
+    assert claim_rows[-1]["actor_name"] != "OF-DEMO-01"
+
+
+@pytest.mark.asyncio
+async def test_ensure_process_checklist_mutation_and_unicode_issue_snapshot(client):
+    http, url = client
+    student = await _auth(http, "SV-DEMO-001", "s-uni")
+    with session_scope(url) as session:
+        profile = session.get(StudentProfile, "SV-DEMO-001")
+        user = session.get(User, "SV-DEMO-001")
+        assert profile is not None
+        assert user is not None
+        profile.full_name = "Nguyễn Văn An"
+        profile.verification_status = "imported"
+        user.name = "Nguyễn Văn An"
+        session.commit()
+    ticket = await _submit_certificate(
+        http,
+        student,
+        extras={"documentType": "ENR", "copies": "1", "language": "vi"},
+    )
+    officer = await _auth(http, "OF-DEMO-01", "o-uni")
+    ticket = await _claim(http, officer, ticket)
+    detail = await http.get(f"/api/v1/tickets/{ticket['id']}", headers=officer)
+    revision = detail.json()["ticket"]["revision"]
+    await http.patch(
+        f"/api/v1/officer/tickets/{ticket['id']}/workspace",
+        headers=officer,
+        json={"expected_revision": revision, "checklist": []},
+    )
+    empty = await http.get(f"/api/v1/tickets/{ticket['id']}", headers=officer)
+    ensured = await http.patch(
+        f"/api/v1/officer/tickets/{ticket['id']}/workspace",
+        headers=officer,
+        json={"expected_revision": empty.json()["ticket"]["revision"], "ensure_process_checklist": True},
+    )
+    assert ensured.status_code == 200, ensured.text
+    assert any(item["id"] == "chk_identity" for item in ensured.json()["checklist"])
+    await http.post(f"/api/v1/tickets/{ticket['id']}/verifications", headers=officer, json={})
+    current = await http.get(f"/api/v1/tickets/{ticket['id']}", headers=officer)
+    for item_id in ("chk_identity", "chk_form", "chk_evidence"):
+        current = await http.get(f"/api/v1/tickets/{ticket['id']}", headers=officer)
+        await http.patch(
+            f"/api/v1/officer/tickets/{ticket['id']}/workspace",
+            headers=officer,
+            json={"expected_revision": current.json()["ticket"]["revision"], "toggle_checklist_id": item_id},
+        )
+    current = await http.get(f"/api/v1/tickets/{ticket['id']}", headers=officer)
+    academic = next(item for item in current.json()["verifications"] if item["criterion_key"] == "academic_status")
+    await http.post(
+        f"/api/v1/tickets/{ticket['id']}/verifications/{academic['id']}/confirm",
+        headers=officer,
+        json={
+            "note": "Đối chiếu thủ công với minh chứng sinh viên nộp.",
+            "outcome": "manual_pass",
+            "expected_revision": current.json()["ticket"]["revision"],
+        },
+    )
+    current = await http.get(f"/api/v1/tickets/{ticket['id']}", headers=officer)
+    draft = current.json()["document_draft"]
+    saved = await http.patch(
+        f"/api/v1/officer/tickets/{ticket['id']}/document",
+        headers=officer,
+        json={
+            "expected_revision": current.json()["ticket"]["revision"],
+            "expected_draft_version": draft["version"],
+            "purpose": "Xin giấy xác nhận để vay vốn tại Ngân hàng Chính sách Xã hội",
+            "destination_org": "Ngân hàng Chính sách Xã hội",
+            "notes": "Ghi chú nhiều dòng:\nDòng 1\nDòng 2",
+        },
+    )
+    assert saved.status_code == 200, saved.text
+    current = await http.get(f"/api/v1/tickets/{ticket['id']}", headers=officer)
+    issued = await http.post(
+        f"/api/v1/officer/tickets/{ticket['id']}/document/issue",
+        headers={**officer, "Idempotency-Key": f"issue-uni-{ticket['id']}"},
+        json={
+            "expected_revision": current.json()["ticket"]["revision"],
+            "expected_draft_version": current.json()["document_draft"]["version"],
+            "confirmed": True,
+        },
+    )
+    assert issued.status_code == 200, issued.text
+    document = issued.json()["document"]
+    assert document["purpose"].startswith("Xin giấy xác nhận")
+    assert document["destination_org"] == "Ngân hàng Chính sách Xã hội"
+    assert document["student_snapshot"]["full_name"] == "Nguyễn Văn An"
+    assert document["official"] is False
+    pdf = await http.get(f"/api/v1/tickets/{ticket['id']}/documents/{document['id']}", headers=student)
+    assert pdf.status_code == 200
+    assert pdf.content.startswith(b"%PDF-")
+    assert _pdf_contains(pdf.content, "Nguyễn Văn An")
+    assert _pdf_contains(pdf.content, "Ngân hàng Chính sách Xã hội")
 
 
 @pytest.mark.asyncio

@@ -165,7 +165,7 @@ def preview_to_contract(preview: Preview, now: datetime | None = None) -> c.Prev
     )
 
 
-def audit_to_contract(entry: AuditEntry) -> c.AuditEntry:
+def audit_to_contract(entry: AuditEntry, actor_name: str | None = None) -> c.AuditEntry:
     return c.AuditEntry(
         id=entry.id,
         ticket_id=entry.ticket_id,
@@ -177,6 +177,7 @@ def audit_to_contract(entry: AuditEntry) -> c.AuditEntry:
         request_id=entry.request_id,
         details=entry.details,
         created_at=ensure_utc(entry.created_at),
+        actor_name=actor_name,
     )
 
 

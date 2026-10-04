@@ -213,7 +213,7 @@ async function runApi(page) {
   report.steps.push("claim");
   await page.getByRole("button", { name: /AI chuẩn bị hồ sơ|Chuẩn bị L3|Chạy lại AI/ }).click();
   await page.getByTestId("officer-fact-sheet").waitFor({ timeout: 45000 });
-  await page.getByText("Brief đã sẵn sàng", { exact: false }).waitFor({ timeout: 10000 });
+  await page.getByText("Bản tóm tắt hồ sơ đã sẵn sàng", { exact: false }).waitFor({ timeout: 10000 });
   report.steps.push("prepare-ready");
 
   const resolveText = `Đã hoàn tất xử lý yêu cầu giấy xác nhận (${marker}). Không phát hành giấy.`;

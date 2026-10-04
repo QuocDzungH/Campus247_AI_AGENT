@@ -43,6 +43,11 @@ export interface AuditLogEntry {
   action: string;
   actor: string;
   details?: string;
+  actorName?: string | null;
+  actorType?: string | null;
+  rawAction?: string;
+  requestId?: string | null;
+  technical?: string;
 }
 
 export interface FactItem {
@@ -113,6 +118,12 @@ export interface ProcessInfo {
   requiresFinancialClearance: boolean;
   requiredCriteria: string[];
   issueRequiredCriteria: string[];
+  plannedChecklist?: Array<{ id: string; label: string; required: boolean }>;
+}
+
+export interface InstitutionInfo {
+  name: string;
+  unit?: string | null;
 }
 
 export interface StudentProfileSnapshot {
@@ -160,6 +171,15 @@ export interface IssuedDocumentInfo {
   signatureStatus: "unsigned" | "pending_signature" | "signed";
   signingProvider: string;
   official: false;
+  issuedByName?: string | null;
+  studentSnapshot?: Record<string, string | null | undefined>;
+  purpose?: string | null;
+  destinationOrg?: string | null;
+  notes?: string | null;
+  validUntil?: string | null;
+  documentNumber?: string | null;
+  institutionName?: string | null;
+  institutionUnit?: string | null;
 }
 
 export interface SupplementRecord {
@@ -307,6 +327,7 @@ export interface Ticket {
   supplements?: SupplementRecord[];
   evidenceFingerprint?: string;
   messagesTotal?: number;
+  institution?: InstitutionInfo;
 }
 
 export interface ChatMessage {

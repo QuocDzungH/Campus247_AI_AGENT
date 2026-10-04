@@ -14,6 +14,12 @@ from campus247.services.common import utcnow
 from campus247.services.evidence import evidence_fingerprint
 from campus247.services.process_catalog import ProcessSpec, get_process
 
+_PROFILE_STATUS_LABEL = {
+    "imported": "đã nhập vào hệ thống",
+    "officer_verified": "đã được cán bộ xác minh",
+    "unverified": "chưa xác minh",
+}
+
 
 @dataclass
 class ConnectorResult:
@@ -64,7 +70,7 @@ class IdentityConnector:
     def check(self, ctx: VerificationContext) -> ConnectorResult:
         profile = ctx.profile
         condition = "Họ tên và MSSV trên hồ sơ Campus khớp tài khoản sinh viên. Lời khai trên đơn không được coi là dữ liệu đã xác minh."
-        source = "Hồ sơ Campus 24/7 (student_profiles)"
+        source = "Hồ sơ sinh viên trên máy chủ"
         if profile is None:
             return ConnectorResult(
                 status="insufficient",
@@ -116,7 +122,7 @@ class IdentityConnector:
         if profile.verification_status == "unverified":
             return ConnectorResult(
                 status="insufficient",
-                reason="Hồ sơ chưa imported/officer_verified. Khớp tên chưa đủ để coi là dữ liệu trường đã xác minh.",
+                reason="Hồ sơ chưa được nhập đủ hoặc chưa được cán bộ xác minh. Khớp tên chưa đủ để coi là dữ liệu trường đã xác minh.",
                 data_checked=data_checked,
                 source_system=source,
                 condition=condition,
@@ -125,9 +131,15 @@ class IdentityConnector:
                 evidence=evidence,
                 source_version=profile.verification_status,
             )
+        status_label = _PROFILE_STATUS_LABEL.get(profile.verification_status, profile.verification_status)
+        qualifier = (
+            " Đây chưa phải xác minh của cán bộ."
+            if profile.verification_status != "officer_verified"
+            else ""
+        )
         return ConnectorResult(
             status="passed",
-            reason=f"Hồ sơ nguồn {profile.verification_status}: họ tên và MSSV có trên máy chủ và khớp tài khoản.",
+            reason=f"Hồ sơ nguồn {status_label}: họ tên và MSSV có trên máy chủ và khớp tài khoản.{qualifier}",
             data_checked=data_checked,
             source_system=source,
             condition=condition,
@@ -240,7 +252,7 @@ class CompletenessConnector:
                     status="failed",
                     reason=f"Thiếu trường bắt buộc: {', '.join(missing)}.",
                     data_checked=data_checked,
-                    source_system="Đơn đã nộp (tickets.request_data)",
+                    source_system="Đơn đã nộp trên hệ thống",
                     condition=condition,
                     condition_source=f"{ctx.spec.process_version} / form_completeness",
                     connector_status="connected",
@@ -264,7 +276,7 @@ class CompletenessConnector:
             status="passed",
             reason="Các trường đơn hiện có trên máy chủ đã được ghi nhận (kể cả extras và tệp).",
             data_checked=data_checked,
-            source_system="Đơn đã nộp (tickets.request_data + ticket_attachments)",
+            source_system="Đơn đã nộp trên hệ thống",
             condition=condition,
             condition_source=f"{ctx.spec.process_version} / form_completeness",
             connector_status="connected",

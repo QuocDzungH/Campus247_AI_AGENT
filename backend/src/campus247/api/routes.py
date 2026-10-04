@@ -31,4 +31,6 @@ async def agent_status():
         "app_env": settings.app_env,
         "demo_auth_enabled": demo_auth,
         "auth": "demo+password" if demo_auth else "password",
+        "institution_name": settings.institution_name,
+        "institution_unit": settings.institution_unit,
     }

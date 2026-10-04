@@ -118,4 +118,5 @@ def process_info(service_type: str) -> dict:
         "requires_financial_clearance": spec.requires_financial_clearance,
         "required_criteria": list(spec.required_criteria),
         "issue_required_criteria": list(spec.issue_required_criteria),
+        "planned_checklist": [{"id": item["id"], "label": item["label"], "required": True} for item in spec.required_checklist],
     }

@@ -12,7 +12,7 @@ from campus247.db.models import IssuedDocument, StudentProfile, Ticket, User
 from campus247.models import contracts_v1 as c
 from campus247.services.common import ensure_utc, new_id, utcnow
 from campus247.services.errors import ApiError, not_found, validation
-from campus247.services.pdf import build_document_pdf, safe_filename, sha256_hex
+from campus247.services.pdf import CertificateDocument, build_certificate_pdf, safe_filename, sha256_hex
 from campus247.services.process_catalog import get_process
 from campus247.services.verification import criterion_resolved_for_issue
 
@@ -28,6 +28,11 @@ def signing_status() -> tuple[str, str]:
     if provider == "none":
         return "unsigned", "none"
     return "pending_signature", provider
+
+
+def institution_info() -> c.InstitutionInfo:
+    settings = get_settings()
+    return c.InstitutionInfo(name=settings.institution_name, unit=settings.institution_unit or None)
 
 
 def current_draft(ticket: Ticket) -> dict | None:
@@ -79,6 +84,8 @@ def draft_view(ticket: Ticket) -> c.DocumentDraftView | None:
 def issued_view(row: IssuedDocument | None) -> c.IssuedDocumentView | None:
     if row is None:
         return None
+    payload = row.payload if isinstance(row.payload, dict) else {}
+    student = payload.get("student") if isinstance(payload.get("student"), dict) else {}
     return c.IssuedDocumentView(
         id=row.id,
         ticket_id=row.ticket_id,
@@ -92,6 +99,15 @@ def issued_view(row: IssuedDocument | None) -> c.IssuedDocumentView | None:
         signature_status=row.signature_status,  # type: ignore[arg-type]
         signing_provider=row.signing_provider,
         official=False,
+        issued_by_name=_optional_text(payload.get("issued_by_name")),
+        student_snapshot=dict(student),
+        purpose=_optional_text(payload.get("purpose")),
+        destination_org=_optional_text(payload.get("destination_org")),
+        notes=_optional_text(payload.get("notes")),
+        valid_until=_optional_text(payload.get("valid_until")),
+        document_number=_optional_text(payload.get("document_number")),
+        institution_name=_optional_text(payload.get("institution_name")),
+        institution_unit=_optional_text(payload.get("institution_unit")),
     )
 
 
@@ -231,6 +247,8 @@ def issue_document(session: Session, ticket: Ticket, actor: User, expected_draft
     snapshot = draft.get("student_snapshot") if isinstance(draft.get("student_snapshot"), dict) else {}
     now = utcnow()
     sig_status, provider = signing_status()
+    settings = get_settings()
+    issued_at = now.isoformat()
     payload = {
         "ticket_id": ticket.id,
         "ticket_code": ticket.code,
@@ -241,26 +259,41 @@ def issue_document(session: Session, ticket: Ticket, actor: User, expected_draft
         "destination_org": draft.get("destination_org"),
         "notes": draft.get("notes"),
         "valid_until": draft.get("valid_until"),
-        "issued_at": now.isoformat(),
+        "issued_at": issued_at,
         "issued_by": actor.id,
+        "issued_by_name": actor.name,
         "signature_status": sig_status,
         "signing_provider": provider,
         "official": False,
+        "institution_name": settings.institution_name,
+        "institution_unit": settings.institution_unit,
+        "document_number": None,
     }
-    pdf = build_document_pdf(
-        title=spec.label,
-        fields=[
-            ("Ma don", ticket.code),
-            ("Ho ten", str(snapshot.get("full_name") or (student.name if student else ""))),
-            ("MSSV", str(snapshot.get("mssv") or "")),
-            ("Khoa", str(snapshot.get("class_year") or "")),
-            ("Nganh", str(snapshot.get("major") or "")),
-            ("Muc dich", str(draft.get("purpose") or "")),
-            ("Noi nhan", str(draft.get("destination_org") or "")),
-            ("Can bo", actor.name),
-            ("Ky so", sig_status),
-        ],
-        notice="Ban he thong phat hanh. Chua ky so. Khong su dung nhu giay co gia tri chinh thuc.",
+    pdf = build_certificate_pdf(
+        CertificateDocument(
+            institution_name=settings.institution_name,
+            institution_unit=settings.institution_unit,
+            title=spec.label.upper() if spec.service_type == "student_certificate" else spec.label,
+            ticket_code=ticket.code,
+            student_name=str(snapshot.get("full_name") or (student.name if student else "") or "") or None,
+            mssv=str(snapshot.get("mssv") or "") or None,
+            class_year=str(snapshot.get("class_year") or "") or None,
+            major=str(snapshot.get("major") or "") or None,
+            faculty=str(snapshot.get("faculty") or "") or None,
+            student_status=str(snapshot.get("student_status") or "") or None,
+            verification_status=str(snapshot.get("verification_status") or "") or None,
+            purpose=str(draft.get("purpose") or "") or None,
+            destination_org=str(draft.get("destination_org") or "") or None,
+            notes=str(draft.get("notes") or "") or None,
+            issued_at=issued_at,
+            issued_by_name=actor.name,
+            valid_until=str(draft.get("valid_until") or "") or None,
+            document_number=None,
+            signature_status=sig_status,
+            signing_provider=provider,
+            official=False,
+            kind="issued",
+        )
     )
     doc_id = new_id("doc")
     filename = safe_filename(ticket.code)

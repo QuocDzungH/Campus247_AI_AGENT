@@ -10,8 +10,8 @@ export function displayValue(value: string | null | undefined): string {
 }
 
 export function receiveMethodDisplay(value: string | null | undefined): string {
-  if (value === "paper_stamped") return "Bản giấy";
-  if (value === "digital_pdf") return "Bản điện tử";
+  if (value === "paper_stamped") return "Bản giấy có đóng dấu";
+  if (value === "digital_pdf") return "Bản điện tử PDF";
   return MISSING_DATA_LABEL;
 }
 
@@ -133,8 +133,22 @@ export type Submit2BriefDecision =
   | { ok: true; reviewedBriefVersion: number | null }
   | { ok: false; reason: string };
 
+type BriefGateTicket = Pick<Ticket, "briefStatus" | "reviewedBriefVersion" | "briefLoadError"> & {
+  officerBrief?: Pick<BriefView, "status" | "briefVersion"> | null;
+};
+
+function briefStatusOf(ticket: BriefGateTicket): Ticket["briefStatus"] {
+  return ticket.officerBrief?.status ?? ticket.briefStatus;
+}
+
+function readyBriefVersion(ticket: BriefGateTicket): number | null {
+  if (briefStatusOf(ticket) !== "ready") return null;
+  if (ticket.officerBrief?.briefVersion != null) return ticket.officerBrief.briefVersion;
+  return ticket.reviewedBriefVersion ?? null;
+}
+
 export function decideReviewedBriefVersion(
-  ticket: Pick<Ticket, "briefStatus" | "reviewedBriefVersion" | "briefLoadError">,
+  ticket: BriefGateTicket,
   options: { manualBrief: boolean }
 ): Submit2BriefDecision {
   if (options.manualBrief) {
@@ -143,17 +157,42 @@ export function decideReviewedBriefVersion(
   if (ticket.briefLoadError) {
     return {
       ok: false,
-      reason:
-        "Không đọc được brief. Hãy tải lại hồ sơ hoặc chọn xử lý thủ công và gửi reviewed_brief_version:null.",
+      reason: "Không đọc được bản tóm tắt hồ sơ. Hãy tải lại trang hoặc chọn xử lý thủ công.",
     };
   }
-  if (ticket.briefStatus === "ready" && ticket.reviewedBriefVersion != null) {
-    return { ok: true, reviewedBriefVersion: ticket.reviewedBriefVersion };
+  const status = briefStatusOf(ticket);
+  const version = readyBriefVersion(ticket);
+  if (status === "ready" && version != null) {
+    return { ok: true, reviewedBriefVersion: version };
+  }
+  if (status === "pending" || status === "processing") {
+    return {
+      ok: false,
+      reason: "AI đang tạo bản tóm tắt. Đợi hoàn tất, chạy lại AI, hoặc chọn xử lý thủ công.",
+    };
+  }
+  if (status === "failed") {
+    return {
+      ok: false,
+      reason: "AI chưa tạo được bản tóm tắt. Chạy lại AI hoặc chọn xử lý thủ công.",
+    };
+  }
+  if (status === "stale") {
+    return {
+      ok: false,
+      reason:
+        "Bản tóm tắt đã cũ vì hồ sơ vừa thay đổi (ví dụ sau khi nhận ca hoặc kiểm tra thông tin). Chạy lại AI hoặc chọn xử lý thủ công.",
+    };
+  }
+  if (status === "ready" && version == null) {
+    return {
+      ok: false,
+      reason: "Bản tóm tắt chưa gắn được vào thao tác này. Tải lại hồ sơ, chạy lại AI, hoặc chọn xử lý thủ công.",
+    };
   }
   return {
     ok: false,
-    reason:
-      "Submit 2 chỉ khi brief ready có version hiện hành, hoặc cán bộ chọn xử lý thủ công và gửi reviewed_brief_version:null.",
+    reason: "Chưa có bản tóm tắt hiện hành. Tạo hồ sơ AI hoặc chọn xử lý thủ công để hoàn tất mà không gắn bản tóm tắt.",
   };
 }
 

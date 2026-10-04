@@ -59,6 +59,8 @@ class Settings(BaseSettings):
     login_max_failures: int = Field(default=8, ge=3, le=30)
     remember_ttl_seconds: int = Field(default=30 * 24 * 3600, ge=3600)
     files_dir: str = "./data/files"
+    institution_name: str = "VinUniversity"
+    institution_unit: str = "Phòng Đào tạo"
     sis_connector_url: str = ""
     finance_connector_url: str = ""
     signing_provider: str = "none"

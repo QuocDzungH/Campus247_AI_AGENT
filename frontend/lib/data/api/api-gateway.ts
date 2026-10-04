@@ -414,6 +414,13 @@ export class ApiCampusDataGateway implements CampusDataGateway {
     });
   }
 
+  async ensureProcessChecklist(ticketId: string, expectedRevision?: number): Promise<void> {
+    await this.client.request(`/api/v1/officer/tickets/${encodeURIComponent(ticketId)}/workspace`, {
+      method: "PATCH",
+      body: { ensure_process_checklist: true, expected_revision: expectedRevision ?? null },
+    });
+  }
+
   async addTicketMessage(
     ticketId: string,
     message: Omit<TicketMessage, "id" | "timestamp">

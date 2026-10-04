@@ -616,7 +616,8 @@
         "toggle_checklist_id": null,
         "checklist": null,
         "expected_revision": null,
-        "checklist_note": null
+        "checklist_note": null,
+        "ensure_process_checklist": false
       }
     },
     {

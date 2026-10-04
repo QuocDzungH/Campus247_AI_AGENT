@@ -55,6 +55,7 @@ export interface CampusDataGateway {
   updateOfficerDraft(id: string, draft: string, actor?: User, expectedDraft?: string, expectedRevision?: number): Promise<void>;
   resetOfficerDraft(id: string): Promise<void>;
   toggleChecklistItem(ticketId: string, itemId: string, expectedRevision?: number): Promise<void>;
+  ensureProcessChecklist?(ticketId: string, expectedRevision?: number): Promise<void>;
   addTicketMessage(
     ticketId: string,
     message: Omit<TicketMessage, "id" | "timestamp">

@@ -586,6 +586,7 @@ class TicketWorkspacePatch(Contract):
     checklist: list[OfficerChecklistItem] | None = None
     expected_revision: Annotated[int, Field(ge=1)] | None = None
     checklist_note: Text | None = None
+    ensure_process_checklist: bool = False
 
 
 class TicketWorkspace(Contract):
@@ -669,6 +670,17 @@ class SystemVerificationItem(Contract):
     officer_reviewed_at: Text | None = None
 
 
+class ProcessChecklistPreview(Contract):
+    id: Id
+    label: Text
+    required: bool = True
+
+
+class InstitutionInfo(Contract):
+    name: Text
+    unit: Text | None = None
+
+
 class ProcessInfo(Contract):
     service_type: Id
     label: Text
@@ -682,6 +694,7 @@ class ProcessInfo(Contract):
     requires_financial_clearance: bool = False
     required_criteria: list[Id] = Field(default_factory=list)
     issue_required_criteria: list[Id] = Field(default_factory=list)
+    planned_checklist: list[ProcessChecklistPreview] = Field(default_factory=list)
 
 
 class DocumentDraftView(Contract):
@@ -729,6 +742,15 @@ class IssuedDocumentView(Contract):
     signature_status: Literal["unsigned", "pending_signature", "signed"]
     signing_provider: Id
     official: Literal[False] = False
+    issued_by_name: Text | None = None
+    student_snapshot: dict = Field(default_factory=dict)
+    purpose: Text | None = None
+    destination_org: Text | None = None
+    notes: Text | None = None
+    valid_until: Text | None = None
+    document_number: Text | None = None
+    institution_name: Text | None = None
+    institution_unit: Text | None = None
 
 
 class IssueDocumentResult(Contract):
@@ -760,6 +782,7 @@ class TicketDetail(Contract):
     issued_document: IssuedDocumentView | None = None
     supplements: list[SupplementView] = Field(default_factory=list)
     evidence_fingerprint: Id | None = None
+    institution: InstitutionInfo | None = None
 
 
 class VerificationConfirm(Contract):
@@ -864,6 +887,7 @@ class AuditEntry(Contract):
     request_id: Id
     details: dict | None = None
     created_at: AwareDatetime
+    actor_name: Text | None = None
 
 
 class Artifact(Contract):

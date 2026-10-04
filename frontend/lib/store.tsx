@@ -283,6 +283,7 @@ interface StoreContextType {
   claimTicket: (ticketId: string) => Promise<Ticket>;
   prepareBrief: (ticketId: string) => Promise<BriefView>;
   refreshTicket: (ticketId: string) => Promise<Ticket | undefined>;
+  ensureProcessChecklist: (ticketId: string) => Promise<Ticket | undefined>;
 
   // Academic Review Cases (Rà soát học phần)
   reviewCases: ReviewCase[];
@@ -926,6 +927,21 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const ensureProcessChecklist = async (ticketId: string): Promise<Ticket | undefined> => {
+    if (currentUser?.role !== "officer") throw new DataGatewayError("unauthorized", "Chỉ cán bộ được bổ sung checklist quy trình.");
+    return executeGateway(async (activeGateway) => {
+      const current = getTicket(ticketId);
+      if (activeGateway.ensureProcessChecklist) {
+        await activeGateway.ensureProcessChecklist(ticketId, current?.serverRevision);
+      }
+      const detail = activeGateway.getTicketDetail
+        ? await activeGateway.getTicketDetail(ticketId)
+        : current;
+      if (detail) upsertTicket(detail);
+      return detail;
+    });
+  };
+
   const prepareBrief = async (ticketId: string): Promise<BriefView> => {
     if (currentUser?.role !== "officer") throw new DataGatewayError("unauthorized", "Chỉ cán bộ được chuẩn bị hồ sơ.");
     return executeGateway(async (activeGateway) => {
@@ -1238,6 +1254,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         claimTicket,
         prepareBrief,
         refreshTicket,
+        ensureProcessChecklist,
         reviewCases,
         getReviewCase,
         createReviewCase,

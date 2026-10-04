@@ -1,0 +1,2 @@
+DejaVu Sans (Bitstream Vera / DejaVu license). Bundled for Vietnamese PDF text.
+Source: /usr/share/fonts/truetype/dejavu/

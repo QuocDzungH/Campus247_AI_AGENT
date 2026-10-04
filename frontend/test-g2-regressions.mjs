@@ -89,7 +89,7 @@ const {
   isDisplayTicketCode,
 } = loadTypeScriptModule(path.join(frontendDir, "lib/data/api/g2-flow.ts"));
 const { pollUntil } = loadTypeScriptModule(path.join(frontendDir, "lib/data/api/replay.ts"));
-const { mapBrief, mapWireTicket, mapChatResult, mapTicketDetail } = loadTypeScriptModule(path.join(frontendDir, "lib/data/api/mappers.ts"));
+const { mapBrief, mapWireTicket, mapChatResult, mapTicketDetail, mapAuditEntry } = loadTypeScriptModule(path.join(frontendDir, "lib/data/api/mappers.ts"));
 const { mapChatTurnToAssistantResult } = loadTypeScriptModule(path.join(frontendDir, "lib/assistant-adapter.ts"));
 const { createStudentChatStore, exchangesFromChatMessages } = loadTypeScriptModule(path.join(frontendDir, "lib/student-chat.ts"));
 const { OfficerFactSheet } = loadTypeScriptModule(path.join(frontendDir, "components/staff/OfficerFactSheet.tsx"));
@@ -312,14 +312,29 @@ test("prepare poll ignores stale brief from a previous revision", async () => {
 test("brief GET error without manual mode cannot Submit 2", () => {
   const blocked = decideReviewedBriefVersion({ briefStatus: undefined, reviewedBriefVersion: null, briefLoadError: "HTTP 500" }, { manualBrief: false });
   assert.equal(blocked.ok, false);
+  assert.match(blocked.reason, /tải lại|thủ công/i);
+  assert.doesNotMatch(blocked.reason, /Submit 2|reviewed_brief_version|brief ready/i);
   const none = decideReviewedBriefVersion({ briefStatus: "none", reviewedBriefVersion: null }, { manualBrief: false });
   assert.equal(none.ok, false);
+  assert.doesNotMatch(none.reason, /Submit 2|reviewed_brief_version/i);
   const pending = decideReviewedBriefVersion({ briefStatus: "pending", reviewedBriefVersion: null }, { manualBrief: false });
   assert.equal(pending.ok, false);
+  assert.match(pending.reason, /đang tạo|thủ công/i);
   const ready = decideReviewedBriefVersion({ briefStatus: "ready", reviewedBriefVersion: 1 }, { manualBrief: false });
   assert.deepEqual(ready, { ok: true, reviewedBriefVersion: 1 });
+  const fromOfficerBrief = decideReviewedBriefVersion(
+    { briefStatus: "none", reviewedBriefVersion: null, officerBrief: { status: "ready", briefVersion: 3 } },
+    { manualBrief: false }
+  );
+  assert.deepEqual(fromOfficerBrief, { ok: true, reviewedBriefVersion: 3 });
+  const stale = decideReviewedBriefVersion({ briefStatus: "stale", reviewedBriefVersion: 1 }, { manualBrief: false });
+  assert.equal(stale.ok, false);
+  assert.match(stale.reason, /cũ|thay đổi|thủ công/i);
+  assert.doesNotMatch(stale.reason, /Submit 2|reviewed_brief_version/i);
   const manual = decideReviewedBriefVersion({ briefStatus: "pending", reviewedBriefVersion: null, briefLoadError: "HTTP 500" }, { manualBrief: true });
   assert.deepEqual(manual, { ok: true, reviewedBriefVersion: null });
+  const staleManual = decideReviewedBriefVersion({ briefStatus: "stale", reviewedBriefVersion: 1 }, { manualBrief: true });
+  assert.deepEqual(staleManual, { ok: true, reviewedBriefVersion: null });
 });
 
 test("mutation commit remains success when refetch fails", async () => {
@@ -630,12 +645,33 @@ test("Fact Sheet and citation list render facts and every citation", () => {
   const sheet = renderToStaticMarkup(React.createElement(OfficerFactSheet, { brief }));
   assert.match(sheet, /vay vốn/);
   assert.match(sheet, /NHCSXH/);
+  assert.match(sheet, /Mục đích xin giấy/);
+  assert.match(sheet, /Cơ quan\/đơn vị nhận/);
   assert.match(sheet, /Kiểm tra tình trạng học tập/);
   assert.match(sheet, /Chưa có email nơi nhận/);
   assert.match(sheet, /Quy chế 1/);
   assert.match(sheet, /Quy chế 2/);
   assert.match(sheet, /stub/);
   assert.match(sheet, /p1/);
+  assert.match(sheet, /Thông tin kỹ thuật/);
+  assert.match(sheet, /Cảnh báo từ AI/);
+  assert.match(sheet, /Việc cán bộ nên làm tiếp/);
+  assert.doesNotMatch(sheet, /Hành động tiếp theo/);
+  const audit = mapAuditEntry({
+    id: "aud_g2",
+    ticket_id: "tkt_1",
+    actor_id: "usr_officer",
+    actor_type: "officer",
+    actor_name: "Trần Thị Hà",
+    action: "brief_ready",
+    from_status: "pending_officer",
+    to_status: "pending_officer",
+    request_id: "req_g2",
+    details: { brief_version: 1 },
+    created_at: "2026-10-04T03:00:00Z",
+  });
+  assert.equal(audit.action, "AI đã hoàn tất bản tóm tắt hồ sơ");
+  assert.doesNotMatch(JSON.stringify(audit), /\{"brief_version"/);
   const citations = renderToStaticMarkup(
     React.createElement(CitationList, {
       sources: [
