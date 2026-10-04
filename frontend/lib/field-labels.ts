@@ -24,6 +24,8 @@ export const FIELD_LABELS: Record<string, string> = {
   verificationStatus: "Trạng thái xác minh",
   summary: "Nội dung gốc",
   extras: "Trường bổ sung",
+  attachments: "Tệp đính kèm",
+  account_name: "Tên tài khoản",
   documentType: "Loại tài liệu",
   document_type: "Loại tài liệu",
   copies: "Số bản",

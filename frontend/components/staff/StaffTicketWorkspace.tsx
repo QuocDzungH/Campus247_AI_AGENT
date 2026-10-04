@@ -89,7 +89,7 @@ export function StaffTicketWorkspace({ ticket }: { ticket: Ticket }) {
     `${currentUser!.id}:ticket:${ticket.id}:document-destination`,
     ticket.documentDraft?.destinationOrg || ticket.destinationOrg || ""
   );
-  const [right, setRight] = useState<"response" | "document">("response");
+  const [right, setRight] = useState<"response" | "document">("document");
   const [proposal, setProposal] = useState("");
   const [proposalBase, setProposalBase] = useState<{ source: string; text: string } | null>(null);
   const [beforeApply, setBeforeApply] = useState<{ before: string; applied: string } | null>(null);
@@ -100,7 +100,6 @@ export function StaffTicketWorkspace({ ticket }: { ticket: Ticket }) {
   const [success, setSuccess] = useState("");
   const [briefNote, setBriefNote] = useState("");
   const [manualBrief, setManualBrief] = useState(false);
-  const [verifyNote, setVerifyNote] = useState<Record<string, string>>({});
   const [verifying, setVerifying] = useState(false);
   const [originalOpen, setOriginalOpen] = useState(false);
   const [originalFocus, setOriginalFocus] = useState<"declared" | "files" | null>(null);
@@ -350,8 +349,6 @@ export function StaffTicketWorkspace({ ticket }: { ticket: Ticket }) {
             busy={busy}
             verifying={verifying}
             isApi={Boolean(isApi)}
-            verifyNote={verifyNote}
-            onVerifyNote={(id, value) => setVerifyNote((current) => ({ ...current, [id]: value }))}
             onClaim={() => void handleClaim()}
             onRun={() => void execute(async () => {
               setVerifying(true);
@@ -361,7 +358,7 @@ export function StaffTicketWorkspace({ ticket }: { ticket: Ticket }) {
                 setVerifying(false);
               }
             })}
-            onConfirm={(id, outcome) => void execute(() => confirmCriterionReview(ticket.id, id, verifyNote[id], outcome))}
+            onConfirm={(id, outcome, note) => void execute(() => confirmCriterionReview(ticket.id, id, note, outcome))}
             onRetry={(key) => void execute(() => retryCriterionVerification(ticket.id, key))}
           />
 
@@ -390,31 +387,17 @@ export function StaffTicketWorkspace({ ticket }: { ticket: Ticket }) {
             focusTarget={originalFocus}
           />
 
-          <section className={`${staffSurface} p-5`}>
-            <h2 className="font-semibold">Trao đổi ({ticket.messagesTotal ?? ticket.messages.length})</h2>
-            <div className="mt-3 space-y-3">
-              {ticket.messages.map((message) => (
-                <article key={message.id} className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
-                  <div className="flex flex-wrap justify-between gap-2 text-xs text-slate-500">
-                    <span>{message.senderName}</span>
-                    <time>{formatDate(message.timestamp, "Asia/Bangkok")}</time>
-                  </div>
-                  <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed">{message.content}</p>
-                </article>
-              ))}
-            </div>
-          </section>
-
           <TicketAuditTimeline logs={ticket.auditLogs} loadError={ticket.auditLoadError} />
         </div>
 
-        <section className={`${staffSurface} min-w-0 xl:sticky xl:top-20`}>
+        <section className={`${staffSurface} min-w-0`}>
           <div className="flex items-center justify-between gap-2 border-b border-slate-200 p-2 dark:border-slate-800 no-print">
+            <p className="px-2 text-sm font-semibold">Bản duyệt phát hành</p>
             <div className="flex gap-1">
-              <button className={staffButton} aria-pressed={right === "response"} onClick={() => setRight("response")}>Phản hồi</button>
               <button className={staffButton} aria-pressed={right === "document"} onClick={() => setRight("document")}>
-                <FileText className="h-4 w-4" />Tài liệu
+                <FileText className="h-4 w-4" />Bản giấy xác nhận
               </button>
+              <button className={staffButton} aria-pressed={right === "response"} onClick={() => setRight("response")}>Tin nhắn phản hồi</button>
             </div>
           </div>
           <div className="space-y-4 p-5">
@@ -426,7 +409,7 @@ export function StaffTicketWorkspace({ ticket }: { ticket: Ticket }) {
                 ) : (
                   <>
                     <label htmlFor="staff-response" className="block text-xs text-slate-500">Nêu rõ kết quả xử lý hoặc thông tin cần bổ sung.</label>
-                    <textarea id="staff-response" className={`${staffField} min-h-64 resize-y leading-relaxed`} value={draft.text} onChange={(e) => draft.change(e.target.value)} disabled={busy} />
+                    <textarea id="staff-response" className={`${staffField} min-h-36 resize-y leading-relaxed`} value={draft.text} onChange={(e) => draft.change(e.target.value)} disabled={busy} />
                     <div className="flex items-center justify-between gap-2">
                       <p role="status" className="text-xs text-slate-500">{draft.saving ? "Đang lưu…" : draft.dirty ? "Chưa lưu · giữ trong phiên làm việc" : "Nháp đã lưu"}</p>
                       <button className={staffButton} disabled={busy || draft.saving || !draft.dirty} onClick={() => void draft.save((text) => updateOfficerDraft(ticket.id, text))}>Lưu nháp</button>
@@ -635,6 +618,29 @@ export function StaffTicketWorkspace({ ticket }: { ticket: Ticket }) {
               </div>
             )}
             {success && <p role="status" className="text-sm text-emerald-700 dark:text-emerald-300">{success}</p>}
+            <section className="border-t border-slate-200 pt-4 dark:border-slate-800" data-testid="officer-message-thread">
+              <div className="flex items-baseline justify-between gap-2">
+                <h2 className="text-sm font-semibold">Lịch sử trao đổi với sinh viên</h2>
+                <p className="text-xs text-slate-500">{ticket.messagesTotal ?? ticket.messages.length} tin</p>
+              </div>
+              <div className="mt-3 max-h-72 overflow-y-auto overscroll-contain pr-1" role="log" aria-label="Lịch sử trao đổi với sinh viên">
+                {ticket.messages.length ? (
+                  <div className="space-y-3">
+                    {ticket.messages.map((message) => (
+                      <article key={message.id} className="rounded-xl border border-slate-200 p-3 dark:border-slate-800">
+                        <div className="flex flex-wrap justify-between gap-2 text-xs text-slate-500">
+                          <span className="font-medium text-slate-700 dark:text-slate-200">{message.senderName}</span>
+                          <time>{formatDate(message.timestamp, "Asia/Bangkok")}</time>
+                        </div>
+                        <p className="mt-1.5 whitespace-pre-wrap break-words text-sm leading-relaxed">{message.content}</p>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500">Chưa có trao đổi trên hồ sơ này.</p>
+                )}
+              </div>
+            </section>
           </div>
         </section>
       </div>

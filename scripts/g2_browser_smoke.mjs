@@ -217,6 +217,7 @@ async function runApi(page) {
   report.steps.push("prepare-ready");
 
   const resolveText = `Đã hoàn tất xử lý yêu cầu giấy xác nhận (${marker}). Không phát hành giấy.`;
+  await page.getByRole("button", { name: "Tin nhắn phản hồi" }).click();
   await page.locator("#staff-response").fill(resolveText);
   await page.getByRole("button", { name: "Hoàn tất xử lý" }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Hoàn tất xử lý" }).click();
