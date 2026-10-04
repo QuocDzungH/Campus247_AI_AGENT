@@ -28,8 +28,9 @@ env/
 .DS_Store
 Thumbs.db
 
-# Local runtime data at repo root (SQLite, chroma). Packaged corpus is source.
+# Local runtime data at repo root (SQLite, hybrid RAG embedding cache). Packaged corpus is source.
 /data/
+/data/rag_index/
 *.db
 *.sqlite3
 

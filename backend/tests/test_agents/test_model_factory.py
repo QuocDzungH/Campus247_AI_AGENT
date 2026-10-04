@@ -18,9 +18,11 @@ def _settings(**kwargs) -> Settings:
         "groq_api_key": "",
         "openai_base_url": "",
         "agent_mode": "langgraph",
+        "rag_mode": "stub",
+        "app_env": "test",
     }
     data.update(kwargs)
-    return Settings(**data)
+    return Settings(_env_file=None, **data)
 
 
 def test_openai_uses_chat_openai(monkeypatch):

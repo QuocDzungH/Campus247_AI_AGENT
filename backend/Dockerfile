@@ -3,7 +3,7 @@ FROM python:3.11-slim AS builder
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY backend/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir --user -r requirements.txt
 
 # ---- Stage 2: Production ----
@@ -17,11 +17,12 @@ ENV PYTHONPATH=/app/src
 
 RUN useradd -m appuser
 
-COPY pyproject.toml alembic.ini ./
-COPY src ./src
-COPY alembic ./alembic
+COPY backend/pyproject.toml backend/alembic.ini ./
+COPY backend/src ./src
+COPY backend/alembic ./alembic
+COPY RAG ./RAG
 
-RUN mkdir -p /app/data && chown -R appuser:appuser /app
+RUN mkdir -p /app/data /app/data/rag_index && chown -R appuser:appuser /app
 
 USER appuser
 

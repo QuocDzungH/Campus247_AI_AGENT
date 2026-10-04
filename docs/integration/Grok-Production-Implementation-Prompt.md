@@ -81,6 +81,25 @@ Hãy khảo sát lại toàn bộ các luồng, bao gồm luồng ít được d
 - Kết quả tra cứu học vụ/tài chính/OCR phải đến từ connector/công cụ thật; thiếu connector thì ghi chưa xác minh và cho cán bộ đối chiếu thủ công có audit. Không dùng snippet SQL/API trong fixtures làm bằng chứng.
 - Phân biệt ticket hoàn tất, bản nháp giấy tờ, giấy được cấp và văn bản đã ký. Chỉ gọi giấy tờ là chính thức khi luồng phát hành/phê duyệt và quyền của đơn vị đã được thiết lập. Nếu chưa có chữ ký số/SSO/SIS/email, triển khai phần có thể chạy và ghi chính xác dependency còn thiếu.
 
+### 7.1. Bắt buộc: AI tự rà soát phiếu và luồng xin miễn điểm danh
+
+Đây là yêu cầu cụ thể, không được thay bằng việc bổ sung endpoint chung hoặc đổi trạng thái UI.
+
+- Phân biệt ba việc: AI kiểm tra phiếu sinh viên trước khi nộp; AI tự kiểm tra bản nháp mình vừa tạo; AI hỗ trợ cán bộ đối chiếu hồ sơ. Triển khai đúng từng việc, không dùng một nhãn “AI review” cho cả ba mà không có xử lý tương ứng.
+- Kiểm tra backend/src/campus247/services/reviews.py: ở thời điểm khảo sát, run_ai_review không gọi model mà tạo findings insufficient_evidence bằng nội dung cố định, rồi đặt aiStatus=ready. Thay bằng job/graph gọi model thật trên hồ sơ và tài liệu được phép truy cập. Khi chưa có evidence thì trả trạng thái chưa đủ căn cứ rõ ràng; khi chưa gọi model thì không báo đã chạy AI thành công.
+- Thêm bước review vào graph tiếp nhận: sau trích xuất và tạo preview, AI đối chiếu phiếu với thông tin được phép dùng, các field bắt buộc, thời gian, tài liệu đính kèm và nguồn quy định. Kết quả structured gồm missing_fields, inconsistent_fields, evidence_gaps, warnings và suggested_changes; gắn revision của phiếu và version tài liệu.
+- Thêm vòng draft → model review → sửa draft → validate có giới hạn, mặc định tối đa hai lượt sửa trong ngân sách timeout/token. Reviewer phải kiểm tra nội dung thực tế và evidence; quality guard bằng code vẫn bắt buộc nhưng không thay thế lời gọi model review. Không coi model tự review là bảo đảm kết luận đúng.
+- Không tự sửa MSSV, dữ liệu nhà trường đã xác minh, lý do cá nhân hoặc file đính kèm để làm phiếu hợp lệ. Sửa câu chữ có thể áp dụng với lịch sử thay đổi; thay đổi ý nghĩa/thông tin phải cho sinh viên xem và xác nhận. Nếu thiếu dữ liệu thì hỏi tiếp, không tự điền giả.
+- Phiếu thay đổi sau review phải đánh dấu kết quả review cũ stale; review đúng snapshot trước khi báo đã kiểm tra. Sinh viên vẫn xác nhận nộp, cán bộ vẫn quyết định phê duyệt theo quyền.
+- Triển khai service_type riêng cho đơn xin miễn điểm danh, ví dụ attendance_exemption; không nhét vào student_certificate hoặc coi là nghỉ học tạm thời. Phân biệt xin miễn điểm danh với xin phép vắng một buổi theo quy định trường; nếu intent mơ hồ, hỏi lại trước khi chọn loại phiếu.
+- Khi sinh viên nói “xin giấy miễn điểm danh”, “xin miễn điểm danh” hoặc diễn đạt tương đương, chatbot phải nhận diện bằng model/intent routing và mở form đúng ngay trong workspace. Không chỉ trả lời “hãy liên hệ cán bộ” khi luồng này đã được cấu hình, không yêu cầu sinh viên tự tìm form khác.
+- Form có hồ sơ sinh viên lấy từ backend; học phần/mã lớp, giảng viên hoặc đơn vị tiếp nhận, các buổi/thời gian xin miễn, lý do và minh chứng theo schema đã cấu hình. Các field/điều kiện bắt buộc phải dựa trên mẫu/quy định trường, không tự khẳng định chính sách chưa được cung cấp.
+- Tự điền dữ liệu đã biết, hỏi các trường thiếu qua chat, cập nhật form sau từng câu trả lời, hỗ trợ sửa tay và upload minh chứng. Chat và form dùng cùng bản nháp backend có version; tránh hai bộ dữ liệu không đồng bộ.
+- Hoàn thiện migration, DTO/OpenAPI, endpoint, form registry, routing, queue/claim, AI brief/review, bổ sung hồ sơ, chấp thuận/từ chối và thông báo kết quả cho service này. Không chỉ thêm một option ở dropdown hoặc một nút không có backend.
+- Hỗ trợ tạo/tải PDF của đơn đề nghị sau khi có đủ dữ liệu. Trước phê duyệt, ghi rõ “Đơn đề nghị” hoặc “Bản nháp”; chỉ phát hành giấy xác nhận/chấp thuận có số văn bản, người duyệt và trạng thái phát hành khi quy trình/quyền của trường đã thiết lập.
+- Dùng registry các loại phiếu với schema, template version và workflow cấu hình được để mở rộng dịch vụ khác. Model chọn loại phiếu đã được cấu hình, không tự sinh một thủ tục chính thức mới rồi tuyên bố nhà trường chấp nhận.
+- E2E bắt buộc: đăng nhập → nói “tôi xin miễn điểm danh” → hiện form đúng → tự điền profile → hỏi thiếu → upload minh chứng → AI review phát hiện trường thiếu/mâu thuẫn → sửa/xác nhận → nộp đúng một hồ sơ → cán bộ nhận và quyết định → sinh viên xem kết quả/tải văn bản đúng trạng thái. Thử thêm lỗi model, review stale, intent xin vắng một buổi và thiếu quy định để chứng minh không sinh success hoặc căn cứ giả.
+
 ## 8. Cấu hình, dữ liệu và vận hành
 
 - Cấu hình frontend chính thức: NEXT_PUBLIC_DATA_MODE=api, NEXT_PUBLIC_ENABLE_DATA_MODE_SWITCH=false và API URL hợp lệ. Production không được bị localStorage hoặc thiếu config kéo về mock. NEXT_PUBLIC_* là cấu hình build: rebuild frontend khi cần, không chỉ restart rồi tuyên bố đã áp dụng.

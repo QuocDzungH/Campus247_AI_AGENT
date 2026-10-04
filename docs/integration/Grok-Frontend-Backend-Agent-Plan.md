@@ -154,7 +154,7 @@ Backend: dùng môi trường Python repo, Ruff, `scripts.export_contracts_v1 --
 Bổ sung integration/E2E có ý nghĩa:
 
 - Sau mỗi lượt G0–G3: build mock mode, tắt backend/worker và chặn mạng; smoke login/student tạo hồ sơ/staff phản hồi hoặc hoàn tất/reviews xử lý và supplement, reload rồi kiểm tra dữ liệu vẫn còn. Kiểm tra không có HTTP request tới backend/provider. Hash các file mock so với baseline phải giống nhau. Nếu có runtime mode switch, chứng minh chuyển api → mock chủ động không trộn session/token/cache hoặc mất dữ liệu mock.
-- Student A không đọc/ghi ticket/conversation của B; officer ngoài scope bị từ chối. Kiểm tra quyền file khi triển khai G4.
+- Student A không đọc/ghi ticket/conversation của B; officer ngoài scope bị từ chối. Kiểm tra quyền file thuộc G4.
 - Login nhớ/không nhớ, token hết hạn, reload, logout, mode/account switch khi request đang chạy.
 - Submit1 double click/retry/mất response; preview stale/expired/already submitted.
 - Claim hai cán bộ, stale revision/brief sau claim hoặc bổ sung; draft còn nguyên sau conflict.
@@ -239,9 +239,8 @@ Giữ Dual-Mode theo mục 5.11: không sửa MockDataGateway/fixtures/mock-data
 5. Submit2 POST /api/v1/officer/tickets/{id}/actions:
    {action,content,expected_revision,reviewed_brief_version,confirmed:true}.
    Actor từ Bearer, nội dung do cán bộ kiểm tra. STALE_REVISION/STALE_BRIEF giữ draft,
-   tải snapshot mới và yêu cầu kiểm tra lại. Xử lý thủ công với brief_version null
-   phải rõ ràng với reviewed_brief_version:null, không tự xóa version để bypass guard.
-   Resolve không phát hành giấy.
+   tải snapshot mới và yêu cầu kiểm tra lại. Nếu xử lý thủ công, bắt buộc gửi rõ
+   `reviewed_brief_version:null`; không tự xóa version để bypass guard. Resolve không phát hành giấy.
 6. Một intent mutation giữ cùng key qua mất response/retry; 202 Processing replay
    cùng key/payload hữu hạn, không giả endpoint operation-status chưa tồn tại.
    Student bổ sung qua /tickets/{id}/messages; refetch ticket/brief sau mutation.
@@ -252,8 +251,8 @@ Giữ Dual-Mode theo mục 5.11: không sửa MockDataGateway/fixtures/mock-data
 - E2E browser với frontend + API + worker thật, agent stub: student tạo ticket mới
   -> officer claim -> worker sinh brief -> Submit2 -> student đọc phản hồi.
 - Thử request_info/bổ sung, L4 lock/follow-up, duplicate submit/retry/conflict.
-- Có SQLite smoke trên DB demo riêng; dùng DATABASE_URL tuyệt đối, ghi rõ API và
-  worker trỏ cùng file. Nếu môi trường demo dùng PostgreSQL, E2E phải chạy thêm trên
+- Có SQLite smoke trên DB tạm (mặc định của `scripts/g2_stub_e2e.py`); dùng DATABASE_URL tuyệt đối, ghi rõ API và
+  worker trỏ cùng file. Không ghi thêm vào `data/app.db` demo dùng chung trừ khi truyền `--live`. Nếu môi trường demo dùng PostgreSQL, E2E phải chạy thêm trên
   PostgreSQL đó; SQLite không thay bằng chứng concurrency Postgres.
 - Commands/test results, request_id và record IDs (không token/secrets), migration
   target, mock offline smoke + hash không đổi. Chỉ tạo dữ liệu demo mới, không reset

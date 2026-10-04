@@ -11,7 +11,7 @@ Ngày: 2026-10-03. Không chứa secret.
 - **Rà soát học phần:** `/api/v1/reviews` lưu hồ sơ trên DB. Chạy AI chỉ trả `insufficient_evidence` khi chưa có SIS/đề cương chính thức. Phiếu hoàn tất là đề xuất cán bộ, chưa phải quyết định đã ký.
 - **Đối soát cấp giấy:** POST `/tickets/{id}/verifications` ghi `insufficient` (chưa connector SIS/KHTC), không dùng snippet SQL giả.
 - **AI:** `APP_ENV=production` bắt buộc `AGENT_MODE=langgraph` và `DEMO_AUTH_ENABLED=false`. Không fallback Stub khi lỗi model.
-- **RAG:** `corpus` = demo đóng gói. `official` = kho ingest riêng; trống thì insufficient_evidence, không gọi demo là quy chế trường.
+- **RAG:** `corpus` = demo đóng gói. `pipeline` = Hybrid RAG (Gemini embedding đa ngôn ngữ + BM25 + RRF), cache theo source hash tại `RAG_INDEX_DIR`. `official` = kho ingest riêng; trống thì insufficient_evidence, không gọi demo là quy chế trường. Lỗi embedding/query-normalize Gemini là 503 `AI_UNAVAILABLE`, không chuyển StubAgent.
 
 ## Vì sao vẫn Bearer
 

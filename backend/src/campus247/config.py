@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     openai_base_url: str = ""
     agent_mode: Literal["stub", "langgraph"] = "stub"
-    rag_mode: Literal["stub", "corpus", "official"] = "stub"
+    rag_mode: Literal["stub", "corpus", "official", "pipeline"] = "stub"
 
     # Database
     database_url: str = "sqlite:///./data/app.db"
@@ -60,8 +60,14 @@ class Settings(BaseSettings):
     remember_ttl_seconds: int = Field(default=30 * 24 * 3600, ge=3600)
     files_dir: str = "./data/files"
     official_corpus_dir: str = "./data/corpus_official"
+    rag_pipeline_dir: str = "./RAG"
+    rag_index_dir: str = "./data/rag_index"
+    gemini_embedding_model: str = "models/gemini-embedding-001"
+    rag_semantic_top_k: int = Field(default=8, ge=1, le=32)
+    rag_bm25_top_k: int = Field(default=8, ge=1, le=32)
+    rag_fusion_top_k: int = Field(default=5, ge=1, le=5)
 
-    # Vector Store
+    # Legacy template field; hybrid RAG does not use Chroma.
     chroma_persist_dir: str = "./data/chroma"
 
     @model_validator(mode="after")

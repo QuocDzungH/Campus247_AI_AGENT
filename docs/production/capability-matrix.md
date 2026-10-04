@@ -18,6 +18,7 @@ Nguồn sự thật: backend + DB. Mock chỉ dùng khi `NEXT_PUBLIC_DATA_MODE=m
 | Nháp / checklist cán bộ | PATCH `/officer/tickets/{id}/workspace` | `tickets.officer_draft`, `officer_checklist` | cán bộ | không ghi đè brief AI | Đã triển khai |
 | Review học phần | `/api/v1/reviews*` | `review_cases` | cán bộ tạo/ghi nhận; sinh viên xem hồ sơ mình | AI chỉ insufficient_evidence khi chưa có SIS/OCR | Đã nối API; phiếu đề xuất chưa phải quyết định đã ký |
 | RAG demo | `RAG_MODE=corpus` | packaged `demo_academic_v1.json` | retrieval | CampusAgent | Demo, không phải quy chế trường |
+| RAG hybrid | `RAG_MODE=pipeline` | Markdown `RAG/data/processed` + cache `data/rag_index` | Gemini embedding + BM25 + RRF | CampusAgent L1/L3 | Không Chroma; fail-closed nếu Gemini embedding/normalize lỗi |
 | RAG official | `RAG_MODE=official` + `ingest-document` | `data/corpus_official/index.json` | chỉ `approved` | CampusAgent | Khung ingest; chưa có tài liệu trường |
 | Đối soát cấp giấy | POST `/tickets/{id}/verifications` | `tickets.system_verifications` | cán bộ team | không bịa SIS | insufficient cho tới khi có connector |
 | Giấy đã ký / SMTP / SSO | — | — | — | — | Chưa hạ tầng |

@@ -102,5 +102,7 @@ def test_postgres_json_columns_are_jsonb_and_alembic_check_is_clean(pg_url):
     assert rows
     mismatched = [f"{row.table_name}.{row.column_name}={row.udt_name}" for row in rows if row.udt_name != "jsonb"]
     assert mismatched == []
-    assert len(rows) == 17
+    # Migration 20261003_0005 adds review_cases.payload and two ticket
+    # verification/checklist payloads, all of which must remain JSONB.
+    assert len(rows) == 20
     command.check(alembic_config(pg_url))

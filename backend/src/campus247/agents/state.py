@@ -70,6 +70,20 @@ class FieldExtraction(BaseModel):
     invalid_fields: list[FieldIssue] = Field(default_factory=list)
 
 
+class GroundedL1Answer(BaseModel):
+    outcome: Literal["answered", "insufficient_evidence"]
+    answer: str = Field(min_length=1, max_length=5000)
+    used_chunk_ids: list[str] = Field(default_factory=list, max_length=5)
+
+    @model_validator(mode="after")
+    def citations_match_outcome(self) -> GroundedL1Answer:
+        if self.outcome == "answered" and not self.used_chunk_ids:
+            raise ValueError("answered L1 result requires a source")
+        if self.outcome == "insufficient_evidence" and self.used_chunk_ids:
+            raise ValueError("insufficient L1 result must not cite an unrelated source")
+        return self
+
+
 class DossierOutput(BaseModel):
     summary: str = Field(min_length=1, max_length=2000)
     extra_facts: list[Fact] = Field(default_factory=list)

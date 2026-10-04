@@ -28,7 +28,7 @@ def build_intake_graph(
 ):
     graph = StateGraph(IntakeState)
     graph.add_node("route", make_router_node(model, provider_timeout=provider_timeout))
-    graph.add_node("l1", make_l1_node(rag, provider_timeout=provider_timeout))
+    graph.add_node("l1", make_l1_node(model, rag, provider_timeout=provider_timeout))
     graph.add_node("l2", make_l2_node(model, provider_timeout=provider_timeout))
     graph.add_node("l4", l4_node)
     graph.add_edge(START, "route")

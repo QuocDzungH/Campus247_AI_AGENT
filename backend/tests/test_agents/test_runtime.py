@@ -73,6 +73,42 @@ def test_langgraph_init_runtime_wires_corpus_rag(monkeypatch):
         set_rag(original_rag)
 
 
+def test_langgraph_init_runtime_wires_pipeline_rag(monkeypatch, tmp_path):
+    from campus247.rag.pipeline import PipelineRag
+
+    original_agent = get_agent()
+    original_rag = get_rag()
+    monkeypatch.setattr("campus247.services.llm.create_chat_model", lambda settings: SimpleNamespace(name="fake"))
+    try:
+        set_agent(StubAgent())
+        set_rag(StubRag())
+        init_runtime(
+            _settings(
+                app_env="test",
+                agent_mode="langgraph",
+                rag_mode="pipeline",
+                rag_pipeline_dir=str(tmp_path),
+                rag_index_dir=str(tmp_path / "rag_index"),
+            )
+        )
+        rag = get_rag()
+        assert isinstance(rag, PipelineRag)
+        assert isinstance(get_agent(), CampusAgent)
+        assert (get_agent().brief_artifact_metadata()["index_version"] or "").startswith("vinuni-hybrid-")
+    finally:
+        set_agent(original_agent)
+        set_rag(original_rag)
+
+
+def test_pipeline_path_falls_back_to_repo_when_started_from_backend(monkeypatch, tmp_path):
+    from campus247.rag.factory import _resolve_pipeline_dir
+
+    monkeypatch.chdir(tmp_path)
+    resolved = _resolve_pipeline_dir("RAG")
+    assert resolved.name == "RAG"
+    assert resolved.is_dir()
+
+
 def test_run_forever_initializes_runtime_once(monkeypatch):
     called = {"init": 0}
 
