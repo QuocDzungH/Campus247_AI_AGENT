@@ -1,3 +1,12 @@
+# Frontend design
+
+Read `DESIGN.md` in this directory before designing or changing frontend UI.
+It contains the ThoughtStream reference and Campus 24/7 adaptations; the
+project-specific integration section takes precedence over the original template.
+Apply it within the user's requested scope. Adding this document alone does not
+authorize a full UI migration. Preserve working flows and verify responsive
+layouts, keyboard access, Vietnamese text and both themes for visual changes.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know

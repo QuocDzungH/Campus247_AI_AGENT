@@ -9,8 +9,16 @@ import { saveLocalAttachments } from "@/lib/local-attachments";
 import type { StoredAttachment } from "@/lib/types";
 import { AttachmentDownload } from "./AttachmentDownload";
 
-export function RequestStatus({ item, localOnly = false }: { item: RequestItem; localOnly?: boolean }) {
-  return <span className={`inline-flex rounded-lg px-2.5 py-1 text-sm font-semibold ${requestStates[item.state].classes}`}>{requestStatusLabel(item, localOnly)}</span>;
+export function RequestStatus({ item, localOnly = false, className = "" }: { item: RequestItem; localOnly?: boolean; className?: string }) {
+  const tsStatusStyles: Record<string, string> = {
+    new: "rounded-none border border-[var(--ts-border-medium,#D6D3D1)] bg-[var(--ts-surface,#F5F5F4)] text-[var(--ts-text-secondary,#57534E)] dark:border-[#44403C] dark:bg-[#23201D] dark:text-[#D6D3D1]",
+    processing: "rounded-none border border-[#D6D3D1] bg-[#F5F5F4] text-[#78716C] dark:border-[#57534E] dark:bg-[#292524] dark:text-[#D6D3D1]",
+    supplement: "rounded-none border border-[var(--ts-status-warning-border,#FEF08A)] bg-[var(--ts-status-warning-bg,#FEFCE8)] text-[var(--ts-status-warning-text,#854D0E)] dark:border-[rgba(234,179,8,0.4)] dark:bg-[rgba(113,63,18,0.3)] dark:text-[#FDE047]",
+    completed: "rounded-none border border-[var(--ts-status-success-border,#BBF7D0)] bg-[var(--ts-status-success-bg,#F0FDF4)] text-[var(--ts-status-success-text,#3F6212)] dark:border-[rgba(34,197,94,0.4)] dark:bg-[rgba(20,83,45,0.3)] dark:text-[#86EFAC]",
+    draft: "rounded-none border border-[var(--ts-border-subtle,#E7E5E4)] bg-[var(--ts-surface,#F5F5F4)] text-[var(--ts-text-secondary,#57534E)] dark:border-[#383533] dark:bg-[#292524] dark:text-[#A8A29E]",
+  };
+  const statusStyle = tsStatusStyles[item.state] || "rounded-none border border-[var(--ts-border-subtle,#E7E5E4)] bg-[var(--ts-surface,#F5F5F4)] text-[var(--ts-text-secondary,#57534E)]";
+  return <span className={`inline-flex items-center px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider ${statusStyle} ${className}`}>{requestStatusLabel(item, localOnly)}</span>;
 }
 
 const section = "rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 dark:border-slate-700 dark:bg-slate-900";

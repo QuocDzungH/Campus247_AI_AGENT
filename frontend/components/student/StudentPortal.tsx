@@ -12,11 +12,11 @@ function PortalContents({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { storageIssue } = useStudentWorkspace();
   const isChat = pathname === "/student/assistant";
-  return <div className="min-h-dvh bg-[var(--bg-page)] bg-[radial-gradient(ellipse_at_top_left,rgba(59,130,246,0.08),transparent_60%)] text-[var(--text-primary)]">
-    <a href="#student-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-xl focus:bg-white focus:px-4 focus:py-3 focus:text-slate-900">Đến nội dung chính</a>
+  return <div className="thoughtstream-theme min-h-dvh bg-[var(--ts-bg)] text-[var(--ts-text-primary)] transition-colors">
+    <a href="#student-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-none focus:border focus:border-[var(--ts-border-strong)] focus:bg-[var(--ts-surface)] focus:px-4 focus:py-3 focus:text-[var(--ts-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ts-focus-ring)]">Đến nội dung chính</a>
     <Navbar />
-    <main id="student-content" className={isChat ? "w-full" : "mx-auto w-full max-w-[1120px] px-4 pb-20 pt-5 sm:px-6 sm:pt-6 lg:px-8"}>
-      {storageIssue && <p role="alert" className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">{storageIssue}</p>}
+    <main id="student-content" className={isChat ? "w-full" : "mx-auto w-full max-w-[1120px] px-4 pb-20 pt-8 sm:px-6 sm:pt-10 lg:px-8"}>
+      {storageIssue && <p role="alert" className="mb-8 rounded-none border border-amber-300 bg-amber-50/80 p-4 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">{storageIssue}</p>}
       {children}
     </main>
   </div>;

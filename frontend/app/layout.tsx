@@ -1,9 +1,22 @@
 import type { Metadata } from "next";
+import { Newsreader, Inter } from "next/font/google";
 import "./globals.css";
 import { StoreProvider } from "@/lib/store";
 import { DraftSessionProvider } from "@/lib/draft-context";
 import { DataSourceError } from "@/components/shared/DataSourceError";
 import { StudentRuntime } from "@/components/student/StudentRuntime";
+
+const newsreader = Newsreader({
+  subsets: ["latin", "vietnamese"],
+  variable: "--font-serif",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin", "vietnamese"],
+  variable: "--font-sans",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Campus 24/7 · Dịch vụ sinh viên",
@@ -16,8 +29,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="vi" suppressHydrationWarning>
-      <body className="min-h-screen flex flex-col font-sans antialiased selection:bg-blue-600 selection:text-white transition-colors" style={{ backgroundColor: 'var(--bg-page)', color: 'var(--text-primary)' }}>
+    <html lang="vi" suppressHydrationWarning className={`${inter.variable} ${newsreader.variable}`}>
+      <body className="min-h-screen flex flex-col font-sans antialiased selection:bg-stone-600 selection:text-white transition-colors" style={{ backgroundColor: 'var(--bg-page)', color: 'var(--text-primary)' }}>
 
         <StoreProvider>
           <DraftSessionProvider>

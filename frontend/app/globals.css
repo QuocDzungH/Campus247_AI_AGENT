@@ -1,6 +1,11 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+@theme {
+  --font-serif: var(--font-serif), Newsreader, Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-sans), Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
 @layer base {
   :root {
     --bg-page: #F7F8FC;
@@ -18,6 +23,34 @@
     --status-amber: #D97706;
     --status-red: #DC2626;
     --focus-ring: #2563EB;
+
+    /* ThoughtStream Design Tokens (Light) */
+    --ts-bg: #FAFAF9;
+    --ts-surface: #F5F5F4;
+    --ts-surface-raised: #EFEDEB;
+    --ts-border-subtle: #E7E5E4;
+    --ts-border-medium: #D6D3D1;
+    --ts-border-strong: #A8A29E;
+    --ts-text-primary: #1C1917;
+    --ts-text-secondary: #57534E;
+    --ts-text-tertiary: #78716C;
+    --ts-primary: #78716C;
+    --ts-primary-hover: #57534E;
+    --ts-primary-active: #44403C;
+    --ts-focus-ring: #78716C;
+
+    --ts-status-success-bg: #F0FDF4;
+    --ts-status-success-text: #3F6212;
+    --ts-status-success-border: #BBF7D0;
+    --ts-status-warning-bg: #FEFCE8;
+    --ts-status-warning-text: #854D0E;
+    --ts-status-warning-border: #FEF08A;
+    --ts-status-error-bg: #FEF2F2;
+    --ts-status-error-text: #B91C1C;
+    --ts-status-error-border: #FECACA;
+    --ts-status-info-bg: #F5F5F4;
+    --ts-status-info-text: #57534E;
+    --ts-status-info-border: #D6D3D1;
   }
 
   .dark {
@@ -36,6 +69,57 @@
     --status-amber: #F59E0B;
     --status-red: #EF4444;
     --focus-ring: #60A5FA;
+
+    /* ThoughtStream Design Tokens (Dark) */
+    --ts-bg: #141210;
+    --ts-surface: #1C1917;
+    --ts-surface-raised: #292524;
+    --ts-border-subtle: #292524;
+    --ts-border-medium: #44403C;
+    --ts-border-strong: #78716C;
+    --ts-text-primary: #FAFAF9;
+    --ts-text-secondary: #D6D3D1;
+    --ts-text-tertiary: #A8A29E;
+    --ts-primary: #A8A29E;
+    --ts-primary-hover: #D6D3D1;
+    --ts-primary-active: #FAFAF9;
+    --ts-focus-ring: #A8A29E;
+
+    --ts-status-success-bg: rgba(20, 83, 45, 0.35);
+    --ts-status-success-text: #86EFAC;
+    --ts-status-success-border: rgba(34, 197, 94, 0.4);
+    --ts-status-warning-bg: rgba(113, 63, 18, 0.35);
+    --ts-status-warning-text: #FDE047;
+    --ts-status-warning-border: rgba(234, 179, 8, 0.4);
+    --ts-status-error-bg: rgba(127, 29, 29, 0.35);
+    --ts-status-error-text: #FCA5A5;
+    --ts-status-error-border: rgba(239, 68, 68, 0.4);
+    --ts-status-info-bg: rgba(41, 37, 36, 0.7);
+    --ts-status-info-text: #D6D3D1;
+    --ts-status-info-border: #44403C;
+  }
+
+  .thoughtstream-theme {
+    --bg-page: var(--ts-bg);
+    --surface-card: var(--ts-surface);
+    --surface-subtle: var(--ts-surface);
+    --surface-raised: var(--ts-surface-raised);
+    --border-color: var(--ts-border-subtle);
+    --border-highlight: var(--ts-border-medium);
+    --text-primary: var(--ts-text-primary);
+    --text-secondary: var(--ts-text-secondary);
+    --text-muted: var(--ts-text-secondary);
+    --focus-ring: var(--ts-focus-ring);
+    background-color: var(--ts-bg);
+    color: var(--ts-text-primary);
+  }
+
+  .font-serif {
+    font-family: var(--font-serif), Newsreader, Georgia, "Times New Roman", serif;
+  }
+
+  .font-sans {
+    font-family: var(--font-sans), Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 
   * {
