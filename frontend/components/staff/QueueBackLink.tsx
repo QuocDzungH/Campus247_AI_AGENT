@@ -16,7 +16,7 @@ export function QueueBackLink() {
       setHref(saved.url);
     }
   }, [currentUser]);
-  return <Link href={href} scroll={false} className="mb-3 inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-700">
+  return <Link href={href} scroll={false} className="mb-3 inline-flex items-center gap-2 text-sm text-[#78716C] hover:text-[#1C1917] dark:text-[#A8A29E] dark:hover:text-[#FAFAF9]">
     <ArrowLeft className="h-4 w-4" />Quay lại hàng chờ
   </Link>;
 }

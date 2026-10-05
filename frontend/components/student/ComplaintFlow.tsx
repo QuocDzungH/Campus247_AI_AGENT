@@ -91,9 +91,9 @@ export function ComplaintFlow({ review = false }: { review?: boolean }) {
         <SummaryRow label="Mong muốn của bạn" onEdit={() => editSummary("requestedOutcome")}>{data.requestedOutcome}</SummaryRow>
         <SummaryRow label="Mô tả minh chứng" onEdit={() => editSummary("evidence")}>{data.evidence}</SummaryRow>
       </dl>
-      <p className="mt-5 text-sm text-slate-600 dark:text-slate-300">Nội dung này sẽ được gửi để cán bộ xác minh và xem xét.</p>
-      {!valid && <p role="alert" className="mt-4 text-sm text-red-600 dark:text-red-400">Hãy điền môn học và nội dung cần kiểm tra trước khi gửi.</p>}
-      {submitError && <p role="alert" className="mt-4 text-sm text-red-600 dark:text-red-400">{submitError}</p>}
+      <p className="mt-5 text-sm text-[#57534E] dark:text-[#D6D3D1]">Nội dung này sẽ được gửi để cán bộ xác minh và xem xét.</p>
+      {!valid && <p role="alert" className="mt-4 text-sm text-[#B91C1C] dark:text-[#EF4444]">Hãy điền môn học và nội dung cần kiểm tra trước khi gửi.</p>}
+      {submitError && <p role="alert" className="mt-4 text-sm text-[#B91C1C] dark:text-[#EF4444]">{submitError}</p>}
       <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Link href="/student/complaint" aria-disabled={submitting} onClick={(event) => { if (submitting) event.preventDefault(); }} className={secondaryButton}>Quay lại</Link>
         {!valid ? <Link href="/student/complaint" className={primaryButton}>Điền thông tin còn thiếu</Link>
@@ -101,36 +101,36 @@ export function ComplaintFlow({ review = false }: { review?: boolean }) {
           : <button type="button" onClick={() => void submit()} disabled={submitting} className={primaryButton}>{submitting ? <><Loader2 className="h-4 w-4 animate-spin" />Đang gửi…</> : "Gửi khiếu nại cho cán bộ"}</button>}
       </div>
     </div> : <form onSubmit={continueToReview} noValidate className={surfaceClass}>
-      <p className="mb-6 text-sm leading-relaxed text-slate-600 dark:text-slate-300">Mô tả điểm cần kiểm tra để cán bộ có thể xem xét yêu cầu của bạn.</p>
+      <p className="mb-6 text-sm leading-relaxed text-[#57534E] dark:text-[#D6D3D1]">Mô tả điểm cần kiểm tra để cán bộ có thể xem xét yêu cầu của bạn.</p>
       <div className="space-y-6">
         <div>
-          <label htmlFor="complaint-course" className="mb-2 block text-base font-medium">Môn học</label>
+          <label htmlFor="complaint-course" className="mb-2 block text-sm font-medium text-[#1C1917] dark:text-[#FAFAF9]">Môn học</label>
           <input id="complaint-course" name="course" value={data.course} onChange={(event) => edit("course", event.target.value)} maxLength={200} required placeholder="Ví dụ: Cấu trúc dữ liệu (IT3011)" aria-invalid={Boolean(errors.course)} aria-describedby={errors.course ? "complaint-course-error" : undefined} className={fieldClass} />
-          {errors.course && <p id="complaint-course-error" className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.course}</p>}
+          {errors.course && <p id="complaint-course-error" className="mt-2 text-xs text-[#B91C1C] dark:text-[#EF4444]">{errors.course}</p>}
         </div>
         <div>
-          <label htmlFor="complaint-assessment" className="mb-2 block text-base font-medium">Loại điểm cần kiểm tra</label>
+          <label htmlFor="complaint-assessment" className="mb-2 block text-sm font-medium text-[#1C1917] dark:text-[#FAFAF9]">Loại điểm cần kiểm tra</label>
           <select id="complaint-assessment" name="assessment" value={data.assessment} onChange={(event) => edit("assessment", event.target.value)} className={fieldClass}>
             <option>Điểm thi cuối kỳ</option><option>Điểm giữa kỳ</option><option>Điểm tổng kết học phần</option><option>Loại điểm khác</option>
           </select>
         </div>
         <div>
-          <label htmlFor="complaint-description" className="mb-2 block text-base font-medium">Nội dung cần kiểm tra</label>
+          <label htmlFor="complaint-description" className="mb-2 block text-sm font-medium text-[#1C1917] dark:text-[#FAFAF9]">Nội dung cần kiểm tra</label>
           <textarea id="complaint-description" name="description" value={data.description} onChange={(event) => edit("description", event.target.value)} maxLength={4000} required rows={4} placeholder="Nêu điểm đang hiển thị và thông tin bạn cho rằng có sai lệch…" aria-invalid={Boolean(errors.description)} aria-describedby={errors.description ? "complaint-description-error" : undefined} className={fieldClass} />
-          {errors.description && <p id="complaint-description-error" className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.description}</p>}
+          {errors.description && <p id="complaint-description-error" className="mt-2 text-xs text-[#B91C1C] dark:text-[#EF4444]">{errors.description}</p>}
         </div>
         <div>
-          <label htmlFor="complaint-requestedOutcome" className="mb-2 block text-base font-medium">Mong muốn của bạn <span className="font-normal text-slate-500 dark:text-slate-400">(không bắt buộc)</span></label>
+          <label htmlFor="complaint-requestedOutcome" className="mb-2 block text-sm font-medium text-[#1C1917] dark:text-[#FAFAF9]">Mong muốn của bạn <span className="font-normal text-[#78716C] dark:text-[#A8A29E]">(không bắt buộc)</span></label>
           <textarea id="complaint-requestedOutcome" name="requestedOutcome" value={data.requestedOutcome} onChange={(event) => edit("requestedOutcome", event.target.value)} maxLength={2000} rows={2} placeholder="Ví dụ: Đề nghị kiểm tra lại điểm trên cổng sinh viên" className={fieldClass} />
         </div>
         <div>
-          <label htmlFor="complaint-evidence" className="mb-2 block text-base font-medium">Mô tả minh chứng <span className="font-normal text-slate-500 dark:text-slate-400">(không bắt buộc)</span></label>
+          <label htmlFor="complaint-evidence" className="mb-2 block text-sm font-medium text-[#1C1917] dark:text-[#FAFAF9]">Mô tả minh chứng <span className="font-normal text-[#78716C] dark:text-[#A8A29E]">(không bắt buộc)</span></label>
           <textarea id="complaint-evidence" name="evidence" value={data.evidence} onChange={(event) => edit("evidence", event.target.value)} maxLength={2000} rows={2} placeholder="Nêu biên bản, bài thi hoặc trao đổi bạn có…" aria-describedby="complaint-evidence-hint" className={fieldClass} />
-          <p id="complaint-evidence-hint" className="mt-2 text-sm text-slate-500 dark:text-slate-400">Bạn có thể trao đổi thêm với cán bộ trong hồ sơ sau khi gửi.</p>
+          <p id="complaint-evidence-hint" className="mt-2 text-xs text-[#78716C] dark:text-[#A8A29E]">Bạn có thể trao đổi thêm với cán bộ trong hồ sơ sau khi gửi.</p>
         </div>
       </div>
-      <div className="mt-8 flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
-        <p className="text-sm text-slate-500 dark:text-slate-400">Bản nháp được lưu trên thiết bị này.</p>
+      <div className="mt-8 flex flex-col-reverse gap-3 border-t border-[#E7E5E4] pt-6 sm:flex-row sm:items-center sm:justify-between dark:border-[#292524]">
+        <p className="text-xs text-[#78716C] dark:text-[#A8A29E]">Bản nháp được lưu trên thiết bị này.</p>
         <button type="submit" className={primaryButton}>Tiếp tục<ArrowRight className="h-4 w-4" /></button>
       </div>
     </form>}

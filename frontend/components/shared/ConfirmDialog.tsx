@@ -30,30 +30,30 @@ export function ConfirmDialog({
       onClose={onCancel}
       labelledBy="dialog-title"
       describedBy="dialog-description"
-      className="relative bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-in fade-in zoom-in-95"
+      className="relative bg-[#FAFAF9] dark:bg-[#1C1917] rounded-none border border-[#E7E5E4] dark:border-[#292524] p-6 w-full max-w-sm shadow-none"
     >
-      <h3 id="dialog-title" className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
-          {title}
+      <h3 id="dialog-title" className="font-serif text-lg font-normal text-[#1C1917] dark:text-[#FAFAF9] mb-2">
+        {title}
       </h3>
-      <p id="dialog-description" className="text-sm text-slate-500 dark:text-slate-400 mb-6">
-          {description}
+      <p id="dialog-description" className="text-sm text-[#57534E] dark:text-[#D6D3D1] mb-6">
+        {description}
       </p>
 
       <div className="flex items-center justify-end gap-3">
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 rounded-lg text-sm font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-colors"
+          className="px-4 py-2 rounded-none text-sm font-medium border border-[#D6D3D1] dark:border-[#44403C] bg-transparent text-[#57534E] hover:bg-[#F5F5F4] dark:text-[#D6D3D1] dark:hover:bg-[#292524] transition-colors"
         >
           {cancelLabel}
         </button>
         <button
           type="button"
           onClick={onConfirm}
-          className={`px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors ${
+          className={`px-4 py-2 rounded-none text-sm font-medium text-white transition-colors ${
             isDestructive
-              ? "bg-red-600 hover:bg-red-700"
-              : "bg-blue-600 hover:bg-blue-700"
+              ? "bg-[#DC2626] hover:bg-[#B91C1C]"
+              : "bg-[#78716C] hover:bg-[#57534E] dark:bg-[#A8A29E] dark:text-[#1C1917]"
           }`}
         >
           {confirmLabel}

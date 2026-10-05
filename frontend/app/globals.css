@@ -8,21 +8,21 @@
 
 @layer base {
   :root {
-    --bg-page: #F7F8FC;
+    --bg-page: #FAFAF9;
     --surface-card: #FFFFFF;
-    --surface-subtle: #F8FAFC;
-    --border-color: #E5E7EB;
-    --border-highlight: #D1D5DB;
-    --text-primary: #111827;
-    --text-secondary: #4B5563;
-    --text-muted: #6B7280;
-    --accent-blue: #2563EB;
-    --accent-blue-hover: #1D4ED8;
-    --accent-cyan: #0284C7;
-    --status-green: #059669;
-    --status-amber: #D97706;
-    --status-red: #DC2626;
-    --focus-ring: #2563EB;
+    --surface-subtle: #F5F5F4;
+    --border-color: #E7E5E4;
+    --border-highlight: #D6D3D1;
+    --text-primary: #1C1917;
+    --text-secondary: #57534E;
+    --text-muted: #78716C;
+    --accent-blue: #78716C;
+    --accent-blue-hover: #57534E;
+    --accent-cyan: #57534E;
+    --status-green: #3F6212;
+    --status-amber: #854D0E;
+    --status-red: #B91C1C;
+    --focus-ring: #78716C;
 
     /* ThoughtStream Design Tokens (Light) */
     --ts-bg: #FAFAF9;
@@ -48,27 +48,27 @@
     --ts-status-error-bg: #FEF2F2;
     --ts-status-error-text: #B91C1C;
     --ts-status-error-border: #FECACA;
-    --ts-status-info-bg: #F5F5F4;
-    --ts-status-info-text: #57534E;
-    --ts-status-info-border: #D6D3D1;
+    --ts-info-bg: #F5F5F4;
+    --ts-info-text: #57534E;
+    --ts-info-border: #D6D3D1;
   }
 
   .dark {
-    --bg-page: #0B0F17;
-    --surface-card: #111827;
-    --surface-subtle: #161F30;
-    --border-color: #1F2937;
-    --border-highlight: #374151;
-    --text-primary: #F3F4F6;
-    --text-secondary: #D1D5DB;
-    --text-muted: #9CA3AF;
-    --accent-blue: #3B82F6;
-    --accent-blue-hover: #2563EB;
-    --accent-cyan: #38BDF8;
-    --status-green: #10B981;
-    --status-amber: #F59E0B;
-    --status-red: #EF4444;
-    --focus-ring: #60A5FA;
+    --bg-page: #141210;
+    --surface-card: #1C1917;
+    --surface-subtle: #23201D;
+    --border-color: #292524;
+    --border-highlight: #44403C;
+    --text-primary: #FAFAF9;
+    --text-secondary: #D6D3D1;
+    --text-muted: #A8A29E;
+    --accent-blue: #A8A29E;
+    --accent-blue-hover: #D6D3D1;
+    --accent-cyan: #D6D3D1;
+    --status-green: #86EFAC;
+    --status-amber: #FDE047;
+    --status-red: #FCA5A5;
+    --focus-ring: #A8A29E;
 
     /* ThoughtStream Design Tokens (Dark) */
     --ts-bg: #141210;

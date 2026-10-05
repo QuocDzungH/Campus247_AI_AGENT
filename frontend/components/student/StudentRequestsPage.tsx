@@ -23,23 +23,23 @@ const readSelection = () => window.location.search;
 const serverSelection = () => "";
 
 export function RequestsLoading() {
-  return <div className="min-h-screen"><Navbar /><main className="mx-auto max-w-3xl px-5 py-12"><h1 className="text-2xl font-semibold">Hồ sơ của tôi</h1><p role="status" className="mt-4 text-slate-600 dark:text-slate-300">Đang tải hồ sơ…</p></main></div>;
+  return <div className="thoughtstream-theme min-h-screen bg-[var(--ts-bg)] text-[var(--ts-text-primary)]"><Navbar /><main className="mx-auto max-w-3xl px-5 py-12"><h1 className="font-serif text-2xl font-bold">Hồ sơ của tôi</h1><p role="status" className="mt-4 text-[#57534E] dark:text-[#A8A29E]">Đang tải hồ sơ…</p></main></div>;
 }
 
 export function RequestsLoadError({ retry, retrying = false }: { retry: () => void; retrying?: boolean }) {
-  return <section className="rounded-2xl border border-red-200 bg-white p-6 dark:border-red-900 dark:bg-slate-900" aria-labelledby="requests-error-title">
-    <h2 id="requests-error-title" className="text-xl font-semibold">Chưa tải được hồ sơ</h2>
-    <p role="alert" className="mt-3 text-base leading-relaxed text-slate-700 dark:text-slate-200">Không thể xác định danh sách hoặc trạng thái mới nhất lúc này. Điều này không có nghĩa hồ sơ của bạn bị mất. Hãy thử tải lại.</p>
+  return <section className="rounded-none border border-red-300 bg-red-50/50 p-6 dark:border-red-900/60 dark:bg-red-950/20" aria-labelledby="requests-error-title">
+    <h2 id="requests-error-title" className="font-serif text-xl font-bold">Chưa tải được hồ sơ</h2>
+    <p role="alert" className="mt-3 text-base leading-relaxed text-[#57534E] dark:text-[#D6D3D1]">Không thể xác định danh sách hoặc trạng thái mới nhất lúc này. Điều này không có nghĩa hồ sơ của bạn bị mất. Hãy thử tải lại.</p>
     <button type="button" disabled={retrying} onClick={retry} className={`${primaryButton} mt-5`}>{retrying ? "Đang tải…" : "Thử tải lại"}</button>
   </section>;
 }
 
 export function RequestsEmpty({ filtered, reset }: { filtered: boolean; reset: () => void }) {
-  return <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-10 text-center dark:border-slate-600 dark:bg-slate-900">
-    <FileText className="mx-auto mb-4 h-8 w-8 text-slate-500" aria-hidden="true" />
-    <h2 className="text-lg font-semibold">{filtered ? "Không có hồ sơ phù hợp" : "Bạn chưa có hồ sơ"}</h2>
-    <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{filtered ? "Thử đổi trạng thái, loại yêu cầu hoặc từ khóa tìm kiếm." : "Sau khi nộp yêu cầu, mã hồ sơ và trạng thái sẽ xuất hiện tại đây."}</p>
-    {filtered ? <button type="button" onClick={reset} className={`${secondaryButton} mt-4 border border-slate-300 dark:border-slate-600`}>Xóa bộ lọc</button> : <Link href="/student" className={`${primaryButton} mt-5`}>Tạo yêu cầu</Link>}
+  return <div className="rounded-none border border-dashed border-[#D6D3D1] bg-[#FAFAF9] px-5 py-10 text-center dark:border-[#44403C] dark:bg-[#1C1917]">
+    <FileText className="mx-auto mb-4 h-8 w-8 text-[#78716C] dark:text-[#A8A29E]" aria-hidden="true" />
+    <h2 className="font-serif text-lg font-bold">{filtered ? "Không có hồ sơ phù hợp" : "Bạn chưa có hồ sơ"}</h2>
+    <p className="mt-2 text-sm leading-relaxed text-[#57534E] dark:text-[#A8A29E]">{filtered ? "Thử đổi trạng thái, loại yêu cầu hoặc từ khóa tìm kiếm." : "Sau khi nộp yêu cầu, mã hồ sơ và trạng thái sẽ xuất hiện tại đây."}</p>
+    {filtered ? <button type="button" onClick={reset} className={`${secondaryButton} mt-4`}>Xóa bộ lọc</button> : <Link href="/student" className={`${primaryButton} mt-5`}>Tạo yêu cầu</Link>}
   </div>;
 }
 
@@ -136,50 +136,53 @@ export function StudentRequestsPage() {
   if (!currentUser && !dataError) return <DataAccessState requiredRole="student" />;
   if (currentUser && currentUser.role !== "student") return <DataAccessState requiredRole="student" />;
 
-  return <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-    <a href="#requests-main" className="sr-only z-50 rounded-xl bg-blue-700 p-3 text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Đi đến nội dung hồ sơ</a>
+  return <div className="thoughtstream-theme min-h-screen bg-[var(--ts-bg)] text-[var(--ts-text-primary)]">
+    <a href="#requests-main" className="sr-only z-50 rounded-none bg-[#78716C] p-3 text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Đi đến nội dung hồ sơ</a>
     <Navbar />
     <main id="requests-main" tabIndex={-1} className="mx-auto max-w-[1280px] px-4 py-6 sm:px-6 sm:py-8">
-      <header className="mb-5">
-        <div className="flex flex-wrap items-center justify-between gap-3"><h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Hồ sơ của tôi</h1><Link href="/student" className={`${primaryButton} px-4 text-sm`}><Plus className="h-4 w-4" aria-hidden="true" />Tạo yêu cầu</Link></div>
-        <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">Tìm hồ sơ đã nộp, xem việc cần làm và theo dõi phản hồi.</p>
+      <header className="mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="font-serif text-2xl font-bold tracking-tight text-[#1C1917] sm:text-3xl dark:text-[#FAFAF9]">Hồ sơ của tôi</h1>
+          <Link href="/student" className={`${primaryButton} px-4 text-xs font-semibold uppercase tracking-wider`}><Plus className="h-4 w-4" aria-hidden="true" />Tạo yêu cầu</Link>
+        </div>
+        <p className="mt-2 text-sm leading-relaxed text-[#57534E] dark:text-[#A8A29E]">Tìm hồ sơ đã nộp, xem việc cần làm và theo dõi phản hồi.</p>
       </header>
       {dataError && <div className="mb-5"><RequestsLoadError retry={() => void reloadData()} /></div>}
-      {currentUser && <div className="grid items-start gap-5 lg:grid-cols-[380px_minmax(0,1fr)] xl:grid-cols-[420px_minmax(0,1fr)]">
+      {currentUser && <div className="grid items-start gap-6 lg:grid-cols-[380px_minmax(0,1fr)] xl:grid-cols-[420px_minmax(0,1fr)]">
         <section className={`${selected ? "hidden lg:block" : ""} min-w-0`} aria-labelledby="request-list-title">
-          <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 dark:border-slate-700 dark:bg-slate-900">
-            <h2 id="request-list-title" ref={listTitle} tabIndex={-1} className="text-lg font-semibold">Danh sách hồ sơ <span className="text-sm font-normal text-slate-600 dark:text-slate-300">({items.length})</span></h2>
+          <div className="mb-4 rounded-none border border-[#E7E5E4] bg-[#FAFAF9] p-4 sm:p-5 dark:border-[#2E2A27] dark:bg-[#1C1917]">
+            <h2 id="request-list-title" ref={listTitle} tabIndex={-1} className="font-serif text-lg font-bold text-[#1C1917] dark:text-[#FAFAF9]">Danh sách hồ sơ <span className="font-sans text-xs font-normal text-[#57534E] dark:text-[#A8A29E]">({items.length})</span></h2>
             <form key={query} onSubmit={search} className="mt-4">
-              <label htmlFor="request-search" className="mb-2 block text-sm font-medium">Tìm theo mã hoặc nội dung yêu cầu</label>
-              <div className="flex gap-2"><input id="request-search" name="q" type="search" defaultValue={query} maxLength={200} placeholder="Ví dụ: TKT-2026…" className={`${fieldClass} min-w-0 px-3 text-sm`} /><button type="submit" aria-label="Tìm hồ sơ" className={`${secondaryButton} min-w-11 border border-slate-300 px-3 dark:border-slate-600`}><Search className="h-5 w-5" aria-hidden="true" /></button></div>
+              <label htmlFor="request-search" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-[#57534E] dark:text-[#A8A29E]">Tìm theo mã hoặc nội dung yêu cầu</label>
+              <div className="flex gap-2"><input id="request-search" name="q" type="search" defaultValue={query} maxLength={200} placeholder="Ví dụ: TKT-2026…" className={`${fieldClass} min-w-0 px-3 text-sm`} /><button type="submit" aria-label="Tìm hồ sơ" className={`${secondaryButton} min-w-11 px-3`}><Search className="h-4 w-4" aria-hidden="true" /></button></div>
             </form>
-            <div role="group" aria-label="Lọc trạng thái hồ sơ" className="mt-4 hidden flex-wrap gap-2 sm:flex">{filters.filter(([state]) => state !== "draft" || items.some((item) => item.state === "draft")).map(([value, label]) => <button key={value} type="button" aria-pressed={filter === value} onClick={() => clearSelection({ filter: value === "all" ? null : value })} className={`min-h-11 rounded-xl border px-3 py-2 text-sm font-medium ${filter === value ? "border-blue-700 bg-blue-700 text-white" : "border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"}`}>{label}</button>)}</div>
-            <div className="mt-4 sm:hidden"><label htmlFor="request-state" className="mb-2 block text-sm font-medium">Trạng thái</label><select id="request-state" value={filter} onChange={(e) => clearSelection({ filter: e.target.value === "all" ? null : e.target.value })} className={`${fieldClass} text-sm`}>{filters.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
-            <details key={category} open={category !== "all" || undefined} className="mt-2"><summary className="flex min-h-11 cursor-pointer items-center text-sm font-medium">Lọc theo loại yêu cầu{category !== "all" ? " · Đang áp dụng" : ""}</summary>
+            <div role="group" aria-label="Lọc trạng thái hồ sơ" className="mt-4 hidden flex-wrap gap-2 sm:flex">{filters.filter(([state]) => state !== "draft" || items.some((item) => item.state === "draft")).map(([value, label]) => <button key={value} type="button" aria-pressed={filter === value} onClick={() => clearSelection({ filter: value === "all" ? null : value })} className={`min-h-11 rounded-none border px-3 py-2 text-xs font-semibold uppercase tracking-wider transition-colors ${filter === value ? "border-[#78716C] bg-[#78716C] text-[#FAFAF9] dark:border-[#A8A29E] dark:bg-[#A8A29E] dark:text-[#1C1917]" : "border-[#D6D3D1] text-[#57534E] hover:bg-[#F5F5F4] dark:border-[#44403C] dark:text-[#D6D3D1] dark:hover:bg-[#23201D]"}`}>{label}</button>)}</div>
+            <div className="mt-4 sm:hidden"><label htmlFor="request-state" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-[#57534E] dark:text-[#A8A29E]">Trạng thái</label><select id="request-state" value={filter} onChange={(e) => clearSelection({ filter: e.target.value === "all" ? null : e.target.value })} className={`${fieldClass} text-sm`}>{filters.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
+            <details key={category} open={category !== "all" || undefined} className="mt-2"><summary className="flex min-h-11 cursor-pointer items-center text-xs font-semibold uppercase tracking-wider text-[#57534E] dark:text-[#A8A29E]">Lọc theo loại yêu cầu{category !== "all" ? " · Đang áp dụng" : ""}</summary>
               <label htmlFor="request-category" className="sr-only">Nhóm yêu cầu</label><select id="request-category" value={category} onChange={(e) => clearSelection({ category: e.target.value === "all" ? null : e.target.value })} className={`${fieldClass} text-sm`}><option value="all">Tất cả loại yêu cầu</option><option value="tickets">Tài liệu, khiếu nại và câu hỏi</option><option value="reviews">Rà soát công nhận học phần</option></select>
             </details>
-            <p role="status" className="mt-3 text-sm text-slate-600 dark:text-slate-300">{filtered.length} hồ sơ{hasFilter ? " phù hợp" : " · Mới nhất trước"}{filter === "processing" ? " · Gồm mới nộp và chờ cán bộ" : ""}</p>
-            {hasFilter && <button type="button" className={`${secondaryButton} mt-2 -ml-3 text-blue-700 dark:text-blue-300`} onClick={() => clearSelection({ filter: null, category: null, q: null })}>Xóa bộ lọc</button>}
+            <p role="status" className="mt-3 text-xs text-[#57534E] dark:text-[#A8A29E]">{filtered.length} hồ sơ{hasFilter ? " phù hợp" : " · Mới nhất trước"}{filter === "processing" ? " · Gồm mới nộp và chờ cán bộ" : ""}</p>
+            {hasFilter && <button type="button" className={`${secondaryButton} mt-2 -ml-3 text-xs`} onClick={() => clearSelection({ filter: null, category: null, q: null })}>Xóa bộ lọc</button>}
           </div>
           {!filtered.length ? <RequestsEmpty filtered={hasFilter} reset={() => clearSelection({ filter: null, category: null, q: null })} /> : <ul className="space-y-3">{filtered.map((item) => <li key={`${item.kind}-${item.id}`}>
             <button id={`request-${item.kind}-${item.id}`} type="button" aria-current={selected?.id === item.id && selected.kind === item.kind ? "true" : undefined} onClick={() => {
               navigate({ ticket: item.kind === "ticket" ? item.id : null, review: item.kind === "review" ? item.id : null });
-            }} className={`w-full rounded-2xl border bg-white p-4 text-left transition-colors sm:p-5 dark:bg-slate-900 ${selected?.id === item.id && selected.kind === item.kind ? "border-blue-600 ring-1 ring-blue-600" : "border-slate-200 hover:border-blue-400 dark:border-slate-700"}`}>
+            }} className={`w-full rounded-none border bg-[#FAFAF9] p-4 text-left transition-colors sm:p-5 hover:border-[#78716C] hover:bg-[#F5F5F4] dark:border-[#2E2A27] dark:bg-[#1C1917] dark:hover:border-[#A8A29E] dark:hover:bg-[#23201D] ${selected?.id === item.id && selected.kind === item.kind ? "border-[#78716C] ring-1 ring-[#78716C] dark:border-[#A8A29E] dark:ring-[#A8A29E]" : "border-[#E7E5E4]"}`}>
               <RequestStatus item={item} localOnly={localOnly} />
-              <h3 className="mt-3 break-words text-base font-semibold leading-relaxed">{item.title}</h3>
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{item.type}</p>
-              <p className="mt-3 break-all font-mono text-sm font-medium">{item.code}</p>
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{item.state === "draft" ? "Tạo" : localOnly ? "Ghi nhận" : "Nộp"}: {formatDate(item.submittedAt)}</p>
-              {item.state === "supplement" && <p className="mt-3 text-sm font-semibold text-amber-900 dark:text-amber-200">Cần bạn bổ sung thông tin hoặc tài liệu</p>}
-              <span className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-blue-700 dark:text-blue-300">Xem chi tiết<ArrowRight className="h-4 w-4" aria-hidden="true" /></span>
+              <h3 className="mt-3 break-words text-base font-semibold leading-relaxed text-[#1C1917] dark:text-[#FAFAF9]">{item.title}</h3>
+              <p className="mt-1 text-sm text-[#57534E] dark:text-[#A8A29E]">{item.type}</p>
+              <p className="mt-3 break-all font-mono text-xs font-semibold text-[#1C1917] dark:text-[#FAFAF9]">{item.code}</p>
+              <p className="mt-1 text-xs text-[#57534E] dark:text-[#A8A29E]">{item.state === "draft" ? "Tạo" : localOnly ? "Ghi nhận" : "Nộp"}: {formatDate(item.submittedAt)}</p>
+              {item.state === "supplement" && <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-amber-900 dark:text-amber-200">Cần bạn bổ sung thông tin hoặc tài liệu</p>}
+              <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#78716C] dark:text-[#A8A29E]">Xem chi tiết<ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /></span>
             </button>
           </li>)}</ul>}
         </section>
-        {selected ? <RequestDetail key={`${currentUser.id}-${selected.kind}-${selected.id}`} item={selected} localOnly={localOnly} detailLoading={detailLoading} detailError={detailError} onRetryDetail={() => { setDetailStatus({ id: "", loading: true, error: null }); setDetailRetry((value) => value + 1); }} onBack={backToList} onMessage={(id, content) => addTicketMessage(id, { senderId: currentUser.id, senderName: currentUser.name, senderRole: "student", content })} onSupplement={async (id, payload) => { await submitStudentSupplement(id, payload); navigate({ filter: null }); }} /> : <section className="hidden rounded-2xl border border-slate-200 bg-white p-8 lg:block dark:border-slate-700 dark:bg-slate-900">
-          <h2 className="text-lg font-semibold">{selectedId ? "Không tìm thấy hồ sơ trong danh sách này" : "Chọn hồ sơ để xem chi tiết"}</h2>
-          <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{selectedId ? "Mã hồ sơ không thuộc tài khoản này hoặc không phù hợp với bộ lọc hiện tại. Không có hồ sơ khác được tự động mở thay thế." : "Trạng thái, phản hồi và các bước tiếp theo sẽ hiển thị tại đây."}</p>
+        {selected ? <RequestDetail key={`${currentUser.id}-${selected.kind}-${selected.id}`} item={selected} localOnly={localOnly} detailLoading={detailLoading} detailError={detailError} onRetryDetail={() => { setDetailStatus({ id: "", loading: true, error: null }); setDetailRetry((value) => value + 1); }} onBack={backToList} onMessage={(id, content) => addTicketMessage(id, { senderId: currentUser.id, senderName: currentUser.name, senderRole: "student", content })} onSupplement={async (id, payload) => { await submitStudentSupplement(id, payload); navigate({ filter: null }); }} /> : <section className="hidden rounded-none border border-[#E7E5E4] bg-[#FAFAF9] p-8 lg:block dark:border-[#2E2A27] dark:bg-[#1C1917]">
+          <h2 className="font-serif text-lg font-bold text-[#1C1917] dark:text-[#FAFAF9]">{selectedId ? "Không tìm thấy hồ sơ trong danh sách này" : "Chọn hồ sơ để xem chi tiết"}</h2>
+          <p className="mt-3 text-sm leading-relaxed text-[#57534E] dark:text-[#A8A29E]">{selectedId ? "Mã hồ sơ không thuộc tài khoản này hoặc không phù hợp với bộ lọc hiện tại. Không có hồ sơ khác được tự động mở thay thế." : "Trạng thái, phản hồi và các bước tiếp theo sẽ hiển thị tại đây."}</p>
         </section>}
-        {!selected && selectedId && <p role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 lg:hidden dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">Không tìm thấy hồ sơ này trong tài khoản hoặc bộ lọc hiện tại. Chọn hồ sơ trong danh sách để tiếp tục.</p>}
+        {!selected && selectedId && <p role="alert" className="rounded-none border border-amber-300 bg-amber-50/70 p-4 text-sm text-amber-950 lg:hidden dark:border-amber-900/60 dark:bg-amber-950/25 dark:text-amber-200">Không tìm thấy hồ sơ này trong tài khoản hoặc bộ lọc hiện tại. Chọn hồ sơ trong danh sách để tiếp tục.</p>}
       </div>}
     </main>
   </div>;

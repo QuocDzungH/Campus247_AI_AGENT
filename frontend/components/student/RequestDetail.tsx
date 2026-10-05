@@ -21,8 +21,8 @@ export function RequestStatus({ item, localOnly = false, className = "" }: { ite
   return <span className={`inline-flex items-center px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider ${statusStyle} ${className}`}>{requestStatusLabel(item, localOnly)}</span>;
 }
 
-const section = "rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 dark:border-slate-700 dark:bg-slate-900";
-const muted = "text-sm leading-relaxed text-slate-600 dark:text-slate-300";
+const section = "rounded-none border border-[#E7E5E4] bg-[#FAFAF9] p-5 sm:p-6 dark:border-[#2E2A27] dark:bg-[#1C1917]";
+const muted = "text-sm leading-relaxed text-[#57534E] dark:text-[#A8A29E]";
 
 export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement, detailLoading = false, detailError = null, onRetryDetail }: {
   item: RequestItem; localOnly: boolean; onBack: () => void;
@@ -94,29 +94,29 @@ export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement
       <p className={`mt-1 ${muted}`}>{item.state === "draft" || localOnly ? "Ngày ghi nhận" : "Ngày nộp"}: {formatDate(item.submittedAt)}</p>
       {item.updatedAt && <p className={muted}>Cập nhật: {formatDate(item.updatedAt)}</p>}
       <p className={`mt-4 ${muted}`}>{item.kind === "review" && item.state === "completed" ? "Đã hoàn tất rà soát sơ bộ. Chưa có quyết định công nhận học phần cuối cùng trong hồ sơ này." : item.kind === "ticket" && item.record.status === "pending_officer" ? "Hồ sơ đã chuyển tới bước cán bộ. Chưa có xác nhận bắt đầu xử lý; hãy theo dõi phản hồi." : requestStates[item.state].description}</p>
-      <div className="mt-4 rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
-        <p className="text-sm font-semibold">Việc bạn cần làm</p>
+      <div className="mt-4 rounded-none border border-[#E7E5E4] bg-[#F5F5F4] p-4 dark:border-[#292524] dark:bg-[#1C1917]">
+        <p className="font-serif text-sm font-semibold text-[#1C1917] dark:text-[#FAFAF9]">Việc bạn cần làm</p>
         <p className={`mt-1 ${muted}`}>{item.state === "supplement" ? "Xem yêu cầu bổ sung ngay bên dưới." : item.state === "completed" ? "Đọc kết quả xử lý và phản hồi của cán bộ." : item.state === "draft" ? "Hoàn thiện và nộp hồ sơ để được xử lý." : "Theo dõi phản hồi. Bạn chưa cần nộp lại hồ sơ này."}</p>
-        {item.state !== "draft" && <a className={`${secondaryButton} -ml-3 mt-1 text-blue-800 dark:text-blue-200`} href={pending ? "#supplement-title" : item.state === "completed" ? "#result-title" : "#latest-reply-title"}>{pending ? "Xem yêu cầu bổ sung" : item.state === "completed" ? "Xem kết quả xử lý" : "Xem phản hồi gần nhất"}</a>}
+        {item.state !== "draft" && <a className={`${secondaryButton} -ml-3 mt-1 text-[#78716C] dark:text-[#A8A29E] hover:text-[#1C1917] dark:hover:text-[#FAFAF9]`} href={pending ? "#supplement-title" : item.state === "completed" ? "#result-title" : "#latest-reply-title"}>{pending ? "Xem yêu cầu bổ sung" : item.state === "completed" ? "Xem kết quả xử lý" : "Xem phản hồi gần nhất"}</a>}
         <p className={`mt-2 ${muted}`}>Thời gian xử lý: chưa có thời hạn được cán bộ xác nhận cho hồ sơ này.</p>
         {item.kind === "ticket" && ["certificate", "transcript"].includes(item.record.type) && <p className={`mt-1 ${muted}`}>Thời gian tham khảo: 2–3 ngày làm việc, cao điểm tới 5 ngày. Cán bộ xác nhận thời gian cụ thể khi tiếp nhận.</p>}
       </div>
     </div>
 
-    {notice && <p role="status" className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm leading-relaxed text-blue-900 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200">{notice}</p>}
-    {error && <p role="alert" className="rounded-xl bg-red-50 p-4 text-sm text-red-800 dark:bg-red-950 dark:text-red-200">{error}</p>}
+    {notice && <p role="status" className="rounded-none border border-[#78716C] bg-[#EFEDEB] p-4 text-sm leading-relaxed text-[#1C1917] dark:border-[#A8A29E] dark:bg-[#292524] dark:text-[#FAFAF9]">{notice}</p>}
+    {error && <p role="alert" className="rounded-none border border-red-300 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">{error}</p>}
 
     {pending && <section aria-labelledby="supplement-title" className={`${section} border-amber-300 dark:border-amber-700`}>
-      <h3 id="supplement-title" tabIndex={-1} className="text-lg font-semibold">Yêu cầu bổ sung của cán bộ</h3>
+      <h3 id="supplement-title" tabIndex={-1} className="font-serif text-lg font-semibold text-[#1C1917] dark:text-[#FAFAF9]">Yêu cầu bổ sung của cán bộ</h3>
       <p className={`mt-1 ${muted}`}>Gửi lúc: {formatDate(pending.sentAt || pending.createdAt)}</p>
-      <p className="mt-3 font-medium">{pending.subject}</p>
-      <p className="mt-2 whitespace-pre-wrap break-words text-base leading-relaxed">{pending.messageBody}</p>
+      <p className="mt-3 font-medium text-[#1C1917] dark:text-[#FAFAF9]">{pending.subject}</p>
+      <p className="mt-2 whitespace-pre-wrap break-words text-base leading-relaxed text-[#57534E] dark:text-[#D6D3D1]">{pending.messageBody}</p>
       {pending.requestedDocuments.length > 0 && <ul className="mt-3 list-disc space-y-1 pl-5 text-sm">{pending.requestedDocuments.map((title, index) => <li key={index}>{title}</li>)}</ul>}
       <form onSubmit={supplement} className="mt-5 space-y-4">
         <p id="supplement-limit" className={muted}>{localOnly ? "Ghi chú và tệp bổ sung được lưu cùng hồ sơ trên thiết bị này." : "Chưa kết nối nơi tiếp nhận tệp. Liên hệ cán bộ phụ trách theo yêu cầu bên trên."}</p>
         {localOnly && <>
-          <div><label htmlFor="supplement-file" className="mb-2 block text-sm font-semibold">Chọn tệp bổ sung (bắt buộc)</label>
-            <input ref={fileInput} id="supplement-file" type="file" accept=".pdf,.png,.jpg,.jpeg" required disabled={busy} aria-describedby={`supplement-file-hint supplement-limit${fileError ? " supplement-file-error" : ""}`} aria-invalid={Boolean(fileError)} className={`${fieldClass} text-sm file:mr-3 file:min-h-11 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:text-slate-900`} onChange={(event) => {
+          <div><label htmlFor="supplement-file" className="mb-2 block text-sm font-semibold text-[#57534E] dark:text-[#D6D3D1]">Chọn tệp bổ sung (bắt buộc)</label>
+            <input ref={fileInput} id="supplement-file" type="file" accept=".pdf,.png,.jpg,.jpeg" required disabled={busy} aria-describedby={`supplement-file-hint supplement-limit${fileError ? " supplement-file-error" : ""}`} aria-invalid={Boolean(fileError)} className={`${fieldClass} text-sm file:mr-3 file:min-h-11 file:rounded-none file:border-0 file:bg-[#E7E5E4] file:px-3 file:text-[#1C1917] dark:file:bg-[#292524] dark:file:text-[#FAFAF9]`} onChange={(event) => {
               const selected = event.target.files?.[0] || null;
               const validation = validateSupplementFile(selected);
               setFile(validation ? null : selected); setFileError(validation);
@@ -124,16 +124,16 @@ export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement
             <p id="supplement-file-hint" className={`mt-2 ${muted}`}>1 tệp PDF/PNG/JPG, tối đa 10MB. Kiểm tra đúng tài liệu được yêu cầu trước khi xác nhận.</p>
             {fileError && <p id="supplement-file-error" role="alert" className="mt-2 text-sm text-red-700 dark:text-red-300">{fileError}</p>}
           </div>
-          <div><label htmlFor="supplement-note" className="mb-2 block text-sm font-semibold">Ghi chú bổ sung (bắt buộc)</label><textarea id="supplement-note" required value={note} disabled={busy} onChange={(e) => setNote(e.target.value)} maxLength={4000} rows={3} className={fieldClass} /></div>
+          <div><label htmlFor="supplement-note" className="mb-2 block text-sm font-semibold text-[#57534E] dark:text-[#D6D3D1]">Ghi chú bổ sung (bắt buộc)</label><textarea id="supplement-note" required value={note} disabled={busy} onChange={(e) => setNote(e.target.value)} maxLength={4000} rows={3} className={fieldClass} /></div>
           <button type="submit" disabled={busy || !note.trim() || !file || Boolean(fileError)} className={`${primaryButton} w-full sm:w-auto`}>{busy ? "Đang lưu…" : "Xác nhận bổ sung"}</button>
         </>}
       </form>
     </section>}
 
     {!pending && <section className={section} aria-labelledby="latest-reply-title">
-      <h3 id="latest-reply-title" tabIndex={-1} className="flex items-center gap-2 text-lg font-semibold"><MessageSquare className="h-5 w-5" aria-hidden="true" />Phản hồi gần nhất của cán bộ</h3>
+      <h3 id="latest-reply-title" tabIndex={-1} className="flex items-center gap-2 font-serif text-lg font-semibold text-[#1C1917] dark:text-[#FAFAF9]"><MessageSquare className="h-5 w-5" aria-hidden="true" />Phản hồi gần nhất của cán bộ</h3>
       {detailLoading && <p role="status" className={`mt-3 ${muted}`}>Đang tải chi tiết hồ sơ…</p>}
-      {detailError && <p role="alert" className="mt-3 rounded-xl bg-red-50 p-3 text-sm text-red-800 dark:bg-red-950 dark:text-red-200">{detailError} Danh sách hồ sơ vẫn được giữ.{onRetryDetail && <button type="button" className={`${secondaryButton} mt-2`} onClick={onRetryDetail}>Thử tải lại chi tiết</button>}</p>}
+      {detailError && <p role="alert" className="mt-3 rounded-none border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">{detailError} Danh sách hồ sơ vẫn được giữ.{onRetryDetail && <button type="button" className={`${secondaryButton} mt-2`} onClick={onRetryDetail}>Thử tải lại chi tiết</button>}</p>}
       {!detailLoading && <p className={`mt-3 whitespace-pre-wrap break-words ${muted}`}>{latest || "Chưa có phản hồi của cán bộ trong hồ sơ này."}</p>}
     </section>}
 
@@ -178,26 +178,26 @@ export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement
     </section>
 
     <section className={section} aria-labelledby="conversation-title">
-      <h3 id="conversation-title" className="text-lg font-semibold">{item.kind === "ticket" ? ticketThreadTitle(item.record.messages) : "Trao đổi với cán bộ"}</h3>
+      <h3 id="conversation-title" className="font-serif text-lg font-semibold text-[#1C1917] dark:text-[#FAFAF9]">{item.kind === "ticket" ? ticketThreadTitle(item.record.messages) : "Trao đổi với cán bộ"}</h3>
       {item.kind === "ticket" ? <>
-        <div className="mt-4 space-y-3">{item.record.messages.filter((m) => m.content.trim()).map((m) => <div key={m.id} className={`rounded-xl p-4 ${m.senderRole === "student" ? "bg-blue-50 dark:bg-blue-950" : m.senderRole === "officer" ? "bg-slate-50 dark:bg-slate-800" : "bg-indigo-50 dark:bg-indigo-950"}`}>
-          <p className="text-sm font-semibold">{ticketThreadSenderLabel(m)}</p>
+        <div className="mt-4 space-y-3">{item.record.messages.filter((m) => m.content.trim()).map((m) => <div key={m.id} className={`rounded-none border border-[#E7E5E4] dark:border-[#292524] p-4 ${m.senderRole === "student" ? "bg-[#EFEDEB] dark:bg-[#23201D]" : m.senderRole === "officer" ? "bg-[#F5F5F4] dark:bg-[#1C1917]" : "bg-[#EFEDEB] dark:bg-[#292524]"}`}>
+          <p className="font-serif text-sm font-semibold text-[#1C1917] dark:text-[#FAFAF9]">{ticketThreadSenderLabel(m)}</p>
           <p className={`mt-1 ${muted}`}>{formatDate(m.timestamp)}</p>
-          <p className="mt-2 whitespace-pre-wrap break-words text-base leading-relaxed">{m.content}</p>
+          <p className="mt-2 whitespace-pre-wrap break-words text-base leading-relaxed text-[#57534E] dark:text-[#D6D3D1]">{m.content}</p>
           {m.attachments?.map((attachment, index) => <p key={index} className={`mt-2 flex items-start gap-2 ${muted}`}><Paperclip className="mt-1 h-4 w-4 shrink-0" aria-hidden="true" /><span className="break-all">{attachment.name} · Chưa có tệp đính kèm để tải</span></p>)}
         </div>)}</div>
         {!item.record.messages.some((m) => m.content.trim()) && <p className={`mt-3 ${muted}`}>Chưa có hội thoại trên hồ sơ này.</p>}
         <form onSubmit={sendMessage} className="mt-5 space-y-3">
-          <label htmlFor="request-message" className="block text-sm font-semibold">Tin nhắn về hồ sơ {item.code}</label>
+          <label htmlFor="request-message" className="block text-sm font-semibold text-[#57534E] dark:text-[#D6D3D1]">Tin nhắn về hồ sơ {item.code}</label>
           <textarea id="request-message" value={text} disabled={busy} onChange={(e) => setText(e.target.value)} required maxLength={4000} rows={3} className={fieldClass} aria-describedby="request-message-hint" />
           <p id="request-message-hint" className={muted}>{localOnly ? "Tin nhắn được lưu trong hồ sơ trên thiết bị này." : "Tin nhắn được gửi vào hồ sơ; không phải yêu cầu mới."}</p>
           <button type="submit" disabled={busy || !text.trim()} className={`${primaryButton} w-full sm:w-auto`}>{busy ? "Đang lưu…" : localOnly ? "Lưu tin nhắn" : "Gửi tin nhắn"}</button>
         </form>
       </> : <>
-        {item.record.supplementRequests.filter((r) => r.status === "responded").map((r) => <div key={r.id} className="mt-4 rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
-          <p className="text-sm font-semibold">Cán bộ · {r.subject}</p><p className={`mt-1 ${muted}`}>{formatDate(r.sentAt || r.createdAt)}</p>
-          <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed">{r.messageBody}</p>
-          {r.studentReply && <div className="mt-3 border-t border-slate-200 pt-3 dark:border-slate-600"><p className="text-sm font-semibold">Bạn · {formatDate(r.studentReply.submittedAt)}</p><p className="mt-2 whitespace-pre-wrap break-words text-sm">{r.studentReply.note}</p></div>}
+        {item.record.supplementRequests.filter((r) => r.status === "responded").map((r) => <div key={r.id} className="mt-4 rounded-none border border-[#E7E5E4] bg-[#F5F5F4] p-4 dark:border-[#292524] dark:bg-[#1C1917]">
+          <p className="font-serif text-sm font-semibold text-[#1C1917] dark:text-[#FAFAF9]">Cán bộ · {r.subject}</p><p className={`mt-1 ${muted}`}>{formatDate(r.sentAt || r.createdAt)}</p>
+          <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-[#57534E] dark:text-[#D6D3D1]">{r.messageBody}</p>
+          {r.studentReply && <div className="mt-3 border-t border-[#E7E5E4] pt-3 dark:border-[#292524]"><p className="font-serif text-sm font-semibold text-[#1C1917] dark:text-[#FAFAF9]">Bạn · {formatDate(r.studentReply.submittedAt)}</p><p className="mt-2 whitespace-pre-wrap break-words text-sm text-[#57534E] dark:text-[#D6D3D1]">{r.studentReply.note}</p></div>}
         </div>)}
         <p className={`mt-3 ${muted}`}>Trao đổi về hồ sơ được ghi nhận qua các yêu cầu bổ sung của cán bộ.</p>
       </>}

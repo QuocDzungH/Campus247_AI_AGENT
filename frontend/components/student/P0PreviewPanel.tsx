@@ -76,21 +76,21 @@ function StudentIdentityCard({ declared }: { declared: boolean }) {
     ["Khoa quản lý chuyên môn", currentUser.major || currentUser.department || "—"],
   ] as const;
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
-      <div className="mb-3 flex items-center justify-between gap-2 border-b border-slate-200 pb-2 dark:border-slate-700">
-        <p className="text-sm font-semibold">Thông tin sinh viên đã xác minh từ hồ sơ</p>
-        <span className="text-[10px] font-mono text-slate-500">Từ hồ sơ tài khoản</span>
+    <div className="rounded-none border border-[#E7E5E4] bg-[#F5F5F4] p-4 dark:border-[#292524] dark:bg-[#1C1917]">
+      <div className="mb-3 flex items-center justify-between gap-2 border-b border-[#E7E5E4] pb-2 dark:border-[#292524]">
+        <p className="font-serif text-sm font-normal text-[#1C1917] dark:text-[#FAFAF9]">Thông tin sinh viên đã xác minh từ hồ sơ</p>
+        <span className="text-[10px] uppercase tracking-wider text-[#78716C] dark:text-[#A8A29E]">Từ hồ sơ tài khoản</span>
       </div>
       <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {rows.map(([label, value]) => (
           <div key={label}>
-            <dt className="text-xs text-slate-500 dark:text-slate-400">{label}</dt>
-            <dd className="mt-0.5 text-sm font-medium text-slate-900 dark:text-slate-100">{value}</dd>
+            <dt className="text-xs text-[#57534E] dark:text-[#D6D3D1]">{label}</dt>
+            <dd className="mt-0.5 text-sm font-medium text-[#1C1917] dark:text-[#FAFAF9]">{value}</dd>
           </div>
         ))}
       </dl>
       {declared && (
-        <p className="mt-3 text-xs text-slate-500">
+        <p className="mt-3 text-xs text-[#78716C] dark:text-[#A8A29E]">
           Phần bên dưới là dữ liệu bạn kê khai, chưa được hệ thống xác minh.
         </p>
       )}
@@ -149,18 +149,18 @@ export function P0PreviewPanel() {
 
   if (locked) {
     return (
-      <section className="rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-900 dark:bg-amber-950">
-        <div className="flex items-center gap-2 font-semibold text-amber-900 dark:text-amber-200">
+      <section className="rounded-none border border-[#FEF08A] bg-[#FEFCE8] p-5 dark:border-[rgba(234,179,8,0.4)] dark:bg-[rgba(113,63,18,0.35)]">
+        <div className="flex items-center gap-2 font-serif text-base font-normal text-[#854D0E] dark:text-[#FDE047]">
           <Lock className="h-4 w-4" />
           Đã gửi cán bộ xử lý
         </div>
-        <p className="mt-3 text-sm leading-relaxed text-amber-900 dark:text-amber-100">
+        <p className="mt-3 text-sm leading-relaxed text-[#854D0E] dark:text-[#FDE047]">
           Đơn đã vào hàng chờ cán bộ. Bạn vẫn có thể gửi thông tin bổ sung trong chat; trợ lý không tự kết luận hay hứa sửa điểm.
         </p>
         {displayCode ? (
-          <p className="mt-3 font-mono text-sm">Mã hồ sơ: {displayCode}</p>
+          <p className="mt-3 font-mono text-sm text-[#854D0E] dark:text-[#FDE047]">Mã hồ sơ: {displayCode}</p>
         ) : pendingTicketId ? (
-          <p className="mt-3 text-sm">Đã nộp yêu cầu. Đang đồng bộ mã hồ sơ.</p>
+          <p className="mt-3 text-sm text-[#854D0E] dark:text-[#FDE047]">Đã nộp yêu cầu. Đang đồng bộ mã hồ sơ.</p>
         ) : null}
         <Link href="/my-requests" className={`${primaryButton} mt-4`}>
           Mở Yêu cầu của tôi
@@ -171,14 +171,14 @@ export function P0PreviewPanel() {
 
   if ((displayCode || pendingTicketId) && !preview) {
     return (
-      <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 dark:border-emerald-900 dark:bg-emerald-950">
-        <h2 className="font-semibold text-emerald-900 dark:text-emerald-100">Đã nộp yêu cầu</h2>
+      <section className="rounded-none border border-[#BBF7D0] bg-[#F0FDF4] p-5 dark:border-[rgba(34,197,94,0.4)] dark:bg-[rgba(20,83,45,0.35)]">
+        <h2 className="font-serif text-base font-normal text-[#3F6212] dark:text-[#86EFAC]">Đã nộp yêu cầu</h2>
         {displayCode ? (
-          <p className="mt-2 font-mono text-sm">{displayCode}</p>
+          <p className="mt-2 font-mono text-sm text-[#3F6212] dark:text-[#86EFAC]">{displayCode}</p>
         ) : (
-          <p className="mt-2 text-sm">Đang đồng bộ mã hồ sơ.</p>
+          <p className="mt-2 text-sm text-[#3F6212] dark:text-[#86EFAC]">Đang đồng bộ mã hồ sơ.</p>
         )}
-        <p className="mt-2 text-sm leading-relaxed text-emerald-900 dark:text-emerald-100">
+        <p className="mt-2 text-sm leading-relaxed text-[#3F6212] dark:text-[#86EFAC]">
           Ticket đã vào hệ thống. Bước này không phát hành giấy xác nhận. Theo dõi phản hồi của cán bộ trong Yêu cầu của tôi.
         </p>
         <Link href="/my-requests" className={`${primaryButton} mt-4`}>
@@ -190,9 +190,9 @@ export function P0PreviewPanel() {
 
   if (!preview) {
     return (
-      <section className="rounded-2xl border border-dashed border-slate-300 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
-        <h2 className="font-semibold">Biểu mẫu trong hội thoại</h2>
-        <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+      <section className="rounded-none border border-[#E7E5E4] bg-[#FAFAF9] p-5 dark:border-[#292524] dark:bg-[#1C1917]">
+        <h2 className="font-serif text-base font-normal text-[#1C1917] dark:text-[#FAFAF9]">Biểu mẫu trong hội thoại</h2>
+        <p className="mt-2 text-sm leading-relaxed text-[#57534E] dark:text-[#D6D3D1]">
           Nói với trợ lý khi bạn muốn khiếu nại hoặc xin giấy xác nhận. Form sẽ mở ngay trong cuộc trò chuyện này.
         </p>
       </section>
@@ -308,24 +308,24 @@ export function P0PreviewPanel() {
   const missingLabels = preview.missingFields.map((field) => fieldLabel(field)).join(", ");
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+    <section className="rounded-none border border-[#E7E5E4] bg-[#FAFAF9] p-5 shadow-none dark:border-[#292524] dark:bg-[#1C1917]">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="font-semibold">Kiểm tra thông tin trước khi nộp</h2>
-          <p className="mt-1 text-xs text-slate-500">
+          <h2 className="font-serif text-base font-normal text-[#1C1917] dark:text-[#FAFAF9]">Kiểm tra thông tin trước khi nộp</h2>
+          <p className="mt-1 text-xs text-[#57534E] dark:text-[#D6D3D1]">
             {serviceLabel(preview.serviceType, form.complaintSubtype)} · phiên bản {preview.version}
           </p>
         </div>
         {preview.canSubmit ? (
-          <span className="rounded-lg bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">Đủ dữ liệu</span>
+          <span className="rounded-none border border-[#BBF7D0] bg-[#F0FDF4] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-[#3F6212] dark:border-[rgba(34,197,94,0.4)] dark:bg-[rgba(20,83,45,0.35)] dark:text-[#86EFAC]">Đủ dữ liệu</span>
         ) : (
-          <span className="rounded-lg bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-950 dark:text-amber-200">Còn thiếu</span>
+          <span className="rounded-none border border-[#FEF08A] bg-[#FEFCE8] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-[#854D0E] dark:border-[rgba(234,179,8,0.4)] dark:bg-[rgba(113,63,18,0.35)] dark:text-[#FDE047]">Còn thiếu</span>
         )}
       </div>
-      <label className="mt-4 block text-sm">
+      <label className="mt-4 block text-sm font-semibold text-[#57534E] dark:text-[#D6D3D1]">
         Loại đơn
         <select
-          className="mt-1 w-full rounded-xl border border-slate-300 bg-transparent p-3 text-sm dark:border-slate-600"
+          className="mt-1 w-full rounded-none border border-[#D6D3D1] bg-white p-3 text-sm text-[#1C1917] dark:border-[#44403C] dark:bg-[#141210] dark:text-[#FAFAF9] focus:outline-none focus:ring-2 focus:ring-[#78716C]"
           value={preview.serviceType}
           onChange={(event) => switchType(event.target.value as IntakeServiceType)}
           aria-label="Sửa loại đơn"
@@ -339,18 +339,19 @@ export function P0PreviewPanel() {
         {isComplaint ? (
           <>
             <fieldset>
-              <legend className="text-sm">Nội dung khiếu nại</legend>
+              <legend className="text-sm font-semibold text-[#57534E] dark:text-[#D6D3D1]">Nội dung khiếu nại</legend>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
                 {([
                   ["grade_appeal", "Điểm học phần"],
                   ["other", "Nội dung khác"],
                 ] as const).map(([value, label]) => (
-                  <label key={value} className={`flex min-h-11 items-center gap-2 rounded-xl border px-3 py-2 text-sm ${form.complaintSubtype === value ? "border-blue-500 bg-blue-50 dark:bg-blue-950" : "border-slate-300 dark:border-slate-600"}`}>
+                  <label key={value} className={`flex min-h-11 items-center gap-2 rounded-none border px-3 py-2 text-sm ${form.complaintSubtype === value ? "border-[#78716C] bg-[#EFEDEB] text-[#1C1917] dark:border-[#A8A29E] dark:bg-[#292524] dark:text-[#FAFAF9]" : "border-[#D6D3D1] text-[#57534E] dark:border-[#44403C] dark:text-[#D6D3D1]"}`}>
                     <input
                       type="radio"
                       name="complaint-subtype"
                       checked={form.complaintSubtype === value}
                       onChange={() => changeForm({ complaintSubtype: value })}
+                      className="accent-[#78716C]"
                     />
                     {label}
                   </label>
@@ -359,30 +360,30 @@ export function P0PreviewPanel() {
             </fieldset>
             {(isGrade || !form.complaintSubtype) && (
               <>
-                <label className="block text-sm" htmlFor="intake-course">
+                <label className="block text-sm font-semibold text-[#57534E] dark:text-[#D6D3D1]" htmlFor="intake-course">
                   Môn học / học phần
                   <input
                     id="intake-course"
-                    className="mt-1 w-full rounded-xl border border-slate-300 bg-transparent p-3 text-sm dark:border-slate-600"
+                    className="mt-1 w-full rounded-none border border-[#D6D3D1] bg-white p-3 text-sm text-[#1C1917] dark:border-[#44403C] dark:bg-[#141210] dark:text-[#FAFAF9] focus:outline-none focus:ring-2 focus:ring-[#78716C]"
                     value={form.course}
                     onChange={(event) => changeForm({ course: event.target.value })}
                     maxLength={200}
                     placeholder="Ví dụ: Cơ sở dữ liệu"
                   />
                 </label>
-                <label className="block text-sm">
-                  Mã học phần <span className="font-normal text-slate-500">(không bắt buộc)</span>
+                <label className="block text-sm font-semibold text-[#57534E] dark:text-[#D6D3D1]">
+                  Mã học phần <span className="font-normal text-[#78716C] dark:text-[#A8A29E]">(không bắt buộc)</span>
                   <input
-                    className="mt-1 w-full rounded-xl border border-slate-300 bg-transparent p-3 text-sm dark:border-slate-600"
+                    className="mt-1 w-full rounded-none border border-[#D6D3D1] bg-white p-3 text-sm text-[#1C1917] dark:border-[#44403C] dark:bg-[#141210] dark:text-[#FAFAF9] focus:outline-none focus:ring-2 focus:ring-[#78716C]"
                     value={form.courseCode}
                     onChange={(event) => changeForm({ courseCode: event.target.value })}
                     maxLength={40}
                   />
                 </label>
-                <label className="block text-sm">
-                  Loại điểm đang khiếu nại <span className="font-normal text-slate-500">(không bắt buộc)</span>
+                <label className="block text-sm font-semibold text-[#57534E] dark:text-[#D6D3D1]">
+                  Loại điểm đang khiếu nại <span className="font-normal text-[#78716C] dark:text-[#A8A29E]">(không bắt buộc)</span>
                   <select
-                    className="mt-1 w-full rounded-xl border border-slate-300 bg-transparent p-3 text-sm dark:border-slate-600"
+                    className="mt-1 w-full rounded-none border border-[#D6D3D1] bg-white p-3 text-sm text-[#1C1917] dark:border-[#44403C] dark:bg-[#141210] dark:text-[#FAFAF9] focus:outline-none focus:ring-2 focus:ring-[#78716C]"
                     value={form.assessment}
                     onChange={(event) => changeForm({ assessment: event.target.value })}
                   >
@@ -395,30 +396,30 @@ export function P0PreviewPanel() {
                 </label>
               </>
             )}
-            <label className="block text-sm" htmlFor="intake-description">
+            <label className="block text-sm font-semibold text-[#57534E] dark:text-[#D6D3D1]" htmlFor="intake-description">
               Nội dung khiếu nại
               <textarea
                 id="intake-description"
-                className="mt-1 min-h-24 w-full rounded-xl border border-slate-300 bg-transparent p-3 text-sm dark:border-slate-600"
+                className="mt-1 min-h-24 w-full rounded-none border border-[#D6D3D1] bg-white p-3 text-sm text-[#1C1917] dark:border-[#44403C] dark:bg-[#141210] dark:text-[#FAFAF9] focus:outline-none focus:ring-2 focus:ring-[#78716C]"
                 value={form.description}
                 onChange={(event) => changeForm({ description: event.target.value })}
                 maxLength={4000}
                 placeholder="Mô tả vấn đề cần cán bộ kiểm tra. Không tự điền điểm nếu bạn chưa nêu."
               />
             </label>
-            <label className="block text-sm">
-              Kết quả mong muốn <span className="font-normal text-slate-500">(không bắt buộc)</span>
+            <label className="block text-sm font-semibold text-[#57534E] dark:text-[#D6D3D1]">
+              Kết quả mong muốn <span className="font-normal text-[#78716C] dark:text-[#A8A29E]">(không bắt buộc)</span>
               <textarea
-                className="mt-1 min-h-16 w-full rounded-xl border border-slate-300 bg-transparent p-3 text-sm dark:border-slate-600"
+                className="mt-1 min-h-16 w-full rounded-none border border-[#D6D3D1] bg-white p-3 text-sm text-[#1C1917] dark:border-[#44403C] dark:bg-[#141210] dark:text-[#FAFAF9] focus:outline-none focus:ring-2 focus:ring-[#78716C]"
                 value={form.requestedOutcome}
                 onChange={(event) => changeForm({ requestedOutcome: event.target.value })}
                 maxLength={2000}
               />
             </label>
-            <label className="block text-sm">
-              Minh chứng (kê khai) <span className="font-normal text-slate-500">(không bắt buộc)</span>
+            <label className="block text-sm font-semibold text-[#57534E] dark:text-[#D6D3D1]">
+              Minh chứng (kê khai) <span className="font-normal text-[#78716C] dark:text-[#A8A29E]">(không bắt buộc)</span>
               <textarea
-                className="mt-1 min-h-16 w-full rounded-xl border border-slate-300 bg-transparent p-3 text-sm dark:border-slate-600"
+                className="mt-1 min-h-16 w-full rounded-none border border-[#D6D3D1] bg-white p-3 text-sm text-[#1C1917] dark:border-[#44403C] dark:bg-[#141210] dark:text-[#FAFAF9] focus:outline-none focus:ring-2 focus:ring-[#78716C]"
                 value={form.evidence}
                 onChange={(event) => changeForm({ evidence: event.target.value })}
                 maxLength={2000}
@@ -428,38 +429,39 @@ export function P0PreviewPanel() {
           </>
         ) : (
           <>
-            <label className="block text-sm" htmlFor="intake-purpose">
+            <label className="block text-sm font-semibold text-[#57534E] dark:text-[#D6D3D1]" htmlFor="intake-purpose">
               Mục đích
               <textarea
                 id="intake-purpose"
-                className="mt-1 min-h-24 w-full rounded-xl border border-slate-300 bg-transparent p-3 text-sm dark:border-slate-600"
+                className="mt-1 min-h-24 w-full rounded-none border border-[#D6D3D1] bg-white p-3 text-sm text-[#1C1917] dark:border-[#44403C] dark:bg-[#141210] dark:text-[#FAFAF9] focus:outline-none focus:ring-2 focus:ring-[#78716C]"
                 value={form.purpose}
                 onChange={(event) => changeForm({ purpose: event.target.value })}
                 maxLength={1000}
               />
             </label>
-            <label className="block text-sm">
+            <label className="block text-sm font-semibold text-[#57534E] dark:text-[#D6D3D1]">
               Nơi nhận
               <input
-                className="mt-1 w-full rounded-xl border border-slate-300 bg-transparent p-3 text-sm dark:border-slate-600"
+                className="mt-1 w-full rounded-none border border-[#D6D3D1] bg-white p-3 text-sm text-[#1C1917] dark:border-[#44403C] dark:bg-[#141210] dark:text-[#FAFAF9] focus:outline-none focus:ring-2 focus:ring-[#78716C]"
                 value={form.destinationOrg}
                 onChange={(event) => changeForm({ destinationOrg: event.target.value })}
                 maxLength={300}
               />
             </label>
             <fieldset>
-              <legend className="text-sm">Cách nhận</legend>
+              <legend className="text-sm font-semibold text-[#57534E] dark:text-[#D6D3D1]">Cách nhận</legend>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
                 {([
                   ["digital_pdf", "Bản điện tử (PDF)"],
                   ["paper_stamped", "Bản giấy đóng dấu"],
                 ] as const).map(([value, label]) => (
-                  <label key={value} className={`flex min-h-11 items-center gap-2 rounded-xl border px-3 py-2 text-sm ${form.receiveMethod === value ? "border-blue-500 bg-blue-50 dark:bg-blue-950" : "border-slate-300 dark:border-slate-600"}`}>
+                  <label key={value} className={`flex min-h-11 items-center gap-2 rounded-none border px-3 py-2 text-sm ${form.receiveMethod === value ? "border-[#78716C] bg-[#EFEDEB] text-[#1C1917] dark:border-[#A8A29E] dark:bg-[#292524] dark:text-[#FAFAF9]" : "border-[#D6D3D1] text-[#57534E] dark:border-[#44403C] dark:text-[#D6D3D1]"}`}>
                     <input
                       type="radio"
                       name="p0-receive"
                       checked={form.receiveMethod === value}
                       onChange={() => changeForm({ receiveMethod: value })}
+                      className="accent-[#78716C]"
                     />
                     {label}
                   </label>
@@ -470,33 +472,33 @@ export function P0PreviewPanel() {
         )}
       </div>
       {preview.missingFields.length > 0 && (
-        <p className="mt-3 text-xs text-amber-800 dark:text-amber-200">Còn thiếu: {missingLabels}</p>
+        <p className="mt-3 text-xs text-[#854D0E] dark:text-[#FDE047]">Còn thiếu: {missingLabels}</p>
       )}
       {confirming && (
-        <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm dark:border-blue-900 dark:bg-blue-950/40">
-          <p className="font-semibold">Xác nhận gửi đơn</p>
+        <div className="mt-4 rounded-none border border-[#D6D3D1] bg-[#F5F5F4] p-4 text-sm dark:border-[#44403C] dark:bg-[#23201D]">
+          <p className="font-serif font-semibold text-[#1C1917] dark:text-[#FAFAF9]">Xác nhận gửi đơn</p>
           <dl className="mt-2 space-y-1 text-sm">
-            <div><dt className="text-xs text-slate-500">Loại đơn</dt><dd>{serviceLabel(preview.serviceType, form.complaintSubtype)}</dd></div>
-            <div><dt className="text-xs text-slate-500">Bộ phận tiếp nhận</dt><dd>Phòng Đào tạo / học vụ</dd></div>
+            <div><dt className="text-xs text-[#57534E] dark:text-[#D6D3D1]">Loại đơn</dt><dd className="text-[#1C1917] dark:text-[#FAFAF9]">{serviceLabel(preview.serviceType, form.complaintSubtype)}</dd></div>
+            <div><dt className="text-xs text-[#57534E] dark:text-[#D6D3D1]">Bộ phận tiếp nhận</dt><dd className="text-[#1C1917] dark:text-[#FAFAF9]">Phòng Đào tạo / học vụ</dd></div>
             {isComplaint ? (
               <>
-                {form.course && <div><dt className="text-xs text-slate-500">Môn học</dt><dd>{form.course}{form.courseCode ? ` (${form.courseCode})` : ""}</dd></div>}
-                {form.description && <div><dt className="text-xs text-slate-500">Nội dung</dt><dd className="whitespace-pre-wrap">{form.description}</dd></div>}
-                <div><dt className="text-xs text-slate-500">Tệp / minh chứng</dt><dd>{form.evidence.trim() || "Không đính kèm tệp. Minh chứng kê khai nếu có được gửi cùng đơn."}</dd></div>
+                {form.course && <div><dt className="text-xs text-[#57534E] dark:text-[#D6D3D1]">Môn học</dt><dd className="text-[#1C1917] dark:text-[#FAFAF9]">{form.course}{form.courseCode ? ` (${form.courseCode})` : ""}</dd></div>}
+                {form.description && <div><dt className="text-xs text-[#57534E] dark:text-[#D6D3D1]">Nội dung</dt><dd className="whitespace-pre-wrap text-[#1C1917] dark:text-[#FAFAF9]">{form.description}</dd></div>}
+                <div><dt className="text-xs text-[#57534E] dark:text-[#D6D3D1]">Tệp / minh chứng</dt><dd className="text-[#1C1917] dark:text-[#FAFAF9]">{form.evidence.trim() || "Không đính kèm tệp. Minh chứng kê khai nếu có được gửi cùng đơn."}</dd></div>
               </>
             ) : (
               <>
-                <div><dt className="text-xs text-slate-500">Mục đích</dt><dd>{form.purpose}</dd></div>
-                <div><dt className="text-xs text-slate-500">Nơi nhận</dt><dd>{form.destinationOrg}</dd></div>
-                <div><dt className="text-xs text-slate-500">Cách nhận</dt><dd>{form.receiveMethod === "paper_stamped" ? "Bản giấy đóng dấu" : "Bản điện tử PDF"}</dd></div>
-                <div><dt className="text-xs text-slate-500">Tệp</dt><dd>Không có tệp đính kèm ở bước này.</dd></div>
+                <div><dt className="text-xs text-[#57534E] dark:text-[#D6D3D1]">Mục đích</dt><dd className="text-[#1C1917] dark:text-[#FAFAF9]">{form.purpose}</dd></div>
+                <div><dt className="text-xs text-[#57534E] dark:text-[#D6D3D1]">Nơi nhận</dt><dd className="text-[#1C1917] dark:text-[#FAFAF9]">{form.destinationOrg}</dd></div>
+                <div><dt className="text-xs text-[#57534E] dark:text-[#D6D3D1]">Cách nhận</dt><dd className="text-[#1C1917] dark:text-[#FAFAF9]">{form.receiveMethod === "paper_stamped" ? "Bản giấy đóng dấu" : "Bản điện tử PDF"}</dd></div>
+                <div><dt className="text-xs text-[#57534E] dark:text-[#D6D3D1]">Tệp</dt><dd className="text-[#1C1917] dark:text-[#FAFAF9]">Không có tệp đính kèm ở bước này.</dd></div>
               </>
             )}
           </dl>
         </div>
       )}
-      {error && <p role="alert" className="mt-3 text-sm text-red-700 dark:text-red-300">{error}</p>}
-      {notice && <p role="status" className="mt-3 text-sm text-emerald-700 dark:text-emerald-300">{notice}</p>}
+      {error && <p role="alert" className="mt-3 text-sm text-[#B91C1C] dark:text-[#FCA5A5]">{error}</p>}
+      {notice && <p role="status" className="mt-3 text-sm text-[#3F6212] dark:text-[#86EFAC]">{notice}</p>}
       <div className="mt-4 flex flex-wrap gap-2">
         <button type="button" className={secondaryButton} disabled={busy} onClick={() => void savePreview()}>
           Cập nhật preview
@@ -506,8 +508,8 @@ export function P0PreviewPanel() {
           {busy ? "Đang gửi…" : confirming ? "Xác nhận gửi" : "Nộp yêu cầu (Submit 1)"}
         </button>
       </div>
-      <p className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-slate-500">
-        <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+      <p className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-[#78716C] dark:text-[#A8A29E]">
+        <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#CA8A04] dark:text-[#FDE047]" />
         Chỉ tạo ticket sau khi bạn xác nhận gửi. Trợ lý không gửi hộ và không tự kết luận vụ việc.
       </p>
     </section>

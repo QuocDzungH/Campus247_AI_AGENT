@@ -18,24 +18,24 @@ function lookupTime(value?: string): string {
 
 function systemBadge(item: SystemVerificationItem): { label: string; className: string } {
   if (item.stale) {
-    return { label: "Cần kiểm tra lại", className: "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800" };
+    return { label: "Cần kiểm tra lại", className: "bg-[#F5F5F4] text-[#B45309] border-[#D6D3D1] dark:bg-[#1C1917] dark:text-[#FBBF24] dark:border-[#44403C]" };
   }
   if (item.status === "passed") {
-    return { label: "Đáp ứng", className: "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800" };
+    return { label: "Đáp ứng", className: "bg-[#F5F5F4] text-[#3F6212] border-[#D6D3D1] dark:bg-[#1C1917] dark:text-[#4ADE80] dark:border-[#44403C]" };
   }
   if (item.status === "failed") {
-    return { label: "Không đạt", className: "bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950 dark:text-rose-200 dark:border-rose-800" };
+    return { label: "Không đạt", className: "bg-[#F5F5F4] text-[#B91C1C] border-[#D6D3D1] dark:bg-[#1C1917] dark:text-[#EF4444] dark:border-[#44403C]" };
   }
   if (item.status === "error") {
-    return { label: "Lỗi kết nối", className: "bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950 dark:text-rose-200 dark:border-rose-800" };
+    return { label: "Lỗi kết nối", className: "bg-[#F5F5F4] text-[#B91C1C] border-[#D6D3D1] dark:bg-[#1C1917] dark:text-[#EF4444] dark:border-[#44403C]" };
   }
-  return { label: "Cần xác minh", className: "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800" };
+  return { label: "Cần xác minh", className: "bg-[#F5F5F4] text-[#B45309] border-[#D6D3D1] dark:bg-[#1C1917] dark:text-[#FBBF24] dark:border-[#44403C]" };
 }
 
 function cardTone(item: SystemVerificationItem): string {
-  if (item.stale || item.status === "insufficient") return "border-amber-200 bg-amber-50/40 dark:border-amber-900 dark:bg-amber-950/20";
-  if (item.status === "failed" || item.status === "error") return "border-rose-200 bg-rose-50/40 dark:border-rose-900 dark:bg-rose-950/20";
-  return "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900";
+  if (item.stale || item.status === "insufficient") return "border-l-2 border-[#B45309] bg-[#F5F5F4] dark:border-[#FBBF24] dark:bg-[#1C1917]";
+  if (item.status === "failed" || item.status === "error") return "border-l-2 border-[#B91C1C] bg-[#F5F5F4] dark:border-[#EF4444] dark:bg-[#1C1917]";
+  return "border border-[#E7E5E4] bg-[#FAFAF9] dark:border-[#292524] dark:bg-[#1C1917]";
 }
 
 function officerConfirmedPass(item: SystemVerificationItem): boolean {
@@ -152,19 +152,19 @@ export function VerificationPanel({
 
   return (
     <section className={`${staffSurface} p-5`} data-testid="verification-panel">
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#E7E5E4] pb-3 dark:border-[#292524]">
         <div>
-          <h2 className="flex items-center gap-2 text-base font-semibold">
-            <ShieldCheck className="h-5 w-5 text-indigo-600" />
+          <h2 className="flex items-center gap-2 font-serif text-base font-normal text-[#1C1917] dark:text-[#FAFAF9]">
+            <ShieldCheck className="h-5 w-5 text-[#78716C] dark:text-[#A8A29E]" />
             Kết quả đối soát tự động của hệ thống
           </h2>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-[#78716C] dark:text-[#A8A29E]">
             Hệ thống tra cứu các nguồn đã kết nối. Cán bộ xem bằng chứng rồi xác nhận đạt hoặc không đạt.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {items.length > 0 && (
-            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
+            <span className="rounded-none border border-[#E7E5E4] bg-[#F5F5F4] px-2.5 py-1 text-[11px] font-mono uppercase text-[#3F6212] dark:border-[#292524] dark:bg-[#1C1917] dark:text-[#4ADE80]">
               Hệ thống: đạt {passedCount}/{items.length} điều kiện
             </span>
           )}
@@ -178,8 +178,8 @@ export function VerificationPanel({
         </div>
       </div>
       {isApi && !assignedToMe && !assignedToOther && !closed && (
-        <div className="mt-3 rounded-xl border border-slate-200 p-3 dark:border-slate-800">
-          <p className="text-sm">Nhận xử lý hồ sơ để bắt đầu kiểm tra.</p>
+        <div className="mt-3 rounded-none border border-[#E7E5E4] p-3 dark:border-[#292524]">
+          <p className="text-sm text-[#1C1917] dark:text-[#FAFAF9]">Nhận xử lý hồ sơ để bắt đầu kiểm tra.</p>
           <DisabledReason disabled={busy || closed} reason={claimReason}>
             <button className={`${staffPrimary} mt-2`} disabled={busy || closed} onClick={onClaim}>
               Nhận xử lý hồ sơ
@@ -188,14 +188,14 @@ export function VerificationPanel({
         </div>
       )}
       {assignedToOther && (
-        <p className="mt-3 text-sm text-amber-800 dark:text-amber-200">
+        <p className="mt-3 text-sm text-[#B45309] dark:text-[#FBBF24]">
           Hồ sơ đang do {ticket.assignedOfficerName || "cán bộ khác"} phụ trách. Bạn đang xem ở chế độ chỉ xem.
         </p>
       )}
-      {closed && <p className="mt-3 text-sm text-slate-500">Hồ sơ đã đóng nên không chạy kiểm tra mới.</p>}
-      {verifying && <p className="mt-3 text-sm text-slate-500">Đang đối chiếu nguồn. Kết quả sẽ hiện khi hoàn tất.</p>}
+      {closed && <p className="mt-3 text-sm text-[#78716C] dark:text-[#A8A29E]">Hồ sơ đã đóng nên không chạy kiểm tra mới.</p>}
+      {verifying && <p className="mt-3 text-sm text-[#78716C] dark:text-[#A8A29E]">Đang đối chiếu nguồn. Kết quả sẽ hiện khi hoàn tất.</p>}
       {assignedToMe && !items.length && !verifying && (
-        <p className="mt-3 text-sm text-slate-500">Chưa chạy kiểm tra cho hồ sơ này. Các tiêu chí sẽ hiện sau khi bắt đầu kiểm tra.</p>
+        <p className="mt-3 text-sm text-[#78716C] dark:text-[#A8A29E]">Chưa chạy kiểm tra cho hồ sơ này. Các tiêu chí sẽ hiện sau khi bắt đầu kiểm tra.</p>
       )}
       <div className="mt-4 space-y-3">
         {items.map((item, index) => {
@@ -205,37 +205,37 @@ export function VerificationPanel({
           const staleLock = Boolean(item.stale);
           const officerName = displayActorName(item.officerReviewedBy, "officer");
           return (
-            <article key={item.id} className={`rounded-2xl border p-4 ${cardTone(item)}`}>
+            <article key={item.id} className={`rounded-none border p-4 ${cardTone(item)}`}>
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
-                  <h3 className="text-sm font-semibold">
+                  <h3 className="text-sm font-medium text-[#1C1917] dark:text-[#FAFAF9]">
                     {index + 1}. {item.criterionLabel || fieldLabel(item.criterionKey)}
                   </h3>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-xs text-[#78716C] dark:text-[#A8A29E]">
                     Nguồn: {sourceLabel(item.sourceSystem) || item.sourceSystem} · Thời điểm: {lookupTime(item.lookupTimestamp)}
                   </p>
                 </div>
-                <span className={`rounded border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${badge.className}`}>
+                <span className={`rounded-none border px-2 py-0.5 text-[10px] font-mono uppercase tracking-wide ${badge.className}`}>
                   {badge.label}
                 </span>
               </div>
               {item.connectorStatus === "not_configured" && (
-                <p className="mt-2 rounded-lg bg-white/80 p-2 text-sm dark:bg-slate-950/40">
+                <p className="mt-2 rounded-none border border-[#E7E5E4] bg-[#F5F5F4] p-2 text-sm text-[#57534E] dark:border-[#292524] dark:bg-[#1C1917] dark:text-[#D6D3D1]">
                   Chưa có kết nối để kiểm tra tự động. Xem bằng chứng hiện có rồi xác nhận đạt hoặc không đạt.
                 </p>
               )}
-              <div className="mt-3 space-y-1.5 rounded-xl border border-slate-200/80 bg-white/80 p-3 text-sm dark:border-slate-800 dark:bg-slate-950/40">
+              <div className="mt-3 space-y-1.5 rounded-none border border-[#E7E5E4] bg-[#F5F5F4] p-3 text-sm dark:border-[#292524] dark:bg-[#1C1917]">
                 <p>
-                  <span className="text-slate-500">Dữ liệu kiểm tra: </span>
-                  <span className="font-medium">{formatDataChecked(item.dataChecked)}</span>
+                  <span className="text-[#78716C] dark:text-[#A8A29E]">Dữ liệu kiểm tra: </span>
+                  <span className="font-medium text-[#1C1917] dark:text-[#FAFAF9]">{formatDataChecked(item.dataChecked)}</span>
                 </p>
                 <p>
-                  <span className="text-slate-500">Điều kiện áp dụng: </span>
-                  {item.conditionApplied || "Chưa có điều kiện."}
+                  <span className="text-[#78716C] dark:text-[#A8A29E]">Điều kiện áp dụng: </span>
+                  <span className="text-[#1C1917] dark:text-[#FAFAF9]">{item.conditionApplied || "Chưa có điều kiện."}</span>
                 </p>
-                <p className="border-t border-slate-100 pt-1.5 dark:border-slate-800">
-                  <span className="text-slate-500">Lý do hệ thống: </span>
-                  <span className={item.status === "passed" && !item.stale ? "font-medium text-emerald-700 dark:text-emerald-300" : "font-medium text-amber-800 dark:text-amber-200"}>
+                <p className="border-t border-[#E7E5E4] pt-1.5 dark:border-[#292524]">
+                  <span className="text-[#78716C] dark:text-[#A8A29E]">Lý do hệ thống: </span>
+                  <span className={item.status === "passed" && !item.stale ? "font-medium text-[#3F6212] dark:text-[#4ADE80]" : "font-medium text-[#B45309] dark:text-[#FBBF24]"}>
                     {item.reason}
                   </span>
                 </p>
@@ -257,11 +257,11 @@ export function VerificationPanel({
                 </div>
                 {isApi && assignedToMe && !closed ? (
                   confirmed && !failedByOfficer ? (
-                    <p className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
+                    <p className="inline-flex items-center gap-1 rounded-none border border-[#E7E5E4] bg-[#F5F5F4] px-2.5 py-1 text-xs font-semibold text-[#3F6212] dark:border-[#292524] dark:bg-[#1C1917] dark:text-[#4ADE80]">
                       {officerName === "Cán bộ" ? "Cán bộ đã xác nhận" : `Cán bộ ${officerName} đã xác nhận`}
                     </p>
                   ) : failedByOfficer ? (
-                    <p className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-800 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-200">
+                    <p className="inline-flex items-center gap-1 rounded-none border border-[#E7E5E4] bg-[#F5F5F4] px-2.5 py-1 text-xs font-semibold text-[#B91C1C] dark:border-[#292524] dark:bg-[#1C1917] dark:text-[#EF4444]">
                       Cán bộ ghi nhận không đạt
                     </p>
                   ) : (
@@ -269,7 +269,7 @@ export function VerificationPanel({
                       <DisabledReason disabled={actionsLocked || staleLock} reason={staleLock ? "Nguồn đã đổi, hãy thử lại tra cứu trước." : !assignedToMe ? "Nhận xử lý hồ sơ trước." : undefined}>
                         <button
                           type="button"
-                          className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-slate-800 px-3 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                          className="inline-flex min-h-11 items-center gap-1.5 rounded-none bg-[#78716C] px-3 py-2 text-sm font-semibold text-[#FAFAF9] hover:bg-[#57534E] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#A8A29E] dark:text-[#1C1917] dark:hover:bg-[#D6D3D1]"
                           disabled={actionsLocked || staleLock}
                           onClick={() => {
                             const next = confirmPass(item);
@@ -303,41 +303,41 @@ export function VerificationPanel({
           <div className="space-y-4 p-6">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 id="verification-evidence-title" className="text-base font-semibold">Bằng chứng tra cứu</h3>
-                <p className="mt-1 text-sm text-slate-500">{evidenceItem.criterionLabel || fieldLabel(evidenceItem.criterionKey)}</p>
+                <h3 id="verification-evidence-title" className="font-serif text-base font-normal text-[#1C1917] dark:text-[#FAFAF9]">Bằng chứng tra cứu</h3>
+                <p className="mt-1 text-sm text-[#78716C] dark:text-[#A8A29E]">{evidenceItem.criterionLabel || fieldLabel(evidenceItem.criterionKey)}</p>
               </div>
               <button type="button" className={staffButton} aria-label="Đóng bằng chứng tra cứu" onClick={() => setEvidenceItem(null)}>
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="rounded-xl bg-slate-50 p-3 text-sm dark:bg-slate-800">
-              <p className="text-xs text-slate-500">Nguồn và thời điểm</p>
-              <p className="mt-1 font-medium">
+            <div className="rounded-none border border-[#E7E5E4] bg-[#F5F5F4] p-3 text-sm dark:border-[#292524] dark:bg-[#1C1917]">
+              <p className="text-xs text-[#78716C] dark:text-[#A8A29E]">Nguồn và thời điểm</p>
+              <p className="mt-1 font-medium text-[#1C1917] dark:text-[#FAFAF9]">
                 {sourceLabel(evidenceItem.sourceSystem) || evidenceItem.sourceSystem} · {lookupTime(evidenceItem.lookupTimestamp)}
               </p>
             </div>
             <div>
-              <p className="text-xs text-slate-500">Dữ liệu truy vấn</p>
-              <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed">{formatDataChecked(evidenceItem.dataChecked || evidenceItem.evidenceDetails?.rawSnippet)}</p>
+              <p className="text-xs text-[#78716C] dark:text-[#A8A29E]">Dữ liệu truy vấn</p>
+              <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-[#1C1917] dark:text-[#FAFAF9]">{formatDataChecked(evidenceItem.dataChecked || evidenceItem.evidenceDetails?.rawSnippet)}</p>
             </div>
             {evidenceFields(evidenceItem).length > 0 && (
               <div>
-                <p className="text-xs text-slate-500">Các trường đã đối chiếu</p>
+                <p className="text-xs text-[#78716C] dark:text-[#A8A29E]">Các trường đã đối chiếu</p>
                 <dl className="mt-2 space-y-1 text-sm">
                   {evidenceFields(evidenceItem).map(([label, value]) => (
-                    <div key={`${label}-${value}`} className="flex justify-between gap-3 border-b border-slate-100 py-1 last:border-0 dark:border-slate-800">
-                      <dt className="text-slate-500">{label}</dt>
-                      <dd className="text-right font-medium">{value}</dd>
+                    <div key={`${label}-${value}`} className="flex justify-between gap-3 border-b border-[#E7E5E4] py-1 last:border-0 dark:border-[#292524]">
+                      <dt className="text-[#78716C] dark:text-[#A8A29E]">{label}</dt>
+                      <dd className="text-right font-medium text-[#1C1917] dark:text-[#FAFAF9]">{value}</dd>
                     </div>
                   ))}
                 </dl>
               </div>
             )}
-            <p className="text-sm leading-relaxed">
-              <span className="text-slate-500">Lý do hệ thống: </span>
+            <p className="text-sm leading-relaxed text-[#57534E] dark:text-[#D6D3D1]">
+              <span className="text-[#78716C] dark:text-[#A8A29E]">Lý do hệ thống: </span>
               {evidenceItem.reason}
             </p>
-            <details className="text-xs text-slate-500">
+            <details className="text-xs text-[#78716C] dark:text-[#A8A29E]">
               <summary className="cursor-pointer">Chi tiết kỹ thuật</summary>
               {evidenceItem.sourceVersion ? <p className="mt-2">Phiên bản nguồn: {evidenceItem.sourceVersion}</p> : null}
               {evidenceItem.sourceHash ? <p className="mt-1 break-all">Mã kiểm tra: {evidenceItem.sourceHash}</p> : null}
@@ -388,19 +388,19 @@ export function ProcessChecklistPanel({
 
   return (
     <section className={`${staffSurface} p-5`} data-testid="process-checklist-panel">
-      <h2 className="text-base font-semibold">Các việc cần kiểm tra</h2>
-      <p className="mt-1 text-xs text-slate-500">Cán bộ xác nhận từng việc đã hoàn thành trước khi xử lý kết quả.</p>
+      <h2 className="font-serif text-base font-normal text-[#1C1917] dark:text-[#FAFAF9]">Các việc cần kiểm tra</h2>
+      <p className="mt-1 text-xs text-[#78716C] dark:text-[#A8A29E]">Cán bộ xác nhận từng việc đã hoàn thành trước khi xử lý kết quả.</p>
       {isApi && !assignedToMe && !assignedToOther && !closed && (
-        <div className="mt-3 rounded-xl border border-slate-200 p-3 dark:border-slate-800">
-          <p className="text-sm">Nhận xử lý hồ sơ để bắt đầu kiểm tra.</p>
+        <div className="mt-3 rounded-none border border-[#E7E5E4] p-3 dark:border-[#292524]">
+          <p className="text-sm text-[#1C1917] dark:text-[#FAFAF9]">Nhận xử lý hồ sơ để bắt đầu kiểm tra.</p>
           <button className={`${staffPrimary} mt-2`} disabled={busy || closed} onClick={onClaim}>
             Nhận xử lý hồ sơ
           </button>
         </div>
       )}
       {assignedToMe && !ticket.checklist.length && (
-        <div className="mt-3 rounded-xl border border-slate-200 p-3 dark:border-slate-800">
-          <p className="text-sm">Hồ sơ đã nhận nhưng chưa có checklist đúng phiên bản quy trình.</p>
+        <div className="mt-3 rounded-none border border-[#E7E5E4] p-3 dark:border-[#292524]">
+          <p className="text-sm text-[#1C1917] dark:text-[#FAFAF9]">Hồ sơ đã nhận nhưng chưa có checklist đúng phiên bản quy trình.</p>
           <DisabledReason disabled={busy || closed} reason={closed ? "Hồ sơ đã đóng." : undefined}>
             <button className={`${staffButton} mt-2`} disabled={busy || closed} onClick={onEnsure}>
               Bổ sung các việc cần kiểm tra
@@ -410,11 +410,11 @@ export function ProcessChecklistPanel({
       )}
       {showPlanned && planned.length > 0 && (
         <div className="mt-3 space-y-2">
-          <p className="text-xs text-slate-500">Danh sách việc dự kiến theo quy trình. Chưa bắt đầu vì hồ sơ chưa được nhận xử lý.</p>
+          <p className="text-xs text-[#78716C] dark:text-[#A8A29E]">Danh sách việc dự kiến theo quy trình. Chưa bắt đầu vì hồ sơ chưa được nhận xử lý.</p>
           {planned.map((item) => (
-            <div key={item.id} className="rounded-xl border border-dashed border-slate-300 p-3 text-sm dark:border-slate-700">
-              <p className="font-medium">{item.label}</p>
-              <p className="mt-1 text-xs text-slate-500">Bắt buộc · chưa bắt đầu</p>
+            <div key={item.id} className="rounded-none border border-dashed border-[#D6D3D1] p-3 text-sm dark:border-[#44403C]">
+              <p className="font-medium text-[#1C1917] dark:text-[#FAFAF9]">{item.label}</p>
+              <p className="mt-1 text-xs text-[#78716C] dark:text-[#A8A29E]">Bắt buộc · chưa bắt đầu</p>
             </div>
           ))}
         </div>
@@ -455,25 +455,25 @@ function ChecklistGroup({
   if (!items.length) return null;
   return (
     <div className="mt-3 space-y-3">
-      <h3 className="text-sm font-medium">{title}</h3>
+      <h3 className="text-sm font-medium text-[#1C1917] dark:text-[#FAFAF9]">{title}</h3>
       {items.map((item) => (
-        <label key={item.id} className="flex items-start gap-3 rounded-xl border border-slate-200 p-3 dark:border-slate-800">
+        <label key={item.id} className="flex items-start gap-3 rounded-none border border-[#E7E5E4] p-3 dark:border-[#292524]">
           <input
             type="checkbox"
-            className="mt-1 h-4 w-4"
+            className="mt-1 h-4 w-4 accent-[#78716C]"
             checked={item.checked}
             disabled={disabled}
             onChange={() => onToggle(item.id)}
           />
           <span>
-            <span className="text-sm font-medium">{item.label}</span>
-            <span className="mt-1 block text-xs text-slate-500">
+            <span className="text-sm font-medium text-[#1C1917] dark:text-[#FAFAF9]">{item.label}</span>
+            <span className="mt-1 block text-xs text-[#78716C] dark:text-[#A8A29E]">
               {item.required ? "Bắt buộc" : "Gợi ý"} · {item.source === "ai" ? "AI đề xuất" : "Quy trình"}
               {item.checkedBy ? ` · ${item.checkedBy}` : ""}
               {item.checkedAt ? ` · ${formatDate(item.checkedAt, "Asia/Bangkok")}` : ""}
             </span>
-            {item.description ? <span className="mt-1 block text-xs leading-relaxed text-slate-500">{item.description}</span> : null}
-            {disabled && reason ? <span className="mt-1 block text-xs text-slate-500">{reason}</span> : null}
+            {item.description ? <span className="mt-1 block text-xs leading-relaxed text-[#57534E] dark:text-[#D6D3D1]">{item.description}</span> : null}
+            {disabled && reason ? <span className="mt-1 block text-xs text-[#78716C] dark:text-[#A8A29E]">{reason}</span> : null}
           </span>
         </label>
       ))}
