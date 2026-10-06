@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
-import { ArrowRight, CheckCircle2, ChevronRight, Clock3, FileCheck2, FileText, GraduationCap, Inbox, MessageSquare, Plus, Scale, Search, TriangleAlert, Wrench, X } from "lucide-react";
+import { ArrowRight, CheckCircle2, ChevronRight, Clock3, FileCheck2, FileText, GraduationCap, Inbox, Plus, Scale, Search, TriangleAlert, Wrench, X } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { DataAccessState } from "@/components/shared/DataAccessState";
 import { useStore } from "@/lib/store";
@@ -13,18 +13,18 @@ import { fieldClass, primaryButton, secondaryButton } from "./StudentFlowUI";
 
 const baseFilters: Array<["all" | RequestState, string]> = [["all", "Tất cả"], ["new", "Mới nộp"], ["processing", "Đang xử lý"], ["supplement", "Cần bổ sung"], ["completed", "Hoàn tất"], ["draft", "Bản nháp"]];
 
-function getRequestRowIcon(item: RequestItem) {
-  if (item.kind === "review") return GraduationCap;
+function getRequestRowIcon(item: RequestItem): "review" | "complaint" | "service" | "document" {
+  if (item.kind === "review") return "review";
   const text = `${item.title} ${item.type}`.toLowerCase();
-  if (text.includes("khiếu nại") || text.includes("phúc khảo") || text.includes("điểm thi")) return Scale;
-  if (text.includes("máy chiếu") || text.includes("hỏng") || text.includes("phòng") || text.includes("cơ sở")) return Wrench;
-  return FileCheck2;
+  if (text.includes("khiếu nại") || text.includes("phúc khảo") || text.includes("điểm thi")) return "complaint";
+  if (text.includes("máy chiếu") || text.includes("hỏng") || text.includes("phòng") || text.includes("cơ sở")) return "service";
+  return "document";
 }
 
 function RequestRow({ item, compact, selected, localOnly, onSelect }: {
   item: RequestItem; compact: boolean; selected: boolean; localOnly: boolean; onSelect: () => void;
 }) {
-  const Icon = getRequestRowIcon(item);
+  const icon = getRequestRowIcon(item);
   return <button
     id={`request-${item.kind}-${item.id}`}
     type="button"
@@ -39,7 +39,9 @@ function RequestRow({ item, compact, selected, localOnly, onSelect }: {
       <div className="mt-2.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-[#78716C] dark:text-[#A8A29E]"><span className="font-mono font-medium text-[#1C1917] dark:text-[#FAFAF9]">{item.code}</span><span>·</span><span className="font-mono">{formatDate(item.submittedAt)}</span></div>
     </> : <div className="grid items-center gap-3 sm:grid-cols-[minmax(0,1fr)_180px] lg:grid-cols-[minmax(0,1fr)_200px_180px_20px] lg:gap-6">
       <div className="flex min-w-0 items-start gap-3.5 pr-6 sm:gap-4 lg:pr-0">
-        <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-none border border-[#E7E5E4] bg-[#F5F5F4] text-[#57534E] transition-colors group-hover:border-[#78716C] group-hover:bg-[#1C1917] group-hover:text-[#FAFAF9] dark:border-[#383533] dark:bg-[#292524] dark:text-[#D6D3D1] dark:group-hover:border-[#A8A29E] dark:group-hover:bg-[#FAFAF9] dark:group-hover:text-[#1C1917]"><Icon className="h-4.5 w-4.5" aria-hidden="true" /></span>
+        <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-none border border-[#E7E5E4] bg-[#F5F5F4] text-[#57534E] transition-colors group-hover:border-[#78716C] group-hover:bg-[#1C1917] group-hover:text-[#FAFAF9] dark:border-[#383533] dark:bg-[#292524] dark:text-[#D6D3D1] dark:group-hover:border-[#A8A29E] dark:group-hover:bg-[#FAFAF9] dark:group-hover:text-[#1C1917]">
+          {icon === "review" ? <GraduationCap className="h-4.5 w-4.5" aria-hidden="true" /> : icon === "complaint" ? <Scale className="h-4.5 w-4.5" aria-hidden="true" /> : icon === "service" ? <Wrench className="h-4.5 w-4.5" aria-hidden="true" /> : <FileCheck2 className="h-4.5 w-4.5" aria-hidden="true" />}
+        </span>
         <div className="min-w-0"><h3 className="break-words text-[15px] font-semibold leading-snug text-[#1C1917] transition-colors group-hover:text-[#57534E] dark:text-[#FAFAF9] dark:group-hover:text-[#D6D3D1]">{item.title}</h3><p className="mt-1 text-xs text-[#78716C] dark:text-[#A8A29E]">{item.type}</p>{item.state === "supplement" && <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-amber-800 dark:text-amber-400"><span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />Cần bạn bổ sung thông tin hoặc tài liệu</p>}</div>
       </div>
       <div className="pl-[54px] text-xs leading-6 text-[#78716C] dark:text-[#A8A29E] sm:pl-0"><p className="break-all font-mono font-medium text-[#1C1917] dark:text-[#FAFAF9]">{item.code}</p><p className="font-mono">{formatDate(item.submittedAt)}</p></div>
