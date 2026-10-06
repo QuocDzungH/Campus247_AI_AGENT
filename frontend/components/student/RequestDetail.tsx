@@ -21,8 +21,8 @@ export function RequestStatus({ item, localOnly = false, className = "" }: { ite
   return <span className={`inline-flex items-center px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider ${statusStyle} ${className}`}>{requestStatusLabel(item, localOnly)}</span>;
 }
 
-const section = "border-b border-[var(--ts-border-subtle)] px-5 py-6 last:border-b-0 sm:px-6";
-const muted = "text-sm leading-relaxed text-[var(--ts-text-secondary)]";
+const section = "border-b border-[#E7E5E4] px-5 py-6 last:border-b-0 dark:border-[#292524] sm:px-6";
+const muted = "text-sm leading-relaxed text-[#57534E] dark:text-[#A8A29E]";
 
 export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement, detailLoading = false, detailError = null, onRetryDetail }: {
   item: RequestItem; localOnly: boolean; onBack: () => void;
@@ -85,19 +85,27 @@ export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement
   ];
   const activeStep = item.state === "draft" || item.state === "new" ? 0 : item.state === "completed" ? 2 : 1;
 
-  return <article className="min-w-0 border border-[var(--ts-border-subtle)] bg-[var(--ts-bg)]" aria-labelledby="request-detail-title">
+  return <article className="min-w-0 border border-[#E7E5E4] bg-[#FFFFFF] dark:border-[#292524] dark:bg-[#1C1917]" aria-labelledby="request-detail-title">
     <div className={section}>
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-2"><span className="text-xs font-semibold uppercase tracking-widest text-[var(--ts-text-secondary)]">Chi tiết hồ sơ</span><button type="button" onClick={onBack} className="inline-flex min-h-11 items-center gap-2 px-2 text-xs text-[var(--ts-text-secondary)] transition-colors hover:bg-[var(--ts-surface)]"><ArrowLeft className="h-4 w-4" aria-hidden="true" />Quay lại danh sách</button></div>
-      <div className="mb-3 flex flex-wrap items-center gap-3"><RequestStatus item={item} localOnly={localOnly} /><span className={muted}>{item.type}</span></div>
-      <h2 id="request-detail-title" ref={heading} tabIndex={-1} className="break-words font-serif text-2xl font-semibold leading-snug tracking-tight sm:text-3xl">{item.title}</h2>
-      <dl className="mt-5 grid gap-4 border-y border-[var(--ts-border-subtle)] py-4 sm:grid-cols-2">
-        <div><dt className="text-xs text-[var(--ts-text-secondary)]">Mã hồ sơ</dt><dd className="mt-1 break-all font-mono text-sm">{item.code}</dd></div>
-        <div><dt className="text-xs text-[var(--ts-text-secondary)]">{item.state === "draft" || localOnly ? "Ngày ghi nhận" : "Ngày nộp"}</dt><dd className="mt-1 text-sm">{formatDate(item.submittedAt)}</dd></div>
-        {item.updatedAt && <div><dt className="text-xs text-[var(--ts-text-secondary)]">Cập nhật gần nhất</dt><dd className="mt-1 text-sm">{formatDate(item.updatedAt)}</dd></div>}
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
+        <span className="text-[11px] font-semibold uppercase tracking-widest text-[#78716C] dark:text-[#A8A29E]">Chi tiết hồ sơ</span>
+        <button type="button" onClick={onBack} className="inline-flex min-h-11 items-center gap-2 px-2 text-xs font-medium text-[#78716C] transition-colors hover:bg-[#F5F5F4] hover:text-[#1C1917] dark:text-[#A8A29E] dark:hover:bg-[#292524] dark:hover:text-[#FAFAF9]">
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />Quay lại danh sách
+        </button>
+      </div>
+      <div className="mb-3 flex flex-wrap items-center gap-3">
+        <RequestStatus item={item} localOnly={localOnly} />
+        <span className="text-xs font-medium text-[#78716C] dark:text-[#A8A29E]">{item.type}</span>
+      </div>
+      <h2 id="request-detail-title" ref={heading} tabIndex={-1} className="break-words font-serif text-2xl font-semibold leading-snug tracking-tight text-[#1C1917] dark:text-[#FAFAF9] sm:text-3xl">{item.title}</h2>
+      <dl className="mt-5 grid gap-4 border-y border-[#E7E5E4] py-4 dark:border-[#292524] sm:grid-cols-2">
+        <div><dt className="text-[11px] font-semibold uppercase tracking-wider text-[#78716C] dark:text-[#A8A29E]">Mã hồ sơ</dt><dd className="mt-1 break-all font-mono text-sm font-medium text-[#1C1917] dark:text-[#FAFAF9]">{item.code}</dd></div>
+        <div><dt className="text-[11px] font-semibold uppercase tracking-wider text-[#78716C] dark:text-[#A8A29E]">{item.state === "draft" || localOnly ? "Ngày ghi nhận" : "Ngày nộp"}</dt><dd className="mt-1 text-sm text-[#1C1917] dark:text-[#FAFAF9]">{formatDate(item.submittedAt)}</dd></div>
+        {item.updatedAt && <div><dt className="text-[11px] font-semibold uppercase tracking-wider text-[#78716C] dark:text-[#A8A29E]">Cập nhật gần nhất</dt><dd className="mt-1 text-sm text-[#1C1917] dark:text-[#FAFAF9]">{formatDate(item.updatedAt)}</dd></div>}
       </dl>
       <p className={`mt-4 ${muted}`}>{item.kind === "review" && item.state === "completed" ? "Đã hoàn tất rà soát sơ bộ. Chưa có quyết định công nhận học phần cuối cùng trong hồ sơ này." : item.kind === "ticket" && item.record.status === "pending_officer" ? "Hồ sơ đã chuyển tới bước cán bộ. Chưa có xác nhận bắt đầu xử lý; hãy theo dõi phản hồi." : requestStates[item.state].description}</p>
-      <div className="mt-5 border-l-2 border-[var(--ts-primary)] bg-[var(--ts-surface)] p-4">
-        <p className="flex items-center gap-2 text-sm font-semibold"><Clock3 className="h-4 w-4 text-[var(--ts-text-secondary)]" aria-hidden="true" />Việc bạn cần làm</p>
+      <div className="mt-5 border-l-2 border-[#1C1917] bg-[#F5F5F4]/70 p-4 dark:border-[#FAFAF9] dark:bg-[#23201D]/70">
+        <p className="flex items-center gap-2 text-sm font-semibold text-[#1C1917] dark:text-[#FAFAF9]"><Clock3 className="h-4 w-4 text-[#78716C] dark:text-[#A8A29E]" aria-hidden="true" />Việc bạn cần làm</p>
         <p className={`mt-1 ${muted}`}>{item.state === "supplement" ? "Xem yêu cầu bổ sung ngay bên dưới." : item.state === "completed" ? "Đọc kết quả xử lý và phản hồi của cán bộ." : item.state === "draft" ? "Hoàn thiện và nộp hồ sơ để được xử lý." : "Theo dõi phản hồi. Bạn chưa cần nộp lại hồ sơ này."}</p>
         {item.state !== "draft" && <a className={`${secondaryButton} -ml-3 mt-1 text-[#78716C] dark:text-[#A8A29E] hover:text-[#1C1917] dark:hover:text-[#FAFAF9]`} href={pending ? "#supplement-title" : item.state === "completed" ? "#result-title" : "#latest-reply-title"}>{pending ? "Xem yêu cầu bổ sung" : item.state === "completed" ? "Xem kết quả xử lý" : "Xem phản hồi gần nhất"}</a>}
         <p className={`mt-2 ${muted}`}>Thời gian xử lý: chưa có thời hạn được cán bộ xác nhận cho hồ sơ này.</p>
@@ -171,10 +179,10 @@ export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement
     </section>}
 
     <section className={section} aria-labelledby="progress-title">
-      <h3 id="progress-title" className="text-base font-semibold">Tiến trình hồ sơ</h3>
+      <h3 id="progress-title" className="text-base font-semibold text-[#1C1917] dark:text-[#FAFAF9]">Tiến trình hồ sơ</h3>
       <ol className="mt-4 space-y-3">{stages.map((stage, index) => <li key={stage} aria-current={index === activeStep ? "step" : undefined} className="flex items-start gap-3 text-sm">
-        <span aria-hidden="true" className={`flex h-8 w-8 shrink-0 items-center justify-center border text-xs font-semibold ${index <= activeStep ? "border-[var(--ts-primary)] bg-[var(--ts-surface-raised)] text-[var(--ts-text-primary)]" : "border-[var(--ts-border-subtle)] text-[var(--ts-text-secondary)]"}`}>{index < activeStep ? <Check className="h-4 w-4" /> : index + 1}</span>
-        <span className="pt-1">{stage}<span className={`ml-2 ${muted}`}>{index < activeStep ? "· Đã qua" : index === activeStep ? "· Hiện tại" : "· Chưa có xác nhận"}</span></span>
+        <span aria-hidden="true" className={`flex h-8 w-8 shrink-0 items-center justify-center border text-xs font-semibold ${index <= activeStep ? "border-[#1C1917] bg-[#1C1917] text-[#FAFAF9] dark:border-[#FAFAF9] dark:bg-[#FAFAF9] dark:text-[#1C1917]" : "border-[#E7E5E4] bg-[#FAFAF9] text-[#78716C] dark:border-[#2E2A27] dark:bg-[#201D1A] dark:text-[#A8A29E]"}`}>{index < activeStep ? <Check className="h-4 w-4" /> : index + 1}</span>
+        <span className="pt-1 font-medium text-[#1C1917] dark:text-[#FAFAF9]">{stage}<span className={`ml-2 font-normal ${muted}`}>{index < activeStep ? "· Đã qua" : index === activeStep ? "· Hiện tại" : "· Chưa có xác nhận"}</span></span>
       </li>)}</ol>
       {item.kind === "review" && item.state === "completed" && <p className={`mt-3 ${muted}`}>Quyết định công nhận của Hội đồng: chưa có thông tin.</p>}
     </section>
@@ -182,21 +190,23 @@ export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement
     <section className={section} aria-labelledby="conversation-title">
       <h3 id="conversation-title" className="text-base font-semibold text-[#1C1917] dark:text-[#FAFAF9]">{item.kind === "ticket" ? ticketThreadTitle(item.record.messages) : "Trao đổi với cán bộ"}</h3>
       {item.kind === "ticket" ? <>
-        <div className="mt-4 space-y-3">{item.record.messages.filter((m) => m.content.trim()).map((m) => <div key={m.id} className={`rounded-none border border-[#E7E5E4] dark:border-[#292524] p-4 ${m.senderRole === "student" ? "bg-[#EFEDEB] dark:bg-[#23201D]" : m.senderRole === "officer" ? "bg-[#F5F5F4] dark:bg-[#1C1917]" : "bg-[#EFEDEB] dark:bg-[#292524]"}`}>
-          <p className="font-serif text-sm font-semibold text-[#1C1917] dark:text-[#FAFAF9]">{ticketThreadSenderLabel(m)}</p>
-          <p className={`mt-1 ${muted}`}>{formatDate(m.timestamp)}</p>
-          <p className="mt-2 whitespace-pre-wrap break-words text-base leading-relaxed text-[#57534E] dark:text-[#D6D3D1]">{m.content}</p>
-          {m.attachments?.map((attachment, index) => <p key={index} className={`mt-2 flex items-start gap-2 ${muted}`}><Paperclip className="mt-1 h-4 w-4 shrink-0" aria-hidden="true" /><span className="break-all">{attachment.name} · Chưa có tệp đính kèm để tải</span></p>)}
+        <div className="mt-4 space-y-3">{item.record.messages.filter((m) => m.content.trim()).map((m) => <div key={m.id} className={`rounded-none border p-4 ${m.senderRole === "student" ? "border-[#E7E5E4] bg-[#F5F5F4]/70 dark:border-[#292524] dark:bg-[#201D1A]/70" : "border-[#D6D3D1] bg-[#FFFFFF] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9)] dark:border-[#383533] dark:bg-[#1C1917]"}`}>
+          <div className="flex items-center justify-between gap-2">
+            <p className="font-serif text-sm font-semibold text-[#1C1917] dark:text-[#FAFAF9]">{ticketThreadSenderLabel(m)}</p>
+            <span className="text-[11px] tabular-nums text-[#78716C] dark:text-[#A8A29E]">{formatDate(m.timestamp)}</span>
+          </div>
+          <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-[#57534E] dark:text-[#D6D3D1]">{m.content}</p>
+          {m.attachments?.map((attachment, index) => <p key={index} className={`mt-2 flex items-start gap-2 ${muted}`}><Paperclip className="mt-0.5 h-4 w-4 shrink-0 text-[#78716C] dark:text-[#A8A29E]" aria-hidden="true" /><span className="break-all">{attachment.name} · Chưa có tệp đính kèm để tải</span></p>)}
         </div>)}</div>
         {!item.record.messages.some((m) => m.content.trim()) && <p className={`mt-3 ${muted}`}>Chưa có hội thoại trên hồ sơ này.</p>}
         <form onSubmit={sendMessage} className="mt-5 space-y-3">
-          <label htmlFor="request-message" className="block text-sm font-semibold text-[#57534E] dark:text-[#D6D3D1]">Tin nhắn về hồ sơ {item.code}</label>
+          <label htmlFor="request-message" className="block text-xs font-semibold uppercase tracking-wider text-[#78716C] dark:text-[#A8A29E]">Tin nhắn về hồ sơ {item.code}</label>
           <textarea id="request-message" value={text} disabled={busy} onChange={(e) => setText(e.target.value)} required maxLength={4000} rows={3} className={fieldClass} aria-describedby="request-message-hint" />
           <p id="request-message-hint" className={muted}>{localOnly ? "Tin nhắn được lưu trong hồ sơ trên thiết bị này." : "Tin nhắn được gửi vào hồ sơ; không phải yêu cầu mới."}</p>
           <button type="submit" disabled={busy || !text.trim()} className={`${primaryButton} w-full sm:w-auto`}>{busy ? "Đang lưu…" : localOnly ? "Lưu tin nhắn" : "Gửi tin nhắn"}</button>
         </form>
       </> : <>
-        {item.record.supplementRequests.filter((r) => r.status === "responded").map((r) => <div key={r.id} className="mt-5 border-l-2 border-[var(--ts-primary)] bg-[var(--ts-surface)] p-4">
+        {item.record.supplementRequests.filter((r) => r.status === "responded").map((r) => <div key={r.id} className="mt-5 border-l-2 border-[#1C1917] bg-[#F5F5F4]/70 p-4 dark:border-[#FAFAF9] dark:bg-[#201D1A]/70">
           <p className="font-serif text-sm font-semibold text-[#1C1917] dark:text-[#FAFAF9]">Cán bộ · {r.subject}</p><p className={`mt-1 ${muted}`}>{formatDate(r.sentAt || r.createdAt)}</p>
           <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-[#57534E] dark:text-[#D6D3D1]">{r.messageBody}</p>
           {r.studentReply && <div className="mt-3 border-t border-[#E7E5E4] pt-3 dark:border-[#292524]"><p className="font-serif text-sm font-semibold text-[#1C1917] dark:text-[#FAFAF9]">Bạn · {formatDate(r.studentReply.submittedAt)}</p><p className="mt-2 whitespace-pre-wrap break-words text-sm text-[#57534E] dark:text-[#D6D3D1]">{r.studentReply.note}</p></div>}

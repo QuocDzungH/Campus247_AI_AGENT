@@ -100,7 +100,7 @@ function LoginForm() {
           setError("Không tìm thấy tài khoản. Kiểm tra thông tin hoặc chọn tài khoản mẫu bên dưới.");
           return;
         }
-        if (password !== "demo1234") {
+        if (password !== "demo1234" && password !== "Campus247-An18") {
           setLoading(false);
           setError("Tài khoản hoặc mật khẩu không chính xác.");
           return;
@@ -253,6 +253,28 @@ function LoginForm() {
           </div>
         </section>
       )}
+      <section className="rounded-none border border-[#D6D3D1] bg-[#F5F5F4] p-3 dark:border-[#44403C] dark:bg-[#1C1917]">
+        <p className="text-[11px] leading-relaxed text-[#57534E] dark:text-[#D6D3D1]">
+          Tài khoản vận hành (đăng nhập mật khẩu, hồ sơ điền sẵn khi tạo đơn).
+        </p>
+        <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {OPERATIONAL_ACCOUNTS.map((account) => (
+            <button
+              key={account.identifier}
+              type="button"
+              onClick={() => handleFillDemo(account.identifier, account.password)}
+              className="flex min-h-[58px] flex-col items-start justify-center rounded-none border border-[#D6D3D1] bg-white px-3 py-2 text-left transition-colors hover:border-[#78716C] hover:bg-[#EFEDEB] dark:border-[#44403C] dark:bg-[#141210] dark:hover:border-[#A8A29E] dark:hover:bg-[#23201D]"
+            >
+              <span className="text-xs font-semibold text-[#1C1917] dark:text-[#FAFAF9]">
+                Dùng tài khoản {account.label.toLowerCase()}
+              </span>
+              <span className="text-[11px] font-mono text-[#78716C] dark:text-[#A8A29E]">
+                {account.identifier}
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
 
       {DEMO_ACCOUNTS_ENABLED && (!isApiMode || demoAuthEnabled) && (
         <section className="rounded-none border border-[#D6D3D1] bg-[#F5F5F4] p-3 dark:border-[#44403C] dark:bg-[#1C1917]">

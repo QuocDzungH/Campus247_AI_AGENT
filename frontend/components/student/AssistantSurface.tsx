@@ -24,11 +24,7 @@ export function AssistantSurface() {
     document.addEventListener("keydown", escape);
     return () => document.removeEventListener("keydown", escape);
   }, [assistant.open, desktop, close]);
-  useEffect(() => {
-    if (!assistant.open || desktop) return;
-    const previous = document.body.style.overflow; document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = previous; };
-  }, [assistant.open, desktop]);
+
   const contents = <>
     <header className="flex shrink-0 items-start justify-between gap-2 border-b border-[#E7E5E4] px-4 py-3 dark:border-[#292524] bg-[#F5F5F4] dark:bg-[#1C1917]">
       <button type="button" onClick={close} aria-label="Quay lại tác vụ và đóng trợ lý" className="order-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-none hover:bg-[#E7E5E4] dark:hover:bg-[#292524] text-[#57534E] dark:text-[#A8A29E]"><X className="h-5 w-5" /></button>
