@@ -174,6 +174,10 @@ try {
   await shot("desktop-form-and-chat");
   for (const width of [1280, 1024]) {
     await page.setViewportSize({ width, height: 900 });
+    const toggleSupport = page.getByRole("button", { name: "Hỏi trợ lý", exact: true });
+    await toggleSupport.waitFor({ state: "visible", timeout: 2000 }).catch(() => {});
+    if (await toggleSupport.isVisible()) await toggleSupport.click();
+    await page.locator("#chatbot-question, #assistant-question").filter({ visible: true }).first().waitFor({ state: "visible", timeout: 2000 }).catch(() => {});
     await noOverflow();
     assert.equal(await page.locator("#workspace-form").evaluate(el => el.scrollWidth > el.clientWidth), false, `form fits beside sidebar at ${width}px`);
   }

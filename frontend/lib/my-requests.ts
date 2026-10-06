@@ -54,7 +54,7 @@ export function normalizeFilter(value: string | null): "all" | RequestState {
 
 export function filterRequests(items: RequestItem[], filter: "all" | RequestState, query: string, category = "all") {
   const search = query.trim().toLocaleLowerCase("vi");
-  return items.filter((item) => (filter === "all" || item.state === filter || (filter === "processing" && item.state === "new"))
+  return items.filter((item) => (filter === "all" || item.state === filter)
     && (category === "all" || (category === "tickets" ? item.kind === "ticket" : item.kind === "review"))
     && (!search || `${item.code} ${item.title} ${item.type}`.toLocaleLowerCase("vi").includes(search)));
 }

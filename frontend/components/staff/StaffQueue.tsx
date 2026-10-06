@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { RefreshCw, Search, Clock, AlertTriangle, User, FileText, CheckCircle2 } from "lucide-react";
+import { RefreshCw, Search, Clock, AlertTriangle } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { filterTickets, ticketQueueTypeLabel, ticketTypeLabels } from "@/lib/staff-policy";
 import { formatDate } from "@/lib/format-date";
@@ -137,7 +137,7 @@ export function StaffQueue() {
               key={item.label}
               aria-pressed={active}
               onClick={() => change({ status: item.status, priority: item.priority })}
-              className={`inline-flex min-h-10 items-center gap-2.5 rounded-none border px-3.5 py-1.5 text-xs font-medium transition-all ${
+              className={`inline-flex min-h-10 items-center gap-2.5 rounded-sm border px-3.5 py-1.5 text-xs font-medium transition-all ${
                 active
                   ? "border-[#78716C] bg-[#EFEDEB] text-[#1C1917] shadow-sm dark:border-[#A8A29E] dark:bg-[#292524] dark:text-[#FAFAF9]"
                   : "border-[var(--ts-border-subtle)] bg-transparent text-[#57534E] hover:bg-[#F5F5F4] dark:text-[#D6D3D1] dark:hover:bg-[#292524]/60"
@@ -145,7 +145,7 @@ export function StaffQueue() {
             >
               <span>{item.label}</span>
               <span
-                className={`font-mono text-[11px] px-1.5 py-0.5 rounded-none tabular-nums ${
+                className={`font-mono text-[11px] px-1.5 py-0.5 rounded-sm tabular-nums ${
                   active
                     ? "bg-[#D6D3D1] text-[#1C1917] dark:bg-[#44403C] dark:text-[#FAFAF9]"
                     : item.isHigh && item.count > 0
@@ -248,7 +248,7 @@ export function StaffQueue() {
                       id={`queue-ticket-${ticket.id}`}
                       onClick={() => currentUser && rememberQueuePosition(currentUser.id, `queue-ticket-${ticket.id}`)}
                       href={`/tickets/${encodeURIComponent(ticket.id)}`}
-                      className="inline-block font-mono text-xs font-semibold text-[#1C1917] underline decoration-[#A8A29E] underline-offset-2 hover:decoration-[#1C1917] dark:text-[#FAFAF9] dark:decoration-[#78716C] dark:hover:decoration-[#FAFAF9]"
+                      className="inline-block max-w-[200px] break-all line-clamp-2 font-mono text-xs font-semibold text-[#1C1917] underline decoration-[#A8A29E] underline-offset-2 hover:decoration-[#1C1917] dark:text-[#FAFAF9] dark:decoration-[#78716C] dark:hover:decoration-[#FAFAF9]"
                     >
                       {ticket.code}
                     </Link>
@@ -280,7 +280,7 @@ export function StaffQueue() {
                     {ticket.priority === "high" ? (
                       <span
                         title={ticket.priorityReason}
-                        className="inline-flex items-center gap-1.5 rounded-none border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
+                        className="inline-flex items-center gap-1.5 rounded-sm border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
                       >
                         <AlertTriangle className="h-3 w-3 text-amber-600 dark:text-amber-400" />
                         Ưu tiên cao

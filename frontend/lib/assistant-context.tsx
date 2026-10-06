@@ -147,10 +147,16 @@ function useAssistantRuntime(adapter: AssistantAdapter) {
   }
   function show() { ensureContext(); setOpen(true); }
   function openForm(formTask: VinUniTask) {
+    const formTitle = formTask === "certificate" ? "Xin giấy xác nhận" : "Khiếu nại điểm";
     if (isApiMode) {
       const current = chat.getSnapshot().threads.find((thread) => thread.id === chat.getSnapshot().activeId);
       if (current?.apiLocked || current?.apiTicket || current?.apiPendingTicketId) {
         chat.start();
+      }
+      const activeId = chat.getSnapshot().activeId;
+      const activeThread = chat.getSnapshot().threads.find((thread) => thread.id === activeId);
+      if (!activeThread?.title || activeThread.title === "Cuộc trò chuyện mới") {
+        chat.setTitle(activeId, formTitle);
       }
       const starter = formTask === "certificate"
         ? "Tôi muốn xin giấy xác nhận sinh viên để nộp hồ sơ vay vốn ngân hàng, nơi nhận Ngân hàng Chính sách Xã hội, nhận bản điện tử PDF"
@@ -196,6 +202,10 @@ function useAssistantRuntime(adapter: AssistantAdapter) {
     const draftBefore = task ? forms.getSnapshot()[task] : undefined;
     setPendingQuestions(previous => ({ ...previous, [threadId]: question.trim() }));
     setPending(previous => [...previous, threadId]); setError("");
+    const threadBeforeSend = chat.getSnapshot().threads.find(item => item.id === threadId);
+    if (!threadBeforeSend?.title || threadBeforeSend.title === "Cuộc trò chuyện mới") {
+      chat.setTitle(threadId, question.trim().slice(0, 64));
+    }
     try {
       if (isApiMode) {
         const thread = chat.getSnapshot().threads.find(item => item.id === threadId);

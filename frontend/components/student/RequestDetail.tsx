@@ -10,15 +10,37 @@ import type { StoredAttachment } from "@/lib/types";
 import { AttachmentDownload } from "./AttachmentDownload";
 
 export function RequestStatus({ item, localOnly = false, className = "" }: { item: RequestItem; localOnly?: boolean; className?: string }) {
-  const tsStatusStyles: Record<string, string> = {
-    new: "rounded-none border border-[var(--ts-border-medium,#D6D3D1)] bg-[var(--ts-surface,#F5F5F4)] text-[var(--ts-text-secondary,#57534E)] dark:border-[#44403C] dark:bg-[#23201D] dark:text-[#D6D3D1]",
-    processing: "rounded-none border border-[#D6D3D1] bg-[#F5F5F4] text-[#78716C] dark:border-[#57534E] dark:bg-[#292524] dark:text-[#D6D3D1]",
-    supplement: "rounded-none border border-[var(--ts-status-warning-border,#FEF08A)] bg-[var(--ts-status-warning-bg,#FEFCE8)] text-[var(--ts-status-warning-text,#854D0E)] dark:border-[rgba(234,179,8,0.4)] dark:bg-[rgba(113,63,18,0.3)] dark:text-[#FDE047]",
-    completed: "rounded-none border border-[var(--ts-status-success-border,#BBF7D0)] bg-[var(--ts-status-success-bg,#F0FDF4)] text-[var(--ts-status-success-text,#3F6212)] dark:border-[rgba(34,197,94,0.4)] dark:bg-[rgba(20,83,45,0.3)] dark:text-[#86EFAC]",
-    draft: "rounded-none border border-[var(--ts-border-subtle,#E7E5E4)] bg-[var(--ts-surface,#F5F5F4)] text-[var(--ts-text-secondary,#57534E)] dark:border-[#383533] dark:bg-[#292524] dark:text-[#A8A29E]",
+  const label = requestStatusLabel(item, localOnly);
+  const configs: Record<string, { container: string; dot: string; pulse?: boolean }> = {
+    completed: {
+      container: "border border-emerald-300/80 bg-emerald-50/90 text-emerald-900 dark:border-emerald-800/60 dark:bg-emerald-950/40 dark:text-emerald-300",
+      dot: "bg-emerald-600 dark:bg-emerald-400",
+    },
+    supplement: {
+      container: "border border-amber-300 bg-amber-50/90 text-amber-950 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-300",
+      dot: "bg-amber-500",
+      pulse: true,
+    },
+    processing: {
+      container: "border border-blue-200 bg-blue-50/90 text-blue-900 dark:border-blue-800/50 dark:bg-blue-950/40 dark:text-blue-200",
+      dot: "bg-blue-600 dark:bg-blue-400",
+    },
+    new: {
+      container: "border border-[#D6D3D1] bg-[#FAFAF9] text-[#57534E] dark:border-[#44403C] dark:bg-[#23201D] dark:text-[#D6D3D1]",
+      dot: "bg-[#78716C] dark:bg-[#A8A29E]",
+    },
+    draft: {
+      container: "border border-[#E7E5E4] bg-[#F5F5F4] text-[#78716C] dark:border-[#383533] dark:bg-[#201D1A] dark:text-[#A8A29E]",
+      dot: "bg-[#A8A29E]",
+    },
   };
-  const statusStyle = tsStatusStyles[item.state] || "rounded-none border border-[var(--ts-border-subtle,#E7E5E4)] bg-[var(--ts-surface,#F5F5F4)] text-[var(--ts-text-secondary,#57534E)]";
-  return <span className={`inline-flex items-center px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider ${statusStyle} ${className}`}>{requestStatusLabel(item, localOnly)}</span>;
+  const config = configs[item.state] || configs.new;
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-sm px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider ${config.container} ${className}`}>
+      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${config.dot} ${config.pulse ? "animate-pulse" : ""}`} aria-hidden="true" />
+      <span>{label}</span>
+    </span>
+  );
 }
 
 const section = "border-b border-[#E7E5E4] px-5 py-6 last:border-b-0 dark:border-[#292524] sm:px-6";
@@ -85,11 +107,11 @@ export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement
   ];
   const activeStep = item.state === "draft" || item.state === "new" ? 0 : item.state === "completed" ? 2 : 1;
 
-  return <article className="min-w-0 border border-[#E7E5E4] bg-[#FFFFFF] dark:border-[#292524] dark:bg-[#1C1917]" aria-labelledby="request-detail-title">
+  return <article className="min-w-0 rounded-sm border border-[#E7E5E4] bg-[#FFFFFF] dark:border-[#292524] dark:bg-[#1C1917]" aria-labelledby="request-detail-title">
     <div className={section}>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
         <span className="text-[11px] font-semibold uppercase tracking-widest text-[#78716C] dark:text-[#A8A29E]">Chi tiết hồ sơ</span>
-        <button type="button" onClick={onBack} className="inline-flex min-h-11 items-center gap-2 px-2 text-xs font-medium text-[#78716C] transition-colors hover:bg-[#F5F5F4] hover:text-[#1C1917] dark:text-[#A8A29E] dark:hover:bg-[#292524] dark:hover:text-[#FAFAF9]">
+        <button type="button" onClick={onBack} className="inline-flex min-h-11 items-center gap-2 rounded-sm px-2 text-xs font-medium text-[#78716C] transition-colors hover:bg-[#F5F5F4] hover:text-[#1C1917] dark:text-[#A8A29E] dark:hover:bg-[#292524] dark:hover:text-[#FAFAF9]">
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />Quay lại danh sách
         </button>
       </div>
@@ -104,7 +126,7 @@ export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement
         {item.updatedAt && <div><dt className="text-[11px] font-semibold uppercase tracking-wider text-[#78716C] dark:text-[#A8A29E]">Cập nhật gần nhất</dt><dd className="mt-1 text-sm text-[#1C1917] dark:text-[#FAFAF9]">{formatDate(item.updatedAt)}</dd></div>}
       </dl>
       <p className={`mt-4 ${muted}`}>{item.kind === "review" && item.state === "completed" ? "Đã hoàn tất rà soát sơ bộ. Chưa có quyết định công nhận học phần cuối cùng trong hồ sơ này." : item.kind === "ticket" && item.record.status === "pending_officer" ? "Hồ sơ đã chuyển tới bước cán bộ. Chưa có xác nhận bắt đầu xử lý; hãy theo dõi phản hồi." : requestStates[item.state].description}</p>
-      <div className="mt-5 border-l-2 border-[#1C1917] bg-[#F5F5F4]/70 p-4 dark:border-[#FAFAF9] dark:bg-[#23201D]/70">
+      <div className="mt-5 rounded-sm border-l-2 border-[#1C1917] bg-[#F5F5F4]/70 p-4 dark:border-[#FAFAF9] dark:bg-[#23201D]/70">
         <p className="flex items-center gap-2 text-sm font-semibold text-[#1C1917] dark:text-[#FAFAF9]"><Clock3 className="h-4 w-4 text-[#78716C] dark:text-[#A8A29E]" aria-hidden="true" />Việc bạn cần làm</p>
         <p className={`mt-1 ${muted}`}>{item.state === "supplement" ? "Xem yêu cầu bổ sung ngay bên dưới." : item.state === "completed" ? "Đọc kết quả xử lý và phản hồi của cán bộ." : item.state === "draft" ? "Hoàn thiện và nộp hồ sơ để được xử lý." : "Theo dõi phản hồi. Bạn chưa cần nộp lại hồ sơ này."}</p>
         {item.state !== "draft" && <a className={`${secondaryButton} -ml-3 mt-1 text-[#78716C] dark:text-[#A8A29E] hover:text-[#1C1917] dark:hover:text-[#FAFAF9]`} href={pending ? "#supplement-title" : item.state === "completed" ? "#result-title" : "#latest-reply-title"}>{pending ? "Xem yêu cầu bổ sung" : item.state === "completed" ? "Xem kết quả xử lý" : "Xem phản hồi gần nhất"}</a>}
@@ -113,8 +135,8 @@ export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement
       </div>
     </div>
 
-    {notice && <p role="status" className="rounded-none border border-[#78716C] bg-[#EFEDEB] p-4 text-sm leading-relaxed text-[#1C1917] dark:border-[#A8A29E] dark:bg-[#292524] dark:text-[#FAFAF9]">{notice}</p>}
-    {error && <p role="alert" className="rounded-none border border-red-300 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">{error}</p>}
+    {notice && <p role="status" className="rounded-sm border border-[#78716C] bg-[#EFEDEB] p-4 text-sm leading-relaxed text-[#1C1917] dark:border-[#A8A29E] dark:bg-[#292524] dark:text-[#FAFAF9]">{notice}</p>}
+    {error && <p role="alert" className="rounded-sm border border-red-300 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">{error}</p>}
 
     {pending && <section aria-labelledby="supplement-title" className={`${section} border-amber-300 dark:border-amber-700`}>
       <h3 id="supplement-title" tabIndex={-1} className="text-base font-semibold text-[#1C1917] dark:text-[#FAFAF9]">Yêu cầu bổ sung của cán bộ</h3>
@@ -126,11 +148,20 @@ export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement
         <p id="supplement-limit" className={muted}>{localOnly ? "Ghi chú và tệp bổ sung được lưu cùng hồ sơ trên thiết bị này." : "Chưa kết nối nơi tiếp nhận tệp. Liên hệ cán bộ phụ trách theo yêu cầu bên trên."}</p>
         {localOnly && <>
           <div><label htmlFor="supplement-file" className="mb-2 block text-sm font-semibold text-[#57534E] dark:text-[#D6D3D1]">Chọn tệp bổ sung (bắt buộc)</label>
-            <input ref={fileInput} id="supplement-file" type="file" accept=".pdf,.png,.jpg,.jpeg" required disabled={busy} aria-describedby={`supplement-file-hint supplement-limit${fileError ? " supplement-file-error" : ""}`} aria-invalid={Boolean(fileError)} className={`${fieldClass} text-sm file:mr-3 file:min-h-11 file:rounded-none file:border-0 file:bg-[#E7E5E4] file:px-3 file:text-[#1C1917] dark:file:bg-[#292524] dark:file:text-[#FAFAF9]`} onChange={(event) => {
-              const selected = event.target.files?.[0] || null;
-              const validation = validateSupplementFile(selected);
-              setFile(validation ? null : selected); setFileError(validation);
-            }} />
+            <div className="flex flex-wrap items-center gap-3">
+              <input ref={fileInput} id="supplement-file" type="file" accept=".pdf,.png,.jpg,.jpeg" required disabled={busy} aria-describedby={`supplement-file-hint supplement-limit${fileError ? " supplement-file-error" : ""}`} aria-invalid={Boolean(fileError)} className="sr-only" onChange={(event) => {
+                const selected = event.target.files?.[0] || null;
+                const validation = validateSupplementFile(selected);
+                setFile(validation ? null : selected); setFileError(validation);
+              }} />
+              <button type="button" disabled={busy} onClick={() => fileInput.current?.click()} className={`${secondaryButton} rounded-sm`}>
+                <Paperclip className="h-4 w-4" aria-hidden="true" />
+                <span>{file ? "Đổi tệp khác" : "Chọn tệp"}</span>
+              </button>
+              <span className="text-sm text-[#57534E] dark:text-[#D6D3D1] break-all">
+                {file ? file.name : "Chưa chọn tệp"}
+              </span>
+            </div>
             <p id="supplement-file-hint" className={`mt-2 ${muted}`}>1 tệp PDF/PNG/JPG, tối đa 10MB. Kiểm tra đúng tài liệu được yêu cầu trước khi xác nhận.</p>
             {fileError && <p id="supplement-file-error" role="alert" className="mt-2 text-sm text-red-700 dark:text-red-300">{fileError}</p>}
           </div>
@@ -181,7 +212,7 @@ export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement
     <section className={section} aria-labelledby="progress-title">
       <h3 id="progress-title" className="text-base font-semibold text-[#1C1917] dark:text-[#FAFAF9]">Tiến trình hồ sơ</h3>
       <ol className="mt-4 space-y-3">{stages.map((stage, index) => <li key={stage} aria-current={index === activeStep ? "step" : undefined} className="flex items-start gap-3 text-sm">
-        <span aria-hidden="true" className={`flex h-8 w-8 shrink-0 items-center justify-center border text-xs font-semibold ${index <= activeStep ? "border-[#1C1917] bg-[#1C1917] text-[#FAFAF9] dark:border-[#FAFAF9] dark:bg-[#FAFAF9] dark:text-[#1C1917]" : "border-[#E7E5E4] bg-[#FAFAF9] text-[#78716C] dark:border-[#2E2A27] dark:bg-[#201D1A] dark:text-[#A8A29E]"}`}>{index < activeStep ? <Check className="h-4 w-4" /> : index + 1}</span>
+        <span aria-hidden="true" className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border text-xs font-semibold ${index <= activeStep ? "border-[#1C1917] bg-[#1C1917] text-[#FAFAF9] dark:border-[#FAFAF9] dark:bg-[#FAFAF9] dark:text-[#1C1917]" : "border-[#E7E5E4] bg-[#FAFAF9] text-[#78716C] dark:border-[#2E2A27] dark:bg-[#201D1A] dark:text-[#A8A29E]"}`}>{index < activeStep ? <Check className="h-4 w-4" /> : index + 1}</span>
         <span className="pt-1 font-medium text-[#1C1917] dark:text-[#FAFAF9]">{stage}<span className={`ml-2 font-normal ${muted}`}>{index < activeStep ? "· Đã qua" : index === activeStep ? "· Hiện tại" : "· Chưa có xác nhận"}</span></span>
       </li>)}</ol>
       {item.kind === "review" && item.state === "completed" && <p className={`mt-3 ${muted}`}>Quyết định công nhận của Hội đồng: chưa có thông tin.</p>}
@@ -190,7 +221,7 @@ export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement
     <section className={section} aria-labelledby="conversation-title">
       <h3 id="conversation-title" className="text-base font-semibold text-[#1C1917] dark:text-[#FAFAF9]">{item.kind === "ticket" ? ticketThreadTitle(item.record.messages) : "Trao đổi với cán bộ"}</h3>
       {item.kind === "ticket" ? <>
-        <div className="mt-4 space-y-3">{item.record.messages.filter((m) => m.content.trim()).map((m) => <div key={m.id} className={`rounded-none border p-4 ${m.senderRole === "student" ? "border-[#E7E5E4] bg-[#F5F5F4]/70 dark:border-[#292524] dark:bg-[#201D1A]/70" : "border-[#D6D3D1] bg-[#FFFFFF] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9)] dark:border-[#383533] dark:bg-[#1C1917]"}`}>
+        <div className="mt-4 space-y-3">{item.record.messages.filter((m) => m.content.trim()).map((m) => <div key={m.id} className={`rounded-sm border p-4 ${m.senderRole === "student" ? "border-[#E7E5E4] bg-[#F5F5F4]/70 dark:border-[#292524] dark:bg-[#201D1A]/70" : "border-[#D6D3D1] bg-[#FFFFFF] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9)] dark:border-[#383533] dark:bg-[#1C1917]"}`}>
           <div className="flex items-center justify-between gap-2">
             <p className="font-serif text-sm font-semibold text-[#1C1917] dark:text-[#FAFAF9]">{ticketThreadSenderLabel(m)}</p>
             <span className="text-[11px] tabular-nums text-[#78716C] dark:text-[#A8A29E]">{formatDate(m.timestamp)}</span>
@@ -206,7 +237,7 @@ export function RequestDetail({ item, localOnly, onBack, onMessage, onSupplement
           <button type="submit" disabled={busy || !text.trim()} className={`${primaryButton} w-full sm:w-auto`}>{busy ? "Đang lưu…" : localOnly ? "Lưu tin nhắn" : "Gửi tin nhắn"}</button>
         </form>
       </> : <>
-        {item.record.supplementRequests.filter((r) => r.status === "responded").map((r) => <div key={r.id} className="mt-5 border-l-2 border-[#1C1917] bg-[#F5F5F4]/70 p-4 dark:border-[#FAFAF9] dark:bg-[#201D1A]/70">
+        {item.record.supplementRequests.filter((r) => r.status === "responded").map((r) => <div key={r.id} className="mt-5 rounded-sm border-l-2 border-[#1C1917] bg-[#F5F5F4]/70 p-4 dark:border-[#FAFAF9] dark:bg-[#201D1A]/70">
           <p className="font-serif text-sm font-semibold text-[#1C1917] dark:text-[#FAFAF9]">Cán bộ · {r.subject}</p><p className={`mt-1 ${muted}`}>{formatDate(r.sentAt || r.createdAt)}</p>
           <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-[#57534E] dark:text-[#D6D3D1]">{r.messageBody}</p>
           {r.studentReply && <div className="mt-3 border-t border-[#E7E5E4] pt-3 dark:border-[#292524]"><p className="font-serif text-sm font-semibold text-[#1C1917] dark:text-[#FAFAF9]">Bạn · {formatDate(r.studentReply.submittedAt)}</p><p className="mt-2 whitespace-pre-wrap break-words text-sm text-[#57534E] dark:text-[#D6D3D1]">{r.studentReply.note}</p></div>}
