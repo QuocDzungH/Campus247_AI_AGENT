@@ -84,7 +84,7 @@ function StatusIndicator({ item, localOnly }: { item: RequestItem; localOnly: bo
   const label = requestStatusLabel(item, localOnly);
   if (item.state === "completed") {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-none border border-emerald-300/80 bg-emerald-50/90 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-emerald-900 dark:border-emerald-800/60 dark:bg-emerald-950/40 dark:text-emerald-300">
+      <span className="inline-flex items-center gap-1.5 rounded-sm border border-emerald-300/80 bg-emerald-50/90 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-emerald-900 dark:border-emerald-800/60 dark:bg-emerald-950/40 dark:text-emerald-300">
         <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400" />
         <span>{label}</span>
       </span>
@@ -92,7 +92,7 @@ function StatusIndicator({ item, localOnly }: { item: RequestItem; localOnly: bo
   }
   if (item.state === "supplement") {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-none border border-amber-300 bg-amber-50/90 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-amber-950 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-300">
+      <span className="inline-flex items-center gap-1.5 rounded-sm border border-amber-300 bg-amber-50/90 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-amber-950 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-300">
         <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
         <span>{label}</span>
       </span>
@@ -100,14 +100,14 @@ function StatusIndicator({ item, localOnly }: { item: RequestItem; localOnly: bo
   }
   if (item.state === "processing") {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-none border border-[#D6D3D1] bg-[#F5F5F4] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-[#57534E] dark:border-[#44403C] dark:bg-[#23201D] dark:text-[#D6D3D1]">
-        <span className="h-1.5 w-1.5 rounded-full bg-[#78716C]" />
+      <span className="inline-flex items-center gap-1.5 rounded-sm border border-blue-200 bg-blue-50/90 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-blue-900 dark:border-blue-800/50 dark:bg-blue-950/40 dark:text-blue-200">
+        <span className="h-1.5 w-1.5 rounded-full bg-blue-600 dark:bg-blue-400" />
         <span>{label}</span>
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-none border border-[#D6D3D1] bg-[#FAFAF9] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-[#78716C] dark:border-[#44403C] dark:bg-[#1C1917] dark:text-[#A8A29E]">
+    <span className="inline-flex items-center gap-1.5 rounded-sm border border-[#D6D3D1] bg-[#FAFAF9] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-[#78716C] dark:border-[#44403C] dark:bg-[#1C1917] dark:text-[#A8A29E]">
       <span className="h-1.5 w-1.5 rounded-full bg-[#A8A29E]" />
       <span>{label}</span>
     </span>
@@ -187,7 +187,7 @@ export default function StudentHomePage() {
       {supplements.length > 0 && (
         <section
           aria-labelledby="supplements-title"
-          className="rounded-none border border-amber-300 bg-amber-50/80 p-5 dark:border-amber-900/60 dark:bg-amber-950/25"
+          className="rounded-sm border border-amber-300 bg-amber-50/80 p-5 dark:border-amber-900/60 dark:bg-amber-950/25"
         >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h2
@@ -196,7 +196,7 @@ export default function StudentHomePage() {
             >
               <CircleAlert className="h-4 w-4 text-amber-700 dark:text-amber-400" aria-hidden="true" />
               <span>Cần bổ sung hồ sơ</span>
-              <span className="rounded-none border border-amber-400/80 bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900 dark:border-amber-800 dark:bg-amber-900/50 dark:text-amber-200">
+              <span className="rounded-sm border border-amber-400/80 bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900 dark:border-amber-800 dark:bg-amber-900/50 dark:text-amber-200">
                 {supplements.length}
               </span>
             </h2>
@@ -216,7 +216,7 @@ export default function StudentHomePage() {
                     {item.code}
                   </p>
                 </div>
-                <span className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-none border border-amber-400/80 bg-amber-100/90 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider text-amber-950 transition-colors group-hover:bg-amber-200 dark:border-amber-700 dark:bg-amber-900/60 dark:text-amber-100 dark:group-hover:bg-amber-900">
+                <span className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-sm border border-amber-400/80 bg-amber-100/90 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider text-amber-950 transition-colors group-hover:bg-amber-200 dark:border-amber-700 dark:bg-amber-900/60 dark:text-amber-100 dark:group-hover:bg-amber-900">
                   <span>Bổ sung ngay</span>
                   <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
                 </span>
@@ -232,7 +232,7 @@ export default function StudentHomePage() {
           {/* Left: Greeting & Search */}
           <div className="lg:col-span-7">
             <div className="flex items-center gap-2 mb-3">
-              <span className="inline-flex items-center gap-1.5 rounded-none border border-[#E7E5E4] bg-[#FFFFFF] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-widest text-[#78716C] dark:border-[#2E2A27] dark:bg-[#1C1917] dark:text-[#A8A29E]">
+              <span className="inline-flex items-center gap-1.5 rounded-sm border border-[#E7E5E4] bg-[#FFFFFF] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-widest text-[#78716C] dark:border-[#2E2A27] dark:bg-[#1C1917] dark:text-[#A8A29E]">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                 Chào {firstName} · Cổng dịch vụ sinh viên HK I 2025–2026
               </span>
@@ -261,11 +261,11 @@ export default function StudentHomePage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Tìm thủ tục: Xin hoãn NVQS, bảng điểm, phúc khảo bài thi..."
-                  className="w-full rounded-none border border-[#D6D3D1] bg-[#FFFFFF] py-3 pl-10 pr-24 text-sm text-[#1C1917] placeholder-[#78716C] transition-colors focus:border-[#78716C] focus:outline-none focus:ring-1 focus:ring-[#78716C] dark:border-[#44403C] dark:bg-[#1C1917] dark:text-[#FAFAF9] dark:placeholder-[#A8A29E] dark:focus:border-[#A8A29E] dark:focus:ring-[#A8A29E]"
+                  className="w-full rounded-sm border border-[#D6D3D1] bg-[#FFFFFF] py-3 pl-10 pr-24 text-sm text-[#1C1917] placeholder-[#78716C] transition-colors focus:border-[#78716C] focus:outline-none focus:ring-1 focus:ring-[#78716C] dark:border-[#44403C] dark:bg-[#1C1917] dark:text-[#FAFAF9] dark:placeholder-[#A8A29E] dark:focus:border-[#A8A29E] dark:focus:ring-[#A8A29E]"
                 />
                 <button
                   type="submit"
-                  className="absolute right-1.5 inline-flex min-h-9 items-center gap-1 rounded-none border border-[#78716C] bg-[#1C1917] px-3 text-xs font-semibold uppercase tracking-wider text-[#FAFAF9] transition-colors hover:bg-[#57534E] dark:border-[#A8A29E] dark:bg-[#FAFAF9] dark:text-[#1C1917] dark:hover:bg-[#E7E5E4]"
+                  className="absolute right-1.5 inline-flex min-h-9 items-center gap-1 rounded-sm border border-[#78716C] bg-[#1C1917] px-3 text-xs font-semibold uppercase tracking-wider text-[#FAFAF9] transition-colors hover:bg-[#57534E] dark:border-[#A8A29E] dark:bg-[#FAFAF9] dark:text-[#1C1917] dark:hover:bg-[#E7E5E4]"
                 >
                   <span>Tra cứu</span>
                   <ArrowRight className="h-3 w-3" aria-hidden="true" />
@@ -281,7 +281,7 @@ export default function StudentHomePage() {
                   <Link
                     key={chip.label}
                     href={chip.href}
-                    className="rounded-none border border-[#E7E5E4] bg-[#FFFFFF] px-2.5 py-1 text-xs text-[#57534E] transition-colors hover:border-[#78716C] hover:text-[#1C1917] dark:border-[#2E2A27] dark:bg-[#1C1917] dark:text-[#D6D3D1] dark:hover:border-[#A8A29E] dark:hover:text-[#FAFAF9]"
+                    className="rounded-sm border border-[#E7E5E4] bg-[#FFFFFF] px-2.5 py-1 text-xs text-[#57534E] transition-colors hover:border-[#78716C] hover:text-[#1C1917] dark:border-[#2E2A27] dark:bg-[#1C1917] dark:text-[#D6D3D1] dark:hover:border-[#A8A29E] dark:hover:text-[#FAFAF9]"
                   >
                     {chip.label}
                   </Link>
@@ -292,7 +292,7 @@ export default function StudentHomePage() {
 
           {/* Right: Academic Passport / Cockpit Card */}
           <div className="lg:col-span-5">
-            <div className="relative rounded-none border border-[#E7E5E4] bg-[#FFFFFF] p-6 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9)] dark:border-[#2E2A27] dark:bg-[#1C1917] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]">
+            <div className="relative rounded-sm border border-[#E7E5E4] bg-[#FFFFFF] p-6 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9)] dark:border-[#2E2A27] dark:bg-[#1C1917] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]">
               {/* Card Header */}
               <div className="flex items-center justify-between border-b border-[#F5F5F4] pb-3 dark:border-[#292524]">
                 <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[#78716C] dark:text-[#A8A29E]">
@@ -315,13 +315,13 @@ export default function StudentHomePage() {
                       MSSV: <span className="font-semibold text-[#1C1917] dark:text-[#FAFAF9]">{currentUser?.mssv || "20210018"}</span>
                     </p>
                   </div>
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-none border border-[#E7E5E4] bg-[#F5F5F4] font-serif text-sm font-bold text-[#57534E] dark:border-[#383533] dark:bg-[#292524] dark:text-[#D6D3D1]">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border border-[#E7E5E4] bg-[#F5F5F4] font-serif text-sm font-bold text-[#57534E] dark:border-[#383533] dark:bg-[#292524] dark:text-[#D6D3D1]">
                     {studentInitials}
                   </span>
                 </div>
 
                 <div className="mt-3 flex flex-wrap items-center gap-1.5 text-xs text-[#57534E] dark:text-[#D6D3D1]">
-                  <span className="rounded-none border border-[#E7E5E4] bg-[#F5F5F4] px-2 py-0.5 dark:border-[#383533] dark:bg-[#292524]">
+                  <span className="rounded-sm border border-[#E7E5E4] bg-[#F5F5F4] px-2 py-0.5 dark:border-[#383533] dark:bg-[#292524]">
                     {currentUser?.major || "Kỹ thuật Phần mềm"}
                   </span>
                   <span className="text-[#A8A29E]">·</span>
@@ -352,7 +352,7 @@ export default function StudentHomePage() {
 
               {/* Quick Status Metrics Strip */}
               <div className="mt-4 grid grid-cols-3 gap-2 border-t border-[#F5F5F4] pt-4 dark:border-[#292524]">
-                <div className="rounded-none bg-[#FAFAF9] p-2.5 text-center dark:bg-[#141210]">
+                <div className="rounded-sm bg-[#FAFAF9] p-2.5 text-center dark:bg-[#141210]">
                   <div className="font-mono text-lg font-bold text-[#1C1917] dark:text-[#FAFAF9]">
                     {activeTickets.length}
                   </div>
@@ -360,7 +360,7 @@ export default function StudentHomePage() {
                     Đang xử lý
                   </div>
                 </div>
-                <div className="rounded-none bg-[#FAFAF9] p-2.5 text-center dark:bg-[#141210]">
+                <div className="rounded-sm bg-[#FAFAF9] p-2.5 text-center dark:bg-[#141210]">
                   <div
                     className={`font-mono text-lg font-bold ${
                       supplements.length > 0 ? "text-amber-800 dark:text-amber-400" : "text-[#1C1917] dark:text-[#FAFAF9]"
@@ -372,7 +372,7 @@ export default function StudentHomePage() {
                     Cần bổ sung
                   </div>
                 </div>
-                <div className="rounded-none bg-[#FAFAF9] p-2.5 text-center dark:bg-[#141210]">
+                <div className="rounded-sm bg-[#FAFAF9] p-2.5 text-center dark:bg-[#141210]">
                   <div className="font-mono text-lg font-bold text-emerald-800 dark:text-emerald-400">
                     {resolvedTickets.length}
                   </div>
@@ -393,14 +393,14 @@ export default function StudentHomePage() {
               <Link
                 key={task.href}
                 href={task.href}
-                className="group relative flex flex-col justify-between rounded-none border border-[#E7E5E4] bg-[#FFFFFF] p-6 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9)] transition-all duration-200 hover:border-[#78716C] hover:bg-[#FAF9F7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78716C] focus-visible:ring-offset-2 dark:border-[#2E2A27] dark:bg-[#1C1917] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] dark:hover:border-[#A8A29E] dark:hover:bg-[#23201D] dark:focus-visible:ring-[#A8A29E] dark:focus-visible:ring-offset-[#141210]"
+                className="group relative flex flex-col justify-between rounded-sm border border-[#E7E5E4] bg-[#FFFFFF] p-6 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9)] transition-all duration-200 hover:border-[#78716C] hover:bg-[#FAF9F7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78716C] focus-visible:ring-offset-2 dark:border-[#2E2A27] dark:bg-[#1C1917] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] dark:hover:border-[#A8A29E] dark:hover:bg-[#23201D] dark:focus-visible:ring-[#A8A29E] dark:focus-visible:ring-offset-[#141210]"
               >
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-none border border-[#D6D3D1] bg-[#F5F5F4] text-[#57534E] transition-all group-hover:border-[#78716C] group-hover:bg-[#1C1917] group-hover:text-[#FAFAF9] dark:border-[#44403C] dark:bg-[#292524] dark:text-[#D6D3D1] dark:group-hover:border-[#A8A29E] dark:group-hover:bg-[#FAFAF9] dark:group-hover:text-[#1C1917]">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm border border-[#D6D3D1] bg-[#F5F5F4] text-[#57534E] transition-all group-hover:border-[#78716C] group-hover:bg-[#1C1917] group-hover:text-[#FAFAF9] dark:border-[#44403C] dark:bg-[#292524] dark:text-[#D6D3D1] dark:group-hover:border-[#A8A29E] dark:group-hover:bg-[#FAFAF9] dark:group-hover:text-[#1C1917]">
                       <Icon className="h-5 w-5" strokeWidth={1.8} aria-hidden="true" />
                     </span>
-                    <span className="rounded-none border border-[#E7E5E4] bg-[#FAFAF9] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#78716C] dark:border-[#2E2A27] dark:bg-[#141210] dark:text-[#A8A29E]">
+                    <span className="rounded-sm border border-[#E7E5E4] bg-[#FAFAF9] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#78716C] dark:border-[#2E2A27] dark:bg-[#141210] dark:text-[#A8A29E]">
                       {task.badge}
                     </span>
                   </div>
@@ -448,7 +448,7 @@ export default function StudentHomePage() {
               >
                 Tiếp tục việc đang làm
               </h2>
-              <span className="rounded-none border border-[#D6D3D1] bg-[#F5F5F4] px-2 py-0.5 text-xs font-medium text-[#57534E] dark:border-[#44403C] dark:bg-[#292524] dark:text-[#D6D3D1]">
+              <span className="rounded-sm border border-[#D6D3D1] bg-[#F5F5F4] px-2 py-0.5 text-xs font-medium text-[#57534E] dark:border-[#44403C] dark:bg-[#292524] dark:text-[#D6D3D1]">
                 {drafts.length} bản nháp
               </span>
             </div>
@@ -462,7 +462,7 @@ export default function StudentHomePage() {
                 className="group flex min-h-16 items-center justify-between gap-4 p-4 sm:p-5 transition-colors hover:bg-[#FAF9F7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78716C] dark:hover:bg-[#23201D] dark:focus-visible:ring-[#A8A29E]"
               >
                 <div className="flex items-center gap-3.5 min-w-0">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-none border border-[#E7E5E4] bg-[#F5F5F4] text-[#78716C] dark:border-[#383533] dark:bg-[#292524] dark:text-[#A8A29E]">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-[#E7E5E4] bg-[#F5F5F4] text-[#78716C] dark:border-[#383533] dark:bg-[#292524] dark:text-[#A8A29E]">
                     <Clock className="h-4 w-4" />
                   </span>
                   <div className="min-w-0">
@@ -474,7 +474,7 @@ export default function StudentHomePage() {
                     </p>
                   </div>
                 </div>
-                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-none border border-[#D6D3D1] bg-transparent px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#78716C] transition-colors group-hover:border-[#78716C] group-hover:bg-[#1C1917] group-hover:text-[#FAFAF9] dark:border-[#44403C] dark:text-[#D6D3D1] dark:group-hover:border-[#A8A29E] dark:group-hover:bg-[#FAFAF9] dark:group-hover:text-[#1C1917]">
+                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-sm border border-[#D6D3D1] bg-transparent px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#78716C] transition-colors group-hover:border-[#78716C] group-hover:bg-[#1C1917] group-hover:text-[#FAFAF9] dark:border-[#44403C] dark:text-[#D6D3D1] dark:group-hover:border-[#A8A29E] dark:group-hover:bg-[#FAFAF9] dark:group-hover:text-[#1C1917]">
                   <span>Tiếp tục</span>
                   <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
                 </span>
@@ -495,7 +495,7 @@ export default function StudentHomePage() {
               Hồ sơ gần đây
             </h2>
             {activeTickets.length > 0 && (
-              <span className="rounded-none border border-[#D6D3D1] bg-[#F5F5F4] px-2.5 py-0.5 text-xs font-medium text-[#57534E] dark:border-[#44403C] dark:bg-[#292524] dark:text-[#D6D3D1]">
+              <span className="rounded-sm border border-[#D6D3D1] bg-[#F5F5F4] px-2.5 py-0.5 text-xs font-medium text-[#57534E] dark:border-[#44403C] dark:bg-[#292524] dark:text-[#D6D3D1]">
                 {activeTickets.length} đang xử lý
               </span>
             )}
@@ -510,7 +510,7 @@ export default function StudentHomePage() {
         </div>
 
         {recentRequests.length === 0 ? (
-          <div className="rounded-none border border-dashed border-[#D6D3D1] bg-[#FFFFFF] px-6 py-12 text-center dark:border-[#44403C] dark:bg-[#1C1917]">
+          <div className="rounded-sm border border-dashed border-[#D6D3D1] bg-[#FFFFFF] px-6 py-12 text-center dark:border-[#44403C] dark:bg-[#1C1917]">
             <ClipboardList className="mx-auto mb-3 h-8 w-8 text-[#78716C] dark:text-[#A8A29E]" aria-hidden="true" />
             <p className="text-base font-medium text-[#1C1917] dark:text-[#FAFAF9]">
               Bạn chưa gửi hồ sơ nào
@@ -537,7 +537,7 @@ export default function StudentHomePage() {
                   className="group flex min-h-[76px] items-center justify-between gap-4 p-4 transition-all duration-150 hover:bg-[#FAF9F7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78716C] dark:hover:bg-[#23201D] dark:focus-visible:ring-[#A8A29E]"
                 >
                   <div className="flex min-w-0 items-center gap-4">
-                    <span className="hidden sm:flex h-11 w-11 shrink-0 items-center justify-center rounded-none border border-[#E7E5E4] bg-[#F5F5F4] text-[#57534E] transition-colors group-hover:border-[#78716C] group-hover:bg-[#1C1917] group-hover:text-[#FAFAF9] dark:border-[#383533] dark:bg-[#292524] dark:text-[#D6D3D1] dark:group-hover:border-[#A8A29E] dark:group-hover:bg-[#FAFAF9] dark:group-hover:text-[#1C1917]">
+                    <span className="hidden sm:flex h-11 w-11 shrink-0 items-center justify-center rounded-sm border border-[#E7E5E4] bg-[#F5F5F4] text-[#57534E] transition-colors group-hover:border-[#78716C] group-hover:bg-[#1C1917] group-hover:text-[#FAFAF9] dark:border-[#383533] dark:bg-[#292524] dark:text-[#D6D3D1] dark:group-hover:border-[#A8A29E] dark:group-hover:bg-[#FAFAF9] dark:group-hover:text-[#1C1917]">
                       <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
                     </span>
                     <div className="min-w-0 flex-1">
@@ -545,7 +545,7 @@ export default function StudentHomePage() {
                         {cleanTitle}
                       </p>
                       <p className="mt-1 font-mono text-xs text-[#78716C] dark:text-[#A8A29E]">
-                        <span className="font-semibold text-[#1C1917] dark:text-[#FAFAF9]">{item.code}</span>
+                        <span className="break-all font-semibold text-[#1C1917] dark:text-[#FAFAF9]">{item.code}</span>
                         {formattedDate && <span> · {formattedDate}</span>}
                       </p>
                     </div>
@@ -563,10 +563,10 @@ export default function StudentHomePage() {
       </section>
 
       {/* ── Institutional Help Strip ── */}
-      <section className="rounded-none border border-[#E7E5E4] bg-[#F5F5F4]/60 p-5 text-xs text-[#78716C] dark:border-[#2E2A27] dark:bg-[#1C1917]/60 dark:text-[#A8A29E]">
+      <section className="rounded-sm border border-[#E7E5E4] bg-[#F5F5F4]/60 p-5 text-xs text-[#78716C] dark:border-[#2E2A27] dark:bg-[#1C1917]/60 dark:text-[#A8A29E]">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-none border border-[#D6D3D1] bg-[#FFFFFF] text-[#57534E] dark:border-[#44403C] dark:bg-[#23201D] dark:text-[#D6D3D1]">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-[#D6D3D1] bg-[#FFFFFF] text-[#57534E] dark:border-[#44403C] dark:bg-[#23201D] dark:text-[#D6D3D1]">
               <Building2 className="h-4.5 w-4.5" />
             </div>
             <div>
@@ -579,10 +579,10 @@ export default function StudentHomePage() {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3 sm:justify-end text-[11px]">
-            <span className="rounded-none border border-[#D6D3D1] bg-[#FFFFFF] px-2.5 py-1 font-mono text-[#57534E] dark:border-[#44403C] dark:bg-[#23201D] dark:text-[#D6D3D1]">
+            <span className="rounded-sm border border-[#D6D3D1] bg-[#FFFFFF] px-2.5 py-1 font-mono text-[#57534E] dark:border-[#44403C] dark:bg-[#23201D] dark:text-[#D6D3D1]">
               Hotline: (024) 7108 9779
             </span>
-            <span className="rounded-none border border-[#D6D3D1] bg-[#FFFFFF] px-2.5 py-1 font-mono text-[#57534E] dark:border-[#44403C] dark:bg-[#23201D] dark:text-[#D6D3D1]">
+            <span className="rounded-sm border border-[#D6D3D1] bg-[#FFFFFF] px-2.5 py-1 font-mono text-[#57534E] dark:border-[#44403C] dark:bg-[#23201D] dark:text-[#D6D3D1]">
               ctsv@vinuni.edu.vn
             </span>
           </div>

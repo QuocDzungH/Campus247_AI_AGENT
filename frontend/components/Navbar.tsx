@@ -68,10 +68,10 @@ export function Navbar() {
       <div className="mx-auto flex h-16 w-full max-w-[1600px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         {/* ── Left: Brand ── */}
         <Link href={isStudent ? "/student" : isAdmin ? "/admin" : "/dashboard"} className="flex min-h-11 items-center gap-2.5 shrink-0 group">
-          <div className="flex h-8 w-8 items-center justify-center rounded-none bg-[#78716C] text-[#FAFAF9] transition-all group-hover:bg-[#57534E] dark:bg-[#A8A29E] dark:text-[#1C1917]">
+          <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-[#78716C] text-[#FAFAF9] transition-all group-hover:bg-[#57534E] dark:bg-[#A8A29E] dark:text-[#1C1917]">
             <GraduationCap className="h-4.5 w-4.5" />
           </div>
-          <span className="font-serif text-[17px] font-bold tracking-tight text-[var(--ts-text-primary)]">
+          <span className="font-serif text-[17px] font-bold tracking-tight text-[var(--ts-text-primary)] select-none">
             Campus 24/7
           </span>
         </Link>
@@ -91,8 +91,8 @@ export function Navbar() {
                 aria-current={isActive ? "page" : undefined}
                 className={`flex min-h-11 items-center gap-2 px-3.5 py-2 text-sm font-medium transition-colors ${
                   isActive
-                    ? "rounded-none border-b-2 border-[#78716C] bg-[var(--ts-surface)] font-semibold text-[var(--ts-text-primary)] dark:border-[#A8A29E]"
-                    : "rounded-none text-[var(--ts-text-secondary)] hover:bg-[var(--ts-surface)] hover:text-[var(--ts-text-primary)]"
+                    ? "rounded-sm border-b-2 border-[#78716C] bg-[var(--ts-surface)] font-semibold text-[var(--ts-text-primary)] dark:border-[#A8A29E]"
+                    : "rounded-sm text-[var(--ts-text-secondary)] hover:bg-[var(--ts-surface)] hover:text-[var(--ts-text-primary)]"
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -103,7 +103,7 @@ export function Navbar() {
         </nav>
 
         {/* ── Right: Compact utilities ── */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {/* User profile button */}
           <div className="relative" onBlur={(event) => {
             if (!event.currentTarget.contains(event.relatedTarget)) setUserDropdownOpen(false);
@@ -115,10 +115,10 @@ export function Navbar() {
               aria-controls="account-panel"
               aria-label={`Tài khoản ${currentUser.name}`}
               onClick={() => { setUserDropdownOpen(!userDropdownOpen); setMobileMenuOpen(false); }}
-              className="relative z-50 flex min-h-11 items-center gap-2 rounded-none border border-[var(--ts-border-medium)] px-2 py-1.5 text-[var(--ts-text-primary)] transition-colors hover:bg-[var(--ts-surface)]"
+              className="relative z-50 flex min-h-11 items-center gap-2 rounded-sm border border-[var(--ts-border-medium)] px-2.5 py-1.5 text-[var(--ts-text-primary)] transition-colors hover:bg-[var(--ts-surface)]"
             >
               <div
-                className="flex h-7 w-7 items-center justify-center rounded-none bg-[#78716C] text-[11px] font-bold text-[#FAFAF9] dark:bg-[#A8A29E] dark:text-[#1C1917]"
+                className="flex h-7 w-7 items-center justify-center rounded-sm bg-[#78716C] text-[11px] font-bold text-[#FAFAF9] dark:bg-[#A8A29E] dark:text-[#1C1917]"
               >
                 {isStudent ? "SV" : isAdmin ? "AD" : "CB"}
               </div>
@@ -141,9 +141,9 @@ export function Navbar() {
                   className="fixed inset-0 z-40"
                   onClick={() => setUserDropdownOpen(false)}
                 />
-                <div id="account-panel" ref={accountPanelRef} role="region" aria-label="Tùy chọn tài khoản" className="fixed left-4 right-4 top-[72px] z-50 max-h-[calc(100dvh-88px)] overflow-y-auto overscroll-contain rounded-none border border-[var(--ts-border-subtle)] bg-[var(--ts-bg)] p-2 text-[13px] text-[var(--ts-text-primary)] shadow-none sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80">
+                <div id="account-panel" ref={accountPanelRef} role="region" aria-label="Tùy chọn tài khoản" className="fixed left-4 right-4 top-[72px] z-50 max-h-[calc(100dvh-88px)] overflow-y-auto overscroll-contain rounded-sm border border-[var(--ts-border-subtle)] bg-[var(--ts-bg)] p-2 text-[13px] text-[var(--ts-text-primary)] shadow-sm sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80">
                   {/* Current user */}
-                  <div className="mb-2 rounded-none border border-[var(--ts-border-subtle)] bg-[var(--ts-surface)] p-3">
+                  <div className="mb-2 rounded-sm border border-[var(--ts-border-subtle)] bg-[var(--ts-surface)] p-3">
                     <div className="mb-2 text-xs font-medium text-[var(--ts-text-secondary)]">Tài khoản đang đăng nhập</div>
                     <div className="break-words font-serif text-[15px] font-semibold text-[var(--ts-text-primary)]">
                       {currentUser.name}
@@ -172,7 +172,7 @@ export function Navbar() {
                         logout();
                         setUserDropdownOpen(false);
                       }}
-                      className="flex min-h-11 w-full items-center gap-2 rounded-none px-3 py-2 text-left font-medium text-red-600 transition-colors hover:bg-[var(--ts-surface)] dark:text-red-400"
+                      className="flex min-h-11 w-full items-center gap-2 rounded-sm px-3 py-2 text-left font-medium text-red-600 transition-colors hover:bg-[var(--ts-surface)] dark:text-red-400"
                     >
                       <LogOut className="h-4 w-4" />
                       <span>Đăng xuất</span>
@@ -189,7 +189,7 @@ export function Navbar() {
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-menu"
             onClick={() => { setMobileMenuOpen(!mobileMenuOpen); setUserDropdownOpen(false); }}
-            className="flex min-h-11 min-w-11 items-center justify-center rounded-none border border-[var(--ts-border-medium)] p-2 text-[var(--ts-text-secondary)] transition-colors hover:bg-[var(--ts-surface)] lg:hidden"
+            className="flex min-h-11 min-w-11 items-center justify-center rounded-sm border border-[var(--ts-border-medium)] p-2 text-[var(--ts-text-secondary)] transition-colors hover:bg-[var(--ts-surface)] lg:hidden"
             aria-label="Menu"
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}

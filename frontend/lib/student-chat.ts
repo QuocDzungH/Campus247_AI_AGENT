@@ -280,11 +280,20 @@ export function createStudentChatStore(key: string, legacyKey?: string) {
         this.context(`draft:${draftId}`, formTask === "certificate" ? "Yêu cầu tài liệu" : "Khiếu nại điểm học phần", formTask, draftId);
         return;
       }
+      const title = (!active.title || active.title === "Cuộc trò chuyện mới")
+        ? (formTask === "certificate" ? "Xin giấy xác nhận" : "Khiếu nại điểm")
+        : active.title;
       update({
         ...snapshot,
         threads: snapshot.threads.map((thread) =>
-          thread.id === snapshot.activeId ? { ...thread, formTask, draftId, contextKey: `draft:${draftId}` } : thread
+          thread.id === snapshot.activeId ? { ...thread, title, formTask, draftId, contextKey: `draft:${draftId}` } : thread
         ),
+      });
+    },
+    setTitle(threadId: string, title: string) {
+      update({
+        ...snapshot,
+        threads: snapshot.threads.map((thread) => (thread.id === threadId ? { ...thread, title } : thread)),
       });
     },
     exchange(id: string, fields: Partial<Pick<StudentChatExchange, "applied" | "undone" | "error">>) {
@@ -318,7 +327,7 @@ export function createStudentChatStore(key: string, legacyKey?: string) {
           thread.id === threadId
             ? {
                 ...thread,
-                title: thread.exchanges.length ? thread.title : value.slice(0, 64),
+                title: (!thread.title || thread.title === "Cuộc trò chuyện mới") ? value.slice(0, 64) : thread.title,
                 input: "",
                 exchanges: [...thread.exchanges, { id: crypto.randomUUID(), question: value, reply, change }],
               }

@@ -17,13 +17,13 @@ export function StatusBadge({ status }: StatusBadgeProps) {
   const mapping: Record<AnyStatus, { label: string; className: string; dot: string }> = {
     open: {
       label: "Mới tiếp nhận",
-      className: "border border-[#D6D3D1] bg-[#F5F5F4] text-[#57534E] dark:border-[#44403C] dark:bg-[#23201D] dark:text-[#D6D3D1]",
+      className: "border border-[#D6D3D1] bg-[#FAFAF9] text-[#57534E] dark:border-[#44403C] dark:bg-[#23201D] dark:text-[#D6D3D1]",
       dot: "bg-[#78716C] dark:bg-[#A8A29E]",
     },
     pending_officer: {
       label: "Chờ xử lý",
-      className: "border border-[#FEF08A] bg-[#FEFCE8] text-[#854D0E] dark:border-[rgba(234,179,8,0.4)] dark:bg-[rgba(113,63,18,0.35)] dark:text-[#FDE047]",
-      dot: "bg-[#CA8A04] dark:bg-[#FDE047]",
+      className: "border border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800/50 dark:bg-amber-950/35 dark:text-amber-200",
+      dot: "bg-amber-500",
     },
     resolved: {
       label: "Hoàn tất",
@@ -37,8 +37,8 @@ export function StatusBadge({ status }: StatusBadgeProps) {
     },
     in_review: {
       label: "Đang rà soát",
-      className: "border border-[#D6D3D1] bg-[#EFEDEB] text-[#1C1917] dark:border-[#44403C] dark:bg-[#292524] dark:text-[#FAFAF9]",
-      dot: "bg-[#78716C] dark:bg-[#A8A29E]",
+      className: "border border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-800/50 dark:bg-blue-950/40 dark:text-blue-200",
+      dot: "bg-blue-600 dark:bg-blue-400",
     },
     waiting_supplement: {
       label: "Chờ bổ sung",
@@ -59,7 +59,7 @@ export function StatusBadge({ status }: StatusBadgeProps) {
   };
 
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap ${className}`}>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap ${className}`}>
       <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${dot}`} />
       {label}
     </span>
