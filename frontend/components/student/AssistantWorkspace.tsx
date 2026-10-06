@@ -42,17 +42,11 @@ function AssistantHistory({ onNavigate, mobile = false }: { onNavigate: () => vo
     !thread.apiPendingTicketId &&
     !thread.createIntentKey;
   const activeIsEmpty = isEmptyThread(assistant.active);
-  let keptEmpty = false;
+  const firstEmptyThreadId = assistant.state.threads.find(isEmptyThread)?.id;
   const dedupedThreads = assistant.state.threads.filter((thread) => {
-    if (isEmptyThread(thread)) {
-      if (activeIsEmpty) return thread.id === assistant.active.id;
-      if (!keptEmpty) {
-        keptEmpty = true;
-        return true;
-      }
-      return false;
-    }
-    return true;
+    if (!isEmptyThread(thread)) return true;
+    if (activeIsEmpty) return thread.id === assistant.active.id;
+    return thread.id === firstEmptyThreadId;
   });
   const threads = dedupedThreads.filter(thread => normalize(thread.title).includes(normalize(query.trim())));
   const searchId = mobile ? "mobile-conversation-search" : "conversation-search";

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { RefreshCw, Search, Clock, AlertTriangle, User, FileText, CheckCircle2 } from "lucide-react";
+import { RefreshCw, Search, Clock, AlertTriangle } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { filterTickets, ticketQueueTypeLabel, ticketTypeLabels } from "@/lib/staff-policy";
 import { formatDate } from "@/lib/format-date";

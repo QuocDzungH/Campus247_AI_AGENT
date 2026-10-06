@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, Check, ExternalLink, FileText, HelpCircle, Loader2, MessageCircle, UploadCloud } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ExternalLink, FileText, HelpCircle, Loader2, UploadCloud } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useVinUniForms } from "@/lib/vinuni-workspace";
 import { VINUNI_SOURCES, documentTypes, validateForm, visibleFields, type VinUniTask, type FormField } from "@/lib/vinuni-forms";

@@ -10,7 +10,6 @@ import {
   CircleAlert,
   ClipboardList,
   FileCheck2,
-  FileText,
   GraduationCap,
   Scale,
   Search,
