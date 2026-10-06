@@ -62,14 +62,72 @@ export function AssistantConversation({ compact = false }: { compact?: boolean }
     } else void assistant.send(question);
     composer.current?.focus();
   }
-  const composerPanel = <footer className={`shrink-0 bg-transparent px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] ${centered ? "w-full pt-6" : "pt-3 sm:px-6"}`}>
-    {!centered && !!active.exchanges.length && <div className="mx-auto mb-3 flex max-w-[700px] flex-wrap gap-2" aria-label="Câu hỏi gợi ý">{suggestions.map(question => <button type="button" key={question} disabled={pending} onClick={() => send(question)} className="rounded-none border border-[var(--ts-border-subtle)] bg-[var(--surface-card)] px-3 py-2 text-left text-xs font-medium text-[var(--ts-text-secondary)] transition-colors hover:border-[var(--ts-border-strong)] hover:bg-[var(--ts-surface)] hover:text-[var(--ts-text-primary)] disabled:cursor-not-allowed disabled:opacity-40">{question}</button>)}</div>}
-    <form onSubmit={event => { event.preventDefault(); if (!pending) send(active.input); }} className="mx-auto max-w-[700px] rounded-none border border-[var(--ts-border-medium)] bg-[var(--surface-card)] p-4 shadow-sm transition-colors focus-within:border-[var(--ts-focus-ring)] focus-within:ring-1 focus-within:ring-[var(--ts-focus-ring)]">
+  const composerPanel = <footer className={`shrink-0 bg-transparent px-4 pb-[max(1rem,env(safe-area-inset-bottom))] ${centered ? "w-full pt-4" : "pt-2 sm:px-6"}`}>
+    {!centered && !!active.exchanges.length && (
+      <div className="mx-auto mb-2.5 flex max-w-[700px] flex-wrap gap-1.5" aria-label="Câu hỏi gợi ý">
+        {suggestions.map(question => (
+          <button
+            type="button"
+            key={question}
+            disabled={pending}
+            onClick={() => send(question)}
+            className="rounded-none border border-[var(--ts-border-subtle)] bg-[var(--surface-card)] px-2.5 py-1.5 text-left text-xs font-medium text-[var(--ts-text-secondary)] transition-colors hover:border-[var(--ts-border-strong)] hover:bg-[var(--ts-surface)] hover:text-[var(--ts-text-primary)] disabled:cursor-not-allowed disabled:opacity-40 shadow-2xs"
+          >
+            {question}
+          </button>
+        ))}
+      </div>
+    )}
+    <form
+      onSubmit={event => { event.preventDefault(); if (!pending) send(active.input); }}
+      className="mx-auto max-w-[700px] rounded-none border border-[var(--ts-border-medium)] bg-[var(--surface-card)] p-2.5 sm:px-3.5 sm:py-2.5 shadow-xs transition-colors focus-within:border-[var(--ts-focus-ring)] focus-within:ring-1 focus-within:ring-[var(--ts-focus-ring)]"
+    >
       <label htmlFor={compact ? "assistant-question" : "chatbot-question"} className="sr-only">Câu hỏi cho trợ lý</label>
-      <textarea ref={composer} id={compact ? "assistant-question" : "chatbot-question"} value={active.input} onChange={event => chat.input(event.target.value)} maxLength={2000} rows={2} placeholder={assistant.apiLocked ? "Gửi thông tin bổ sung cho cán bộ…" : "Bạn muốn hỏi gì về học vụ?"} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); if (!pending) send(active.input); } }} className="max-h-40 min-h-14 w-full resize-none bg-transparent text-[15px] leading-relaxed text-[var(--ts-text-primary)] outline-none placeholder:text-[var(--ts-text-tertiary)] focus-visible:outline-none" />
-      <div className="mt-2 flex items-end justify-between gap-3 border-t border-[var(--ts-border-subtle)] pt-2"><span className="pb-1 text-xs text-[var(--ts-text-secondary)]"><span className="hidden sm:inline font-mono">Enter</span> gửi · <span className="hidden sm:inline font-mono">Shift + Enter</span> xuống dòng</span>{pending ? <button type="button" onClick={assistant.cancel} aria-label="Dừng phản hồi" className="flex min-h-10 items-center gap-2 rounded-none border border-[var(--ts-status-error-border)] bg-[var(--surface-card)] px-3 text-xs font-semibold uppercase tracking-wider text-[var(--ts-status-error-text)] hover:bg-[var(--ts-status-error-bg)]"><Square className="h-3.5 w-3.5" />Dừng</button> : <button type="submit" disabled={!active.input.trim()} aria-label="Gửi câu hỏi" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-none bg-[var(--ts-text-primary)] text-[var(--ts-bg)] transition-colors hover:bg-[var(--ts-primary-hover)] active:bg-[var(--ts-primary-active)] disabled:cursor-not-allowed disabled:opacity-30"><ArrowUp className="h-4.5 w-4.5" /></button>}</div>
+      <textarea
+        ref={composer}
+        id={compact ? "assistant-question" : "chatbot-question"}
+        value={active.input}
+        onChange={event => chat.input(event.target.value)}
+        maxLength={2000}
+        rows={1}
+        placeholder={assistant.apiLocked ? "Gửi thông tin bổ sung cho cán bộ…" : "Bạn muốn hỏi gì về học vụ?"}
+        onKeyDown={event => {
+          if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+            event.preventDefault();
+            if (!pending) send(active.input);
+          }
+        }}
+        className="max-h-36 min-h-[38px] w-full resize-none bg-transparent text-sm leading-relaxed text-[var(--ts-text-primary)] outline-none placeholder:text-[var(--ts-text-tertiary)] focus-visible:outline-none"
+      />
+      <div className="mt-1 flex items-center justify-between gap-3 border-t border-[var(--ts-border-subtle)]/60 pt-1.5">
+        <span className="text-[11px] text-[var(--ts-text-tertiary)]">
+          <span className="hidden sm:inline font-mono">Enter</span> gửi · <span className="hidden sm:inline font-mono">Shift + Enter</span> xuống dòng
+        </span>
+        {pending ? (
+          <button
+            type="button"
+            onClick={assistant.cancel}
+            aria-label="Dừng phản hồi"
+            className="flex h-8 items-center gap-1.5 rounded-none border border-[var(--ts-status-error-border)] bg-[var(--surface-card)] px-2.5 text-[11px] font-semibold uppercase tracking-wider text-[var(--ts-status-error-text)] hover:bg-[var(--ts-status-error-bg)]"
+          >
+            <Square className="h-3 w-3" />
+            Dừng
+          </button>
+        ) : (
+          <button
+            type="submit"
+            disabled={!active.input.trim()}
+            aria-label="Gửi câu hỏi"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-none bg-[var(--ts-text-primary)] text-[var(--ts-bg)] transition-colors hover:bg-[var(--ts-primary-hover)] active:bg-[var(--ts-primary-active)] disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            <ArrowUp className="h-4 w-4" />
+          </button>
+        )}
+      </div>
     </form>
-    <p className="mx-auto mt-3 max-w-[700px] text-center text-xs leading-relaxed text-[var(--ts-text-tertiary)]">Trợ lý hỗ trợ chuẩn bị thông tin theo quy chế. Mọi phê duyệt chính thức thuộc thẩm quyền của Phòng Đào tạo & CTSV.</p>
+    <p className="mx-auto mt-2 max-w-[700px] text-center text-[11px] leading-relaxed text-[var(--ts-text-tertiary)]">
+      Trợ lý hỗ trợ chuẩn bị thông tin theo quy chế. Mọi phê duyệt chính thức thuộc thẩm quyền của Phòng Đào tạo & CTSV.
+    </p>
   </footer>;
   const welcome = <div className={`mx-auto w-full max-w-[700px] ${centered ? "px-4 sm:px-6" : "pb-6"}`}>
     <div className={`mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--ts-text-secondary)] ${centered ? "justify-center" : ""}`}>
