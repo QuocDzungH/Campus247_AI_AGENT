@@ -230,41 +230,92 @@ export function StaffTicketWorkspace({ ticket }: { ticket: Ticket }) {
 
   return (
     <StaffShell wide>
-      <header className="mb-4 no-print">
+      <header className="mb-5 no-print">
         <QueueBackLink />
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="mb-1 text-xs font-mono uppercase tracking-wider text-[#78716C] dark:text-[#A8A29E]">
-              {ticket.code} · {process?.label || ticketTypeLabels[ticket.type]}
-              {ticket.complaintSubtype === "grade_appeal" ? " · Điểm học phần" : ""}
-            </p>
-            <h1 className="font-serif text-2xl font-normal tracking-tight text-[#1C1917] dark:text-[#FAFAF9]">{ticket.title}</h1>
-            <p className="mt-2 text-sm text-[#57534E] dark:text-[#D6D3D1]">
-              {displayValue(ticket.studentName)} · {displayValue(ticket.studentMssv)} · {displayValue(ticket.studentEmail)}
-            </p>
-            <p className="mt-1 text-xs text-[#78716C] dark:text-[#A8A29E]">
-              Nộp {submittedAt ? formatDate(submittedAt, "Asia/Bangkok") : "Chưa có dữ liệu"}
-              {" · "}Cán bộ phụ trách: {ticket.assignedOfficerName || (ticket.assignedOfficerId ? "Cán bộ" : "Chưa nhận xử lý")}
-              {" · "}Trạng thái tiếp nhận: {enumLabel(ticket.status) || ticket.status}
-            </p>
+        <div className="mt-2 flex flex-wrap items-start justify-between gap-4 border-b border-[var(--ts-border-subtle)] pb-4">
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-mono text-xs font-semibold px-2 py-0.5 border border-[var(--ts-border-subtle)] bg-[#FAF9F8] text-[#1C1917] dark:bg-[#1E1B18] dark:text-[#FAFAF9]">
+                {ticket.code}
+              </span>
+              <span className="text-xs text-[#78716C] dark:text-[#A8A29E]">·</span>
+              <span className="text-xs font-medium text-[#57534E] dark:text-[#D6D3D1]">
+                {process?.label || ticketTypeLabels[ticket.type]}
+                {ticket.complaintSubtype === "grade_appeal" ? " · Điểm học phần" : ""}
+              </span>
+            </div>
+            <h1 className="font-serif text-2xl lg:text-3xl font-medium tracking-tight text-[#1C1917] dark:text-[#FAFAF9]">
+              {ticket.title}
+            </h1>
+            <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+              <span className="inline-flex items-center gap-1.5 font-medium text-[#1C1917] dark:text-[#FAFAF9]">
+                {displayValue(ticket.studentName)}
+              </span>
+              <span className="text-[#A8A29E]">·</span>
+              <span className="font-mono text-[#57534E] dark:text-[#D6D3D1]">
+                {displayValue(ticket.studentMssv)}
+              </span>
+              <span className="text-[#A8A29E]">·</span>
+              <span className="text-[#78716C] dark:text-[#A8A29E]">
+                {displayValue(ticket.studentEmail)}
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-[#78716C] dark:text-[#A8A29E]">
+              <span>Nộp {submittedAt ? formatDate(submittedAt, "Asia/Bangkok") : "Chưa có dữ liệu"}</span>
+              <span>·</span>
+              <span>
+                Cán bộ phụ trách:{" "}
+                <strong className="font-medium text-[#1C1917] dark:text-[#FAFAF9]">
+                  {ticket.assignedOfficerName || (ticket.assignedOfficerId ? "Cán bộ" : "Chưa nhận xử lý")}
+                </strong>
+              </span>
+              <span>·</span>
+              <span>Trạng thái tiếp nhận: {enumLabel(ticket.status) || ticket.status}</span>
+            </div>
           </div>
-          <StatusBadge status={ticket.status} />
+          <div className="shrink-0">
+            <StatusBadge status={ticket.status} />
+          </div>
         </div>
       </header>
+
       {ticket.priority === "high" && (
-        <p className="mb-4 rounded-none border-l-2 border-[#B45309] bg-[#F5F5F4] px-4 py-3 text-sm text-[#1C1917] dark:border-[#FBBF24] dark:bg-[#1C1917] dark:text-[#FAFAF9]">
-          <strong className="text-[#B45309] dark:text-[#FBBF24]">Ưu tiên cao:</strong> {ticket.priorityReason || ticket.l4TriggerReason || "Cần cán bộ xem xét."}
-        </p>
-      )}
-      {isApi && (
-        <section className={`${staffSurface} mb-4 p-4 no-print`}>
-          <h2 className="font-serif text-base font-normal text-[#1C1917] dark:text-[#FAFAF9]">Tiếp nhận hồ sơ</h2>
-          <p className="mt-1 text-xs text-[#78716C] dark:text-[#A8A29E]">
-            Quy trình {process?.processVersion || "chưa có phiên bản"} · mẫu {process?.templateStatus === "approved" ? `${process.templateId} ${process.templateVersion}` : "chưa có template được phê duyệt"}
-            {process?.validityDays ? ` · thời hạn ${process.validityDays} ngày` : ""}
+        <div className="mb-4 flex items-start gap-3 rounded-none border border-amber-300 bg-amber-50/70 p-3.5 text-sm dark:border-amber-900/50 dark:bg-amber-950/30">
+          <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+          <p className="leading-relaxed text-[#1C1917] dark:text-[#FAFAF9]">
+            <strong className="font-semibold text-[#B45309] dark:text-[#FBBF24]">Ưu tiên cao:</strong>{" "}
+            {ticket.priorityReason || ticket.l4TriggerReason || "Cần cán bộ xem xét."}
           </p>
-          <p className="mt-1 text-xs text-[#78716C] dark:text-[#A8A29E]">Trang chỉ đọc dữ liệu đã lưu. Không tự nhận ca, gửi tin, phát hành hay chạy lại AI.</p>
-          <div className="mt-3 flex flex-wrap gap-2">
+        </div>
+      )}
+
+      {isApi && (
+        <section className={`${staffSurface} mb-5 p-4 sm:p-5 no-print shadow-xs`}>
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--ts-border-subtle)] pb-3">
+            <div>
+              <h2 className="font-serif text-base font-medium text-[#1C1917] dark:text-[#FAFAF9]">Tiếp nhận hồ sơ</h2>
+              <p className="mt-0.5 text-xs text-[#78716C] dark:text-[#A8A29E]">
+                Quy trình {process?.processVersion || "chưa có phiên bản"} · mẫu {process?.templateStatus === "approved" ? `${process.templateId} ${process.templateVersion}` : "chưa có template được phê duyệt"}
+                {process?.validityDays ? ` · thời hạn ${process.validityDays} ngày` : ""}
+              </p>
+            </div>
+            {assignedToMe ? (
+              <span className="inline-flex items-center gap-1.5 border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800 dark:border-emerald-800/50 dark:bg-emerald-950/40 dark:text-emerald-300">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Bạn đang phụ trách
+              </span>
+            ) : assignedToOther ? (
+              <span className="inline-flex items-center gap-1.5 border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800 dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-300">
+                Chế độ chỉ xem
+              </span>
+            ) : null}
+          </div>
+
+          <p className="mt-2.5 text-xs leading-relaxed text-[#78716C] dark:text-[#A8A29E]">
+            Trang chỉ đọc dữ liệu đã lưu. Không tự nhận ca, gửi tin, phát hành hay chạy lại AI.
+          </p>
+
+          <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
             <DisabledReason disabled={busy || closed || claimLocked} reason={claimReason}>
               <button className={staffPrimary} disabled={busy || closed || claimLocked} onClick={() => void handleClaim()}>
                 Nhận ca
@@ -289,6 +340,7 @@ export function StaffTicketWorkspace({ ticket }: { ticket: Ticket }) {
                   else setSuccess("AI đang đọc hồ sơ.");
                 })}
               >
+                <Sparkles className="h-4 w-4" />
                 {ticket.briefStatus === "failed" || ticket.briefStatus === "stale" ? "Chạy lại AI" : "AI chuẩn bị hồ sơ"}
               </button>
             </DisabledReason>
@@ -296,10 +348,12 @@ export function StaffTicketWorkspace({ ticket }: { ticket: Ticket }) {
               Tải lại hồ sơ
             </button>
           </div>
+
           {ticket.briefLoadError && <p role="alert" className="mt-3 text-sm text-[#B91C1C] dark:text-[#EF4444]">Không đọc được bản tóm tắt: {ticket.briefLoadError}</p>}
           {ticket.auditLoadError && <p role="alert" className="mt-3 text-sm text-[#B91C1C] dark:text-[#EF4444]">Không đọc được nhật ký: {ticket.auditLoadError}</p>}
-          {briefNote && <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed">{briefNote}</p>}
-          <label className="mt-3 flex items-start gap-2 text-sm text-[#57534E] dark:text-[#D6D3D1]">
+          {briefNote && <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed border-l-2 border-[#78716C] pl-3 text-[#57534E] dark:border-[#A8A29E] dark:text-[#D6D3D1]">{briefNote}</p>}
+
+          <label className="mt-3.5 flex items-start gap-2.5 text-xs text-[#57534E] dark:text-[#D6D3D1]">
             <input type="checkbox" className="mt-0.5 accent-[#78716C]" checked={manualBrief} onChange={(event) => setManualBrief(event.target.checked)} />
             <span>
               Xử lý thủ công (không gắn bản tóm tắt AI). Dùng khi bản tóm tắt chưa sẵn sàng, đã cũ, hoặc bạn chủ động không gắn AI.
@@ -307,14 +361,20 @@ export function StaffTicketWorkspace({ ticket }: { ticket: Ticket }) {
           </label>
         </section>
       )}
+
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
         <div className="space-y-5">
           {isApi && (
-            <section className={`${staffSurface} p-5`} data-testid="officer-ai-panel">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <h2 className="font-serif text-base font-normal text-[#1C1917] dark:text-[#FAFAF9]">AI hỗ trợ xử lý hồ sơ</h2>
-                  <p className="mt-1 text-xs text-[#78716C] dark:text-[#A8A29E]">Bản tóm tắt đã có được hiển thị ngay, không cần nhận ca mới để đọc.</p>
+            <section className={`${staffSurface} p-4 sm:p-5 shadow-xs`} data-testid="officer-ai-panel">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--ts-border-subtle)] pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-none bg-[#78716C]/10 text-[#78716C] dark:bg-[#A8A29E]/10 dark:text-[#A8A29E]">
+                    <Sparkles className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h2 className="font-serif text-base font-medium text-[#1C1917] dark:text-[#FAFAF9]">AI hỗ trợ xử lý hồ sơ</h2>
+                    <p className="mt-0.5 text-xs text-[#78716C] dark:text-[#A8A29E]">Bản tóm tắt đã có được hiển thị ngay, không cần nhận ca mới để đọc.</p>
+                  </div>
                 </div>
                 <DisabledReason disabled={busy || closed || !assignedToMe} reason={prepareReason}>
                   <button
@@ -393,10 +453,10 @@ export function StaffTicketWorkspace({ ticket }: { ticket: Ticket }) {
           <TicketAuditTimeline logs={ticket.auditLogs} loadError={ticket.auditLoadError} />
         </div>
 
-        <section className={`${staffSurface} min-w-0`}>
-          <div className="flex items-center justify-between gap-2 border-b border-[#E7E5E4] p-2 dark:border-[#292524] no-print">
+        <section className={`${staffSurface} min-w-0 shadow-xs`}>
+          <div className="flex items-center justify-between gap-2 border-b border-[var(--ts-border-subtle)] p-2.5 dark:border-[#292524] no-print">
             <p className="px-2 text-sm font-semibold text-[#1C1917] dark:text-[#FAFAF9]">{issuesDocument ? "Bản duyệt phát hành" : "Trao đổi xử lý"}</p>
-            <div className="flex gap-1">
+            <div className="flex gap-1.5">
               {issuesDocument && (
                 <button className={`${staffButton} ${right === "document" ? "border-[#78716C] bg-[#EFEDEB] text-[#1C1917] dark:border-[#A8A29E] dark:bg-[#292524] dark:text-[#FAFAF9]" : ""}`} aria-pressed={right === "document"} onClick={() => setRight("document")}>
                   <FileText className="h-4 w-4" />Bản giấy xác nhận
@@ -405,7 +465,7 @@ export function StaffTicketWorkspace({ ticket }: { ticket: Ticket }) {
               <button className={`${staffButton} ${right === "response" ? "border-[#78716C] bg-[#EFEDEB] text-[#1C1917] dark:border-[#A8A29E] dark:bg-[#292524] dark:text-[#FAFAF9]" : ""}`} aria-pressed={right === "response"} onClick={() => setRight("response")}>Tin nhắn phản hồi</button>
             </div>
           </div>
-          <div className="space-y-4 p-5">
+          <div className="space-y-4 p-4 sm:p-5">
             {right === "response" && (
               <>
                 <h2 className="font-serif text-base font-normal text-[#1C1917] dark:text-[#FAFAF9]">{closed ? "Kết quả xử lý" : "Soạn nội dung gửi sinh viên"}</h2>
@@ -421,8 +481,8 @@ export function StaffTicketWorkspace({ ticket }: { ticket: Ticket }) {
                     </div>
                     {draft.error && <p role="alert" className="text-sm text-[#B91C1C] dark:text-[#EF4444]">{draft.error}</p>}
                     {isApi && ticket.officerBrief?.draftReply && (
-                      <div className="space-y-2 rounded-none border border-[#E7E5E4] p-3 text-sm dark:border-[#292524]">
-                        <h3 className="text-sm font-medium text-[#1C1917] dark:text-[#FAFAF9]">Nháp AI (không ghi đè nháp đang sửa)</h3>
+                      <div className="space-y-2 rounded-none border border-[var(--ts-border-subtle)] bg-[#FAF9F8] p-3 text-sm dark:bg-[#1E1B18]">
+                        <h3 className="text-xs font-semibold uppercase tracking-wider text-[#78716C] dark:text-[#A8A29E]">Nháp AI (không ghi đè nháp đang sửa)</h3>
                         <p className="whitespace-pre-wrap text-xs leading-relaxed text-[#57534E] dark:text-[#D6D3D1]">{ticket.officerBrief.draftReply}</p>
                         <button
                           className={staffButton}
