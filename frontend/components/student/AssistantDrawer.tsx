@@ -72,7 +72,7 @@ export function AssistantDrawer({ task }: { task: StudentTask }) {
         <div>
           <h2 id="student-assistant-title" className="font-serif text-lg font-normal text-[#1C1917] dark:text-[#FAFAF9]">Trợ lý học vụ</h2>
           <p className="mt-1 text-sm text-[#78716C] dark:text-[#A8A29E]">Hỗ trợ bạn hoàn thành tác vụ</p>
-          <Link href="/student/assistant" onClick={() => setOpen(false)} className="mt-1 inline-flex min-h-11 items-center text-sm font-medium text-[#78716C] dark:text-[#A8A29E] hover:text-[#1C1917] dark:hover:text-[#FAFAF9] underline-offset-4 hover:underline">Mở trang chatbot →</Link>
+          <Link href="/student/assistant?continue=1" onClick={() => setOpen(false)} className="mt-1 inline-flex min-h-11 items-center text-sm font-medium text-[#78716C] dark:text-[#A8A29E] hover:text-[#1C1917] dark:hover:text-[#FAFAF9] underline-offset-4 hover:underline">Mở trang chatbot →</Link>
         </div>
         <button type="button" onClick={() => setOpen(false)} aria-label="Đóng trợ lý" className="flex h-11 w-11 items-center justify-center rounded-none hover:bg-[#E7E5E4] dark:hover:bg-[#292524] text-[#57534E] dark:text-[#A8A29E]"><X className="h-5 w-5" /></button>
       </div>

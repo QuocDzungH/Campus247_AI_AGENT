@@ -19,7 +19,7 @@ function StudentSurface({ children }: { children: ReactNode }) {
   useEffect(() => { if (destination) router.replace(destination); }, [destination, router]);
   const supported = assistant.isChat || assistant.contextKey.startsWith("page:/student") || assistant.contextKey.startsWith("draft:") || assistant.contextKey.startsWith("request:") || assistant.contextKey === "page:/my-requests";
   if (destination) return <p role="status" className="p-6 text-center text-sm text-slate-500">Đang mở hồ sơ và dịch vụ của bạn…</p>;
-  return <div className={supported && assistant.open && !assistant.isChat ? "lg:pr-[380px]" : ""}>
+  return <div>
     {children}
     {supported && !assistant.isChat && <AssistantSurface />}
   </div>;

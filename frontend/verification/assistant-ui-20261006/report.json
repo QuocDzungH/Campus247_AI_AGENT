@@ -1,0 +1,27 @@
+{
+  "ok": true,
+  "mode": "mock",
+  "steps": [
+    "assistant-toggle-keeps-header-content-and-scroll-position-at-six-widths",
+    "send-with-enter-and-copy-answer",
+    "new-chat-on-navigation-and-reload-history-kept-escape-restores-focus",
+    "new-chat-keeps-unsent-question",
+    "drawer-continues-same-conversation",
+    "form-intent-opens-on-repeated-entry",
+    "mobile-form-tabs-keyboard-send-and-multiline",
+    "light-dark-desktop-tablet-mobile-fit",
+    "assistant-toggle-keeps-layout-in-dark-mode"
+  ],
+  "screenshots": "/tmp/campus-assistant-stable-layout-proof",
+  "browserErrors": [],
+  "archivedScreenshots": [
+    "stable-assistant-dark-390-closed.png",
+    "mobile-light-new.png",
+    "desktop-light-conversation.png",
+    "mobile-dark-conversation.png",
+    "desktop-light-new.png",
+    "stable-assistant-light-1920-open.png",
+    "stable-assistant-light-1920-closed.png",
+    "stable-assistant-dark-390-open.png"
+  ]
+}

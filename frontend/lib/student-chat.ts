@@ -77,7 +77,7 @@ function validExchange(item: StudentChatExchange): boolean {
     (!item.reply.sources || (Array.isArray(item.reply.sources) && item.reply.sources.every(validSource))) &&
     (!item.reply.action ||
       (typeof item.reply.action.label === "string" &&
-        ["/student/certificate", "/student/complaint", "/my-requests"].includes(item.reply.action.href))) &&
+        ["/student/certificate", "/student/complaint", "/student/assistant?intent=certificate", "/student/assistant?intent=complaint", "/my-requests"].includes(item.reply.action.href))) &&
     (!item.change || validChange(item.change)) &&
     (!item.applied || validChange(item.applied))
   );
@@ -188,7 +188,17 @@ export function createStudentChatStore(key: string, legacyKey?: string) {
     select(id: string) {
       if (snapshot.threads.some((thread) => thread.id === id)) update({ ...snapshot, activeId: id });
     },
-    start() {
+    start({ reuseEmpty = false, excludeIds = [] }: { reuseEmpty?: boolean; excludeIds?: string[] } = {}) {
+      // Re-entering the assistant should not accumulate untouched welcome screens.
+      const empty = reuseEmpty && snapshot.threads.find((thread) =>
+        !excludeIds.includes(thread.id) && !thread.input && !thread.exchanges.length && !thread.contextKey && !thread.formTask &&
+        !thread.conversationId && !thread.apiPreview && !thread.apiLocked &&
+        !thread.apiTicket && !thread.apiPendingTicketId && !thread.createIntentKey
+      );
+      if (empty) {
+        if (snapshot.activeId !== empty.id) update({ ...snapshot, activeId: empty.id });
+        return;
+      }
       const thread = fresh();
       update({ ...snapshot, threads: [thread, ...snapshot.threads], activeId: thread.id });
     },

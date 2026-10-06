@@ -7,6 +7,10 @@
 }
 
 @layer base {
+  html {
+    scrollbar-gutter: stable;
+  }
+
   :root {
     --bg-page: #FAFAF9;
     --surface-card: #FFFFFF;

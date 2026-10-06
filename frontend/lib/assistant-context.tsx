@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useEffectEvent, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useStore } from "./store";
 import { useVinUniForms } from "./vinuni-workspace";
@@ -15,7 +15,6 @@ function subscribeURL(notify: () => void) {
   window.addEventListener("popstate", notify); window.addEventListener("campus-requests-navigation", notify);
   return () => { window.removeEventListener("popstate", notify); window.removeEventListener("campus-requests-navigation", notify); };
 }
-const consumedAssistantIntents = new Set<string>();
 const readURL = () => window.location.search;
 const emptyURL = () => "";
 
@@ -32,6 +31,7 @@ function useAssistantRuntime(adapter: AssistantAdapter) {
   const [formExpanded, setFormExpanded] = useState(true);
   const [fieldTarget, setFieldTarget] = useState<{ task: VinUniTask; name: string; sequence: number } | null>(null);
   const [pending, setPending] = useState<string[]>([]);
+  const [pendingQuestions, setPendingQuestions] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
   const [composerFocus, setComposerFocus] = useState(0);
   const isApiMode = dataConfig?.mode === "api";
@@ -72,19 +72,35 @@ function useAssistantRuntime(adapter: AssistantAdapter) {
   const contextLabel = context.label;
   const routeDraftId = routeTask ? formState[routeTask].id : undefined;
 
-  const intentConsumed = useRef(false);
+  const startNewThread = useCallback(() => {
+    chat.start({ reuseEmpty: true, excludeIds: Array.from(requests.current.keys()) });
+    setTab("chat");
+    setFormExpanded(true);
+    setError("");
+    setFieldTarget(null);
+    setComposerFocus(previous => previous + 1);
+  }, [chat]);
+  const previousPath = useRef<string | null>(null);
+  useLayoutEffect(() => {
+    const enteringChat = isChat && previousPath.current !== pathname;
+    previousPath.current = pathname;
+    if (enteringChat && new URLSearchParams(window.location.search).get("continue") !== "1") {
+      startNewThread();
+    }
+  }, [isChat, pathname, startNewThread]);
+
+  const intentConsumed = useRef<string | null>(null);
+  const openFormFromIntent = useEffectEvent((intent: VinUniTask) => openForm(intent));
   useEffect(() => {
-    if (intentConsumed.current || !isChat || !dataConfig) return;
+    if (!isChat || !dataConfig) { intentConsumed.current = null; return; }
     const search = window.location.search;
     const intent = new URLSearchParams(search).get("intent");
-    if (intent !== "complaint" && intent !== "certificate") return;
-    const consumeKey = `${currentUser?.id || "anon"}:${search}`;
-    if (consumedAssistantIntents.has(consumeKey)) return;
-    intentConsumed.current = true;
-    consumedAssistantIntents.add(consumeKey);
-    openForm(intent);
+    if (intent !== "complaint" && intent !== "certificate") { intentConsumed.current = null; return; }
+    if (intentConsumed.current === search) return;
+    intentConsumed.current = search;
+    openFormFromIntent(intent);
     router.replace("/student/assistant");
-  }, [isChat, dataConfig, currentUser?.id]);
+  }, [isChat, dataConfig, query, router]);
   useEffect(() => () => { requests.current.forEach(controller => controller.abort()); }, []);
   useEffect(() => {
     if (open && !isChat) chat.context(contextKey, contextLabel, routeTask, routeDraftId);
@@ -173,6 +189,7 @@ function useAssistantRuntime(adapter: AssistantAdapter) {
     if (requests.current.has(threadId)) return;
     const controller = new AbortController(); requests.current.set(threadId, controller);
     const draftBefore = task ? forms.getSnapshot()[task] : undefined;
+    setPendingQuestions(previous => ({ ...previous, [threadId]: question.trim() }));
     setPending(previous => [...previous, threadId]); setError("");
     try {
       if (isApiMode) {
@@ -255,7 +272,7 @@ function useAssistantRuntime(adapter: AssistantAdapter) {
     if (!isChat) setOpen(false);
   }
   return { chat, state, active, open, setOpen, show, isChat, task, context, contextKey, routeTask, tab, setTab, formExpanded, setFormExpanded, fieldTarget,
-    pending: pending.includes(active.id), error, send, cancel, openForm, returnToStart, selectThread, apply, undo, focusField, helpField, composerFocus,
+    pending: pending.includes(active.id), pendingQuestion: pendingQuestions[active.id], error, send, cancel, openForm, startNewThread, returnToStart, selectThread, apply, undo, focusField, helpField, composerFocus,
     isApiMode, apiPreview, setApiPreview, apiLocked, setApiLocked, apiTicket, setApiTicket, apiPendingTicketId, setApiPendingTicket, resetApiFlow };
 }
 type Runtime = ReturnType<typeof useAssistantRuntime>;
