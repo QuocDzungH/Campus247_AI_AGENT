@@ -114,18 +114,33 @@ try {
   await navigation("Trợ lý học vụ");
   await welcome();
   assert.equal((await saved()).activeId, fresh, "reuse untouched welcome screen");
-  await page.getByRole("button", { name: "Mở lịch sử hội thoại" }).click();
-  const dialog = page.getByRole("dialog");
-  assert.ok(await dialog.locator("button[aria-current=true]").count());
-  await page.keyboard.press("Escape");
-  assert.equal(await page.getByRole("button", { name: "Mở lịch sử hội thoại" }).evaluate(el => el === document.activeElement), true);
-  await page.getByRole("button", { name: "Mở lịch sử hội thoại" }).click();
-  await page.getByRole("dialog").getByRole("button", { name: question, exact: true }).click();
+  const sidebar = page.locator("#assistant-sidebar");
+  assert.equal(await sidebar.isVisible(), true);
+  assert.ok(await sidebar.locator("button[aria-current=true]").count());
+  const newChatBox = await sidebar.getByRole("button", { name: "Trò chuyện mới", exact: true }).boundingBox();
+  assert.ok(newChatBox.x < (await input().boundingBox()).x, "new chat sits in left sidebar");
+  await sidebar.getByLabel("Tìm cuộc trò chuyện").fill("NO-MATCH-CONVERSATION");
+  await sidebar.getByText("Không tìm thấy cuộc trò chuyện. Thử từ khóa khác.", { exact: true }).waitFor();
+  await sidebar.getByLabel("Tìm cuộc trò chuyện").fill("xin giay xac nhan");
+  await sidebar.getByRole("button", { name: question, exact: true }).waitFor();
+  await sidebar.getByLabel("Tìm cuộc trò chuyện").fill("");
+  await input().fill("Câu hỏi được giữ khi thu gọn thanh bên");
+  await sidebar.getByRole("button", { name: "Thu gọn thanh bên", exact: true }).click();
+  await sidebar.waitFor({ state: "hidden" });
+  assert.equal(await input().inputValue(), "Câu hỏi được giữ khi thu gọn thanh bên");
+  assert.equal((await saved()).activeId, fresh);
+  assert.equal(await page.getByRole("button", { name: "Mở thanh bên hội thoại" }).evaluate(el => el === document.activeElement), true);
+  await input().fill("");
+  await noOverflow();
+  await shot("desktop-light-collapsed");
+  await page.getByRole("button", { name: "Mở thanh bên hội thoại" }).click();
+  await sidebar.getByRole("button", { name: question, exact: true }).click();
   assert.equal((await saved()).activeId, original);
   await page.getByRole("log").locator("article").waitFor();
   await page.reload();
   await welcome();
-  steps.push("new-chat-on-navigation-and-reload-history-kept-escape-restores-focus");
+  steps.push("desktop-sidebar-search-collapse-keeps-draft-and-history-selection");
+  steps.push("new-chat-on-navigation-and-reload-history-kept");
 
   await input().fill("Bản nháp câu hỏi chưa gửi");
   await page.waitForFunction(() => {
@@ -157,6 +172,11 @@ try {
     await page.getByRole("heading", { name: "Yêu cầu tài liệu VinUni", exact: true }).waitFor();
   }
   await shot("desktop-form-and-chat");
+  for (const width of [1280, 1024]) {
+    await page.setViewportSize({ width, height: 900 });
+    await noOverflow();
+    assert.equal(await page.locator("#workspace-form").evaluate(el => el.scrollWidth > el.clientWidth), false, `form fits beside sidebar at ${width}px`);
+  }
   steps.push("form-intent-opens-on-repeated-entry");
 
   await page.setViewportSize({ width: 390, height: 844 });
@@ -168,8 +188,20 @@ try {
   assert.equal(await chatTab.getAttribute("aria-selected"), "true");
   await noOverflow();
   await shot("mobile-form-chat-tab");
-  await page.getByRole("button", { name: "Trò chuyện mới", exact: true }).click();
+  await page.getByRole("button", { name: "Mở lịch sử hội thoại" }).click();
+  const dialog = page.getByRole("dialog");
+  assert.ok((await dialog.boundingBox()).width <= 301, "mobile history remains a side drawer");
+  assert.ok(await dialog.locator("button[aria-current=true]").count());
+  await page.keyboard.press("Shift+Tab");
+  assert.equal(await dialog.evaluate(el => el.contains(document.activeElement)), true, "sidebar traps focus");
+  await shot("mobile-light-history");
+  await page.keyboard.press("Escape");
+  assert.equal(await page.getByRole("button", { name: "Mở lịch sử hội thoại" }).evaluate(el => el === document.activeElement), true);
+  await page.getByRole("button", { name: "Mở lịch sử hội thoại" }).click();
+  await dialog.getByRole("button", { name: "Trò chuyện mới", exact: true }).click();
+  await dialog.waitFor({ state: "detached" });
   await welcome();
+  assert.equal(await input().evaluate(el => el === document.activeElement), true, "new chat focuses composer after sidebar closes");
   await noOverflow();
   await shot("mobile-light-new");
   await input().fill("Xin chào");
@@ -179,7 +211,7 @@ try {
   await page.getByRole("log").locator("article").waitFor();
   await noOverflow();
   await shot("mobile-light-conversation");
-  steps.push("mobile-form-tabs-keyboard-send-and-multiline");
+  steps.push("mobile-history-dialog-focus-escape-new-chat-form-tabs-and-multiline");
 
   await page.getByRole("button", { name: /Tài khoản/ }).click();
   await page.getByRole("button", { name: "Chuyển sang giao diện tối" }).click();
@@ -208,8 +240,8 @@ try {
   writeFileSync(`${output}/report.json`, JSON.stringify(report, null, 2));
   console.log(JSON.stringify(report, null, 2));
 } catch (error) {
-  await shot("failure");
   console.error(error);
+  try { await shot("failure"); } catch { /* Browser may have already closed. */ }
   console.error("Browser errors:", errors);
 
   process.exitCode = 1;

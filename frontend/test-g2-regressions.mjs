@@ -253,6 +253,26 @@ test("saved guidance with in-chat form actions survives reload", () => {
   assert.equal(exchanges[1].reply.action.href, "/student/assistant?intent=complaint");
 });
 
+test("submission card keeps its place after follow-up, reload and delayed commit to another thread", () => {
+  installStorage();
+  const chat = createStudentChatStore("assistant-submission-anchor");
+  chat.send("Kiểm tra đơn", { text: "Bạn hãy xác nhận gửi." });
+  const origin = chat.getSnapshot().activeId;
+  const anchor = chat.getSnapshot().threads[0].exchanges[0].id;
+  chat.start();
+  const fresh = chat.getSnapshot().activeId;
+  chat.setFlow(origin, { apiTicket: { id: "tkt_anchor", code: "TKT-2026-0500" }, submissionAnchor: anchor });
+  chat.send("Đơn đang ở đâu?", { text: "Chờ cán bộ." }, undefined, origin);
+  const restored = createStudentChatStore("assistant-submission-anchor").getSnapshot();
+  assert.equal(restored.issue, null);
+  assert.equal(restored.activeId, fresh);
+  const submitted = restored.threads.find(thread => thread.id === origin);
+  assert.equal(submitted.submissionAnchor, anchor);
+  assert.equal(submitted.exchanges[0].id, anchor);
+  assert.equal(submitted.exchanges.length, 2);
+  assert.equal(restored.threads.find(thread => thread.id === fresh).submissionAnchor, undefined);
+});
+
 test("two threads keep distinct preview and L4 lock state", () => {
   installStorage();
   const chat = createStudentChatStore("g2-thread-test");

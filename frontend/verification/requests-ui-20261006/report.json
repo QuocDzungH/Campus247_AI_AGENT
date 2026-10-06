@@ -1,0 +1,14 @@
+{
+  "ok": true,
+  "mode": "mock",
+  "steps": [
+    "full-width-list-with-real-summary-counts",
+    "supplement-filter-detail-and-file-validation",
+    "search-ticket-open-reload-and-save-message",
+    "receipt-download-preserved",
+    "empty-filter-category-and-invalid-deep-link",
+    "desktop-tablet-mobile-light-dark-keyboard-open-and-back-focus"
+  ],
+  "screenshots": "frontend/verification/requests-ui-20261006",
+  "browserErrors": []
+}

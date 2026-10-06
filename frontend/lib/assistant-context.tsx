@@ -43,15 +43,19 @@ function useAssistantRuntime(adapter: AssistantAdapter) {
     chat.setFlow(threadId, { apiPreview: preview });
   }
   function setApiTicket(ticket: { id: string; code: string } | null, threadId: string) {
-    if (ticket) chat.setFlow(threadId, { apiTicket: ticket, apiPendingTicketId: undefined });
+    if (ticket) { markSubmitted(threadId); chat.setFlow(threadId, { apiTicket: ticket, apiPendingTicketId: undefined }); }
     else chat.setFlow(threadId, { apiTicket: null });
   }
   function setApiPendingTicket(ticketId: string | null, threadId: string) {
-    if (ticketId) chat.setFlow(threadId, { apiPendingTicketId: ticketId, apiTicket: null });
+    if (ticketId) { markSubmitted(threadId); chat.setFlow(threadId, { apiPendingTicketId: ticketId, apiTicket: null }); }
     else chat.setFlow(threadId, { apiPendingTicketId: undefined });
   }
   function setApiLocked(locked: boolean, threadId: string) {
     chat.setFlow(threadId, { apiLocked: locked });
+  }
+  function markSubmitted(threadId: string) {
+    const thread = chat.getSnapshot().threads.find(item => item.id === threadId);
+    if (thread && thread.submissionAnchor === undefined) chat.setFlow(threadId, { submissionAnchor: thread.exchanges.at(-1)?.id ?? null });
   }
   const requests = useRef(new Map<string, AbortController>());
   const isChat = pathname === "/student/assistant";
@@ -165,6 +169,7 @@ function useAssistantRuntime(adapter: AssistantAdapter) {
       apiLocked: false,
       apiTicket: null,
       apiPendingTicketId: undefined,
+      submissionAnchor: undefined,
     });
   }
   function returnToStart() {
@@ -221,6 +226,7 @@ function useAssistantRuntime(adapter: AssistantAdapter) {
           turn.ticket && isDisplayTicketCode(turn.ticket.code, turn.ticket.id)
             ? { id: turn.ticket.id, code: turn.ticket.code }
             : current?.apiTicket ?? null;
+        if (turn.ticket) markSubmitted(threadId);
         chat.setFlow(threadId, {
           apiPreview: turn.preview,
           apiLocked: turn.conversationState.aiResponseLocked,
@@ -273,7 +279,7 @@ function useAssistantRuntime(adapter: AssistantAdapter) {
   }
   return { chat, state, active, open, setOpen, show, isChat, task, context, contextKey, routeTask, tab, setTab, formExpanded, setFormExpanded, fieldTarget,
     pending: pending.includes(active.id), pendingQuestion: pendingQuestions[active.id], error, send, cancel, openForm, startNewThread, returnToStart, selectThread, apply, undo, focusField, helpField, composerFocus,
-    isApiMode, apiPreview, setApiPreview, apiLocked, setApiLocked, apiTicket, setApiTicket, apiPendingTicketId, setApiPendingTicket, resetApiFlow };
+    isApiMode, apiPreview, setApiPreview, apiLocked, setApiLocked, apiTicket, setApiTicket, apiPendingTicketId, setApiPendingTicket, resetApiFlow, markSubmitted };
 }
 type Runtime = ReturnType<typeof useAssistantRuntime>;
 const Context = createContext<Runtime | null>(null);

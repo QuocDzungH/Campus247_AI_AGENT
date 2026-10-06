@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowDown, ArrowUp, Check, Copy, FileText, MessageCircle, Sparkles, Square } from "lucide-react";
 import { useAssistant } from "@/lib/assistant-context";
@@ -9,10 +9,12 @@ import { validateForm } from "@/lib/vinuni-forms";
 import { receiveMethodLabel } from "@/lib/student-assistant";
 import { secondaryButton } from "./StudentFlowUI";
 import { CitationList } from "./CitationList";
+import { SubmittedRequestCard, useSubmittedRequest } from "./SubmittedRequestCard";
 
 export function AssistantConversation({ compact = false }: { compact?: boolean }) {
   const assistant = useAssistant();
   const { active, chat, context, task, pending, error } = assistant;
+  const { ticketId: submittedTicketId } = useSubmittedRequest();
   const { state: forms, store } = useVinUniForms();
   const draft = task ? forms[task] : undefined;
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -21,7 +23,10 @@ export function AssistantConversation({ compact = false }: { compact?: boolean }
   const [showLatest, setShowLatest] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [copyError, setCopyError] = useState(false);
-  const centered = !compact && !active.exchanges.length && !pending;
+  const centered = !compact && !active.exchanges.length && !pending && !submittedTicketId;
+  const submissionAnchor = active.submissionAnchor;
+  const anchorExists = active.exchanges.some(exchange => exchange.id === submissionAnchor);
+  const submissionCard = submittedTicketId ? <SubmittedRequestCard key={`${active.id}-${submittedTicketId}`} /> : null;
   useEffect(() => {
     const element = composer.current;
     if (!element) return;
@@ -41,11 +46,11 @@ export function AssistantConversation({ compact = false }: { compact?: boolean }
     if (assistant.composerFocus > 0 && composer.current?.getClientRects().length) composer.current.focus();
   }, [assistant.composerFocus, centered]);
   useEffect(() => {
-    if (scrollRef.current && !active.exchanges.length && !pending) {
+    if (scrollRef.current && !active.exchanges.length && !pending && !submittedTicketId) {
       follow.current = true;
       scrollRef.current.scrollTop = 0;
     } else if (follow.current && scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [active.id, active.exchanges.length, pending]);
+  }, [active.id, active.exchanges.length, pending, submittedTicketId]);
   const suggestions = draft?.stage === 2 ? ["Tôi còn thiếu thông tin gì?"] : task === "certificate" ? draft?.stage === 1 ? ["PDF và bản giấy khác nhau thế nào?", "Đổi sang bản giấy"] : ["Xin giấy xác nhận cần thông tin gì?", "Mục đích sử dụng cần điền gì?"]
     : task === "complaint" ? draft?.stage === 1 ? ["Tôi cần chuẩn bị minh chứng gì?"] : ["Khiếu nại cần thông tin gì?"]
       : context.requestCode ? ["Giải thích trạng thái hồ sơ", "Tôi cần bổ sung gì?"] : ["Xin giấy xác nhận cần thông tin gì?", "Khiếu nại điểm thi thế nào?"];
@@ -86,9 +91,10 @@ export function AssistantConversation({ compact = false }: { compact?: boolean }
     {assistant.apiLocked && <p role="status" className="border-b border-[#FEF08A] bg-[#FEFCE8] px-4 py-2 text-sm text-[#854D0E] dark:border-[rgba(234,179,8,0.4)] dark:bg-[rgba(113,63,18,0.35)] dark:text-[#FDE047]">Trợ lý AI đã khóa. Tin nhắn tiếp theo được chuyển tới cán bộ; không khóa toàn bộ ô soạn thảo.</p>}
     <div ref={scrollRef} onScroll={() => { const el = scrollRef.current; if (el) { follow.current = el.scrollHeight - el.scrollTop - el.clientHeight < 100; setShowLatest(!follow.current); } }} className={`min-h-0 flex-1 overflow-y-auto overscroll-contain ${centered ? "flex flex-col justify-start pt-8 sm:pt-[clamp(2rem,10dvh,7rem)]" : "px-4 py-6 sm:px-6"}`}>
       {centered && <>{welcome}{composerPanel}{starters}</>}
-      {!centered && !active.exchanges.length && !pending && <>{welcome}{starters}</>}
+      {!centered && !active.exchanges.length && !pending && !submittedTicketId && <>{welcome}{starters}</>}
       <div role="log" aria-label="Trao đổi với trợ lý" aria-live="polite" aria-relevant="additions" className="mx-auto max-w-[680px] space-y-10">
-        {active.exchanges.map(exchange => <article key={exchange.id} className="space-y-4">
+        {submissionAnchor === null && submissionCard}
+        {active.exchanges.map(exchange => <Fragment key={exchange.id}><article className="space-y-4">
           {exchange.question && <div className="flex justify-end"><p className="max-w-[90%] whitespace-pre-wrap break-words rounded-none border border-[#D6D3D1] bg-[#F5F5F4] px-4 py-3 text-sm leading-relaxed text-[#1C1917] dark:border-[#44403C] dark:bg-[#23201D] dark:text-[#FAFAF9]"><span className="sr-only">Bạn: </span>{exchange.question}</p></div>}
           {exchange.reply.text && <div className="space-y-4 text-[15px] leading-7"><div className="flex items-center gap-3"><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--ts-surface-raised)] text-[var(--ts-text-secondary)]"><Sparkles className="h-4 w-4" /></span><span className="text-sm font-semibold">Trợ lý học vụ</span></div><p className="whitespace-pre-wrap break-words"><span className="sr-only">Trợ lý: </span>{exchange.reply.text}</p>
             <CitationList sources={exchange.reply.sources} source={exchange.reply.source} />
@@ -105,7 +111,8 @@ export function AssistantConversation({ compact = false }: { compact?: boolean }
               : <Link href={exchange.reply.action.href} onClick={() => assistant.setOpen(false)} className={secondaryButton}>{exchange.reply.action.label}</Link>)}
             <button type="button" onClick={() => void copyAnswer(exchange.id, exchange.reply.text)} aria-label={copied === exchange.id ? "Đã sao chép phản hồi" : "Sao chép phản hồi"} className="inline-flex min-h-11 items-center gap-2 px-2 text-xs text-[var(--ts-text-secondary)] transition-colors hover:bg-[var(--ts-surface)]">{copied === exchange.id ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}{copied === exchange.id ? "Đã sao chép" : "Sao chép"}</button>
           </div>}
-        </article>)}
+        </article>{submissionAnchor === exchange.id && submissionCard}</Fragment>)}
+        {submissionAnchor !== null && !anchorExists && submissionCard}
       </div>
       {copyError && <p role="status" className="mx-auto mt-4 max-w-[680px] text-sm text-[var(--ts-text-secondary)]">Chưa sao chép được. Bạn có thể chọn nội dung để sao chép.</p>}
       {pending && <div className="mx-auto mt-6 max-w-[680px] space-y-6"><div className="flex justify-end"><p className="max-w-[90%] whitespace-pre-wrap break-words border border-[var(--ts-border-medium)] bg-[var(--ts-surface)] px-4 py-3 text-sm leading-relaxed"><span className="sr-only">Bạn: </span>{assistant.pendingQuestion}</p></div><div role="status" className="flex items-center gap-3 text-sm text-[var(--ts-text-secondary)]"><Sparkles className="h-5 w-5 animate-pulse" /><span>Đang chuẩn bị phản hồi…</span></div></div>}

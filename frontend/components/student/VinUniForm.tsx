@@ -90,6 +90,7 @@ function VinUniFormContent({ task, review: routeReview = false, embedded = false
     if (!valid || !checked || !currentUser) return;
     const operation = store.beginSubmission(task);
     if (!operation) return;
+    const threadId = assistant.active.id;
     setSubmitError("");
     const documentLabel = documentTypes.find(([id]) => id === values.documentType)?.[1] || "Tài liệu học vụ";
     try {
@@ -121,6 +122,7 @@ function VinUniFormContent({ task, review: routeReview = false, embedded = false
         }
       }
       store.recordSubmission(task, operation, { ticketId: ticket.id, ticketCode: ticket.code });
+      assistant.markSubmitted(threadId);
     } catch (failure) {
       setSubmitError(failure instanceof Error && /tệp|thiết bị|trình duyệt/.test(failure.message) ? failure.message : "Chưa nộp được hồ sơ. Bản nháp và tệp đã chọn vẫn được giữ; hãy thử lại.");
     } finally { store.endSubmission(operation); }

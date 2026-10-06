@@ -1,0 +1,150 @@
+#!/usr/bin/env node
+// Run from the repo root: node scripts/requests_ui_browser.mjs --base-url http://127.0.0.1:3000
+import assert from "node:assert/strict";
+import { createRequire } from "node:module";
+import { mkdirSync, writeFileSync } from "node:fs";
+const { chromium } = createRequire(new URL("../frontend/package.json", import.meta.url))("playwright-core");
+const args = process.argv.slice(2);
+const flag = (name, fallback) => args.includes(`--${name}`) ? args[args.indexOf(`--${name}`) + 1] : fallback;
+const baseURL = flag("base-url", "http://127.0.0.1:3000");
+const output = flag("output-dir", "/tmp/campus-requests-ui");
+mkdirSync(output, { recursive: true });
+const browser = await chromium.launch({ channel: "chrome", headless: true });
+const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, timezoneId: "Asia/Phnom_Penh" });
+await context.addInitScript(() => localStorage.setItem("campus247_data_mode", "mock"));
+const page = await context.newPage();
+const errors = [];
+page.on("pageerror", error => errors.push(error.message));
+const steps = [];
+const rows = () => page.locator('button[id^="request-ticket-"], button[id^="request-review-"]').filter({ visible: true });
+const shot = async name => {
+  await page.evaluate(() => document.fonts.ready);
+  await page.evaluate(async () => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  });
+  await page.screenshot({ path: `${output}/${name}.png`, fullPage: true, animations: "disabled" });
+};
+const fit = async () => assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, "horizontal overflow");
+const back = async () => {
+  const id = new URL(page.url()).searchParams.get("ticket") || new URL(page.url()).searchParams.get("review");
+  await page.getByRole("button", { name: "Quay lại danh sách", exact: true }).click();
+  await page.locator("#request-detail-title").waitFor({ state: "detached" });
+  assert.ok((await page.evaluate(() => document.activeElement.id)).endsWith(id), "focus returns to selected request");
+};
+try {
+  await page.goto(`${baseURL}/login`);
+  const demo = page.getByRole("button", { name: /^(Tài khoản demo|Ẩn tài khoản demo|Tài khoản mẫu)$/ });
+  await demo.click();
+  await demo.locator("..").getByRole("button", { name: /Dùng tài khoản sinh viên/ }).click();
+  await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
+  await page.waitForURL(/\/student$/);
+  await page.goto(`${baseURL}/my-requests`);
+  await page.getByRole("heading", { name: "Hồ sơ của tôi", exact: true }).waitFor();
+  await rows().first().waitFor();
+  const total = await rows().count();
+  assert.ok(total > 0);
+  const main = await page.locator("#requests-main").boundingBox();
+  const row = await rows().first().boundingBox();
+  assert.ok(row.width > main.width * 0.9, "unselected list uses available width");
+  await fit();
+  await shot("desktop-light-overview");
+  steps.push("full-width-list-with-real-summary-counts");
+
+  await page.getByRole("button", { name: /Xem cần bổ sung:/ }).click();
+  assert.ok(new URL(page.url()).searchParams.get("filter") === "supplement");
+  assert.ok(await rows().count() > 0);
+  for (const row of await rows().all()) assert.ok((await row.innerText()).toLocaleLowerCase("vi").includes("cần bổ sung"));
+  await rows().first().click();
+  await page.getByRole("heading", { name: "Yêu cầu bổ sung của cán bộ", exact: true }).waitFor();
+  await fit();
+  await shot("desktop-light-supplement");
+  await page.locator("#supplement-file").setInputFiles({ name: "invalid.txt", mimeType: "text/plain", buffer: Buffer.from("test") });
+  await page.locator("#supplement-file-error").waitFor();
+  assert.equal(await page.getByRole("button", { name: "Xác nhận bổ sung" }).isDisabled(), true);
+  await back();
+  await page.getByRole("button", { name: "Xóa bộ lọc", exact: true }).first().click();
+  assert.equal(await rows().count(), total);
+  steps.push("supplement-filter-detail-and-file-validation");
+
+  const ticket = page.locator('button[id^="request-ticket-"]').first();
+  const ticketId = (await ticket.getAttribute("id")).replace("request-ticket-", "");
+  const ticketCode = (await ticket.innerText()).match(/TKT-[\w-]+/)[0];
+  await page.getByLabel("Tìm theo mã hoặc nội dung yêu cầu").fill(ticketCode);
+  await page.getByRole("button", { name: "Tìm hồ sơ", exact: true }).click();
+  assert.equal(await rows().count(), 1);
+  await rows().first().click();
+  await page.locator("#request-detail-title").waitFor();
+  assert.equal(new URL(page.url()).searchParams.get("ticket"), ticketId);
+  await page.reload();
+  await page.locator("#request-detail-title").waitFor();
+  await page.getByText(ticketCode, { exact: true }).last().waitFor();
+  const note = `Kiểm chứng giao diện hồ sơ ${Date.now()}`;
+  await page.locator("#request-message").fill(note);
+  await page.getByRole("button", { name: "Lưu tin nhắn", exact: true }).click();
+  await page.getByText(note, { exact: true }).waitFor();
+  await page.getByText("Đã lưu tin nhắn vào hồ sơ trên thiết bị này.", { exact: true }).waitFor();
+  await fit();
+  await shot("desktop-light-detail");
+  steps.push("search-ticket-open-reload-and-save-message");
+  await page.getByText("Thông tin bạn đã khai", { exact: false }).first().click();
+  const downloaded = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Tải thông tin hồ sơ", exact: true }).click();
+  assert.ok((await downloaded).suggestedFilename().includes(ticketCode));
+  steps.push("receipt-download-preserved");
+  await back();
+  await page.getByRole("button", { name: "Xóa bộ lọc", exact: true }).first().click();
+
+  await page.getByLabel("Tìm theo mã hoặc nội dung yêu cầu").fill("NO-MATCH-REQUEST");
+  await page.getByRole("button", { name: "Tìm hồ sơ", exact: true }).click();
+  await page.getByRole("heading", { name: "Không có hồ sơ phù hợp", exact: true }).waitFor();
+  await page.getByRole("button", { name: "Xóa bộ lọc", exact: true }).first().click();
+  await page.locator("#request-category").selectOption("reviews");
+  for (const row of await rows().all()) assert.ok((await row.getAttribute("id")).includes("request-review-"));
+  await page.getByRole("button", { name: "Xóa bộ lọc", exact: true }).first().click();
+  await page.evaluate(() => {
+    history.pushState(null, "", "/my-requests?ticket=not-owned");
+    window.dispatchEvent(new Event("campus-requests-navigation"));
+  });
+  await page.getByText("Không tìm thấy hồ sơ trong danh sách này", { exact: true }).waitFor();
+  assert.equal(await page.locator("#request-detail-title").count(), 0);
+  await page.goto(`${baseURL}/my-requests`);
+  await rows().first().waitFor();
+  steps.push("empty-filter-category-and-invalid-deep-link");
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await fit();
+  await shot("mobile-light-overview");
+  await rows().first().focus();
+  await page.keyboard.press("Enter");
+  await page.locator("#request-detail-title").waitFor();
+  assert.equal(await rows().count(), 0, "mobile focuses on detail");
+  await fit();
+  await shot("mobile-light-detail");
+  await back();
+  await page.getByRole("button", { name: /Tài khoản/ }).click();
+  await page.getByRole("button", { name: "Chuyển sang giao diện tối" }).click();
+  await page.keyboard.press("Escape");
+  await page.waitForFunction(() => document.documentElement.classList.contains("dark"));
+  await fit();
+  await shot("mobile-dark-overview");
+  await page.setViewportSize({ width: 768, height: 1024 });
+  await fit();
+  await shot("tablet-dark-overview");
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await shot("desktop-dark-overview");
+  await rows().first().click();
+  await page.locator("#request-detail-title").waitFor();
+  await fit();
+  await shot("desktop-dark-detail");
+  steps.push("desktop-tablet-mobile-light-dark-keyboard-open-and-back-focus");
+  assert.deepEqual(errors, []);
+  const report = { ok: true, mode: "mock", steps, screenshots: output, browserErrors: errors };
+  writeFileSync(`${output}/report.json`, JSON.stringify(report, null, 2));
+  console.log(JSON.stringify(report, null, 2));
+} catch (error) {
+  console.error(error);
+  try { await shot("failure"); } catch { /* Browser may have already closed. */ }
+  console.error("Browser errors:", errors);
+  process.exitCode = 1;
+} finally { await browser.close(); }

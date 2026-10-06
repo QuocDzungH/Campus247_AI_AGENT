@@ -1,0 +1,27 @@
+{
+  "ok": true,
+  "results": [
+    {
+      "scenario": "certificate",
+      "ok": true,
+      "ticketWrites": 1,
+      "backend": "intercepted API fixtures",
+      "browserErrors": []
+    },
+    {
+      "scenario": "pending",
+      "ok": true,
+      "ticketWrites": 1,
+      "backend": "intercepted API fixtures",
+      "browserErrors": []
+    },
+    {
+      "scenario": "complaint",
+      "ok": true,
+      "ticketWrites": 0,
+      "backend": "intercepted API fixtures",
+      "browserErrors": []
+    }
+  ],
+  "screenshots": "frontend/verification/submitted-request-20261006"
+}

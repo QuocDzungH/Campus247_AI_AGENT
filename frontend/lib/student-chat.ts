@@ -29,9 +29,10 @@ export interface StudentChatThread {
   apiTicket?: { id: string; code: string } | null;
   apiPendingTicketId?: string;
   createIntentKey?: string;
+  submissionAnchor?: string | null;
 }
 export interface ChatSnapshot { threads: StudentChatThread[]; activeId: string; issue: string | null }
-export type ThreadFlowPatch = Partial<Pick<StudentChatThread, "conversationId" | "apiPreview" | "apiLocked" | "apiTicket" | "apiPendingTicketId" | "createIntentKey">>;
+export type ThreadFlowPatch = Partial<Pick<StudentChatThread, "conversationId" | "apiPreview" | "apiLocked" | "apiTicket" | "apiPendingTicketId" | "createIntentKey" | "submissionAnchor">>;
 export interface ServerConversationSeed {
   conversationId: string;
   title: string;
@@ -93,6 +94,7 @@ function validThread(thread: StudentChatThread): boolean {
     (!thread.formTask || ["certificate", "complaint"].includes(thread.formTask)) &&
     (!thread.draftId || typeof thread.draftId === "string") &&
     (!thread.contextKey || typeof thread.contextKey === "string") &&
+    (thread.submissionAnchor == null || typeof thread.submissionAnchor === "string") &&
     (!thread.conversationId || typeof thread.conversationId === "string") &&
     (thread.apiPreview == null || validPreview(thread.apiPreview)) &&
     (thread.apiTicket == null || validTicketRef(thread.apiTicket)) &&
