@@ -120,7 +120,7 @@ export function CertificateDocumentView({
       {large ? (
         <AccessibleDialog open labelledBy="certificate-large-title" className="max-w-4xl" onClose={() => setLarge(false)}>
           <div className="space-y-3 p-4">
-            <h2 id="certificate-large-title" className="text-lg font-semibold">Bản xem trước A4</h2>
+            <h2 id="certificate-large-title" className="font-serif text-lg font-normal text-[#1C1917] dark:text-[#FAFAF9]">Bản xem trước A4</h2>
             <div className="certificate-a4-frame is-large">
               <div className="certificate-a4-page">
                 <CertificateBody doc={doc} />
@@ -148,7 +148,7 @@ export function DisabledReason({
   return (
     <span className="inline-flex max-w-full flex-col items-start gap-1">
       {children}
-      {disabled && reason ? <span className="max-w-xs text-xs leading-relaxed text-slate-500">{reason}</span> : null}
+      {disabled && reason ? <span className="max-w-xs text-xs leading-relaxed text-[#78716C] dark:text-[#A8A29E]">{reason}</span> : null}
     </span>
   );
 }

@@ -195,6 +195,84 @@ test("login success then hydrate failure keeps the new user and is a connection 
   assert.equal(result.error.reason, "network");
 });
 
+test("assistant entry reuses only an untouched chat and preserves previous work", () => {
+  installStorage();
+  const chat = createStudentChatStore("assistant-entry");
+  const first = chat.getSnapshot().activeId;
+  chat.start({ reuseEmpty: true });
+  assert.equal(chat.getSnapshot().activeId, first);
+  assert.equal(chat.getSnapshot().threads.length, 1);
+  chat.input("Câu hỏi chưa gửi");
+  chat.start({ reuseEmpty: true });
+  const blank = chat.getSnapshot().activeId;
+  assert.notEqual(blank, first);
+  chat.select(first);
+  chat.start({ reuseEmpty: true });
+  assert.equal(chat.getSnapshot().activeId, blank);
+  assert.equal(chat.getSnapshot().threads.length, 2);
+  assert.equal(chat.getSnapshot().threads.find(thread => thread.id === first).input, "Câu hỏi chưa gửi");
+  chat.bindForm("certificate", "draft-1");
+  chat.start({ reuseEmpty: true });
+  assert.notEqual(chat.getSnapshot().activeId, blank);
+  const fresh = chat.getSnapshot().activeId;
+  chat.bindConversation(fresh, "conv-awaiting-messages");
+  chat.start({ reuseEmpty: true });
+  assert.notEqual(chat.getSnapshot().activeId, fresh);
+  chat.send("Xin chào", { text: "Chào bạn" });
+  const history = chat.getSnapshot().activeId;
+  const restored = createStudentChatStore("assistant-entry");
+  restored.start({ reuseEmpty: true });
+  assert.notEqual(restored.getSnapshot().activeId, history);
+  assert.equal(restored.getSnapshot().threads.find(thread => thread.id === history).exchanges[0].question, "Xin chào");
+});
+
+test("new chat excludes a conversation waiting for its first suggestion response", () => {
+  installStorage();
+  const chat = createStudentChatStore("assistant-pending-suggestion");
+  const pending = chat.getSnapshot().activeId;
+  chat.start({ reuseEmpty: true, excludeIds: [pending] });
+  const fresh = chat.getSnapshot().activeId;
+  assert.notEqual(fresh, pending);
+  chat.send("Câu hỏi gợi ý", { text: "Phản hồi chậm" }, undefined, pending);
+  assert.equal(chat.getSnapshot().activeId, fresh);
+  assert.equal(chat.getSnapshot().threads.find(thread => thread.id === fresh).exchanges.length, 0);
+  assert.equal(chat.getSnapshot().threads.find(thread => thread.id === pending).exchanges[0].reply.text, "Phản hồi chậm");
+});
+
+test("saved guidance with in-chat form actions survives reload", () => {
+  installStorage();
+  const chat = createStudentChatStore("assistant-guidance-reload");
+  chat.send("Xin giấy xác nhận cần thông tin gì?");
+  chat.send("Khiếu nại điểm thi thế nào?");
+  const restored = createStudentChatStore("assistant-guidance-reload");
+  const state = restored.getSnapshot();
+  assert.equal(state.issue, null);
+  const exchanges = state.threads.find(thread => thread.id === state.activeId).exchanges;
+  assert.equal(exchanges.length, 2);
+  assert.equal(exchanges[0].reply.action.href, "/student/assistant?intent=certificate");
+  assert.equal(exchanges[1].reply.action.href, "/student/assistant?intent=complaint");
+});
+
+test("submission card keeps its place after follow-up, reload and delayed commit to another thread", () => {
+  installStorage();
+  const chat = createStudentChatStore("assistant-submission-anchor");
+  chat.send("Kiểm tra đơn", { text: "Bạn hãy xác nhận gửi." });
+  const origin = chat.getSnapshot().activeId;
+  const anchor = chat.getSnapshot().threads[0].exchanges[0].id;
+  chat.start();
+  const fresh = chat.getSnapshot().activeId;
+  chat.setFlow(origin, { apiTicket: { id: "tkt_anchor", code: "TKT-2026-0500" }, submissionAnchor: anchor });
+  chat.send("Đơn đang ở đâu?", { text: "Chờ cán bộ." }, undefined, origin);
+  const restored = createStudentChatStore("assistant-submission-anchor").getSnapshot();
+  assert.equal(restored.issue, null);
+  assert.equal(restored.activeId, fresh);
+  const submitted = restored.threads.find(thread => thread.id === origin);
+  assert.equal(submitted.submissionAnchor, anchor);
+  assert.equal(submitted.exchanges[0].id, anchor);
+  assert.equal(submitted.exchanges.length, 2);
+  assert.equal(restored.threads.find(thread => thread.id === fresh).submissionAnchor, undefined);
+});
+
 test("two threads keep distinct preview and L4 lock state", () => {
   installStorage();
   const chat = createStudentChatStore("g2-thread-test");

@@ -127,7 +127,7 @@ export function AccessibleDialog({
         aria-labelledby={labelledBy}
         aria-describedby={describedBy}
         tabIndex={-1}
-        className={`campus-dialog w-full max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 ${className}`}
+        className={`campus-dialog w-full max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-none border border-[#E7E5E4] bg-[#FAFAF9] text-[#1C1917] shadow-none dark:border-[#292524] dark:bg-[#1C1917] dark:text-[#FAFAF9] ${className}`}
       >
         {children}
       </div>

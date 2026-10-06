@@ -20,7 +20,7 @@ export function DataModeSwitcher() {
   return (
     <button
       onClick={toggleMode}
-      className="text-[10px] px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+      className="text-[10px] px-2 py-1 bg-[#F5F5F4] dark:bg-[#23201D] text-[#57534E] dark:text-[#D6D3D1] rounded-none border border-[#D6D3D1] dark:border-[#44403C] hover:bg-[#EFEDEB] dark:hover:bg-[#292524] transition-colors"
       title="Click để chuyển đổi mode dữ liệu"
     >
       Chuyển sang {dataConfig.mode === "mock" ? "API" : "Mock"}

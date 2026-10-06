@@ -68,24 +68,24 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
   };
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden text-xs">
+    <div className="flex flex-col h-full min-h-0 bg-[#FAFAF9] dark:bg-[#1C1917] shadow-none border border-[#E7E5E4] dark:border-[#292524] rounded-none overflow-hidden text-xs">
       {/* Header */}
-      <div className="shrink-0 p-4 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
+      <div className="shrink-0 p-4 bg-[#F5F5F4] dark:bg-[#1C1917] border-b border-[#E7E5E4] dark:border-[#292524] flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse" />
-          <h3 className="font-bold text-slate-900 dark:text-white text-sm">
+          <span className="w-2 h-2 rounded-full bg-[#78716C] dark:bg-[#A8A29E]" />
+          <h3 className="font-serif text-base font-normal text-[#1C1917] dark:text-[#FAFAF9]">
             Biểu mẫu yêu cầu
           </h3>
         </div>
         <div className="flex items-center gap-2">
-          <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-semibold border border-blue-200 dark:border-blue-700/50">
+          <span className="font-mono text-[10px] px-2 py-0.5 rounded-none bg-[#EFEDEB] text-[#57534E] dark:bg-[#292524] dark:text-[#D6D3D1] font-semibold border border-[#D6D3D1] dark:border-[#44403C]">
             Bước 1/2: Kiểm tra thông tin
           </span>
           <button
             type="button"
             onClick={onCancel}
             aria-label="Đóng biểu mẫu yêu cầu"
-            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white"
+            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-none text-[#78716C] hover:text-[#1C1917] dark:hover:text-[#FAFAF9]"
           >
             <X className="w-4 h-4" />
           </button>
@@ -94,66 +94,66 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
 
       <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-4">
         {/* Academic Verification Notice */}
-        <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 space-y-1 backdrop-blur-sm">
-            <div className="flex items-center gap-1.5 font-bold text-xs text-amber-700 dark:text-amber-300">
-            <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-              <span>Thông tin cần được kiểm tra:</span>
+        <div className="p-3 rounded-none border-l-2 border-[#B45309] bg-[#F5F5F4] text-[#1C1917] dark:border-[#FBBF24] dark:bg-[#1C1917] dark:text-[#FAFAF9] space-y-1">
+          <div className="flex items-center gap-1.5 font-bold text-xs text-[#B45309] dark:text-[#FBBF24]">
+            <ShieldAlert className="w-4 h-4 text-[#B45309] dark:text-[#FBBF24] shrink-0" />
+            <span>Thông tin cần được kiểm tra:</span>
           </div>
-          <p className="text-[11px] leading-relaxed text-amber-800/90 dark:text-amber-300/80">
-              Dữ liệu bạn kê khai sẽ được cán bộ đối chiếu với thông tin đào tạo trước khi yêu cầu được xử lý.
+          <p className="text-[11px] leading-relaxed text-[#57534E] dark:text-[#D6D3D1]">
+            Dữ liệu bạn kê khai sẽ được cán bộ đối chiếu với thông tin đào tạo trước khi yêu cầu được xử lý.
           </p>
         </div>
 
         {/* Form Preview */}
-        <div className="p-4 rounded-2xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200/60 dark:border-slate-800/80 shadow-none space-y-3.5">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-            <span className="font-bold text-slate-900 dark:text-white text-xs">
+        <div className="p-4 rounded-none bg-[#F5F5F4] dark:bg-[#1C1917] border border-[#E7E5E4] dark:border-[#292524] shadow-none space-y-3.5">
+          <div className="flex items-center justify-between pb-2 border-b border-[#E7E5E4] dark:border-[#292524]">
+            <span className="font-serif text-sm font-normal text-[#1C1917] dark:text-[#FAFAF9]">
               Thông tin giấy xác nhận sinh viên
             </span>
-            <span className="text-[10px] font-mono text-slate-500">Mã biểu mẫu: XN-VV-2025</span>
+            <span className="text-[10px] font-mono text-[#78716C] dark:text-[#A8A29E]">Mã biểu mẫu: XN-VV-2025</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-slate-700 dark:text-slate-300">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[#57534E] dark:text-[#D6D3D1]">
             <div>
-              <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block">
+              <span className="text-[11px] font-medium text-[#78716C] dark:text-[#A8A29E] block">
                 Họ và tên SV:
               </span>
-              <span className="font-semibold text-slate-900 dark:text-white text-xs">
+              <span className="font-semibold text-[#1C1917] dark:text-[#FAFAF9] text-xs">
                 {currentUser.name}
               </span>
             </div>
 
             <div>
-              <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block">
+              <span className="text-[11px] font-medium text-[#78716C] dark:text-[#A8A29E] block">
                 Mã số sinh viên (MSSV):
               </span>
-              <span className="font-mono font-semibold text-slate-900 dark:text-white text-xs">
+              <span className="font-mono font-semibold text-[#1C1917] dark:text-[#FAFAF9] text-xs">
                 {currentUser.mssv || currentUser.id}
               </span>
             </div>
 
             <div>
-              <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block">
+              <span className="text-[11px] font-medium text-[#78716C] dark:text-[#A8A29E] block">
                 Khóa học / Lớp sinh hoạt:
               </span>
-              <span className="text-xs">{currentUser.classYear || "—"}</span>
+              <span className="text-xs text-[#1C1917] dark:text-[#FAFAF9]">{currentUser.classYear || "—"}</span>
             </div>
 
             <div>
-              <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block">
+              <span className="text-[11px] font-medium text-[#78716C] dark:text-[#A8A29E] block">
                 Khoa quản lý chuyên môn:
               </span>
-              <span className="text-xs">{currentUser.major || currentUser.department || "—"}</span>
+              <span className="text-xs text-[#1C1917] dark:text-[#FAFAF9]">{currentUser.major || currentUser.department || "—"}</span>
             </div>
           </div>
 
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <label htmlFor="gate1-reason" className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block">
+              <label htmlFor="gate1-reason" className="text-[11px] font-medium text-[#78716C] dark:text-[#A8A29E] block">
                 Mục đích và nơi gửi:
               </label>
               {lastUpdatedField === "reason" && (
-                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 animate-pulse">
+                <span className="text-[10px] text-[#3F6212] dark:text-[#4ADE80] font-semibold flex items-center gap-1">
                   <Sparkles className="w-3 h-3" />
                   Vừa được cập nhật
                 </span>
@@ -174,14 +174,14 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
               aria-invalid={validationError ? "true" : "false"}
               aria-describedby={validationError ? "gate1-reason-error" : undefined}
               placeholder="Nhập mục đích xin giấy hoặc nhờ trợ lý chỉnh sửa..."
-              className={`w-full p-2.5 rounded-xl text-xs border transition-all duration-300 text-slate-900 dark:text-white backdrop-blur-sm ${
+              className={`w-full p-2.5 rounded-none text-xs border text-[#1C1917] dark:text-[#FAFAF9] ${
                 lastUpdatedField === "reason"
-                  ? "bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-500 ring-2 ring-emerald-500/30"
-                  : "bg-white/50 dark:bg-slate-800/60 border-slate-200/70 dark:border-slate-700/60 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  ? "bg-[#EFEDEB] dark:bg-[#292524] border-[#78716C] ring-1 ring-[#78716C]"
+                  : "bg-[#FAFAF9] dark:bg-[#1C1917] border-[#D6D3D1] dark:border-[#44403C] focus:outline-none focus:ring-1 focus:ring-[#78716C]"
               }`}
             />
             {validationError && (
-              <p id="gate1-reason-error" role="alert" aria-live="polite" className="text-[11px] font-medium text-rose-600 dark:text-rose-400">
+              <p id="gate1-reason-error" role="alert" aria-live="polite" className="text-[11px] font-medium text-[#B91C1C] dark:text-[#EF4444]">
                 {validationError}
               </p>
             )}
@@ -190,11 +190,11 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
           {/* Receive Method */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block">
+              <label className="text-[11px] font-medium text-[#78716C] dark:text-[#A8A29E] block">
                 Phương thức nhận văn bản:
               </label>
               {lastUpdatedField === "receiveMethod" && (
-                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 animate-pulse">
+                <span className="text-[10px] text-[#3F6212] dark:text-[#4ADE80] font-semibold flex items-center gap-1">
                   <Sparkles className="w-3 h-3" />
                   Vừa được cập nhật
                 </span>
@@ -202,12 +202,10 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <label
-                className={`flex items-start gap-2 p-2.5 rounded-xl border cursor-pointer transition-all backdrop-blur-xs ${
+                className={`flex items-start gap-2 p-2.5 rounded-none border cursor-pointer ${
                   gate1FormData.receiveMethod === "digital_pdf"
-                    ? lastUpdatedField === "receiveMethod"
-                      ? "bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-500 ring-2 ring-emerald-500/30 text-emerald-950 dark:text-emerald-200"
-                      : "bg-blue-50/70 dark:bg-blue-950/40 border-blue-500 text-blue-900 dark:text-blue-200"
-                    : "bg-white/50 dark:bg-slate-800/40 border-slate-200/60 dark:border-slate-700/50 text-slate-700 dark:text-slate-300"
+                    ? "bg-[#EFEDEB] dark:bg-[#292524] border-[#78716C] text-[#1C1917] dark:text-[#FAFAF9]"
+                    : "bg-[#FAFAF9] dark:bg-[#1C1917] border-[#D6D3D1] dark:border-[#44403C] text-[#57534E] dark:text-[#D6D3D1]"
                 }`}
               >
                 <input
@@ -217,23 +215,21 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
                   onChange={() =>
                     setGate1FormData((prev) => ({ ...prev, receiveMethod: "digital_pdf" }))
                   }
-                  className="mt-0.5 text-blue-600 focus:ring-blue-500"
+                  className="mt-0.5 accent-[#78716C]"
                 />
                 <div>
-                  <div className="font-semibold text-xs">Bản điện tử (PDF)</div>
-                  <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                  <div className="font-semibold text-xs text-[#1C1917] dark:text-[#FAFAF9]">Bản điện tử (PDF)</div>
+                  <div className="text-[10px] text-[#78716C] dark:text-[#A8A29E]">
                     Ký số, gửi qua Cổng dịch vụ sinh viên
                   </div>
                 </div>
               </label>
 
               <label
-                className={`flex items-start gap-2 p-2.5 rounded-xl border cursor-pointer transition-all backdrop-blur-xs ${
+                className={`flex items-start gap-2 p-2.5 rounded-none border cursor-pointer ${
                   gate1FormData.receiveMethod === "paper_stamped"
-                    ? lastUpdatedField === "receiveMethod"
-                      ? "bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-500 ring-2 ring-emerald-500/30 text-emerald-950 dark:text-emerald-200"
-                      : "bg-blue-50/70 dark:bg-blue-950/40 border-blue-500 text-blue-900 dark:text-blue-200"
-                    : "bg-white/50 dark:bg-slate-800/40 border-slate-200/60 dark:border-slate-700/50 text-slate-700 dark:text-slate-300"
+                    ? "bg-[#EFEDEB] dark:bg-[#292524] border-[#78716C] text-[#1C1917] dark:text-[#FAFAF9]"
+                    : "bg-[#FAFAF9] dark:bg-[#1C1917] border-[#D6D3D1] dark:border-[#44403C] text-[#57534E] dark:text-[#D6D3D1]"
                 }`}
               >
                 <input
@@ -243,11 +239,11 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
                   onChange={() =>
                     setGate1FormData((prev) => ({ ...prev, receiveMethod: "paper_stamped" }))
                   }
-                  className="mt-0.5 text-blue-600 focus:ring-blue-500"
+                  className="mt-0.5 accent-[#78716C]"
                 />
                 <div>
-                  <div className="font-semibold text-xs">Bản giấy</div>
-                  <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                  <div className="font-semibold text-xs text-[#1C1917] dark:text-[#FAFAF9]">Bản giấy</div>
+                  <div className="text-[10px] text-[#78716C] dark:text-[#A8A29E]">
                     Nhận tại Phòng Đào tạo (Bàn 3)
                   </div>
                 </div>
@@ -260,10 +256,10 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
             type="button"
             onClick={() => void handleSubmit()}
             disabled={isSubmitting}
-            className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25 transition-all text-xs"
+            className="w-full py-3 px-4 rounded-none bg-[#78716C] hover:bg-[#57534E] dark:bg-[#A8A29E] dark:hover:bg-[#D6D3D1] text-[#FAFAF9] dark:text-[#1C1917] font-medium flex items-center justify-center gap-2 transition-colors text-xs disabled:opacity-60"
           >
             {isSubmitting ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
                 <Send className="w-3.5 h-3.5" />
@@ -273,8 +269,8 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
           </button>
 
           {/* Business rule disclaimer */}
-          <div className="flex items-start gap-2 p-2.5 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 text-[10px] text-slate-500 dark:text-slate-400">
-            <Lock className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+          <div className="flex items-start gap-2 p-2.5 rounded-none bg-[#F5F5F4] dark:bg-[#1C1917] border border-[#E7E5E4] dark:border-[#292524] text-[10px] text-[#78716C] dark:text-[#A8A29E]">
+            <Lock className="w-3.5 h-3.5 text-[#78716C] dark:text-[#A8A29E] shrink-0 mt-0.5" />
             <span>
               <strong>Lưu ý:</strong> Chỉ sau khi bấm nút trên, yêu cầu mới được chuyển đến cán bộ xử lý. Văn bản chưa được phát hành ở bước này.
             </span>
@@ -282,14 +278,14 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
         </div>
 
         {/* Existing Tracked Tickets Mini List */}
-        <div className="space-y-2 pt-2 border-t border-slate-200/60 dark:border-slate-800">
+        <div className="space-y-2 pt-2 border-t border-[#E7E5E4] dark:border-[#292524]">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-slate-900 dark:text-white">
+            <span className="font-serif text-sm font-normal text-[#1C1917] dark:text-[#FAFAF9]">
               Yêu cầu đang theo dõi ({tickets.filter((t) => t.studentId === currentUser.id).length} yêu cầu)
             </span>
             <Link
               href="/my-requests"
-              className="inline-flex min-h-[44px] items-center px-2 rounded-lg text-[11px] text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:underline"
+              className="inline-flex min-h-[44px] items-center px-2 text-[11px] text-[#78716C] dark:text-[#A8A29E] hover:text-[#1C1917] dark:hover:text-[#FAFAF9] underline-offset-4 hover:underline"
             >
               Xem tất cả yêu cầu
             </Link>
@@ -301,19 +297,19 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
               .map((t) => (
                 <div
                   key={t.id}
-                  className="p-3 rounded-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200/60 dark:border-slate-800 space-y-1.5"
+                  className="p-3 rounded-none bg-[#FAFAF9] dark:bg-[#141210] border border-[#E7E5E4] dark:border-[#292524] space-y-1.5"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
+                    <span className="font-mono font-medium text-xs text-[#1C1917] dark:text-[#FAFAF9]">
                       #{t.code}
                     </span>
                     <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                      className={`px-1.5 py-0.5 text-[10px] font-mono uppercase tracking-wider ${
                         t.status === "open"
-                          ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+                          ? "border border-[#78716C] text-[#78716C] dark:border-[#A8A29E] dark:text-[#A8A29E]"
                           : t.status === "pending_officer"
-                          ? "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
-                          : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20"
+                          ? "border border-[#57534E] text-[#57534E] dark:border-[#78716C] dark:text-[#78716C]"
+                          : "border border-[#3F6212] text-[#3F6212] dark:border-[#84CC16] dark:text-[#84CC16]"
                       }`}
                     >
                       {t.status === "open"
@@ -324,13 +320,13 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
                     </span>
                   </div>
 
-                  <div className="font-medium text-slate-900 dark:text-white text-[11px] min-h-[2rem] line-clamp-2">
+                  <div className="font-medium text-[#1C1917] dark:text-[#FAFAF9] text-[11px] min-h-[2rem] line-clamp-2">
                     {t.title}
                   </div>
 
-                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[10px] text-slate-500 dark:text-slate-400 pt-1">
+                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[10px] text-[#78716C] dark:text-[#A8A29E] pt-1">
                     <span>Cán bộ phụ trách: {t.assignedOfficerName || "Phòng Đào tạo"}</span>
-                    <span className="font-mono text-amber-600 dark:text-amber-400">
+                    <span className="font-mono text-[#57534E] dark:text-[#A8A29E]">
                       Thời gian còn lại: {t.slaRemaining || t.slaDeadline}
                     </span>
                   </div>
@@ -339,12 +335,12 @@ export function Submit1Modal({ onSuccess, onCancel }: Submit1ModalProps) {
           </div>
 
           {/* Tuition Status Banner */}
-          <div className="p-2.5 rounded-xl bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
-            <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+          <div className="p-2.5 rounded-none bg-[#FAFAF9] dark:bg-[#141210] border border-[#E7E5E4] dark:border-[#292524] flex items-center justify-between text-[11px]">
+            <div className="flex items-center gap-2 text-[#57534E] dark:text-[#D6D3D1]">
+              <CheckCircle2 className="w-4 h-4 text-[#3F6212] dark:text-[#84CC16] shrink-0" />
               <span>Học phí Học kỳ II: Đã quyết toán (Không nợ phí)</span>
             </div>
-            <span className="font-mono font-bold text-slate-800 dark:text-slate-200">0 VNĐ nợ</span>
+            <span className="font-mono font-medium text-[#1C1917] dark:text-[#FAFAF9]">0 VNĐ nợ</span>
           </div>
         </div>
       </div>
