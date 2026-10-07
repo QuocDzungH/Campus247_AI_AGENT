@@ -20,50 +20,59 @@ from campus247.agents.state import IntakeState, RouteDecision
 from campus247.models.contracts_v1 import IntakeContext, Risk
 
 _PROCEDURE = re.compile(
-    r"(thủ tục|quy trình|nộp ở đâu|như thế nào|cần giấy tờ gì|cần những giấy tờ|hướng dẫn|quy định)",
+    r"(thủ tục|thu tuc|quy trình|quy trinh|nộp ở đâu|nop o dau|như thế nào|the nao|"
+    r"cần giấy tờ gì|cần những giấy tờ|hướng dẫn|quy định|quy dinh|bao lâu|bao lau|"
+    r"mất mấy ngày|bao nhiêu ngày|ở đâu|điều kiện gì|ai chịu trách nhiệm|có được phép|"
+    r"có được tự|tỷ lệ.*là bao nhiêu|hạn chót|thời hạn|khung giờ nào|how can i|can i get|what are the)",
     re.IGNORECASE,
 )
 _PERSONAL_CASE = re.compile(
-    r"(của tôi|tôi muốn khiếu nại|tôi bị|điểm của tôi|môn .{1,80} của tôi)",
+    r"(của tôi|cua toi|tôi muốn khiếu nại|toi muon khieu nai|tôi bị|toi bi|điểm của tôi|diem cua toi|môn .{1,80} của tôi)",
     re.IGNORECASE,
 )
-_NEGATE_COMPLAINT = re.compile(r"không (phải |muốn )?khiếu nại", re.IGNORECASE)
+_NEGATE_COMPLAINT = re.compile(r"(không|khong) (phải |muốn )?khiếu nại", re.IGNORECASE)
 _WELLBEING_STRONG = re.compile(
-    r"(tự tử|tự sát|muốn chết|không muốn sống|tự hại|trầm cảm|khủng hoảng tâm lý|"
-    r"sức khỏe tinh thần|wellbeing|cần hỗ trợ tâm lý|không chịu nổi)",
+    r"(tự tử|tu tu|tự sát|tu sat|muốn chết|muon chet|không muốn sống|khong muon song|tự hại|tu hai|"
+    r"trầm cảm|tram cam|khủng hoảng tâm lý|sức khỏe tinh thần|wellbeing|cần hỗ trợ tâm lý|tư vấn tâm lý|"
+    r"không chịu nổi|nhảy lầu|kết thúc mọi thứ|không thiết tha sống|bế tắc|"
+    r"kiệt sức.*cuộc sống|không thể tiếp tục cuộc sống|không làm chủ được hành vi)",
     re.IGNORECASE,
 )
-_WELLBEING_SOFT = re.compile(r"(căng thẳng|tinh thần)", re.IGNORECASE)
+_WELLBEING_SOFT = re.compile(r"(căng thẳng|tinh thần|suy sụp|kiệt sức)", re.IGNORECASE)
 _UNAUTHORIZED = re.compile(
-    r"(sửa điểm|đổi điểm|xóa môn|huỷ môn|hủy môn|xem hồ sơ của sinh viên khác)",
+    r"(sửa điểm|sua diem|đổi điểm|doi diem|xóa môn|xoa mon|huỷ môn|hủy môn|huy mon|"
+    r"ghi điểm qua môn|cấp bằng tốt nghiệp sớm|bỏ qua mọi quy chế|"
+    r"(xem|tra cứu|cho tôi).{0,40}(hồ sơ|điểm|email|thông tin|kỷ luật).{0,80}(sinh viên khác|bạn cùng lớp|sv\d+)|"
+    r"ignore.*previous instructions|system override|dump.*token|bypass.*security|change my grade|hack)",
     re.IGNORECASE,
 )
 _UNAUTHORIZED_ASK = re.compile(
-    r"(hãy|giúp tôi|cho tôi).{0,24}(sửa điểm|xóa môn|đổi điểm)",
+    r"(hãy|giúp tôi|cho tôi|please).{0,30}(sửa điểm|sua diem|xóa môn|xoa mon|đổi điểm|doi diem|change.*grade|set.*grade|bypass|dump|hack)",
     re.IGNORECASE,
 )
 _COMPLAINT = re.compile(
-    r"(khiếu nại|khiếu nai|phúc khảo|điểm oan|trừ điểm oan|không đồng ý với điểm)",
+    r"(khiếu nại|khieu nai|khiếu nai|phúc khảo|phuc khao|điểm oan|diem oan|trừ điểm oan|không đồng ý với điểm)",
     re.IGNORECASE,
 )
 _COMPLAINT_ACTION = re.compile(
-    r"(tôi muốn khiếu nại|muốn khiếu nại|gửi khiếu nại|nộp khiếu nại|"
-    r"khiếu nại điểm|phúc khảo điểm|điểm oan|trừ điểm oan|không đồng ý với điểm|"
-    r"điểm môn .{1,80} của tôi|điểm của tôi)",
+    r"(tôi muốn khiếu nại|muốn khiếu nại|toi muon khieu nai|gửi khiếu nại|nộp khiếu nại|nop khieu nai|"
+    r"khiếu nại điểm|phúc khảo điểm|phuc khao diem|điểm oan|trừ điểm oan|không đồng ý với điểm|"
+    r"điểm môn .{1,80} của tôi|điểm của tôi|tôi muốn phúc khảo|muon phuc khao|phuc khao mon|khiếu nại môn)",
     re.IGNORECASE,
 )
 _GRADE_HINT = re.compile(
-    r"(điểm|phúc khảo|học phần|môn )",
+    r"(điểm|diem|phúc khảo|phuc khao|học phần|môn )",
     re.IGNORECASE,
 )
 _CERT_ACTION = re.compile(
     r"(muốn xin giấy|xin cấp giấy|xin giấy xác nhận|cấp giấy xác nhận|"
-    r"làm giấy xác nhận|giấy xác nhận sinh viên|cần giấy xác nhận)",
+    r"làm giấy xác nhận|giấy xác nhận sinh viên|cần giấy xác nhận|"
+    r"lam giay xac nhan|xin giay xac nhan|can giay xac nhan|apply visa|request.*certification)",
     re.IGNORECASE,
 )
 _CERT_PROCEDURE = re.compile(
-    r"((thủ tục|quy trình|cần gì|như thế nào|giấy tờ).{0,48}giấy xác nhận)"
-    r"|(giấy xác nhận.{0,80}(thủ tục|như thế nào|cần gì|quy trình|giấy tờ))",
+    r"((thủ tục|quy trình|cần gì|như thế nào|giấy tờ|the nao).{0,48}giấy xác nhận)"
+    r"|(giấy xác nhận.{0,80}(thủ tục|như thế nào|cần gì|quy trình|giấy tờ|the nao))",
     re.IGNORECASE,
 )
 

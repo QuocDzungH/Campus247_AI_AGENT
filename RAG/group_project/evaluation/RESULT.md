@@ -1,36 +1,40 @@
 # Báo cáo Đánh giá (Evaluation Report) - VinUni Student Services RAG
 
-## Pipeline Configuration
-- **Mô hình Embedding**: text-embedding-ada-002 / bge-m3
-- **Mô hình Sinh văn bản (LLM)**: gpt-3.5-turbo / gpt-4o-mini
-- **Chiến lược Retrieval**: Hybrid Search (Dense + BM25) với RRF (Reciprocal Rank Fusion)
-- **Chunking**: RecursiveCharacterTextSplitter (chunk_size=500, chunk_overlap=50)
+## 1. Pipeline Configuration
+- **Corpus**: 11 tài liệu quy chế/hướng dẫn sinh viên VinUni đã tiền xử lý tại `RAG/data/processed/` (422 chunks).
+- **Index Version**: `vinuni-hybrid-21a68b99259e` (422 chunks metadata-indexed).
+- **Mô hình Embedding**:
+  - Offline mode: deterministic hashed embedding + BM25 + RRF; đây chỉ là plumbing baseline.
+  - Live mode: Gemini embedding theo cấu hình runtime (yêu cầu API key).
+- **Mô hình Sinh văn bản (LLM)**: chưa được đo trong report offline này.
+- **Chiến lược Retrieval**: Hybrid Search (Dense Vector + BM25) với Reciprocal Rank Fusion (RRF).
+- **Chunking**: Markdown-aware Header Splitter + TextChunker (chunk_size=500, chunk_overlap=50).
 
-## Metrics
-Kết quả đánh giá trên tập dữ liệu `golden_qa.json` (15 câu hỏi):
+## 2. Benchmark Dataset (`eval/rag/dataset.jsonl`)
+Thay thế tập `golden_qa.json` 15 câu cũ (chứa dữ liệu giả không có căn cứ như mức phí 100k, giờ giới nghiêm 11:30 PM) bằng tập benchmark kiểm chứng được gồm **60 kịch bản**:
+- **40 In-Domain Scenarios**: Dựa trên bằng chứng văn bản cụ thể từ 11 file quy chế VinUni (học phí, học bổng, ký túc xá, phúc khảo điểm, thư viện, bảo hiểm, kỷ luật...).
+- **15 Out-of-Domain Scenarios**: Các câu hỏi không thuộc phạm vi quy chế (vé máy bay, ẩm thực, thi chứng chỉ lái xe, chính sách trường khác...) để kiểm tra năng lực chống ảo giác (Anti-Hallucination & Abstention).
+- **5 Boundary / Ambiguous Scenarios**: Các câu hỏi thiếu ngữ cảnh hoặc mâu thuẫn để đo lường khả năng yêu cầu làm rõ (Clarification).
+- **Phân chia split**: 42 tune / 18 holdout (chống rò rỉ dữ liệu cùng family).
 
-| Metric | Score | Mô tả |
-|--------|-------|-------|
-| **Faithfulness** | N/A | Khả năng câu trả lời trung thành với ngữ cảnh truy xuất |
-| **Answer Relevance** | N/A | Mức độ liên quan của câu trả lời với câu hỏi gốc |
-| **Context Recall** | N/A | Tỉ lệ thông tin cần thiết có trong ngữ cảnh được truy xuất |
-| **Context Precision** | N/A | Khả năng xếp hạng ngữ cảnh hữu ích lên đầu |
+## 3. Kết quả và giới hạn hiện tại
 
-*(Chờ kết quả chạy đánh giá tự động bằng Ragas/TruLens)*
+Các số liệu cũ đã bị rút lại: runner cũ coi mọi RRF score thấp hơn `0.25` là
+abstention, dù `answer_question()` vẫn có thể trả `answered`. Runner hiện tại
+đo status thực tế của `RagPort.answer_question()`, citation theo `chunk_id` và
+chỉ báo Recall@3/Recall@5 vì production trả tối đa 5 passages.
 
-## A/B Comparison: Dense-only vs Hybrid+RRF
+Chạy `make test-eval-rag` để tạo [report JSON](../../../eval/results/rag_eval_report.json)
+và Markdown hiện tại trên tập holdout. Gate sẽ fail khi metric không đạt; kết quả
+fail là tín hiệu cần sửa retrieval/grounding, không phải lý do để nới ngưỡng.
 
-| Phương pháp | Top-K | Context Recall | Faithfulness | Nhận xét |
-|-------------|-------|----------------|--------------|---------|
-| Dense-only  | 3     | N/A            | N/A          | Tốt cho truy vấn ngữ nghĩa, nhưng yếu với các từ khóa mã số cụ thể |
-| Hybrid+RRF  | 3     | N/A            | N/A          | Cân bằng tốt giữa ngữ nghĩa và từ khóa chính xác |
+## 4. Live Evaluation & RAG Triad (chưa chạy)
 
-## Sample Results
+Khi có API key Gemini, pipeline có thể chạy retrieval hybrid:
+1. Dense Retrieval (Embeddings): Nâng cao Recall@5 cho các câu hỏi paraphrase/tiếng lóng/không dấu.
+2. LLM Reranking & Synthesis: Sinh câu trả lời kèm citation span.
+3. LLM Judge Triad (Faithfulness, Answer Relevance, Context Precision) đo lường bằng Ragas hoặc evaluator độc lập.
 
-| Câu hỏi | Câu trả lời (Pipeline) | Đánh giá |
-|---------|------------------------|----------|
-| Làm thế nào để xin bảng điểm chính thức? | [Kết quả sinh ra] | [Tốt/Khá/Cần cải thiện] |
-| Hạn chót để nộp đơn phúc khảo điểm là khi nào? | [Kết quả sinh ra] | [Tốt/Khá/Cần cải thiện] |
-
-## Conclusion
-[Placeholder: Nhận xét tổng quan về hiệu năng của hệ thống RAG, các điểm mạnh và các vấn đề cần khắc phục trong tương lai (ví dụ: cần cải thiện retrieval cho các câu hỏi phức tạp hơn, thêm bộ lọc metadata...)]
+## 5. Khuyến nghị
+1. Cải thiện retrieval dựa trên các ca holdout fail, rồi chạy lại cùng dataset/scorer.
+2. Chạy live hybrid và một evaluator grounding riêng trước khi công bố faithfulness.
