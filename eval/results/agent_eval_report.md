@@ -3,7 +3,7 @@
 - **Dataset Version**: `agent-eval-v3`
 - **Model / Scorer**: `rule-router+heuristics`
 - **Split**: `holdout`
-- **Timestamp**: `2026-10-07T08:33:23.952159+00:00`
+- **Timestamp**: `2026-10-07T09:28:37.154095+00:00`
 
 ## 1. Routing & Safety Metrics (L1, L2, L4)
 - **Total Evaluated (N)**: `51`

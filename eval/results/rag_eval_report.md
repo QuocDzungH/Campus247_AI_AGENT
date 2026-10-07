@@ -4,7 +4,7 @@
 - **RAG Mode**: `offline-pipeline-fake-embedding+bm25`
 - **Index Version**: `vinuni-hybrid-21a68b99259e`
 - **Total Scenarios**: `18`
-- **Timestamp**: `2026-10-07T08:33:27.423752+00:00`
+- **Timestamp**: `2026-10-07T09:28:38.855598+00:00`
 
 ## 1. Retrieval Performance (In-Domain, N = 12)
 - **Recall@3**: `25.00%`
@@ -24,6 +24,6 @@
   *(Tỷ lệ từ chối nhầm các câu hỏi có trong tài liệu)*
 
 ## 4. Latency
-- **p50 Latency**: `2.5 ms`
-- **p95 Latency**: `4.8 ms`
-- **Mean Latency**: `2.8 ms`
+- **p50 Latency**: `2.1 ms`
+- **p95 Latency**: `5.1 ms`
+- **Mean Latency**: `2.5 ms`

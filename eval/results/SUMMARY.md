@@ -99,4 +99,3 @@ Dưới đây là so sánh giữa **Baseline ban đầu** (khi chạy runner cũ
      .venv/bin/python eval/agent/run_eval.py --live
      ```
    - Đo lường bổ sung: LLM Triad (Faithfulness, Answer Relevance, Context Precision) bằng LLM Judge độc lập.
-

@@ -2,7 +2,7 @@
   "dataset_version": "rag-eval-v1",
   "index_version": "vinuni-hybrid-21a68b99259e",
   "mode": "offline-pipeline-fake-embedding+bm25",
-  "timestamp": "2026-10-07T08:33:27.423752+00:00",
+  "timestamp": "2026-10-07T09:28:38.855598+00:00",
   "total_cases": 18,
   "splits_count": {
     "holdout": 18
@@ -34,9 +34,9 @@
       "false_abstention_rate": 0.5833333333333334
     },
     "latency": {
-      "p50_seconds": 0.002525838000110525,
-      "p95_seconds": 0.004819726000278024,
-      "mean_seconds": 0.0027703404999657425
+      "p50_seconds": 0.00208428800033289,
+      "p95_seconds": 0.005083579000711325,
+      "mean_seconds": 0.0025315403890999733
     }
   },
   "limits": [
