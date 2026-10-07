@@ -8,7 +8,7 @@ import { queuePosition } from "./queue-navigation";
 
 export function QueueBackLink() {
   const { currentUser } = useStore();
-  const [href, setHref] = useState("/dashboard");
+  const [href, setHref] = useState("/queue");
   useEffect(() => {
     const saved = currentUser && queuePosition(currentUser.id);
     if (saved) {

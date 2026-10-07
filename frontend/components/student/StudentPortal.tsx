@@ -15,7 +15,7 @@ function PortalContents({ children }: { children: ReactNode }) {
   return <div className="thoughtstream-theme min-h-dvh bg-[var(--ts-bg)] text-[var(--ts-text-primary)] transition-colors">
     <a href="#student-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-none focus:border focus:border-[var(--ts-border-strong)] focus:bg-[var(--ts-surface)] focus:px-4 focus:py-3 focus:text-[var(--ts-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ts-focus-ring)]">Đến nội dung chính</a>
     <Navbar />
-    <main id="student-content" className={isChat ? "w-full" : "mx-auto w-full max-w-[1120px] px-4 pb-20 pt-8 sm:px-6 sm:pt-10 lg:px-8"}>
+    <main id="student-content" className={isChat ? "w-full" : "mx-auto w-full max-w-[1440px] px-4 pb-20 pt-8 sm:px-6 sm:pt-10 lg:px-8"}>
       {storageIssue && <p role="alert" className="mb-8 rounded-none border border-amber-300 bg-amber-50/80 p-4 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">{storageIssue}</p>}
       {children}
     </main>

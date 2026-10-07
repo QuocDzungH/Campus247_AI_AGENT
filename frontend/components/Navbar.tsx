@@ -14,6 +14,7 @@ import {
   X,
   FileSearch,
   MessageCircle,
+  Inbox,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { ThemeToggle } from "./ThemeToggle";
@@ -59,13 +60,14 @@ export function Navbar() {
     : isAdmin
     ? [{ href: "/admin", label: "Quản trị tài khoản", icon: LayoutDashboard }]
     : [
-        { href: "/dashboard", label: "Hàng chờ hồ sơ", icon: LayoutDashboard },
-        { href: "/reviews", label: "Rà soát học phần", icon: FileSearch },
+        { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+        { href: "/queue", label: "Hàng chờ", icon: Inbox },
+        { href: "/reviews", label: "Hồ sơ/Reviews", icon: FileSearch },
       ];
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--ts-border-subtle)] bg-[var(--ts-bg)]/95 text-[var(--ts-text-primary)] backdrop-blur-sm transition-colors">
-      <div className="mx-auto flex h-16 w-full max-w-[1600px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-16 w-full max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         {/* ── Left: Brand ── */}
         <Link href={isStudent ? "/student" : isAdmin ? "/admin" : "/dashboard"} className="flex min-h-11 items-center gap-2.5 shrink-0 group">
           <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-[#78716C] text-[#FAFAF9] transition-all group-hover:bg-[#57534E] dark:bg-[#A8A29E] dark:text-[#1C1917]">
@@ -81,9 +83,9 @@ export function Navbar() {
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive =
-              item.href === "/reviews" || item.href === "/student"
+              item.href === "/reviews" || item.href === "/student" || item.href === "/queue"
                 ? pathname.startsWith(item.href) && pathname !== "/student/assistant"
-                : pathname === item.href || pathname.startsWith(`${item.href}/`);
+                : pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
             return (
               <Link
                 key={item.href}
@@ -203,9 +205,9 @@ export function Navbar() {
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive =
-              item.href === "/reviews" || item.href === "/student"
+              item.href === "/reviews" || item.href === "/student" || item.href === "/queue"
                 ? pathname.startsWith(item.href) && pathname !== "/student/assistant"
-                : pathname === item.href || pathname.startsWith(`${item.href}/`);
+                : pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
             return (
               <Link
                 key={item.href}

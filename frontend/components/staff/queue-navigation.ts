@@ -12,7 +12,7 @@ export function queuePosition(accountId: string): QueuePosition | null {
     if (!saved) return null;
     const value = JSON.parse(saved) as QueuePosition;
     const url = new URL(value.url, window.location.origin);
-    if (url.origin !== window.location.origin || url.pathname !== "/dashboard") return null;
+    if (url.origin !== window.location.origin || (url.pathname !== "/dashboard" && url.pathname !== "/queue")) return null;
     if (!Number.isFinite(value.scrollY) || value.scrollY < 0 || typeof value.focusId !== "string") return null;
     return { ...value, url: url.pathname + url.search };
   } catch { return null; }

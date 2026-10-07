@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ChevronLeft, ChevronRight, FileSearch, CheckCircle2, Pencil } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, FileSearch, CheckCircle2, Pencil, Search, Clock, AlertTriangle, GraduationCap, LayoutDashboard } from "lucide-react";
 import type { EvidenceCitation, FindingAiLabel, ReviewCase, ReviewFinding } from "@/lib/types";
 import { useStore } from "@/lib/store";
 import { effectiveFinding, findingLabels, reviewReadiness, reviewSnapshot } from "@/lib/staff-policy";
@@ -17,8 +17,218 @@ export function StaffReviewQueue() {
   const { reviewCases } = useStore();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("active");
-  const records = reviewCases.filter(c => (status === "all" || (status === "active" ? c.status !== "completed" : c.status === status)) && [c.code, c.studentName, c.studentMssv, c.priorCourseName, c.targetCourseName, c.targetCourseCode].some(v => v.toLocaleLowerCase("vi").includes(query.trim().toLocaleLowerCase("vi"))));
-  return <StaffShell><header className="mb-4"><h1 className="font-serif text-2xl font-normal tracking-tight text-[#1C1917] dark:text-[#FAFAF9]">Rà soát học phần</h1><p className="mt-1 text-sm text-[#78716C] dark:text-[#A8A29E]">Đối chiếu nguồn, kiểm tra từng tiêu chí và lập phiếu đề xuất.</p></header><section className={staffSurface}><div className="flex flex-wrap gap-3 border-b border-[#E7E5E4] p-3 dark:border-[#292524]"><input aria-label="Tìm hồ sơ rà soát" className={`${staffField} min-w-52 flex-1`} placeholder="Mã hồ sơ, sinh viên, học phần…" value={query} onChange={e => setQuery(e.target.value)} /><select aria-label="Trạng thái rà soát" className={`${staffField} max-w-52`} value={status} onChange={e => setStatus(e.target.value)}><option value="active">Chưa hoàn tất</option><option value="all">Mọi trạng thái</option><option value="waiting_supplement">Chờ bổ sung</option><option value="in_review">Đang rà soát</option><option value="completed">Hoàn tất</option></select></div><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-[#F5F5F4] text-xs text-[#57534E] dark:bg-[#1C1917] dark:text-[#D6D3D1]"><tr>{["Hồ sơ / Sinh viên", "Học phần đã học", "Học phần đề nghị", "Kiểm tra", "Trạng thái"].map(label => <th scope="col" key={label} className="px-4 py-3 font-medium">{label}</th>)}</tr></thead><tbody>{records.map(c => { const readiness = reviewReadiness(c); return <tr key={c.id} className="border-t border-[#E7E5E4] align-top hover:bg-[#F5F5F4] dark:border-[#292524] dark:hover:bg-[#292524]/50"><td className="px-4 py-4"><Link href={`/reviews/${c.id}`} className="font-medium text-[#1C1917] underline decoration-[#A8A29E] underline-offset-2 hover:decoration-[#1C1917] dark:text-[#FAFAF9]">{c.code}</Link><p className="mt-1">{c.studentName}</p><p className="text-xs text-[#78716C] dark:text-[#A8A29E]">{c.studentMssv}</p></td><td className="px-4 py-4"><p>{c.priorCourseName}</p><p className="mt-1 text-xs text-[#78716C] dark:text-[#A8A29E]">{c.priorCourseCode} · {c.priorInstitution}</p></td><td className="px-4 py-4"><p>{c.targetCourseName}</p><p className="mt-1 text-xs text-[#78716C] dark:text-[#A8A29E]">{c.targetCourseCode} · {c.targetCourseCredits} tín chỉ</p></td><td className="px-4 py-4"><p>{c.findings.length - readiness.unchecked.length}/{c.findings.length} đã kiểm tra</p>{readiness.outdated.length > 0 && <p className="mt-1 text-xs text-[#B45309] dark:text-[#FBBF24]">{readiness.outdated.length} cần xem lại nguồn</p>}</td><td className="px-4 py-4"><StatusBadge status={c.status} /></td></tr>; })}</tbody></table></div>{!records.length && <p className="p-10 text-center text-sm text-[#78716C] dark:text-[#A8A29E]">Không có hồ sơ khớp bộ lọc.</p>}<p className="border-t border-[#E7E5E4] px-4 py-3 text-xs text-[#78716C] dark:border-[#292524] dark:text-[#A8A29E]">{records.length} hồ sơ · kết luận rà soát là đề xuất, chưa phải quyết định công nhận.</p></section></StaffShell>;
+
+  const allCount = reviewCases.length;
+  const supplementCount = reviewCases.filter((c) => c.status === "waiting_supplement").length;
+  const inReviewCount = reviewCases.filter((c) => c.status === "in_review").length;
+  const completedCount = reviewCases.filter((c) => c.status === "completed").length;
+
+  const records = reviewCases.filter(
+    (c) =>
+      (status === "all" ||
+        (status === "active" ? c.status !== "completed" : c.status === status)) &&
+      [c.code, c.studentName, c.studentMssv, c.priorCourseName, c.targetCourseName, c.targetCourseCode].some((v) =>
+        v.toLocaleLowerCase("vi").includes(query.trim().toLocaleLowerCase("vi"))
+      )
+  );
+
+  return (
+    <StaffShell>
+      <header className="mb-6 flex flex-wrap items-start justify-between gap-4 sm:mb-8 sm:gap-5">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="h-2 w-2 rounded-full bg-[#10B981]" />
+            <span className="text-xs font-semibold uppercase tracking-widest text-[#78716C] dark:text-[#A8A29E]">
+              Bàn làm việc cán bộ · VinUni Registrar
+            </span>
+          </div>
+          <h1 className="font-serif text-[32px] font-semibold leading-tight tracking-tight sm:text-[40px] text-[#1C1917] dark:text-[#FAFAF9]">
+            Rà soát học phần
+          </h1>
+          <p className="mt-3 text-sm leading-6 text-[var(--ts-text-secondary)]">
+            Đối chiếu nguồn, kiểm tra từng tiêu chí và lập phiếu đề xuất công nhận học phần.
+          </p>
+        </div>
+      </header>
+
+      <div
+        role="group"
+        aria-label="Phạm vi rà soát"
+        className="mb-6 grid grid-cols-2 rounded-sm border border-[#E7E5E4] bg-[#FFFFFF] dark:border-[#292524] dark:bg-[#1C1917] sm:mb-8 sm:grid-cols-4"
+      >
+        {[
+          { label: "Tất cả hồ sơ", count: allCount, value: "all", Icon: LayoutDashboard },
+          { label: "Chờ bổ sung", count: supplementCount, value: "waiting_supplement", isAlert: supplementCount > 0, Icon: AlertTriangle },
+          { label: "Đang rà soát", count: inReviewCount, value: "in_review", Icon: Clock },
+          { label: "Đã hoàn tất", count: completedCount, value: "completed", Icon: CheckCircle2 },
+        ].map((item, index) => {
+          const active = status === item.value;
+          const Icon = item.Icon;
+          return (
+            <button
+              key={item.label}
+              type="button"
+              aria-pressed={active}
+              onClick={() => setStatus(item.value)}
+              className={`group relative flex min-h-20 items-center justify-between gap-3 border-[#E7E5E4] p-4 text-left transition-all duration-150 hover:bg-[#F5F5F4] active:bg-[#E7E5E4] dark:border-[#292524] dark:hover:bg-[#23201D] sm:min-h-24 sm:p-5 ${
+                index < 2 ? "border-b sm:border-b-0" : ""
+              } ${index % 2 === 0 ? "border-r" : "sm:border-r"} ${index === 3 ? "sm:border-r-0" : ""} ${
+                active ? "bg-[#F5F5F4]/70 dark:bg-[#23201D]/70" : ""
+              } ${
+                item.isAlert ? "!border-amber-300 !bg-amber-50/60 dark:!border-amber-800/60 dark:!bg-amber-950/25" : ""
+              }`}
+            >
+              {active && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1C1917] dark:bg-[#FAFAF9]" aria-hidden="true" />
+              )}
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <p className={`text-[11px] font-semibold uppercase tracking-wider ${
+                    item.isAlert ? "text-amber-900 dark:text-amber-300" : "text-[#78716C] dark:text-[#A8A29E]"
+                  }`}>{item.label}</p>
+                  {item.isAlert && (
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500 ring-2 ring-amber-200 dark:ring-amber-900/50 animate-pulse" aria-hidden="true" />
+                  )}
+                </div>
+                <p className={`mt-2 font-serif text-3xl font-medium leading-none tabular-nums sm:text-4xl ${
+                  item.isAlert
+                    ? "text-amber-900 dark:text-amber-200 font-semibold"
+                    : item.value === "completed" && item.count === 0
+                    ? "text-[#A8A29E] dark:text-[#78716C]"
+                    : "text-[#1C1917] dark:text-[#FAFAF9]"
+                }`}>{item.count}</p>
+              </div>
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border transition-colors ${
+                active
+                  ? "border-[#1C1917] bg-[#1C1917] text-[#FAFAF9] dark:border-[#FAFAF9] dark:bg-[#FAFAF9] dark:text-[#1C1917]"
+                  : item.isAlert
+                  ? "border-amber-300 bg-amber-100 text-amber-900 dark:border-amber-800/80 dark:bg-amber-900/40 dark:text-amber-200"
+                  : "border-[#E7E5E4] bg-[#FAFAF9] text-[#78716C] dark:border-[#2E2A27] dark:bg-[#201D1A] dark:text-[#A8A29E] group-hover:border-[#D6D3D1] dark:group-hover:border-[#383533]"
+              }`}>
+                <Icon className="h-4 w-4" aria-hidden="true" />
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      <section className={`${staffSurface} overflow-hidden shadow-xs`} aria-label="Danh sách hồ sơ rà soát">
+        <div className="grid gap-3 border-b border-[var(--ts-border-subtle)] p-3.5 sm:grid-cols-[minmax(280px,1fr)_220px]">
+          <label className="relative">
+            <span className="sr-only">Tìm hồ sơ rà soát</span>
+            <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-[#78716C] dark:text-[#A8A29E]" />
+            <input
+              aria-label="Tìm hồ sơ rà soát"
+              className={`${staffField} min-h-11 pl-10`}
+              placeholder="Mã hồ sơ, sinh viên, học phần…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </label>
+          <select
+            aria-label="Trạng thái rà soát"
+            className={`${staffField} min-h-11`}
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+          >
+            <option value="active">Chưa hoàn tất</option>
+            <option value="all">Mọi trạng thái</option>
+            <option value="waiting_supplement">Chờ bổ sung</option>
+            <option value="in_review">Đang rà soát</option>
+            <option value="completed">Hoàn tất</option>
+          </select>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-[#F5F5F4] text-xs text-[#57534E] dark:bg-[#1C1917] dark:text-[#D6D3D1]">
+              <tr>
+                {["Hồ sơ / Sinh viên", "Học phần đã học", "Học phần đề nghị", "Kiểm tra", "Trạng thái", "Thao tác"].map(
+                  (label, idx) => (
+                    <th scope="col" key={label} className={`px-4 py-3 font-medium ${idx === 5 ? "text-right" : ""}`}>
+                      {label}
+                    </th>
+                  )
+                )}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[var(--ts-border-subtle)]">
+              {records.map((c) => {
+                const readiness = reviewReadiness(c);
+                return (
+                  <tr
+                    key={c.id}
+                    className="align-top transition-colors hover:bg-[#F5F5F4]/80 dark:hover:bg-[#292524]/50"
+                  >
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border border-[#E7E5E4] bg-[#F5F5F4] text-[#57534E] dark:border-[#383533] dark:bg-[#292524] dark:text-[#D6D3D1]">
+                          <GraduationCap className="h-4.5 w-4.5" aria-hidden="true" />
+                        </span>
+                        <div className="min-w-0">
+                          <Link
+                            href={`/reviews/${c.id}`}
+                            className="inline-block max-w-[200px] break-all line-clamp-1 font-mono text-xs font-semibold text-[#1C1917] underline decoration-[#A8A29E] underline-offset-2 hover:decoration-[#1C1917] dark:text-[#FAFAF9] dark:decoration-[#78716C] dark:hover:decoration-[#FAFAF9]"
+                          >
+                            {c.code}
+                          </Link>
+                          <p className="mt-0.5 text-xs text-[#1C1917] dark:text-[#FAFAF9] font-medium truncate">
+                            {c.studentName}
+                          </p>
+                          <p className="text-[11px] font-mono text-[#78716C] dark:text-[#A8A29E]">
+                            {c.studentMssv}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <p className="font-medium text-[#1C1917] dark:text-[#FAFAF9]">{c.priorCourseName}</p>
+                      <p className="mt-0.5 text-xs text-[#78716C] dark:text-[#A8A29E]">
+                        {c.priorCourseCode} · {c.priorInstitution}
+                      </p>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <p className="font-medium text-[#1C1917] dark:text-[#FAFAF9]">{c.targetCourseName}</p>
+                      <p className="mt-0.5 text-xs text-[#78716C] dark:text-[#A8A29E]">
+                        {c.targetCourseCode} · {c.targetCourseCredits} tín chỉ
+                      </p>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <p className="font-medium text-[#1C1917] dark:text-[#FAFAF9]">
+                        {c.findings.length - readiness.unchecked.length}/{c.findings.length} đã kiểm tra
+                      </p>
+                      {readiness.outdated.length > 0 && (
+                        <p className="mt-0.5 text-xs font-medium text-[#B45309] dark:text-[#FBBF24]">
+                          {readiness.outdated.length} cần xem lại nguồn
+                        </p>
+                      )}
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <StatusBadge status={c.status} />
+                    </td>
+                    <td className="px-4 py-3.5 text-right">
+                      <Link
+                        href={`/reviews/${c.id}`}
+                        className="inline-flex min-h-9 items-center gap-1 rounded-sm border border-[#D6D3D1] bg-[#FAFAF9] px-3 text-xs font-medium text-[#1C1917] transition-colors hover:bg-[#E7E5E4] dark:border-[#44403C] dark:bg-[#292524] dark:text-[#FAFAF9] dark:hover:bg-[#383533]"
+                      >
+                        <span>Xem hồ sơ</span>
+                        <ArrowRight className="h-3 w-3" />
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        {!records.length && (
+          <p className="p-10 text-center text-sm text-[#78716C] dark:text-[#A8A29E]">Không có hồ sơ khớp bộ lọc.</p>
+        )}
+        <p className="border-t border-[var(--ts-border-subtle)] px-4 py-3 text-xs text-[#78716C] dark:text-[#A8A29E]">
+          {records.length} hồ sơ · kết luận rà soát là đề xuất, chưa phải quyết định công nhận.
+        </p>
+      </section>
+    </StaffShell>
+  );
 }
 
 const findingDrafts = new Map<string, string>();

@@ -19,25 +19,33 @@ function StudentTicketView({ ticket }: { ticket: Ticket }) {
       : "Đã hoàn tất";
 
   return (
-    <div className="min-h-screen flex flex-col bg-transparent">
+    <div className="thoughtstream-theme min-h-screen flex flex-col bg-[var(--ts-bg)] text-[var(--ts-text-primary)]">
       <Navbar />
-      <main className="w-full max-w-4xl mx-auto flex-1 p-4 sm:p-6 lg:p-8">
+      <main className="w-full max-w-[1440px] mx-auto flex-1 px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
           <div>
-            <p className="font-mono text-xs text-[#78716C] dark:text-[#A8A29E]">{ticket.code}</p>
-            <h1 className="mt-1 font-serif text-xl sm:text-2xl font-normal text-[#1C1917] dark:text-[#FAFAF9]">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="h-2 w-2 rounded-full bg-[#10B981]" />
+              <span className="font-mono text-xs font-semibold uppercase tracking-widest text-[#78716C] dark:text-[#A8A29E]">
+                {ticket.code}
+              </span>
+            </div>
+            <h1 className="font-serif text-[32px] font-semibold leading-tight tracking-tight sm:text-[40px] text-[#1C1917] dark:text-[#FAFAF9]">
               Theo dõi hồ sơ của bạn
             </h1>
+            <p className="mt-2 text-sm text-[var(--ts-text-secondary)]">
+              Thông tin chi tiết yêu cầu học vụ và trao đổi với cán bộ xử lý.
+            </p>
           </div>
           <Link
             href={`/my-requests?ticket=${encodeURIComponent(ticket.id)}`}
-            className="inline-flex items-center justify-center min-h-11 px-4 py-2 rounded-none bg-[#78716C] hover:bg-[#57534E] dark:bg-[#A8A29E] dark:hover:bg-[#D6D3D1] text-[#FAFAF9] dark:text-[#1C1917] text-xs font-medium transition-colors"
+            className="inline-flex items-center justify-center min-h-11 px-4 py-2 rounded-sm bg-[#1C1917] hover:bg-[#57534E] dark:bg-[#FAFAF9] dark:hover:bg-[#E7E5E4] text-[#FAFAF9] dark:text-[#1C1917] text-xs font-semibold uppercase tracking-wider transition-colors"
           >
             Mở trong Yêu cầu của tôi
           </Link>
         </div>
 
-        <section aria-labelledby="student-ticket-title" className="rounded-none bg-[#FAFAF9] dark:bg-[#141210] border border-[#E7E5E4] dark:border-[#292524] shadow-none p-5 sm:p-6 space-y-5">
+        <section aria-labelledby="student-ticket-title" className="max-w-4xl rounded-sm bg-[#FFFFFF] dark:bg-[#1C1917] border border-[#E7E5E4] dark:border-[#292524] shadow-none p-5 sm:p-6 space-y-5">
           <div>
             <h2 id="student-ticket-title" className="font-serif text-base sm:text-lg font-normal text-[#1C1917] dark:text-[#FAFAF9]">
               {ticket.title}

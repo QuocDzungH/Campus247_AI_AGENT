@@ -1,7 +1,7 @@
 "use client";
 
-import { StaffQueue } from "@/components/staff/StaffQueue";
+import { StaffDashboard } from "@/components/staff/StaffDashboard";
 
 export default function OfficerDashboardPage() {
-  return <StaffQueue />;
+  return <StaffDashboard />;
 }
