@@ -1,0 +1,35 @@
+[project]
+name = "vinuni-rag"
+version = "0.1.0"
+description = "VinUni Student Services RAG Chatbot"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "langchain",
+    "langchain-openai",
+    "langchain-community",
+    "chromadb",
+    "openai",
+    "pydantic",
+    "pydantic-settings",
+    "rank-bm25",
+    "httpx",
+    "beautifulsoup4",
+    "markitdown",
+    "streamlit",
+    "python-dotenv",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = []

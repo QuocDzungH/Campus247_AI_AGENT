@@ -3,7 +3,12 @@
 
 $ErrorActionPreference = 'Stop'
 
-$HookFile = '.git/hooks/pre-push'
+# A global core.hooksPath can silently bypass the repository hook. Pin this
+# repository to its own hook directory so the AI log hook is actually used.
+git config --local core.hooksPath .git/hooks
+$HookDir = git rev-parse --git-path hooks
+if (-not (Test-Path $HookDir)) { New-Item -ItemType Directory -Path $HookDir | Out-Null }
+$HookFile = Join-Path $HookDir 'pre-push'
 
 # Git on Windows runs hooks via Git Bash, so the hook body must be bash.
 $HookBody = @'

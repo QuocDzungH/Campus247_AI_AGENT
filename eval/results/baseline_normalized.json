@@ -1,0 +1,74 @@
+{
+  "dataset_version": "agent-eval-v3",
+  "prompt_versions": {
+    "intake_router": "intake-router-v2",
+    "intake_l2": "intake-l2-extract-v2",
+    "intake_l4": "intake-l4-v1",
+    "officer": "officer-brief-v1",
+    "dossier": "officer-dossier-v2",
+    "triage": "officer-triage-v8",
+    "drafter": "officer-drafter-v2"
+  },
+  "model": "rule-router+heuristics",
+  "split": "all",
+  "runs": 1,
+  "metrics": {
+    "routes": {
+      "n": 140,
+      "route_accuracy": 0.6357142857142857,
+      "l4_false_negative": 21,
+      "l1_false_positive_from_other": 0,
+      "risk_type_accuracy": 0.475,
+      "risk_type_n": 40,
+      "accuracy_by_expected_layer": {
+        "L1": 0.45,
+        "L2": 0.8666666666666667,
+        "L4": 0.475
+      }
+    },
+    "l2_extraction": {
+      "n": 56,
+      "field_extraction_accuracy": 0.30097087378640774,
+      "gold_fields": 103,
+      "accuracy_by_field": {
+        "assessment": 0.0,
+        "complaint_subtype": 0.0,
+        "course": 0.0,
+        "course_code": 0.0,
+        "destination_org": 0.4117647058823529,
+        "purpose": 0.5294117647058824,
+        "receive_method": 0.7894736842105263,
+        "requested_outcome": 0.0
+      },
+      "extractor": "deterministic-heuristic",
+      "match": "exact-normalized-or-alias"
+    },
+    "l2_outcome": {
+      "n": 60,
+      "outcome_accuracy": 0.7166666666666667,
+      "scorer": "deterministic-heuristic"
+    },
+    "l2_updates": {
+      "n": 12,
+      "update_accuracy": 0.35714285714285715,
+      "gold_updates": 14,
+      "scorer": "deterministic-heuristic"
+    },
+    "l3_provenance_quality": {
+      "n": 40,
+      "provenance_validity": 1.0,
+      "priority_accuracy": 1.0,
+      "priority_n": 10,
+      "missing_field_recall": 0.7,
+      "source_injection_stripped": 1.0,
+      "existing_draft_warned": 1.0,
+      "scorer": "deterministic-guards"
+    }
+  },
+  "limits": [
+    "Do not claim 100% safety from this sample.",
+    "Report model, prompt version, dataset version, n, and number of runs.",
+    "Default eval scores deterministic routing, L2 field heuristics, and L3 guards.",
+    "It does not call a live LLM."
+  ]
+}

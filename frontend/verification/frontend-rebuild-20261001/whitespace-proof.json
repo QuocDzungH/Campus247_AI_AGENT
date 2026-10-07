@@ -1,0 +1,38 @@
+[
+  {
+    "file": "frontend/app/error.tsx",
+    "identicalEmittedJavaScript": true,
+    "beforeSHA": "1c6e651d03e076ddeafb58bcd2155306f75d930104c2e8f41521911d93af7bcf",
+    "afterSHA": "b5ef2c048cb1c9df78d7dace06796283ea6f09482d90356214c0a268616bf4b1"
+  },
+  {
+    "file": "frontend/app/not-found.tsx",
+    "identicalEmittedJavaScript": true,
+    "beforeSHA": "167ebac168a8a41f98a6490065d6a10ab4814490d76014380ac0507fe9dc4760",
+    "afterSHA": "4c55ede749c48f42d07c9b7ab95d0c979ec461769da0982bc196fc41d2a99dc7"
+  },
+  {
+    "file": "frontend/components/shared/StatusBadge.tsx",
+    "identicalEmittedJavaScript": true,
+    "beforeSHA": "96366628c2473141cef9cd4a726a8e45618872b2988e2032fe6721fbba80bf85",
+    "afterSHA": "4dbf65f7ea4c4b87a4d9857b296bde5d800263149df3ab6ec20c3b7008d0ea0f"
+  },
+  {
+    "file": "frontend/lib/data/api/api-client.ts",
+    "identicalEmittedJavaScript": true,
+    "beforeSHA": "be56a39e194f7aa7496c903cd18c1db5ec752c6843aa47f3a7c91625c39be9d4",
+    "afterSHA": "014ef2fbf17d441ecdd89ff0897f9ee622245be2cfd4ab5171fbafc247a37a64"
+  },
+  {
+    "file": "frontend/lib/data/mock/fixtures.ts",
+    "identicalEmittedJavaScript": true,
+    "beforeSHA": "549b9f20a686deaed44ab6f32be76e072524f06a75b6a449e32b7c739a4baf92",
+    "afterSHA": "9faf6627cbfebb9d7dc99facbaaa4f60542c6e0a9198850e2430765d4f8c38b5"
+  },
+  {
+    "file": "frontend/lib/format-date.ts",
+    "identicalEmittedJavaScript": true,
+    "beforeSHA": "d537a40f541d11668b885489c7b138f517b8dfd6daa2b018a705c9b9f61bd87e",
+    "afterSHA": "556053557aadb99e0f50dd98f082cacb4216787ba17169aec2435b4c27b57672"
+  }
+]

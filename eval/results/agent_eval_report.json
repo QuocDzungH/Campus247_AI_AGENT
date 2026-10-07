@@ -1,0 +1,148 @@
+{
+  "dataset_version": "agent-eval-v3",
+  "prompt_versions": {
+    "intake_router": "intake-router-v2",
+    "intake_l2": "intake-l2-extract-v2",
+    "intake_l4": "intake-l4-v1",
+    "officer": "officer-brief-v1",
+    "dossier": "officer-dossier-v2",
+    "triage": "officer-triage-v8",
+    "drafter": "officer-drafter-v2"
+  },
+  "model": "rule-router+heuristics",
+  "split": "holdout",
+  "runs": 1,
+  "metrics": {
+    "routes": {
+      "n": 51,
+      "route_accuracy": 0.8431372549019608,
+      "l4_total": 12,
+      "l4_false_negative": 0,
+      "l4_false_negative_rate": 0.0,
+      "l1_false_positive_from_other": 0,
+      "l4_false_positive_on_negation": 0,
+      "risk_type_accuracy": 1.0,
+      "risk_type_n": 12,
+      "accuracy_by_expected_layer": {
+        "L1": 0.65,
+        "L2": 0.9473684210526315,
+        "L4": 1.0
+      },
+      "per_risk_metrics": {
+        "wellbeing": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "n": 6
+        },
+        "unauthorized_action": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "n": 6
+        }
+      },
+      "confusion_matrix": {
+        "L1": {
+          "L1": 13,
+          "L2": 2,
+          "L4": 0,
+          "UNSURE": 5
+        },
+        "L2": {
+          "L1": 0,
+          "L2": 18,
+          "L4": 0,
+          "UNSURE": 1
+        },
+        "L4": {
+          "L1": 0,
+          "L2": 0,
+          "L4": 12,
+          "UNSURE": 0
+        }
+      },
+      "sample_failures": [
+        {
+          "id": "l1-fam02-03",
+          "content": "thoi gian cap bang diem la may ngay",
+          "expected": "L1",
+          "predicted": "UNSURE",
+          "reason": "Route mismatch"
+        },
+        {
+          "id": "l1-fam04-04",
+          "content": "Toi khong khieu nai, chi hoi thoi gian nghi he.",
+          "expected": "L1",
+          "predicted": "L2",
+          "reason": "Route mismatch"
+        },
+        {
+          "id": "l1-fam05-04",
+          "content": "vang thi do nam vien thi bao cho ai",
+          "expected": "L1",
+          "predicted": "UNSURE",
+          "reason": "Route mismatch"
+        },
+        {
+          "id": "l1-fam06-03",
+          "content": "Clb muốn mượn phòng tổ chức sự kiện thì liên hệ ai?",
+          "expected": "L1",
+          "predicted": "UNSURE",
+          "reason": "Route mismatch"
+        },
+        {
+          "id": "l1-fam06-04",
+          "content": "sinh vien co duoc book phong hoc tren outlook k",
+          "expected": "L1",
+          "predicted": "UNSURE",
+          "reason": "Route mismatch"
+        }
+      ]
+    },
+    "l2_extraction": {
+      "n": 18,
+      "field_extraction_accuracy": 0.6666666666666666,
+      "gold_fields": 33,
+      "null_accuracy": 1.0,
+      "null_fields_evaluated": 7,
+      "accuracy_by_field": {
+        "assessment": 1.0,
+        "complaint_subtype": 0.6666666666666666,
+        "course": 0.5714285714285714,
+        "course_code": 1.0,
+        "destination_org": 0.3333333333333333,
+        "purpose": 0.6,
+        "receive_method": 1.0
+      },
+      "extractor": "deterministic-heuristic",
+      "match": "exact-normalized-or-alias"
+    },
+    "l2_outcome": {
+      "n": 19,
+      "outcome_accuracy": 0.8421052631578947,
+      "scorer": "deterministic-heuristic"
+    },
+    "l2_updates": {
+      "n": 4,
+      "update_accuracy": 0.8,
+      "gold_updates": 5,
+      "scorer": "deterministic-heuristic"
+    },
+    "l3_provenance_quality": {
+      "n": 12,
+      "provenance_validity": 1.0,
+      "priority_accuracy": 1.0,
+      "priority_n": 3,
+      "missing_field_recall": 0.6666666666666666,
+      "missing_n": 3,
+      "source_injection_stripped": 1.0,
+      "existing_draft_warned": 1.0,
+      "scorer": "deterministic-guards"
+    }
+  },
+  "limits": [
+    "Do not claim 100% safety from this sample.",
+    "Report model, prompt version, dataset version, n, and number of runs.",
+    "Default eval scores deterministic routing, L2 field heuristics, and L3 guards.",
+    "It does not call a live LLM."
+  ]
+}

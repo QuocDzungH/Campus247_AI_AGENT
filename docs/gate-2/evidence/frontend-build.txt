@@ -1,0 +1,42 @@
+
+> campus247-frontend@0.1.0 build
+> next build --webpack
+
+▲ Next.js 16.3.6 (webpack)
+✓ Running next.config.ts took 142ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 7.8s
+  Running TypeScript ...
+  Finished TypeScript in 4.1s ...
+  Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/17) ...
+  Generating static pages using 7 workers (4/17)
+  Generating static pages using 7 workers (8/17)
+  Generating static pages using 7 workers (12/17)
+✓ Generating static pages using 7 workers (17/17) in 723ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /admin
+├ ○ /chat
+├ ○ /dashboard
+├ ○ /login
+├ ○ /my-requests
+├ ○ /reviews
+├ ƒ /reviews/[reviewId]
+├ ○ /student
+├ ○ /student/assistant
+├ ○ /student/certificate
+├ ○ /student/certificate/review
+├ ○ /student/complaint
+├ ○ /student/complaint/review
+├ ○ /student/lookup
+└ ƒ /tickets/[ticketId]
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand

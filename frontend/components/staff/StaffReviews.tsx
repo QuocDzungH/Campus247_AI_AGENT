@@ -1,0 +1,301 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, FileSearch, CheckCircle2, Pencil, Search, Clock, AlertTriangle, GraduationCap, LayoutDashboard } from "lucide-react";
+import type { EvidenceCitation, FindingAiLabel, ReviewCase, ReviewFinding } from "@/lib/types";
+import { useStore } from "@/lib/store";
+import { effectiveFinding, findingLabels, reviewReadiness, reviewSnapshot } from "@/lib/staff-policy";
+import { draftSupplementRequest, generateReviewReport } from "@/lib/review-service";
+import { StatusBadge } from "@/components/shared/StatusBadge";
+import { AccessibleDialog } from "@/components/shared/AccessibleDialog";
+import { AttachmentDownload } from "@/components/student/AttachmentDownload";
+import { StaffShell, staffButton, staffField, staffPrimary, staffSurface } from "./StaffShell";
+import { useStaffDraft } from "./useStaffDraft";
+
+export function StaffReviewQueue() {
+  const { reviewCases } = useStore();
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState("active");
+
+  const allCount = reviewCases.length;
+  const supplementCount = reviewCases.filter((c) => c.status === "waiting_supplement").length;
+  const inReviewCount = reviewCases.filter((c) => c.status === "in_review").length;
+  const completedCount = reviewCases.filter((c) => c.status === "completed").length;
+
+  const records = reviewCases.filter(
+    (c) =>
+      (status === "all" ||
+        (status === "active" ? c.status !== "completed" : c.status === status)) &&
+      [c.code, c.studentName, c.studentMssv, c.priorCourseName, c.targetCourseName, c.targetCourseCode].some((v) =>
+        v.toLocaleLowerCase("vi").includes(query.trim().toLocaleLowerCase("vi"))
+      )
+  );
+
+  return (
+    <StaffShell>
+      <header className="mb-6 flex flex-wrap items-start justify-between gap-4 sm:mb-8 sm:gap-5">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="h-2 w-2 rounded-full bg-[#10B981]" />
+            <span className="text-xs font-semibold uppercase tracking-widest text-[#78716C] dark:text-[#A8A29E]">
+              Bàn làm việc cán bộ · VinUni Registrar
+            </span>
+          </div>
+          <h1 className="font-serif text-[32px] font-semibold leading-tight tracking-tight sm:text-[40px] text-[#1C1917] dark:text-[#FAFAF9]">
+            Rà soát học phần
+          </h1>
+          <p className="mt-3 text-sm leading-6 text-[var(--ts-text-secondary)]">
+            Đối chiếu nguồn, kiểm tra từng tiêu chí và lập phiếu đề xuất công nhận học phần.
+          </p>
+        </div>
+      </header>
+
+      <div
+        role="group"
+        aria-label="Phạm vi rà soát"
+        className="mb-6 grid grid-cols-2 rounded-sm border border-[#E7E5E4] bg-[#FFFFFF] dark:border-[#292524] dark:bg-[#1C1917] sm:mb-8 sm:grid-cols-4"
+      >
+        {[
+          { label: "Tất cả hồ sơ", count: allCount, value: "all", Icon: LayoutDashboard },
+          { label: "Chờ bổ sung", count: supplementCount, value: "waiting_supplement", isAlert: supplementCount > 0, Icon: AlertTriangle },
+          { label: "Đang rà soát", count: inReviewCount, value: "in_review", Icon: Clock },
+          { label: "Đã hoàn tất", count: completedCount, value: "completed", Icon: CheckCircle2 },
+        ].map((item, index) => {
+          const active = status === item.value;
+          const Icon = item.Icon;
+          return (
+            <button
+              key={item.label}
+              type="button"
+              aria-pressed={active}
+              onClick={() => setStatus(item.value)}
+              className={`group relative flex min-h-20 items-center justify-between gap-3 border-[#E7E5E4] p-4 text-left transition-all duration-150 hover:bg-[#F5F5F4] active:bg-[#E7E5E4] dark:border-[#292524] dark:hover:bg-[#23201D] sm:min-h-24 sm:p-5 ${
+                index < 2 ? "border-b sm:border-b-0" : ""
+              } ${index % 2 === 0 ? "border-r" : "sm:border-r"} ${index === 3 ? "sm:border-r-0" : ""} ${
+                active ? "bg-[#F5F5F4]/70 dark:bg-[#23201D]/70" : ""
+              } ${
+                item.isAlert ? "!border-amber-300 !bg-amber-50/60 dark:!border-amber-800/60 dark:!bg-amber-950/25" : ""
+              }`}
+            >
+              {active && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1C1917] dark:bg-[#FAFAF9]" aria-hidden="true" />
+              )}
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <p className={`text-[11px] font-semibold uppercase tracking-wider ${
+                    item.isAlert ? "text-amber-900 dark:text-amber-300" : "text-[#78716C] dark:text-[#A8A29E]"
+                  }`}>{item.label}</p>
+                  {item.isAlert && (
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500 ring-2 ring-amber-200 dark:ring-amber-900/50 animate-pulse" aria-hidden="true" />
+                  )}
+                </div>
+                <p className={`mt-2 font-serif text-3xl font-medium leading-none tabular-nums sm:text-4xl ${
+                  item.isAlert
+                    ? "text-amber-900 dark:text-amber-200 font-semibold"
+                    : item.value === "completed" && item.count === 0
+                    ? "text-[#A8A29E] dark:text-[#78716C]"
+                    : "text-[#1C1917] dark:text-[#FAFAF9]"
+                }`}>{item.count}</p>
+              </div>
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border transition-colors ${
+                active
+                  ? "border-[#1C1917] bg-[#1C1917] text-[#FAFAF9] dark:border-[#FAFAF9] dark:bg-[#FAFAF9] dark:text-[#1C1917]"
+                  : item.isAlert
+                  ? "border-amber-300 bg-amber-100 text-amber-900 dark:border-amber-800/80 dark:bg-amber-900/40 dark:text-amber-200"
+                  : "border-[#E7E5E4] bg-[#FAFAF9] text-[#78716C] dark:border-[#2E2A27] dark:bg-[#201D1A] dark:text-[#A8A29E] group-hover:border-[#D6D3D1] dark:group-hover:border-[#383533]"
+              }`}>
+                <Icon className="h-4 w-4" aria-hidden="true" />
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      <section className={`${staffSurface} overflow-hidden shadow-xs`} aria-label="Danh sách hồ sơ rà soát">
+        <div className="grid gap-3 border-b border-[var(--ts-border-subtle)] p-3.5 sm:grid-cols-[minmax(280px,1fr)_220px]">
+          <label className="relative">
+            <span className="sr-only">Tìm hồ sơ rà soát</span>
+            <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-[#78716C] dark:text-[#A8A29E]" />
+            <input
+              aria-label="Tìm hồ sơ rà soát"
+              className={`${staffField} min-h-11 pl-10`}
+              placeholder="Mã hồ sơ, sinh viên, học phần…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </label>
+          <select
+            aria-label="Trạng thái rà soát"
+            className={`${staffField} min-h-11`}
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+          >
+            <option value="active">Chưa hoàn tất</option>
+            <option value="all">Mọi trạng thái</option>
+            <option value="waiting_supplement">Chờ bổ sung</option>
+            <option value="in_review">Đang rà soát</option>
+            <option value="completed">Hoàn tất</option>
+          </select>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-[#F5F5F4] text-xs text-[#57534E] dark:bg-[#1C1917] dark:text-[#D6D3D1]">
+              <tr>
+                {["Hồ sơ / Sinh viên", "Học phần đã học", "Học phần đề nghị", "Kiểm tra", "Trạng thái", "Thao tác"].map(
+                  (label, idx) => (
+                    <th scope="col" key={label} className={`px-4 py-3 font-medium ${idx === 5 ? "text-right" : ""}`}>
+                      {label}
+                    </th>
+                  )
+                )}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[var(--ts-border-subtle)]">
+              {records.map((c) => {
+                const readiness = reviewReadiness(c);
+                return (
+                  <tr
+                    key={c.id}
+                    className="align-top transition-colors hover:bg-[#F5F5F4]/80 dark:hover:bg-[#292524]/50"
+                  >
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border border-[#E7E5E4] bg-[#F5F5F4] text-[#57534E] dark:border-[#383533] dark:bg-[#292524] dark:text-[#D6D3D1]">
+                          <GraduationCap className="h-4.5 w-4.5" aria-hidden="true" />
+                        </span>
+                        <div className="min-w-0">
+                          <Link
+                            href={`/reviews/${c.id}`}
+                            className="inline-block max-w-[200px] break-all line-clamp-1 font-mono text-xs font-semibold text-[#1C1917] underline decoration-[#A8A29E] underline-offset-2 hover:decoration-[#1C1917] dark:text-[#FAFAF9] dark:decoration-[#78716C] dark:hover:decoration-[#FAFAF9]"
+                          >
+                            {c.code}
+                          </Link>
+                          <p className="mt-0.5 text-xs text-[#1C1917] dark:text-[#FAFAF9] font-medium truncate">
+                            {c.studentName}
+                          </p>
+                          <p className="text-[11px] font-mono text-[#78716C] dark:text-[#A8A29E]">
+                            {c.studentMssv}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <p className="font-medium text-[#1C1917] dark:text-[#FAFAF9]">{c.priorCourseName}</p>
+                      <p className="mt-0.5 text-xs text-[#78716C] dark:text-[#A8A29E]">
+                        {c.priorCourseCode} · {c.priorInstitution}
+                      </p>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <p className="font-medium text-[#1C1917] dark:text-[#FAFAF9]">{c.targetCourseName}</p>
+                      <p className="mt-0.5 text-xs text-[#78716C] dark:text-[#A8A29E]">
+                        {c.targetCourseCode} · {c.targetCourseCredits} tín chỉ
+                      </p>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <p className="font-medium text-[#1C1917] dark:text-[#FAFAF9]">
+                        {c.findings.length - readiness.unchecked.length}/{c.findings.length} đã kiểm tra
+                      </p>
+                      {readiness.outdated.length > 0 && (
+                        <p className="mt-0.5 text-xs font-medium text-[#B45309] dark:text-[#FBBF24]">
+                          {readiness.outdated.length} cần xem lại nguồn
+                        </p>
+                      )}
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <StatusBadge status={c.status} />
+                    </td>
+                    <td className="px-4 py-3.5 text-right">
+                      <Link
+                        href={`/reviews/${c.id}`}
+                        className="inline-flex min-h-9 items-center gap-1 rounded-sm border border-[#D6D3D1] bg-[#FAFAF9] px-3 text-xs font-medium text-[#1C1917] transition-colors hover:bg-[#E7E5E4] dark:border-[#44403C] dark:bg-[#292524] dark:text-[#FAFAF9] dark:hover:bg-[#383533]"
+                      >
+                        <span>Xem hồ sơ</span>
+                        <ArrowRight className="h-3 w-3" />
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        {!records.length && (
+          <p className="p-10 text-center text-sm text-[#78716C] dark:text-[#A8A29E]">Không có hồ sơ khớp bộ lọc.</p>
+        )}
+        <p className="border-t border-[var(--ts-border-subtle)] px-4 py-3 text-xs text-[#78716C] dark:text-[#A8A29E]">
+          {records.length} hồ sơ · kết luận rà soát là đề xuất, chưa phải quyết định công nhận.
+        </p>
+      </section>
+    </StaffShell>
+  );
+}
+
+const findingDrafts = new Map<string, string>();
+
+export function StaffReviewWorkspace({ record }: { record: ReviewCase }) {
+  const { currentUser, updateFindingReview, sendSupplementRequest, finalizeReviewCase, dataConfig, reloadData } = useStore();
+  const initialDoc = record.documents.find(d => d.type === "syllabus_old") || record.documents[0];
+  const [findingId, setFindingId] = useState(record.findings[0]?.id || "");
+  const [filter, setFilter] = useState("all");
+  const [docId, setDocId] = useState(initialDoc?.id || "");
+  const [version, setVersion] = useState(initialDoc?.currentVersion || 1);
+  const [citation, setCitation] = useState<EvidenceCitation | null>(null);
+  const [tab, setTab] = useState("criteria");
+  const [editing, setEditing] = useState<ReviewFinding | null>(null);
+  const [editLabel, setEditLabel] = useState<FindingAiLabel>("has_evidence");
+  const [editSource, setEditSource] = useState("");
+  const [noteText, setNoteText] = useState("");
+  const conclusion = useStaffDraft(`${currentUser!.id}:review:${record.id}:conclusion`, record.finalReport?.conclusionSummary || "");
+  const supplement = useStaffDraft(`${currentUser!.id}:review:${record.id}:supplement`, "");
+  const [recommendation, setRecommendation] = useState<"propose_recognition" | "propose_conditional" | "propose_rejection">(record.finalReport?.decisionRecommendation || "propose_conditional");
+  const [modal, setModal] = useState<"supplement" | "finalize" | null>(null);
+  const [modalSource, setModalSource] = useState("");
+  const [confirmed, setConfirmed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const lock = useRef(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const readiness = reviewReadiness(record);
+  const closed = record.status === "completed";
+  const finding = record.findings.find(f => f.id === findingId) || record.findings[0];
+  const doc = record.documents.find(d => d.id === docId);
+  const source = doc?.versions.find(v => v.version === version);
+  const sourceRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!citation) return;
+    const sections = sourceRef.current?.querySelectorAll<HTMLElement>("article");
+    const target = sections && Array.from(sections).find(section => section.querySelector("h3")?.textContent?.startsWith(`Trang ${citation.pageNumber} ·`));
+    target?.scrollIntoView({ block: "nearest" });
+  }, [citation, docId, version]);
+  const visible = record.findings.filter(f => filter === "all" || (filter === "unchecked" ? f.officerStatus === "unverified" : filter === "outdated" ? readiness.outdated.includes(f) : effectiveFinding(f) !== "has_evidence"));
+  async function execute(work: () => Promise<void>) { if (lock.current) return; lock.current = true; setBusy(true); setError(""); try { await work(); } catch (e) { setError(e instanceof Error ? e.message : "Chưa lưu được. Nội dung đang soạn được giữ lại."); } finally { lock.current = false; setBusy(false); } }
+  function openCitation(c: EvidenceCitation) { setDocId(c.documentId); setVersion(c.version); setCitation(c); }
+  function openEdit(f: ReviewFinding) { setEditing(f); setEditLabel(effectiveFinding(f)); setEditSource(reviewSnapshot(record)); setNoteText(findingDrafts.get(`${currentUser!.id}:${record.id}:${f.id}`) ?? f.officerNote ?? ""); }
+  function changeNote(text: string) { setNoteText(text); if (editing) findingDrafts.set(`${currentUser!.id}:${record.id}:${editing.id}`, text); }
+  async function saveFinding() { if (!editing || !noteText.trim()) { setError("Ghi rõ căn cứ và phiên bản nguồn đã kiểm tra."); return; } await execute(async () => { await updateFindingReview(record.id, editing.id, { officerStatus: "edited", officerAdjustedLabel: editLabel, officerNote: noteText.trim() }, editSource); setEditing(null); setSuccess("Đã lưu nhận định cán bộ theo nguồn hiện hành."); }); }
+  async function confirmFinding() { if (!finding) return; if (readiness.outdated.includes(finding)) { openEdit(finding); return; } await execute(async () => { await updateFindingReview(record.id, finding.id, { officerStatus: "confirmed", officerNote: "Cán bộ đã xem nguồn hiện hành và xác nhận nhận định của tiêu chí này." }, reviewSnapshot(record)); setSuccess("Đã xác nhận tiêu chí; chưa hoàn tất hồ sơ."); }); }
+  function openSupplement() { const issueIds = readiness.issues.map(f => f.id); const suggested = draftSupplementRequest(record, issueIds); if (!supplement.text) supplement.change(suggested.messageBody); setModalSource(reviewSnapshot(record)); setModal("supplement"); setError(""); }
+  async function sendSupplement() { if (!supplement.text.trim()) { setError("Nhập thông tin/tệp cần bổ sung và lý do."); return; } await execute(async () => { if (modalSource !== reviewSnapshot(record)) throw new Error("Hồ sơ đã đổi. Hãy mở lại yêu cầu bổ sung; nháp được giữ."); const request = draftSupplementRequest(record, readiness.issues.map(f => f.id)); await sendSupplementRequest(record.id, { ...request, id: `sup-${crypto.randomUUID()}`, sentBy: currentUser!.id, status: "sent", sentAt: new Date().toISOString(), messageBody: supplement.text.trim() }, modalSource); setModal(null); setSuccess("Đã gửi yêu cầu bổ sung tới sinh viên."); }); }
+  function openFinalize() { setError(readiness.reason); if (readiness.reason) { setTab("criteria"); return; } setConfirmed(false); setModalSource(reviewSnapshot(record)); setModal("finalize"); }
+  async function finalize() { if (!confirmed || !conclusion.text.trim()) { setError("Nhập căn cứ kết luận và xác nhận đã kiểm tra phiếu."); return; } await execute(async () => { if (modalSource !== reviewSnapshot(record)) throw new Error("Nguồn hoặc nhận định đã thay đổi; hãy kiểm tra lại phiếu."); if (readiness.reason) throw new Error(readiness.reason); if (recommendation === "propose_recognition" && readiness.issues.length) throw new Error("Còn tiêu chí có vấn đề. Chọn đề xuất có điều kiện hoặc không công nhận và nêu căn cứ."); await finalizeReviewCase(record.id, generateReviewReport(record, currentUser!, recommendation, conclusion.text.trim()), modalSource); setModal(null); setTab("report"); setSuccess("Đã lưu phiếu đề xuất rà soát. Chưa phải quyết định công nhận học phần."); }); }
+  return <StaffShell wide><header className="mb-4"><Link href="/reviews" className="mb-3 inline-flex items-center gap-2 text-sm text-[#78716C] hover:text-[#1C1917] dark:text-[#A8A29E] dark:hover:text-[#FAFAF9]"><ArrowLeft className="h-4 w-4" />Danh sách rà soát</Link><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-mono uppercase tracking-wider text-[#78716C] dark:text-[#A8A29E]">{record.code} · {record.studentName} · {record.studentMssv}</p><h1 className="mt-1 font-serif text-2xl font-normal tracking-tight text-[#1C1917] dark:text-[#FAFAF9]">{record.targetCourseCode} · {record.targetCourseName}</h1><p className="mt-2 text-sm text-[#57534E] dark:text-[#D6D3D1]">Đối chiếu {record.priorCourseCode} · {record.priorCourseName} — {record.priorInstitution}</p></div><StatusBadge status={record.status} /></div></header>
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-[#78716C] dark:text-[#A8A29E]">{record.findings.length - readiness.unchecked.length}/{record.findings.length} tiêu chí đã kiểm tra · {readiness.outdated.length} cần xem lại nguồn</p><div className="flex flex-wrap gap-2"><button className={staffButton} disabled={busy || closed} onClick={openSupplement}>Yêu cầu bổ sung</button><button className={staffPrimary} disabled={busy || closed} onClick={openFinalize}>Lập phiếu & hoàn tất</button></div></div>
+    {tab === "criteria" && finding && <div className="sticky top-16 z-10 mb-4 flex flex-wrap items-center justify-between gap-3 rounded-none border border-[#E7E5E4] bg-[#FAFAF9] px-4 py-3 shadow-none dark:border-[#292524] dark:bg-[#1C1917]"><p className="text-sm text-[#57534E] dark:text-[#D6D3D1]"><span className="text-[#78716C] dark:text-[#A8A29E]">Đang kiểm tra: </span><strong className="font-medium text-[#1C1917] dark:text-[#FAFAF9]">{finding.criterionTitle}</strong></p><div className="flex flex-wrap gap-2"><button className={staffPrimary} disabled={busy || closed} onClick={() => void confirmFinding()}>{readiness.outdated.includes(finding) ? "Ghi nhận nguồn mới" : "Xác nhận nhận định"}</button><button className={staffButton} disabled={busy || closed} onClick={() => openEdit(finding)}>Sửa & ghi căn cứ</button></div></div>}
+    {record.aiSummary.isStale && <p className="mb-4 rounded-none border-l-2 border-[#B45309] bg-[#F5F5F4] p-3 text-sm text-[#1C1917] dark:border-[#FBBF24] dark:bg-[#1C1917] dark:text-[#FAFAF9]">Nguồn đã thay đổi. Nhận định AI cũ chỉ để tham khảo; cần ghi căn cứ kiểm tra lại từng tiêu chí theo tài liệu hiện hành. Chưa kết nối chạy lại AI thực tế.</p>}
+    {error && <div role="alert" className="mb-4 rounded-none border border-[#B91C1C] bg-[#F5F5F4] p-3 text-sm text-[#B91C1C] dark:border-[#EF4444] dark:bg-[#1C1917] dark:text-[#EF4444]">{error}<button className={`${staffButton} ml-3`} disabled={busy} onClick={() => void execute(reloadData)}>Tải lại, giữ nháp</button></div>}{success && <p role="status" className="mb-3 text-sm text-[#3F6212] dark:text-[#4ADE80]">{success}</p>}
+    <div className="grid items-start gap-5 xl:grid-cols-2">
+      <section className={`${staffSurface} min-w-0`}><div className="flex flex-wrap gap-1 border-b border-[#E7E5E4] p-2 dark:border-[#292524]">{[{ key: "criteria", label: "Tiêu chí" }, { key: "messages", label: "Bổ sung" }, { key: "report", label: "Phiếu đề xuất" }, { key: "audit", label: "Nhật ký" }].map(item => <button key={item.key} aria-pressed={tab === item.key} className={`${staffButton} border-transparent ${tab === item.key ? "border-b-2 border-[#78716C] bg-[#EFEDEB] text-[#1C1917] dark:border-[#A8A29E] dark:bg-[#292524] dark:text-[#FAFAF9]" : "text-[#57534E] hover:bg-[#F5F5F4] dark:text-[#D6D3D1] dark:hover:bg-[#292524]"}`} onClick={() => setTab(item.key)}>{item.label}</button>)}</div>
+        {tab === "criteria" && <div className="space-y-4 p-4"><div className="flex items-center justify-between gap-2"><h2 className="font-serif text-base font-normal text-[#1C1917] dark:text-[#FAFAF9]">Đối chiếu từng tiêu chí</h2><select className={`${staffField} max-w-44`} aria-label="Lọc tiêu chí" value={filter} onChange={e => setFilter(e.target.value)}><option value="all">Tất cả</option><option value="unchecked">Chưa kiểm tra</option><option value="issues">Có vấn đề</option><option value="outdated">Nguồn cần xem lại</option></select></div><div className="max-h-52 overflow-y-auto rounded-none border border-[#E7E5E4] dark:border-[#292524]">{visible.map(f => <button key={f.id} aria-pressed={finding?.id === f.id} onClick={() => { setFindingId(f.id); setError(""); }} className={`flex min-h-12 w-full items-center justify-between gap-3 border-b border-[#E7E5E4] px-3 py-2 text-left text-sm last:border-0 dark:border-[#292524] ${finding?.id === f.id ? "border-l-2 border-[#78716C] bg-[#EFEDEB] text-[#1C1917] dark:border-[#A8A29E] dark:bg-[#292524] dark:text-[#FAFAF9]" : "hover:bg-[#F5F5F4] dark:hover:bg-[#292524]"}`}><span>{f.criterionTitle}</span><span className="shrink-0 text-xs text-[#78716C] dark:text-[#A8A29E]">{readiness.outdated.includes(f) ? "Xem lại nguồn" : f.officerStatus === "unverified" ? "Chưa kiểm tra" : "Đã kiểm tra"}</span></button>)}{!visible.length && <p className="p-4 text-sm text-[#78716C] dark:text-[#A8A29E]">Không có tiêu chí khớp bộ lọc.</p>}</div>
+          {finding && <article className="space-y-4"><div className="flex items-start justify-between gap-2"><h3 className="font-serif text-base font-normal text-[#1C1917] dark:text-[#FAFAF9]">{finding.criterionTitle}</h3><div className="flex shrink-0 gap-1">{[[-1, ChevronLeft, "Tiêu chí trước"], [1, ChevronRight, "Tiêu chí sau"]].map(([step, Icon, label]) => { const Component = Icon as typeof ChevronLeft; const index = record.findings.findIndex(f => f.id === finding.id) + Number(step); return <button key={String(label)} className={staffButton} aria-label={String(label)} disabled={index < 0 || index >= record.findings.length} onClick={() => setFindingId(record.findings[index].id)}><Component className="h-4 w-4" /></button>; })}</div></div><div><h4 className="mb-1 text-xs font-medium text-[#78716C] dark:text-[#A8A29E]">Yêu cầu cần đối chiếu</h4><p className="text-sm leading-relaxed text-[#1C1917] dark:text-[#FAFAF9]">{finding.targetRequirement}</p></div><div><h4 className="mb-1 text-xs font-medium text-[#78716C] dark:text-[#A8A29E]">Bằng chứng trích xuất</h4><p className="text-sm leading-relaxed text-[#1C1917] dark:text-[#FAFAF9]">{finding.extractedEvidence}</p><div className="mt-3 flex flex-wrap gap-2">{finding.citations.map((c, i) => <button key={i} className={staffButton} onClick={() => openCitation(c)}><FileSearch className="h-4 w-4" />{c.documentTitle} · v{c.version} · tr.{c.pageNumber}</button>)}</div></div><div className="rounded-none border border-[#E7E5E4] bg-[#F5F5F4] p-3 dark:border-[#292524] dark:bg-[#1C1917]"><p className="text-xs font-medium text-[#78716C] dark:text-[#A8A29E]">Nhận định AI · {findingLabels[finding.aiLabel]}</p><p className="mt-2 text-sm leading-relaxed text-[#57534E] dark:text-[#D6D3D1]">{finding.aiExplanation}</p></div><div className="border-t border-[#E7E5E4] pt-4 dark:border-[#292524]"><h4 className="text-sm font-semibold text-[#1C1917] dark:text-[#FAFAF9]">Nhận định cán bộ: {finding.officerStatus === "unverified" ? "Chưa kiểm tra" : findingLabels[effectiveFinding(finding)]}</h4>{finding.officerNote && <p className="mt-2 whitespace-pre-wrap text-sm text-[#57534E] dark:text-[#D6D3D1]">{finding.officerNote}</p>}{finding.officerReviewedBy && <p className="mt-2 text-xs text-[#78716C] dark:text-[#A8A29E]">{finding.officerReviewedBy} · {finding.officerReviewedAt}</p>}<div className="mt-3 flex flex-wrap gap-2"><button className={staffPrimary} disabled={busy || closed} onClick={() => void confirmFinding()}><CheckCircle2 className="h-4 w-4" />{readiness.outdated.includes(finding) ? "Ghi nhận kiểm tra nguồn mới" : "Xác nhận nhận định"}</button><button className={staffButton} disabled={busy || closed} onClick={() => openEdit(finding)}><Pencil className="h-4 w-4" />Sửa & ghi căn cứ</button></div><p className="mt-2 text-xs text-[#78716C] dark:text-[#A8A29E]">Xác nhận nhận định “chưa đủ căn cứ” giữ nguyên vấn đề cần xử lý; không chuyển tiêu chí thành đạt.</p></div></article>}
+        </div>}
+        {tab === "messages" && <div className="space-y-4 p-5"><h2 className="font-serif text-base font-normal text-[#1C1917] dark:text-[#FAFAF9]">Trao đổi bổ sung</h2>{!record.supplementRequests.length && <p className="text-sm text-[#78716C] dark:text-[#A8A29E]">Chưa gửi yêu cầu bổ sung.</p>}{record.supplementRequests.map(request => <article key={request.id} className="rounded-none border border-[#E7E5E4] p-4 dark:border-[#292524]"><h3 className="text-sm font-medium text-[#1C1917] dark:text-[#FAFAF9]">{request.subject}</h3><p className="mt-2 whitespace-pre-wrap text-sm text-[#57534E] dark:text-[#D6D3D1]">{request.messageBody}</p><p className="mt-2 text-xs text-[#78716C] dark:text-[#A8A29E]">{request.sentBy} · {request.sentAt || request.createdAt} · {request.status === "responded" ? "Sinh viên đã bổ sung" : request.status === "sent" ? "Đã gửi" : "Nháp"}</p>{request.studentReply && <div className="mt-3 rounded-none border-l-2 border-[#78716C] bg-[#EFEDEB] p-3 dark:border-[#A8A29E] dark:bg-[#292524]"><p className="text-xs text-[#78716C] dark:text-[#A8A29E]">Sinh viên trả lời · {request.studentReply.submittedAt}</p><p className="mt-1 whitespace-pre-wrap text-sm text-[#1C1917] dark:text-[#FAFAF9]">{request.studentReply.note}</p></div>}</article>)}</div>}
+        {tab === "report" && <div className="space-y-4 p-5"><h2 className="font-serif text-base font-normal text-[#1C1917] dark:text-[#FAFAF9]">Phiếu đề xuất rà soát</h2><p className="text-sm text-[#78716C] dark:text-[#A8A29E]">Chưa phải quyết định công nhận học phần.</p>{record.finalReport ? <><p className="text-sm text-[#1C1917] dark:text-[#FAFAF9]">{record.finalReport.decisionRecommendation === "propose_recognition" ? "Đề xuất công nhận" : record.finalReport.decisionRecommendation === "propose_conditional" ? "Đề xuất có điều kiện" : "Đề xuất không công nhận"}</p><p className="whitespace-pre-wrap text-sm leading-relaxed text-[#57534E] dark:text-[#D6D3D1]">{record.finalReport.conclusionSummary}</p><p className="text-xs text-[#78716C] dark:text-[#A8A29E]">{record.finalReport.officerName} · {record.finalReport.completedAt}</p></> : <><p className="text-sm text-[#57534E] dark:text-[#D6D3D1]">{readiness.reason || "Các tiêu chí đã được kiểm tra. Cán bộ cần lập kết luận có căn cứ."}</p><label className="block text-sm text-[#57534E] dark:text-[#D6D3D1]">Nháp căn cứ kết luận<textarea className={`${staffField} mt-2 min-h-48`} value={conclusion.text} onChange={e => conclusion.change(e.target.value)} /></label><p className="text-xs text-[#78716C] dark:text-[#A8A29E]">Nháp kết luận được giữ trong phiên làm việc; lưu vào hồ sơ khi hoàn tất.</p><button className={staffPrimary} disabled={busy || closed} onClick={openFinalize}>Kiểm tra phiếu trước khi hoàn tất</button></>}</div>}
+        {tab === "audit" && <div className="space-y-4 p-5"><h2 className="font-serif text-base font-normal text-[#1C1917] dark:text-[#FAFAF9]">Nhật ký rà soát</h2>{record.auditLogs.map(log => <article key={log.id} className="border-l-2 border-[#E7E5E4] pl-3 dark:border-[#292524]"><p className="text-sm text-[#1C1917] dark:text-[#FAFAF9]">{log.action}</p><p className="mt-1 text-xs text-[#78716C] dark:text-[#A8A29E]">{log.actorName} · {log.timestamp}</p>{log.details && <p className="mt-1 text-xs text-[#57534E] dark:text-[#D6D3D1]">{log.details}</p>}</article>)}</div>}
+      </section>
+      <section ref={sourceRef} className={`${staffSurface} min-w-0 xl:sticky xl:top-20`} aria-label="Chứng cứ đang xem"><div className="space-y-3 border-b border-[#E7E5E4] p-4 dark:border-[#292524]"><h2 className="font-serif text-base font-normal text-[#1C1917] dark:text-[#FAFAF9]">Chứng cứ & phiên bản nguồn</h2><select aria-label="Tài liệu đang xem" className={staffField} value={docId} onChange={e => { setDocId(e.target.value); setVersion(record.documents.find(d => d.id === e.target.value)?.currentVersion || 1); setCitation(null); }}>{record.documents.map(d => <option key={d.id} value={d.id}>{d.title}</option>)}</select><div className="flex flex-wrap items-center justify-between gap-2"><label className="flex items-center gap-2 text-xs text-[#57534E] dark:text-[#D6D3D1]">Phiên bản<select className={staffField} value={version} onChange={e => { setVersion(Number(e.target.value)); setCitation(null); }}>{doc?.versions.map(v => <option key={v.version} value={v.version}>v{v.version}{v.version === doc.currentVersion ? " · hiện hành" : " · bản cũ"}</option>)}</select></label><span className="text-xs text-[#78716C] dark:text-[#A8A29E]">{source?.legibility === "good" ? "Bản rõ" : source?.legibility === "partial_blurry" ? "Một phần khó đọc" : source?.legibility === "missing_pages" ? "Thiếu trang" : "Chưa đọc được"}</span></div>{citation && <p className="rounded-none border-l-2 border-[#78716C] bg-[#EFEDEB] p-3 text-xs text-[#1C1917] dark:border-[#A8A29E] dark:bg-[#292524] dark:text-[#FAFAF9]">Trích dẫn đang chọn: v{citation.version} · trang {citation.pageNumber}<br />{citation.snippet}</p>}</div><div tabIndex={0} role="region" aria-label="Bản trích xuất tài liệu" className="max-h-[calc(100dvh-300px)] min-h-72 space-y-4 overflow-y-auto p-5">{!source ? <p className="text-sm text-[#B45309] dark:text-[#FBBF24]">Không có phiên bản được trích dẫn. Chọn một tài liệu/phiên bản có sẵn để kiểm tra.</p> : <><p className="text-xs text-[#78716C] dark:text-[#A8A29E]">{doc?.institution} · {source.fileName}<br />Đang hiển thị bản trích xuất văn bản; không thay thế tệp gốc.</p>{source.attachment && dataConfig?.mode === "mock" && <AttachmentDownload attachment={source.attachment} ownerId={record.studentId} />}{!source.sections.length && <p className="text-sm text-[#78716C] dark:text-[#A8A29E]">Chưa có nội dung trích xuất cho phiên bản này. Cần đọc tệp gốc hoặc yêu cầu bản có thể đọc được.</p>}{source.sections.map(section => <article key={section.id} className={`rounded-none p-3 ${citation && (citation.sectionId === section.id || (!citation.sectionId && citation.pageNumber === section.pageNumber)) ? "border-l-2 border-[#B45309] bg-[#EFEDEB] dark:border-[#FBBF24] dark:bg-[#292524]" : "border border-[#E7E5E4] dark:border-[#292524]"}`}><h3 className="text-sm font-medium text-[#1C1917] dark:text-[#FAFAF9]">Trang {section.pageNumber} · {section.title}</h3><p className="mt-3 whitespace-pre-wrap break-words text-sm leading-7 text-[#57534E] dark:text-[#D6D3D1]">{section.content}</p></article>)}</>}</div></section>
+    </div>
+    {editing && <AccessibleDialog open labelledBy="edit-finding-title" preventClose={busy} onClose={() => !busy && setEditing(null)} className="max-w-xl"><div className="space-y-4 p-6"><h2 id="edit-finding-title" className="font-serif text-lg font-normal text-[#1C1917] dark:text-[#FAFAF9]">Nhận định cán bộ</h2><p className="text-sm text-[#57534E] dark:text-[#D6D3D1]">{editing.criterionTitle}</p><label className="block text-sm text-[#57534E] dark:text-[#D6D3D1]">Kết quả đối chiếu<select className={`${staffField} mt-2`} value={editLabel} onChange={e => setEditLabel(e.target.value as FindingAiLabel)}>{Object.entries(findingLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label><label className="block text-sm text-[#57534E] dark:text-[#D6D3D1]">Căn cứ và tài liệu/phiên bản đã kiểm tra<textarea className={`${staffField} mt-2 min-h-36`} value={noteText} onChange={e => changeNote(e.target.value)} /></label>{error && <p role="alert" className="text-sm text-[#B91C1C] dark:text-[#EF4444]">{error}</p>}<div className="flex justify-end gap-2"><button className={staffButton} disabled={busy} onClick={() => setEditing(null)}>Hủy</button><button className={staffPrimary} disabled={busy} onClick={() => void saveFinding()}>{busy ? "Đang lưu…" : "Lưu nhận định"}</button></div></div></AccessibleDialog>}
+    {modal && <AccessibleDialog open labelledBy="review-action-title" preventClose={busy} onClose={() => !busy && setModal(null)} className="max-w-2xl"><div className="space-y-4 p-6"><h2 id="review-action-title" className="font-serif text-lg font-normal text-[#1C1917] dark:text-[#FAFAF9]">{modal === "supplement" ? "Yêu cầu sinh viên bổ sung" : "Kiểm tra phiếu đề xuất"}</h2><p className="text-sm text-[#57534E] dark:text-[#D6D3D1]">{record.code} · {record.studentName} · {record.studentEmail}</p>{modal === "supplement" ? <label className="block text-sm text-[#57534E] dark:text-[#D6D3D1]">Nội dung sẽ gửi sinh viên<textarea className={`${staffField} mt-2 min-h-64`} value={supplement.text} onChange={e => supplement.change(e.target.value)} /></label> : <><p className="text-sm text-[#57534E] dark:text-[#D6D3D1]">Đã kiểm tra {record.findings.length - readiness.unchecked.length}/{record.findings.length} · {readiness.issues.length} tiêu chí có vấn đề · {readiness.outdated.length} cần xem lại nguồn</p><label className="block text-sm text-[#57534E] dark:text-[#D6D3D1]">Đề xuất<select className={`${staffField} mt-2`} value={recommendation} onChange={e => setRecommendation(e.target.value as typeof recommendation)}><option value="propose_recognition">Đề xuất công nhận</option><option value="propose_conditional">Đề xuất có điều kiện</option><option value="propose_rejection">Đề xuất không công nhận</option></select></label><label className="block text-sm text-[#57534E] dark:text-[#D6D3D1]">Kết luận và căn cứ<textarea className={`${staffField} mt-2 min-h-40`} value={conclusion.text} onChange={e => conclusion.change(e.target.value)} /></label><label className="flex items-start gap-3 text-sm text-[#57534E] dark:text-[#D6D3D1]"><input className="mt-1 h-4 w-4 accent-[#78716C]" type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} /><span>Tôi đã kiểm tra nguồn hiện hành, các nhận định và nội dung phiếu. Đây là đề xuất sơ bộ, chưa phải quyết định công nhận học phần.</span></label></>}{error && <p role="alert" className="text-sm text-[#B91C1C] dark:text-[#EF4444]">{error}</p>}<div className="flex justify-end gap-2"><button className={staffButton} disabled={busy} onClick={() => setModal(null)}>Quay lại</button><button className={staffPrimary} disabled={busy || (modal === "finalize" && !confirmed)} onClick={() => void (modal === "supplement" ? sendSupplement() : finalize())}>{busy ? "Đang thực hiện…" : modal === "supplement" ? "Gửi yêu cầu bổ sung" : "Lưu phiếu & hoàn tất"}</button></div></div></AccessibleDialog>}
+  </StaffShell>;
+}

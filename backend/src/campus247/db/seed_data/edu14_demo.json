@@ -1,0 +1,2760 @@
+{
+  "metadata": {
+    "dataset_id": "edu14-operational-demo-v1",
+    "contract_version": "P0-contract-v1",
+    "generated_at": "2026-09-29",
+    "provenance": "Original, deterministic synthetic Vietnamese demo data; no imported records or real student identifiers."
+  },
+  "users": [
+    {
+      "id": "SV-DEMO-001",
+      "role": "student",
+      "name": "Sinh viên mẫu 001"
+    },
+    {
+      "id": "SV-DEMO-002",
+      "role": "student",
+      "name": "Sinh viên mẫu 002"
+    },
+    {
+      "id": "SV-DEMO-003",
+      "role": "student",
+      "name": "Sinh viên mẫu 003"
+    },
+    {
+      "id": "SV-DEMO-004",
+      "role": "student",
+      "name": "Sinh viên mẫu 004"
+    },
+    {
+      "id": "SV-DEMO-005",
+      "role": "student",
+      "name": "Sinh viên mẫu 005"
+    },
+    {
+      "id": "SV-DEMO-006",
+      "role": "student",
+      "name": "Sinh viên mẫu 006"
+    },
+    {
+      "id": "SV-DEMO-007",
+      "role": "student",
+      "name": "Sinh viên mẫu 007"
+    },
+    {
+      "id": "SV-DEMO-008",
+      "role": "student",
+      "name": "Sinh viên mẫu 008"
+    },
+    {
+      "id": "SV-DEMO-009",
+      "role": "student",
+      "name": "Sinh viên mẫu 009"
+    },
+    {
+      "id": "SV-DEMO-010",
+      "role": "student",
+      "name": "Sinh viên mẫu 010"
+    },
+    {
+      "id": "SV-DEMO-011",
+      "role": "student",
+      "name": "Sinh viên mẫu 011"
+    },
+    {
+      "id": "SV-DEMO-012",
+      "role": "student",
+      "name": "Sinh viên mẫu 012"
+    },
+    {
+      "id": "SV-DEMO-013",
+      "role": "student",
+      "name": "Sinh viên mẫu 013"
+    },
+    {
+      "id": "SV-DEMO-014",
+      "role": "student",
+      "name": "Sinh viên mẫu 014"
+    },
+    {
+      "id": "SV-DEMO-015",
+      "role": "student",
+      "name": "Sinh viên mẫu 015"
+    },
+    {
+      "id": "SV-DEMO-016",
+      "role": "student",
+      "name": "Sinh viên mẫu 016"
+    },
+    {
+      "id": "SV-DEMO-017",
+      "role": "student",
+      "name": "Sinh viên mẫu 017"
+    },
+    {
+      "id": "SV-DEMO-018",
+      "role": "student",
+      "name": "Sinh viên mẫu 018"
+    },
+    {
+      "id": "SV-DEMO-019",
+      "role": "student",
+      "name": "Sinh viên mẫu 019"
+    },
+    {
+      "id": "SV-DEMO-020",
+      "role": "student",
+      "name": "Sinh viên mẫu 020"
+    },
+    {
+      "id": "SV-DEMO-021",
+      "role": "student",
+      "name": "Sinh viên mẫu 021"
+    },
+    {
+      "id": "SV-DEMO-022",
+      "role": "student",
+      "name": "Sinh viên mẫu 022"
+    },
+    {
+      "id": "SV-DEMO-023",
+      "role": "student",
+      "name": "Sinh viên mẫu 023"
+    },
+    {
+      "id": "SV-DEMO-024",
+      "role": "student",
+      "name": "Sinh viên mẫu 024"
+    },
+    {
+      "id": "SV-DEMO-025",
+      "role": "student",
+      "name": "Sinh viên mẫu 025"
+    },
+    {
+      "id": "SV-DEMO-026",
+      "role": "student",
+      "name": "Sinh viên mẫu 026"
+    },
+    {
+      "id": "SV-DEMO-027",
+      "role": "student",
+      "name": "Sinh viên mẫu 027"
+    },
+    {
+      "id": "SV-DEMO-028",
+      "role": "student",
+      "name": "Sinh viên mẫu 028"
+    },
+    {
+      "id": "SV-DEMO-029",
+      "role": "student",
+      "name": "Sinh viên mẫu 029"
+    },
+    {
+      "id": "SV-DEMO-030",
+      "role": "student",
+      "name": "Sinh viên mẫu 030"
+    },
+    {
+      "id": "OF-DEMO-01",
+      "role": "officer",
+      "name": "Cán bộ mẫu 01"
+    },
+    {
+      "id": "OF-DEMO-02",
+      "role": "officer",
+      "name": "Cán bộ mẫu 02"
+    },
+    {
+      "id": "OF-DEMO-03",
+      "role": "officer",
+      "name": "Cán bộ mẫu 03"
+    }
+  ],
+  "teams": [
+    {
+      "id": "academic",
+      "name": "Học vụ demo",
+      "is_demo": true
+    },
+    {
+      "id": "student_support",
+      "name": "Hỗ trợ sinh viên demo",
+      "is_demo": true
+    }
+  ],
+  "officer_team_memberships": [
+    {
+      "user_id": "OF-DEMO-01",
+      "team_id": "academic"
+    },
+    {
+      "user_id": "OF-DEMO-02",
+      "team_id": "student_support"
+    },
+    {
+      "user_id": "OF-DEMO-03",
+      "team_id": "academic"
+    }
+  ],
+  "profiles": [
+    {
+      "student_id": "SV-DEMO-001",
+      "full_name": "Sinh viên mẫu 001",
+      "mssv": "DEMO-001",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-002",
+      "full_name": "Sinh viên mẫu 002",
+      "mssv": "DEMO-002",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-003",
+      "full_name": "Sinh viên mẫu 003",
+      "mssv": "DEMO-003",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-004",
+      "full_name": "Sinh viên mẫu 004",
+      "mssv": "DEMO-004",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-005",
+      "full_name": "Sinh viên mẫu 005",
+      "mssv": "DEMO-005",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-006",
+      "full_name": "Sinh viên mẫu 006",
+      "mssv": "DEMO-006",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-007",
+      "full_name": "Sinh viên mẫu 007",
+      "mssv": "DEMO-007",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-008",
+      "full_name": "Sinh viên mẫu 008",
+      "mssv": "DEMO-008",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-009",
+      "full_name": "Sinh viên mẫu 009",
+      "mssv": "DEMO-009",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-010",
+      "full_name": "Sinh viên mẫu 010",
+      "mssv": "DEMO-010",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-011",
+      "full_name": "Sinh viên mẫu 011",
+      "mssv": "DEMO-011",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-012",
+      "full_name": "Sinh viên mẫu 012",
+      "mssv": "DEMO-012",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-013",
+      "full_name": "Sinh viên mẫu 013",
+      "mssv": "DEMO-013",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-014",
+      "full_name": "Sinh viên mẫu 014",
+      "mssv": "DEMO-014",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-015",
+      "full_name": "Sinh viên mẫu 015",
+      "mssv": "DEMO-015",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-016",
+      "full_name": "Sinh viên mẫu 016",
+      "mssv": "DEMO-016",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-017",
+      "full_name": "Sinh viên mẫu 017",
+      "mssv": "DEMO-017",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-018",
+      "full_name": "Sinh viên mẫu 018",
+      "mssv": "DEMO-018",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-019",
+      "full_name": "Sinh viên mẫu 019",
+      "mssv": "DEMO-019",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-020",
+      "full_name": "Sinh viên mẫu 020",
+      "mssv": "DEMO-020",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-021",
+      "full_name": "Sinh viên mẫu 021",
+      "mssv": "DEMO-021",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-022",
+      "full_name": "Sinh viên mẫu 022",
+      "mssv": "DEMO-022",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-023",
+      "full_name": "Sinh viên mẫu 023",
+      "mssv": "DEMO-023",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-024",
+      "full_name": "Sinh viên mẫu 024",
+      "mssv": "DEMO-024",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-025",
+      "full_name": "Sinh viên mẫu 025",
+      "mssv": "DEMO-025",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-026",
+      "full_name": "Sinh viên mẫu 026",
+      "mssv": "DEMO-026",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-027",
+      "full_name": "Sinh viên mẫu 027",
+      "mssv": "DEMO-027",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-028",
+      "full_name": "Sinh viên mẫu 028",
+      "mssv": "DEMO-028",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-029",
+      "full_name": "Sinh viên mẫu 029",
+      "mssv": "DEMO-029",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    },
+    {
+      "student_id": "SV-DEMO-030",
+      "full_name": "Sinh viên mẫu 030",
+      "mssv": "DEMO-030",
+      "faculty": "Khoa mô phỏng",
+      "cohort": "DEMO-2026",
+      "is_demo": true
+    }
+  ],
+  "conversations": [
+    {
+      "status": "active",
+      "ai_response_locked": false,
+      "handover_status": "none",
+      "id": "CONV-DEMO-0001",
+      "revision": 1,
+      "ticket_id": "TKT-DEMO-2026-0001",
+      "created_at": "2026-08-31T09:00:00+07:00",
+      "updated_at": "2026-08-31T09:00:00+07:00"
+    },
+    {
+      "status": "active",
+      "ai_response_locked": false,
+      "handover_status": "none",
+      "id": "CONV-DEMO-0002",
+      "revision": 1,
+      "ticket_id": "TKT-DEMO-2026-0002",
+      "created_at": "2026-09-01T10:00:00+07:00",
+      "updated_at": "2026-09-01T10:02:00+07:00"
+    },
+    {
+      "status": "active",
+      "ai_response_locked": false,
+      "handover_status": "none",
+      "id": "CONV-DEMO-0003",
+      "revision": 1,
+      "ticket_id": "TKT-DEMO-2026-0003",
+      "created_at": "2026-09-02T11:00:00+07:00",
+      "updated_at": "2026-09-02T11:02:00+07:00"
+    },
+    {
+      "status": "active",
+      "ai_response_locked": false,
+      "handover_status": "none",
+      "id": "CONV-DEMO-0004",
+      "revision": 1,
+      "ticket_id": "TKT-DEMO-2026-0004",
+      "created_at": "2026-09-03T12:00:00+07:00",
+      "updated_at": "2026-09-03T12:00:00+07:00"
+    },
+    {
+      "status": "closed",
+      "ai_response_locked": false,
+      "handover_status": "none",
+      "id": "CONV-DEMO-0005",
+      "revision": 1,
+      "ticket_id": "TKT-DEMO-2026-0005",
+      "created_at": "2026-09-04T13:00:00+07:00",
+      "updated_at": "2026-09-04T15:00:00+07:00"
+    },
+    {
+      "status": "active",
+      "ai_response_locked": false,
+      "handover_status": "none",
+      "id": "CONV-DEMO-0006",
+      "revision": 1,
+      "ticket_id": "TKT-DEMO-2026-0006",
+      "created_at": "2026-09-05T09:00:00+07:00",
+      "updated_at": "2026-09-05T09:02:00+07:00"
+    },
+    {
+      "status": "active",
+      "ai_response_locked": false,
+      "handover_status": "none",
+      "id": "CONV-DEMO-0007",
+      "revision": 1,
+      "ticket_id": "TKT-DEMO-2026-0007",
+      "created_at": "2026-09-06T10:00:00+07:00",
+      "updated_at": "2026-09-06T10:00:00+07:00"
+    },
+    {
+      "status": "active",
+      "ai_response_locked": false,
+      "handover_status": "none",
+      "id": "CONV-DEMO-0008",
+      "revision": 1,
+      "ticket_id": "TKT-DEMO-2026-0008",
+      "created_at": "2026-09-07T11:00:00+07:00",
+      "updated_at": "2026-09-07T11:02:00+07:00"
+    },
+    {
+      "status": "active",
+      "ai_response_locked": false,
+      "handover_status": "none",
+      "id": "CONV-DEMO-0009",
+      "revision": 1,
+      "ticket_id": "TKT-DEMO-2026-0009",
+      "created_at": "2026-09-08T12:00:00+07:00",
+      "updated_at": "2026-09-08T12:02:00+07:00"
+    },
+    {
+      "status": "closed",
+      "ai_response_locked": false,
+      "handover_status": "none",
+      "id": "CONV-DEMO-0010",
+      "revision": 1,
+      "ticket_id": "TKT-DEMO-2026-0010",
+      "created_at": "2026-09-09T13:00:00+07:00",
+      "updated_at": "2026-09-09T15:00:00+07:00"
+    },
+    {
+      "status": "active",
+      "ai_response_locked": false,
+      "handover_status": "none",
+      "id": "CONV-DEMO-0011",
+      "revision": 1,
+      "ticket_id": "TKT-DEMO-2026-0011",
+      "created_at": "2026-09-10T09:00:00+07:00",
+      "updated_at": "2026-09-10T09:02:00+07:00"
+    },
+    {
+      "status": "active",
+      "ai_response_locked": false,
+      "handover_status": "none",
+      "id": "CONV-DEMO-0012",
+      "revision": 1,
+      "ticket_id": "TKT-DEMO-2026-0012",
+      "created_at": "2026-09-11T10:00:00+07:00",
+      "updated_at": "2026-09-11T10:02:00+07:00"
+    },
+    {
+      "status": "active",
+      "ai_response_locked": false,
+      "handover_status": "none",
+      "id": "CONV-DEMO-0013",
+      "revision": 1,
+      "ticket_id": "TKT-DEMO-2026-0013",
+      "created_at": "2026-09-12T11:00:00+07:00",
+      "updated_at": "2026-09-12T11:00:00+07:00"
+    },
+    {
+      "status": "active",
+      "ai_response_locked": false,
+      "handover_status": "none",
+      "id": "CONV-DEMO-0014",
+      "revision": 1,
+      "ticket_id": "TKT-DEMO-2026-0014",
+      "created_at": "2026-09-13T12:00:00+07:00",
+      "updated_at": "2026-09-13T12:02:00+07:00"
+    },
+    {
+      "status": "closed",
+      "ai_response_locked": false,
+      "handover_status": "none",
+      "id": "CONV-DEMO-0015",
+      "revision": 1,
+      "ticket_id": "TKT-DEMO-2026-0015",
+      "created_at": "2026-09-14T13:00:00+07:00",
+      "updated_at": "2026-09-14T15:00:00+07:00"
+    },
+    {
+      "status": "active",
+      "ai_response_locked": false,
+      "handover_status": "none",
+      "id": "CONV-DEMO-0016",
+      "revision": 1,
+      "ticket_id": "TKT-DEMO-2026-0016",
+      "created_at": "2026-09-15T09:00:00+07:00",
+      "updated_at": "2026-09-15T09:00:00+07:00"
+    },
+    {
+      "status": "active",
+      "ai_response_locked": false,
+      "handover_status": "none",
+      "id": "CONV-DEMO-0017",
+      "revision": 1,
+      "ticket_id": "TKT-DEMO-2026-0017",
+      "created_at": "2026-09-16T10:00:00+07:00",
+      "updated_at": "2026-09-16T10:02:00+07:00"
+    },
+    {
+      "status": "active",
+      "ai_response_locked": false,
+      "handover_status": "none",
+      "id": "CONV-DEMO-0018",
+      "revision": 1,
+      "ticket_id": "TKT-DEMO-2026-0018",
+      "created_at": "2026-09-17T11:00:00+07:00",
+      "updated_at": "2026-09-17T11:02:00+07:00"
+    },
+    {
+      "status": "handover",
+      "ai_response_locked": true,
+      "handover_status": "completed",
+      "id": "CONV-DEMO-0019",
+      "revision": 2,
+      "ticket_id": "TKT-DEMO-2026-0019",
+      "created_at": "2026-09-18T12:00:00+07:00",
+      "updated_at": "2026-09-18T12:02:00+07:00"
+    },
+    {
+      "status": "closed",
+      "ai_response_locked": true,
+      "handover_status": "completed",
+      "id": "CONV-DEMO-0020",
+      "revision": 2,
+      "ticket_id": "TKT-DEMO-2026-0020",
+      "created_at": "2026-09-19T13:00:00+07:00",
+      "updated_at": "2026-09-19T15:00:00+07:00"
+    },
+    {
+      "status": "handover",
+      "ai_response_locked": true,
+      "handover_status": "completed",
+      "id": "CONV-DEMO-0021",
+      "revision": 2,
+      "ticket_id": "TKT-DEMO-2026-0021",
+      "created_at": "2026-09-20T09:00:00+07:00",
+      "updated_at": "2026-09-20T09:02:00+07:00"
+    },
+    {
+      "status": "handover",
+      "ai_response_locked": true,
+      "handover_status": "completed",
+      "id": "CONV-DEMO-0022",
+      "revision": 2,
+      "ticket_id": "TKT-DEMO-2026-0022",
+      "created_at": "2026-09-21T10:00:00+07:00",
+      "updated_at": "2026-09-21T10:02:00+07:00"
+    },
+    {
+      "status": "handover",
+      "ai_response_locked": true,
+      "handover_status": "completed",
+      "id": "CONV-DEMO-0023",
+      "revision": 2,
+      "ticket_id": "TKT-DEMO-2026-0023",
+      "created_at": "2026-09-22T11:00:00+07:00",
+      "updated_at": "2026-09-22T11:02:00+07:00"
+    },
+    {
+      "status": "handover",
+      "ai_response_locked": true,
+      "handover_status": "completed",
+      "id": "CONV-DEMO-0024",
+      "revision": 2,
+      "ticket_id": "TKT-DEMO-2026-0024",
+      "created_at": "2026-09-23T12:00:00+07:00",
+      "updated_at": "2026-09-23T12:02:00+07:00"
+    },
+    {
+      "status": "closed",
+      "ai_response_locked": true,
+      "handover_status": "completed",
+      "id": "CONV-DEMO-0025",
+      "revision": 2,
+      "ticket_id": "TKT-DEMO-2026-0025",
+      "created_at": "2026-09-24T13:00:00+07:00",
+      "updated_at": "2026-09-24T15:00:00+07:00"
+    },
+    {
+      "status": "handover",
+      "ai_response_locked": true,
+      "handover_status": "completed",
+      "id": "CONV-DEMO-0026",
+      "revision": 2,
+      "ticket_id": "TKT-DEMO-2026-0026",
+      "created_at": "2026-09-25T09:00:00+07:00",
+      "updated_at": "2026-09-25T09:02:00+07:00"
+    },
+    {
+      "status": "handover",
+      "ai_response_locked": true,
+      "handover_status": "completed",
+      "id": "CONV-DEMO-0027",
+      "revision": 2,
+      "ticket_id": "TKT-DEMO-2026-0027",
+      "created_at": "2026-09-26T10:00:00+07:00",
+      "updated_at": "2026-09-26T10:02:00+07:00"
+    },
+    {
+      "status": "handover",
+      "ai_response_locked": true,
+      "handover_status": "completed",
+      "id": "CONV-DEMO-0028",
+      "revision": 2,
+      "ticket_id": "TKT-DEMO-2026-0028",
+      "created_at": "2026-09-27T11:00:00+07:00",
+      "updated_at": "2026-09-27T11:02:00+07:00"
+    },
+    {
+      "status": "handover",
+      "ai_response_locked": true,
+      "handover_status": "completed",
+      "id": "CONV-DEMO-0029",
+      "revision": 2,
+      "ticket_id": "TKT-DEMO-2026-0029",
+      "created_at": "2026-09-28T12:00:00+07:00",
+      "updated_at": "2026-09-28T12:02:00+07:00"
+    },
+    {
+      "status": "closed",
+      "ai_response_locked": true,
+      "handover_status": "completed",
+      "id": "CONV-DEMO-0030",
+      "revision": 2,
+      "ticket_id": "TKT-DEMO-2026-0030",
+      "created_at": "2026-09-29T13:00:00+07:00",
+      "updated_at": "2026-09-29T15:00:00+07:00"
+    }
+  ],
+  "tickets": [
+    {
+      "id": "TKT-DEMO-2026-0001",
+      "code": "TKT-DEMO-2026-0001",
+      "status": "open",
+      "priority": "normal",
+      "conversation_id": "CONV-DEMO-0001",
+      "student_id": "SV-DEMO-001",
+      "category": "action",
+      "service_type": "student_certificate",
+      "priority_reasons": [],
+      "summary": "Em muốn xin giấy xác nhận đang học để vay vốn học tập; nơi nhận là Ngân hàng mẫu A.",
+      "request_data": {
+        "purpose": "vay vốn học tập",
+        "destination_org": "Ngân hàng mẫu A",
+        "receive_method": "digital_pdf"
+      },
+      "handover_reason": null,
+      "assigned_officer_id": null,
+      "revision": 1,
+      "created_at": "2026-08-31T09:00:00+07:00",
+      "updated_at": "2026-08-31T09:00:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0002",
+      "code": "TKT-DEMO-2026-0002",
+      "status": "pending_officer",
+      "priority": "normal",
+      "conversation_id": "CONV-DEMO-0002",
+      "student_id": "SV-DEMO-002",
+      "category": "action",
+      "service_type": "student_certificate",
+      "priority_reasons": [],
+      "summary": "Em muốn xin giấy xác nhận đang học để gia hạn giấy tạm trú; nơi nhận là Cơ quan hành chính mẫu B.",
+      "request_data": {
+        "purpose": "gia hạn giấy tạm trú",
+        "destination_org": "Cơ quan hành chính mẫu B",
+        "receive_method": "paper_stamped"
+      },
+      "handover_reason": null,
+      "assigned_officer_id": "OF-DEMO-03",
+      "revision": 3,
+      "created_at": "2026-09-01T10:00:00+07:00",
+      "updated_at": "2026-09-01T10:02:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0003",
+      "code": "TKT-DEMO-2026-0003",
+      "status": "pending_officer",
+      "priority": "normal",
+      "conversation_id": "CONV-DEMO-0003",
+      "student_id": "SV-DEMO-003",
+      "category": "action",
+      "service_type": "student_certificate",
+      "priority_reasons": [],
+      "summary": "Em muốn xin giấy xác nhận đang học để đăng ký thực tập; nơi nhận là Doanh nghiệp mẫu C.",
+      "request_data": {
+        "purpose": "đăng ký thực tập",
+        "destination_org": "Doanh nghiệp mẫu C",
+        "receive_method": "digital_pdf"
+      },
+      "handover_reason": null,
+      "assigned_officer_id": "OF-DEMO-01",
+      "revision": 3,
+      "created_at": "2026-09-02T11:00:00+07:00",
+      "updated_at": "2026-09-02T11:02:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0004",
+      "code": "TKT-DEMO-2026-0004",
+      "status": "open",
+      "priority": "normal",
+      "conversation_id": "CONV-DEMO-0004",
+      "student_id": "SV-DEMO-004",
+      "category": "action",
+      "service_type": "student_certificate",
+      "priority_reasons": [],
+      "summary": "Em muốn xin giấy xác nhận đang học để làm hồ sơ học bổng ngoài trường; nơi nhận là Quỹ học bổng mẫu D.",
+      "request_data": {
+        "purpose": "làm hồ sơ học bổng ngoài trường",
+        "destination_org": "Quỹ học bổng mẫu D",
+        "receive_method": "paper_stamped"
+      },
+      "handover_reason": null,
+      "assigned_officer_id": null,
+      "revision": 1,
+      "created_at": "2026-09-03T12:00:00+07:00",
+      "updated_at": "2026-09-03T12:00:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0005",
+      "code": "TKT-DEMO-2026-0005",
+      "status": "resolved",
+      "priority": "normal",
+      "conversation_id": "CONV-DEMO-0005",
+      "student_id": "SV-DEMO-005",
+      "category": "action",
+      "service_type": "student_certificate",
+      "priority_reasons": [],
+      "summary": "Em muốn xin giấy xác nhận đang học để bổ sung hồ sơ bảo hiểm; nơi nhận là Đơn vị bảo hiểm mẫu E.",
+      "request_data": {
+        "purpose": "bổ sung hồ sơ bảo hiểm",
+        "destination_org": "Đơn vị bảo hiểm mẫu E",
+        "receive_method": "digital_pdf"
+      },
+      "handover_reason": null,
+      "assigned_officer_id": "OF-DEMO-01",
+      "revision": 4,
+      "created_at": "2026-09-04T13:00:00+07:00",
+      "updated_at": "2026-09-04T15:00:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0006",
+      "code": "TKT-DEMO-2026-0006",
+      "status": "pending_officer",
+      "priority": "normal",
+      "conversation_id": "CONV-DEMO-0006",
+      "student_id": "SV-DEMO-006",
+      "category": "action",
+      "service_type": "student_certificate",
+      "priority_reasons": [],
+      "summary": "Em muốn xin giấy xác nhận đang học để xin visa du học trao đổi; nơi nhận là Cơ quan lãnh sự mẫu F.",
+      "request_data": {
+        "purpose": "xin visa du học trao đổi",
+        "destination_org": "Cơ quan lãnh sự mẫu F",
+        "receive_method": "paper_stamped"
+      },
+      "handover_reason": null,
+      "assigned_officer_id": "OF-DEMO-03",
+      "revision": 3,
+      "created_at": "2026-09-05T09:00:00+07:00",
+      "updated_at": "2026-09-05T09:02:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0007",
+      "code": "TKT-DEMO-2026-0007",
+      "status": "open",
+      "priority": "normal",
+      "conversation_id": "CONV-DEMO-0007",
+      "student_id": "SV-DEMO-007",
+      "category": "action",
+      "service_type": "student_certificate",
+      "priority_reasons": [],
+      "summary": "Em muốn xin giấy xác nhận đang học để đăng ký khóa học ngắn hạn; nơi nhận là Trung tâm đào tạo mẫu G.",
+      "request_data": {
+        "purpose": "đăng ký khóa học ngắn hạn",
+        "destination_org": "Trung tâm đào tạo mẫu G",
+        "receive_method": "digital_pdf"
+      },
+      "handover_reason": null,
+      "assigned_officer_id": null,
+      "revision": 1,
+      "created_at": "2026-09-06T10:00:00+07:00",
+      "updated_at": "2026-09-06T10:00:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0008",
+      "code": "TKT-DEMO-2026-0008",
+      "status": "pending_officer",
+      "priority": "normal",
+      "conversation_id": "CONV-DEMO-0008",
+      "student_id": "SV-DEMO-008",
+      "category": "action",
+      "service_type": "student_certificate",
+      "priority_reasons": [],
+      "summary": "Em muốn xin giấy xác nhận đang học để hoàn thiện hồ sơ thuê nhà; nơi nhận là Đơn vị cho thuê mẫu H.",
+      "request_data": {
+        "purpose": "hoàn thiện hồ sơ thuê nhà",
+        "destination_org": "Đơn vị cho thuê mẫu H",
+        "receive_method": "paper_stamped"
+      },
+      "handover_reason": null,
+      "assigned_officer_id": "OF-DEMO-03",
+      "revision": 3,
+      "created_at": "2026-09-07T11:00:00+07:00",
+      "updated_at": "2026-09-07T11:02:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0009",
+      "code": "TKT-DEMO-2026-0009",
+      "status": "pending_officer",
+      "priority": "normal",
+      "conversation_id": "CONV-DEMO-0009",
+      "student_id": "SV-DEMO-009",
+      "category": "action",
+      "service_type": "student_certificate",
+      "priority_reasons": [],
+      "summary": "Em muốn xin giấy xác nhận đang học để tham gia chương trình tình nguyện; nơi nhận là Tổ chức mẫu I.",
+      "request_data": {
+        "purpose": "tham gia chương trình tình nguyện",
+        "destination_org": "Tổ chức mẫu I",
+        "receive_method": "digital_pdf"
+      },
+      "handover_reason": null,
+      "assigned_officer_id": "OF-DEMO-01",
+      "revision": 3,
+      "created_at": "2026-09-08T12:00:00+07:00",
+      "updated_at": "2026-09-08T12:02:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0010",
+      "code": "TKT-DEMO-2026-0010",
+      "status": "resolved",
+      "priority": "normal",
+      "conversation_id": "CONV-DEMO-0010",
+      "student_id": "SV-DEMO-010",
+      "category": "action",
+      "service_type": "student_certificate",
+      "priority_reasons": [],
+      "summary": "Em muốn xin giấy xác nhận đang học để nhận hỗ trợ chi phí đi lại; nơi nhận là Quỹ hỗ trợ mẫu J.",
+      "request_data": {
+        "purpose": "nhận hỗ trợ chi phí đi lại",
+        "destination_org": "Quỹ hỗ trợ mẫu J",
+        "receive_method": "paper_stamped"
+      },
+      "handover_reason": null,
+      "assigned_officer_id": "OF-DEMO-03",
+      "revision": 4,
+      "created_at": "2026-09-09T13:00:00+07:00",
+      "updated_at": "2026-09-09T15:00:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0011",
+      "code": "TKT-DEMO-2026-0011",
+      "status": "pending_officer",
+      "priority": "normal",
+      "conversation_id": "CONV-DEMO-0011",
+      "student_id": "SV-DEMO-011",
+      "category": "action",
+      "service_type": "student_certificate",
+      "priority_reasons": [],
+      "summary": "Em muốn xin giấy xác nhận đang học để làm hồ sơ thực tập hè; nơi nhận là Doanh nghiệp mẫu K.",
+      "request_data": {
+        "purpose": "làm hồ sơ thực tập hè",
+        "destination_org": "Doanh nghiệp mẫu K",
+        "receive_method": "digital_pdf"
+      },
+      "handover_reason": null,
+      "assigned_officer_id": "OF-DEMO-01",
+      "revision": 3,
+      "created_at": "2026-09-10T09:00:00+07:00",
+      "updated_at": "2026-09-10T09:02:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0012",
+      "code": "TKT-DEMO-2026-0012",
+      "status": "pending_officer",
+      "priority": "normal",
+      "conversation_id": "CONV-DEMO-0012",
+      "student_id": "SV-DEMO-012",
+      "category": "action",
+      "service_type": "student_certificate",
+      "priority_reasons": [],
+      "summary": "Em muốn xin giấy xác nhận đang học để đăng ký cuộc thi học thuật; nơi nhận là Ban tổ chức mẫu L.",
+      "request_data": {
+        "purpose": "đăng ký cuộc thi học thuật",
+        "destination_org": "Ban tổ chức mẫu L",
+        "receive_method": "paper_stamped"
+      },
+      "handover_reason": null,
+      "assigned_officer_id": "OF-DEMO-03",
+      "revision": 3,
+      "created_at": "2026-09-11T10:00:00+07:00",
+      "updated_at": "2026-09-11T10:02:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0013",
+      "code": "TKT-DEMO-2026-0013",
+      "status": "open",
+      "priority": "normal",
+      "conversation_id": "CONV-DEMO-0013",
+      "student_id": "SV-DEMO-013",
+      "category": "action",
+      "service_type": "student_certificate",
+      "priority_reasons": [],
+      "summary": "Em muốn xin giấy xác nhận đang học để xác minh tình trạng đang học; nơi nhận là Đơn vị xác minh mẫu M.",
+      "request_data": {
+        "purpose": "xác minh tình trạng đang học",
+        "destination_org": "Đơn vị xác minh mẫu M",
+        "receive_method": "digital_pdf"
+      },
+      "handover_reason": null,
+      "assigned_officer_id": null,
+      "revision": 1,
+      "created_at": "2026-09-12T11:00:00+07:00",
+      "updated_at": "2026-09-12T11:00:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0014",
+      "code": "TKT-DEMO-2026-0014",
+      "status": "pending_officer",
+      "priority": "normal",
+      "conversation_id": "CONV-DEMO-0014",
+      "student_id": "SV-DEMO-014",
+      "category": "action",
+      "service_type": "student_certificate",
+      "priority_reasons": [],
+      "summary": "Em muốn xin giấy xác nhận đang học để hoàn thiện hồ sơ nhận tài trợ nghiên cứu; nơi nhận là Quỹ nghiên cứu mẫu N.",
+      "request_data": {
+        "purpose": "hoàn thiện hồ sơ nhận tài trợ nghiên cứu",
+        "destination_org": "Quỹ nghiên cứu mẫu N",
+        "receive_method": "paper_stamped"
+      },
+      "handover_reason": null,
+      "assigned_officer_id": "OF-DEMO-03",
+      "revision": 3,
+      "created_at": "2026-09-13T12:00:00+07:00",
+      "updated_at": "2026-09-13T12:02:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0015",
+      "code": "TKT-DEMO-2026-0015",
+      "status": "resolved",
+      "priority": "normal",
+      "conversation_id": "CONV-DEMO-0015",
+      "student_id": "SV-DEMO-015",
+      "category": "action",
+      "service_type": "student_certificate",
+      "priority_reasons": [],
+      "summary": "Em muốn xin giấy xác nhận đang học để đăng ký chương trình trao đổi; nơi nhận là Trường đối tác mẫu O.",
+      "request_data": {
+        "purpose": "đăng ký chương trình trao đổi",
+        "destination_org": "Trường đối tác mẫu O",
+        "receive_method": "digital_pdf"
+      },
+      "handover_reason": null,
+      "assigned_officer_id": "OF-DEMO-01",
+      "revision": 4,
+      "created_at": "2026-09-14T13:00:00+07:00",
+      "updated_at": "2026-09-14T15:00:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0016",
+      "code": "TKT-DEMO-2026-0016",
+      "status": "open",
+      "priority": "normal",
+      "conversation_id": "CONV-DEMO-0016",
+      "student_id": "SV-DEMO-016",
+      "category": "action",
+      "service_type": "student_certificate",
+      "priority_reasons": [],
+      "summary": "Em muốn xin giấy xác nhận đang học để làm thủ tục miễn giảm phí; nơi nhận là Cơ quan hỗ trợ mẫu P.",
+      "request_data": {
+        "purpose": "làm thủ tục miễn giảm phí",
+        "destination_org": "Cơ quan hỗ trợ mẫu P",
+        "receive_method": "paper_stamped"
+      },
+      "handover_reason": null,
+      "assigned_officer_id": null,
+      "revision": 1,
+      "created_at": "2026-09-15T09:00:00+07:00",
+      "updated_at": "2026-09-15T09:00:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0017",
+      "code": "TKT-DEMO-2026-0017",
+      "status": "pending_officer",
+      "priority": "normal",
+      "conversation_id": "CONV-DEMO-0017",
+      "student_id": "SV-DEMO-017",
+      "category": "action",
+      "service_type": "student_certificate",
+      "priority_reasons": [],
+      "summary": "Em muốn xin giấy xác nhận đang học để bổ sung hồ sơ tuyển dụng bán thời gian; nơi nhận là Doanh nghiệp mẫu Q.",
+      "request_data": {
+        "purpose": "bổ sung hồ sơ tuyển dụng bán thời gian",
+        "destination_org": "Doanh nghiệp mẫu Q",
+        "receive_method": "digital_pdf"
+      },
+      "handover_reason": null,
+      "assigned_officer_id": "OF-DEMO-01",
+      "revision": 3,
+      "created_at": "2026-09-16T10:00:00+07:00",
+      "updated_at": "2026-09-16T10:02:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0018",
+      "code": "TKT-DEMO-2026-0018",
+      "status": "pending_officer",
+      "priority": "normal",
+      "conversation_id": "CONV-DEMO-0018",
+      "student_id": "SV-DEMO-018",
+      "category": "action",
+      "service_type": "student_certificate",
+      "priority_reasons": [],
+      "summary": "Em muốn xin giấy xác nhận đang học để xác nhận để tham gia hội thảo; nơi nhận là Ban tổ chức mẫu R.",
+      "request_data": {
+        "purpose": "xác nhận để tham gia hội thảo",
+        "destination_org": "Ban tổ chức mẫu R",
+        "receive_method": "paper_stamped"
+      },
+      "handover_reason": null,
+      "assigned_officer_id": "OF-DEMO-03",
+      "revision": 3,
+      "created_at": "2026-09-17T11:00:00+07:00",
+      "updated_at": "2026-09-17T11:02:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0019",
+      "code": "TKT-DEMO-2026-0019",
+      "status": "pending_officer",
+      "priority": "high",
+      "conversation_id": "CONV-DEMO-0019",
+      "student_id": "SV-DEMO-019",
+      "category": "complaint",
+      "service_type": "academic_complaint",
+      "priority_reasons": [
+        "Khiếu nại học vụ cần chuyển cán bộ."
+      ],
+      "summary": "Em thấy điểm tổng kết môn học mẫu A trên cổng khác với phiếu đã được trả; nhờ cán bộ kiểm tra.",
+      "request_data": null,
+      "handover_reason": "Có phản ánh về kết quả học vụ; cần cán bộ xem xét.",
+      "assigned_officer_id": "OF-DEMO-01",
+      "revision": 2,
+      "created_at": "2026-09-18T12:00:00+07:00",
+      "updated_at": "2026-09-18T12:02:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0020",
+      "code": "TKT-DEMO-2026-0020",
+      "status": "resolved",
+      "priority": "high",
+      "conversation_id": "CONV-DEMO-0020",
+      "student_id": "SV-DEMO-020",
+      "category": "complaint",
+      "service_type": "academic_complaint",
+      "priority_reasons": [
+        "Khiếu nại học vụ cần chuyển cán bộ."
+      ],
+      "summary": "Em muốn đề nghị xem lại kết quả bài thi môn học mẫu B vì có thể thiếu một trang bài làm.",
+      "request_data": null,
+      "handover_reason": "Có phản ánh về kết quả học vụ; cần cán bộ xem xét.",
+      "assigned_officer_id": "OF-DEMO-03",
+      "revision": 3,
+      "created_at": "2026-09-19T13:00:00+07:00",
+      "updated_at": "2026-09-19T15:00:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0021",
+      "code": "TKT-DEMO-2026-0021",
+      "status": "pending_officer",
+      "priority": "high",
+      "conversation_id": "CONV-DEMO-0021",
+      "student_id": "SV-DEMO-021",
+      "category": "complaint",
+      "service_type": "academic_complaint",
+      "priority_reasons": [
+        "Khiếu nại học vụ cần chuyển cán bộ."
+      ],
+      "summary": "Kết quả phúc tra môn học mẫu C chưa được cập nhật như thông báo em đã nhận.",
+      "request_data": null,
+      "handover_reason": "Có phản ánh về kết quả học vụ; cần cán bộ xem xét.",
+      "assigned_officer_id": "OF-DEMO-01",
+      "revision": 2,
+      "created_at": "2026-09-20T09:00:00+07:00",
+      "updated_at": "2026-09-20T09:02:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0022",
+      "code": "TKT-DEMO-2026-0022",
+      "status": "pending_officer",
+      "priority": "high",
+      "conversation_id": "CONV-DEMO-0022",
+      "student_id": "SV-DEMO-022",
+      "category": "complaint",
+      "service_type": "academic_complaint",
+      "priority_reasons": [
+        "Khiếu nại học vụ cần chuyển cán bộ."
+      ],
+      "summary": "Em thấy một học phần bị ghi thiếu tín chỉ sau khi kết quả được công bố.",
+      "request_data": null,
+      "handover_reason": "Có phản ánh về kết quả học vụ; cần cán bộ xem xét.",
+      "assigned_officer_id": "OF-DEMO-03",
+      "revision": 2,
+      "created_at": "2026-09-21T10:00:00+07:00",
+      "updated_at": "2026-09-21T10:02:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0023",
+      "code": "TKT-DEMO-2026-0023",
+      "status": "pending_officer",
+      "priority": "high",
+      "conversation_id": "CONV-DEMO-0023",
+      "student_id": "SV-DEMO-023",
+      "category": "complaint",
+      "service_type": "academic_complaint",
+      "priority_reasons": [
+        "Khiếu nại học vụ cần chuyển cán bộ."
+      ],
+      "summary": "Em cần cán bộ xem lại quyết định học vụ vì dữ liệu học phần mẫu D có thể bị nhầm.",
+      "request_data": null,
+      "handover_reason": "Có phản ánh về kết quả học vụ; cần cán bộ xem xét.",
+      "assigned_officer_id": "OF-DEMO-01",
+      "revision": 2,
+      "created_at": "2026-09-22T11:00:00+07:00",
+      "updated_at": "2026-09-22T11:02:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0024",
+      "code": "TKT-DEMO-2026-0024",
+      "status": "pending_officer",
+      "priority": "high",
+      "conversation_id": "CONV-DEMO-0024",
+      "student_id": "SV-DEMO-024",
+      "category": "complaint",
+      "service_type": "academic_complaint",
+      "priority_reasons": [
+        "Khiếu nại học vụ cần chuyển cán bộ."
+      ],
+      "summary": "Điểm chuyên cần môn học mẫu E hiển thị khác với bản ghi em được xem tại lớp.",
+      "request_data": null,
+      "handover_reason": "Có phản ánh về kết quả học vụ; cần cán bộ xem xét.",
+      "assigned_officer_id": "OF-DEMO-03",
+      "revision": 2,
+      "created_at": "2026-09-23T12:00:00+07:00",
+      "updated_at": "2026-09-23T12:02:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0025",
+      "code": "TKT-DEMO-2026-0025",
+      "status": "resolved",
+      "priority": "high",
+      "conversation_id": "CONV-DEMO-0025",
+      "student_id": "SV-DEMO-025",
+      "category": "complaint",
+      "service_type": "academic_complaint",
+      "priority_reasons": [
+        "Khiếu nại học vụ cần chuyển cán bộ."
+      ],
+      "summary": "Em phản ánh kết quả học phần mẫu F bị gắn nhầm vào kỳ học khác.",
+      "request_data": null,
+      "handover_reason": "Có phản ánh về kết quả học vụ; cần cán bộ xem xét.",
+      "assigned_officer_id": "OF-DEMO-01",
+      "revision": 3,
+      "created_at": "2026-09-24T13:00:00+07:00",
+      "updated_at": "2026-09-24T15:00:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0026",
+      "code": "TKT-DEMO-2026-0026",
+      "status": "pending_officer",
+      "priority": "high",
+      "conversation_id": "CONV-DEMO-0026",
+      "student_id": "SV-DEMO-026",
+      "category": "complaint",
+      "service_type": "academic_complaint",
+      "priority_reasons": [
+        "Khiếu nại học vụ cần chuyển cán bộ."
+      ],
+      "summary": "Em muốn được hướng dẫn nộp khiếu nại về kết quả thi môn học mẫu G.",
+      "request_data": null,
+      "handover_reason": "Có phản ánh về kết quả học vụ; cần cán bộ xem xét.",
+      "assigned_officer_id": "OF-DEMO-03",
+      "revision": 2,
+      "created_at": "2026-09-25T09:00:00+07:00",
+      "updated_at": "2026-09-25T09:02:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0027",
+      "code": "TKT-DEMO-2026-0027",
+      "status": "pending_officer",
+      "priority": "high",
+      "conversation_id": "CONV-DEMO-0027",
+      "student_id": "SV-DEMO-027",
+      "category": "complaint",
+      "service_type": "student_support",
+      "priority_reasons": [
+        "Tình huống hỗ trợ sinh viên cần người phụ trách xem xét."
+      ],
+      "summary": "Em đang rất căng thẳng vì chuyện học và muốn được cán bộ hỗ trợ liên hệ người phù hợp.",
+      "request_data": null,
+      "handover_reason": "Yêu cầu hỗ trợ nhạy cảm; chuyển cán bộ phụ trách.",
+      "assigned_officer_id": "OF-DEMO-02",
+      "revision": 2,
+      "created_at": "2026-09-26T10:00:00+07:00",
+      "updated_at": "2026-09-26T10:02:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0028",
+      "code": "TKT-DEMO-2026-0028",
+      "status": "pending_officer",
+      "priority": "high",
+      "conversation_id": "CONV-DEMO-0028",
+      "student_id": "SV-DEMO-028",
+      "category": "complaint",
+      "service_type": "student_support",
+      "priority_reasons": [
+        "Tình huống hỗ trợ sinh viên cần người phụ trách xem xét."
+      ],
+      "summary": "Em cần nói chuyện riêng với người phụ trách hỗ trợ sinh viên về tình trạng hiện nay.",
+      "request_data": null,
+      "handover_reason": "Yêu cầu hỗ trợ nhạy cảm; chuyển cán bộ phụ trách.",
+      "assigned_officer_id": "OF-DEMO-02",
+      "revision": 2,
+      "created_at": "2026-09-27T11:00:00+07:00",
+      "updated_at": "2026-09-27T11:02:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0029",
+      "code": "TKT-DEMO-2026-0029",
+      "status": "pending_officer",
+      "priority": "high",
+      "conversation_id": "CONV-DEMO-0029",
+      "student_id": "SV-DEMO-029",
+      "category": "complaint",
+      "service_type": "student_support",
+      "priority_reasons": [
+        "Tình huống hỗ trợ sinh viên cần người phụ trách xem xét."
+      ],
+      "summary": "Em gặp khó khăn tinh thần kéo dài và muốn được hướng dẫn tìm hỗ trợ trong trường.",
+      "request_data": null,
+      "handover_reason": "Yêu cầu hỗ trợ nhạy cảm; chuyển cán bộ phụ trách.",
+      "assigned_officer_id": "OF-DEMO-02",
+      "revision": 2,
+      "created_at": "2026-09-28T12:00:00+07:00",
+      "updated_at": "2026-09-28T12:02:00+07:00"
+    },
+    {
+      "id": "TKT-DEMO-2026-0030",
+      "code": "TKT-DEMO-2026-0030",
+      "status": "resolved",
+      "priority": "high",
+      "conversation_id": "CONV-DEMO-0030",
+      "student_id": "SV-DEMO-030",
+      "category": "complaint",
+      "service_type": "student_support",
+      "priority_reasons": [
+        "Tình huống hỗ trợ sinh viên cần người phụ trách xem xét."
+      ],
+      "summary": "Em muốn được cán bộ liên hệ lại về một vấn đề sức khỏe tinh thần nhạy cảm.",
+      "request_data": null,
+      "handover_reason": "Yêu cầu hỗ trợ nhạy cảm; chuyển cán bộ phụ trách.",
+      "assigned_officer_id": "OF-DEMO-02",
+      "revision": 3,
+      "created_at": "2026-09-29T13:00:00+07:00",
+      "updated_at": "2026-09-29T15:00:00+07:00"
+    }
+  ],
+  "ticket_assignments": [
+    {
+      "ticket_id": "TKT-DEMO-2026-0002",
+      "team_id": "academic",
+      "officer_id": "OF-DEMO-03",
+      "assigned_by": "OF-DEMO-03",
+      "assigned_at": "2026-09-01T10:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0003",
+      "team_id": "academic",
+      "officer_id": "OF-DEMO-01",
+      "assigned_by": "OF-DEMO-01",
+      "assigned_at": "2026-09-02T11:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0005",
+      "team_id": "academic",
+      "officer_id": "OF-DEMO-01",
+      "assigned_by": "OF-DEMO-01",
+      "assigned_at": "2026-09-04T13:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0006",
+      "team_id": "academic",
+      "officer_id": "OF-DEMO-03",
+      "assigned_by": "OF-DEMO-03",
+      "assigned_at": "2026-09-05T09:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0008",
+      "team_id": "academic",
+      "officer_id": "OF-DEMO-03",
+      "assigned_by": "OF-DEMO-03",
+      "assigned_at": "2026-09-07T11:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0009",
+      "team_id": "academic",
+      "officer_id": "OF-DEMO-01",
+      "assigned_by": "OF-DEMO-01",
+      "assigned_at": "2026-09-08T12:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0010",
+      "team_id": "academic",
+      "officer_id": "OF-DEMO-03",
+      "assigned_by": "OF-DEMO-03",
+      "assigned_at": "2026-09-09T13:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0011",
+      "team_id": "academic",
+      "officer_id": "OF-DEMO-01",
+      "assigned_by": "OF-DEMO-01",
+      "assigned_at": "2026-09-10T09:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0012",
+      "team_id": "academic",
+      "officer_id": "OF-DEMO-03",
+      "assigned_by": "OF-DEMO-03",
+      "assigned_at": "2026-09-11T10:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0014",
+      "team_id": "academic",
+      "officer_id": "OF-DEMO-03",
+      "assigned_by": "OF-DEMO-03",
+      "assigned_at": "2026-09-13T12:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0015",
+      "team_id": "academic",
+      "officer_id": "OF-DEMO-01",
+      "assigned_by": "OF-DEMO-01",
+      "assigned_at": "2026-09-14T13:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0017",
+      "team_id": "academic",
+      "officer_id": "OF-DEMO-01",
+      "assigned_by": "OF-DEMO-01",
+      "assigned_at": "2026-09-16T10:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0018",
+      "team_id": "academic",
+      "officer_id": "OF-DEMO-03",
+      "assigned_by": "OF-DEMO-03",
+      "assigned_at": "2026-09-17T11:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0019",
+      "team_id": "academic",
+      "officer_id": "OF-DEMO-01",
+      "assigned_by": "OF-DEMO-01",
+      "assigned_at": "2026-09-18T12:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0020",
+      "team_id": "academic",
+      "officer_id": "OF-DEMO-03",
+      "assigned_by": "OF-DEMO-03",
+      "assigned_at": "2026-09-19T13:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0021",
+      "team_id": "academic",
+      "officer_id": "OF-DEMO-01",
+      "assigned_by": "OF-DEMO-01",
+      "assigned_at": "2026-09-20T09:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0022",
+      "team_id": "academic",
+      "officer_id": "OF-DEMO-03",
+      "assigned_by": "OF-DEMO-03",
+      "assigned_at": "2026-09-21T10:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0023",
+      "team_id": "academic",
+      "officer_id": "OF-DEMO-01",
+      "assigned_by": "OF-DEMO-01",
+      "assigned_at": "2026-09-22T11:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0024",
+      "team_id": "academic",
+      "officer_id": "OF-DEMO-03",
+      "assigned_by": "OF-DEMO-03",
+      "assigned_at": "2026-09-23T12:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0025",
+      "team_id": "academic",
+      "officer_id": "OF-DEMO-01",
+      "assigned_by": "OF-DEMO-01",
+      "assigned_at": "2026-09-24T13:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0026",
+      "team_id": "academic",
+      "officer_id": "OF-DEMO-03",
+      "assigned_by": "OF-DEMO-03",
+      "assigned_at": "2026-09-25T09:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0027",
+      "team_id": "student_support",
+      "officer_id": "OF-DEMO-02",
+      "assigned_by": "OF-DEMO-02",
+      "assigned_at": "2026-09-26T10:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0028",
+      "team_id": "student_support",
+      "officer_id": "OF-DEMO-02",
+      "assigned_by": "OF-DEMO-02",
+      "assigned_at": "2026-09-27T11:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0029",
+      "team_id": "student_support",
+      "officer_id": "OF-DEMO-02",
+      "assigned_by": "OF-DEMO-02",
+      "assigned_at": "2026-09-28T12:01:00+07:00",
+      "is_demo": true
+    },
+    {
+      "ticket_id": "TKT-DEMO-2026-0030",
+      "team_id": "student_support",
+      "officer_id": "OF-DEMO-02",
+      "assigned_by": "OF-DEMO-02",
+      "assigned_at": "2026-09-29T13:01:00+07:00",
+      "is_demo": true
+    }
+  ],
+  "messages": [
+    {
+      "id": "MSG-DEMO-0001-01",
+      "conversation_id": "CONV-DEMO-0001",
+      "ticket_id": "TKT-DEMO-2026-0001",
+      "sender": "student",
+      "content": "Em muốn xin giấy xác nhận đang học để vay vốn học tập; nơi nhận là Ngân hàng mẫu A.",
+      "created_at": "2026-08-31T09:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0001-02",
+      "conversation_id": "CONV-DEMO-0001",
+      "ticket_id": "TKT-DEMO-2026-0001",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-08-31T09:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0002-01",
+      "conversation_id": "CONV-DEMO-0002",
+      "ticket_id": "TKT-DEMO-2026-0002",
+      "sender": "student",
+      "content": "Em muốn xin giấy xác nhận đang học để gia hạn giấy tạm trú; nơi nhận là Cơ quan hành chính mẫu B.",
+      "created_at": "2026-09-01T10:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0002-02",
+      "conversation_id": "CONV-DEMO-0002",
+      "ticket_id": "TKT-DEMO-2026-0002",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-01T10:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0002-04",
+      "conversation_id": "CONV-DEMO-0002",
+      "ticket_id": "TKT-DEMO-2026-0002",
+      "sender": "officer",
+      "content": "Cán bộ đã tiếp nhận và đang kiểm tra yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-01T10:02:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0003-01",
+      "conversation_id": "CONV-DEMO-0003",
+      "ticket_id": "TKT-DEMO-2026-0003",
+      "sender": "student",
+      "content": "Em muốn xin giấy xác nhận đang học để đăng ký thực tập; nơi nhận là Doanh nghiệp mẫu C.",
+      "created_at": "2026-09-02T11:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0003-02",
+      "conversation_id": "CONV-DEMO-0003",
+      "ticket_id": "TKT-DEMO-2026-0003",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-02T11:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0003-04",
+      "conversation_id": "CONV-DEMO-0003",
+      "ticket_id": "TKT-DEMO-2026-0003",
+      "sender": "officer",
+      "content": "Cán bộ đã tiếp nhận và đang kiểm tra yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-02T11:02:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0004-01",
+      "conversation_id": "CONV-DEMO-0004",
+      "ticket_id": "TKT-DEMO-2026-0004",
+      "sender": "student",
+      "content": "Em muốn xin giấy xác nhận đang học để làm hồ sơ học bổng ngoài trường; nơi nhận là Quỹ học bổng mẫu D.",
+      "created_at": "2026-09-03T12:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0004-02",
+      "conversation_id": "CONV-DEMO-0004",
+      "ticket_id": "TKT-DEMO-2026-0004",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-03T12:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0005-01",
+      "conversation_id": "CONV-DEMO-0005",
+      "ticket_id": "TKT-DEMO-2026-0005",
+      "sender": "student",
+      "content": "Em muốn xin giấy xác nhận đang học để bổ sung hồ sơ bảo hiểm; nơi nhận là Đơn vị bảo hiểm mẫu E.",
+      "created_at": "2026-09-04T13:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0005-02",
+      "conversation_id": "CONV-DEMO-0005",
+      "ticket_id": "TKT-DEMO-2026-0005",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-04T13:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0005-04",
+      "conversation_id": "CONV-DEMO-0005",
+      "ticket_id": "TKT-DEMO-2026-0005",
+      "sender": "officer",
+      "content": "Cán bộ đã tiếp nhận và đang kiểm tra yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-04T13:02:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0005-03",
+      "conversation_id": "CONV-DEMO-0005",
+      "ticket_id": "TKT-DEMO-2026-0005",
+      "sender": "officer",
+      "content": "Cán bộ đã tiếp nhận, xem xét và hoàn tất yêu cầu mô phỏng này.",
+      "created_at": "2026-09-04T15:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0006-01",
+      "conversation_id": "CONV-DEMO-0006",
+      "ticket_id": "TKT-DEMO-2026-0006",
+      "sender": "student",
+      "content": "Em muốn xin giấy xác nhận đang học để xin visa du học trao đổi; nơi nhận là Cơ quan lãnh sự mẫu F.",
+      "created_at": "2026-09-05T09:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0006-02",
+      "conversation_id": "CONV-DEMO-0006",
+      "ticket_id": "TKT-DEMO-2026-0006",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-05T09:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0006-04",
+      "conversation_id": "CONV-DEMO-0006",
+      "ticket_id": "TKT-DEMO-2026-0006",
+      "sender": "officer",
+      "content": "Cán bộ đã tiếp nhận và đang kiểm tra yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-05T09:02:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0007-01",
+      "conversation_id": "CONV-DEMO-0007",
+      "ticket_id": "TKT-DEMO-2026-0007",
+      "sender": "student",
+      "content": "Em muốn xin giấy xác nhận đang học để đăng ký khóa học ngắn hạn; nơi nhận là Trung tâm đào tạo mẫu G.",
+      "created_at": "2026-09-06T10:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0007-02",
+      "conversation_id": "CONV-DEMO-0007",
+      "ticket_id": "TKT-DEMO-2026-0007",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-06T10:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0008-01",
+      "conversation_id": "CONV-DEMO-0008",
+      "ticket_id": "TKT-DEMO-2026-0008",
+      "sender": "student",
+      "content": "Em muốn xin giấy xác nhận đang học để hoàn thiện hồ sơ thuê nhà; nơi nhận là Đơn vị cho thuê mẫu H.",
+      "created_at": "2026-09-07T11:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0008-02",
+      "conversation_id": "CONV-DEMO-0008",
+      "ticket_id": "TKT-DEMO-2026-0008",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-07T11:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0008-04",
+      "conversation_id": "CONV-DEMO-0008",
+      "ticket_id": "TKT-DEMO-2026-0008",
+      "sender": "officer",
+      "content": "Cán bộ đã tiếp nhận và đang kiểm tra yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-07T11:02:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0009-01",
+      "conversation_id": "CONV-DEMO-0009",
+      "ticket_id": "TKT-DEMO-2026-0009",
+      "sender": "student",
+      "content": "Em muốn xin giấy xác nhận đang học để tham gia chương trình tình nguyện; nơi nhận là Tổ chức mẫu I.",
+      "created_at": "2026-09-08T12:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0009-02",
+      "conversation_id": "CONV-DEMO-0009",
+      "ticket_id": "TKT-DEMO-2026-0009",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-08T12:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0009-04",
+      "conversation_id": "CONV-DEMO-0009",
+      "ticket_id": "TKT-DEMO-2026-0009",
+      "sender": "officer",
+      "content": "Cán bộ đã tiếp nhận và đang kiểm tra yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-08T12:02:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0010-01",
+      "conversation_id": "CONV-DEMO-0010",
+      "ticket_id": "TKT-DEMO-2026-0010",
+      "sender": "student",
+      "content": "Em muốn xin giấy xác nhận đang học để nhận hỗ trợ chi phí đi lại; nơi nhận là Quỹ hỗ trợ mẫu J.",
+      "created_at": "2026-09-09T13:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0010-02",
+      "conversation_id": "CONV-DEMO-0010",
+      "ticket_id": "TKT-DEMO-2026-0010",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-09T13:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0010-04",
+      "conversation_id": "CONV-DEMO-0010",
+      "ticket_id": "TKT-DEMO-2026-0010",
+      "sender": "officer",
+      "content": "Cán bộ đã tiếp nhận và đang kiểm tra yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-09T13:02:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0010-03",
+      "conversation_id": "CONV-DEMO-0010",
+      "ticket_id": "TKT-DEMO-2026-0010",
+      "sender": "officer",
+      "content": "Cán bộ đã tiếp nhận, xem xét và hoàn tất yêu cầu mô phỏng này.",
+      "created_at": "2026-09-09T15:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0011-01",
+      "conversation_id": "CONV-DEMO-0011",
+      "ticket_id": "TKT-DEMO-2026-0011",
+      "sender": "student",
+      "content": "Em muốn xin giấy xác nhận đang học để làm hồ sơ thực tập hè; nơi nhận là Doanh nghiệp mẫu K.",
+      "created_at": "2026-09-10T09:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0011-02",
+      "conversation_id": "CONV-DEMO-0011",
+      "ticket_id": "TKT-DEMO-2026-0011",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-10T09:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0011-04",
+      "conversation_id": "CONV-DEMO-0011",
+      "ticket_id": "TKT-DEMO-2026-0011",
+      "sender": "officer",
+      "content": "Cán bộ đã tiếp nhận và đang kiểm tra yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-10T09:02:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0012-01",
+      "conversation_id": "CONV-DEMO-0012",
+      "ticket_id": "TKT-DEMO-2026-0012",
+      "sender": "student",
+      "content": "Em muốn xin giấy xác nhận đang học để đăng ký cuộc thi học thuật; nơi nhận là Ban tổ chức mẫu L.",
+      "created_at": "2026-09-11T10:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0012-02",
+      "conversation_id": "CONV-DEMO-0012",
+      "ticket_id": "TKT-DEMO-2026-0012",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-11T10:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0012-04",
+      "conversation_id": "CONV-DEMO-0012",
+      "ticket_id": "TKT-DEMO-2026-0012",
+      "sender": "officer",
+      "content": "Cán bộ đã tiếp nhận và đang kiểm tra yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-11T10:02:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0013-01",
+      "conversation_id": "CONV-DEMO-0013",
+      "ticket_id": "TKT-DEMO-2026-0013",
+      "sender": "student",
+      "content": "Em muốn xin giấy xác nhận đang học để xác minh tình trạng đang học; nơi nhận là Đơn vị xác minh mẫu M.",
+      "created_at": "2026-09-12T11:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0013-02",
+      "conversation_id": "CONV-DEMO-0013",
+      "ticket_id": "TKT-DEMO-2026-0013",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-12T11:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0014-01",
+      "conversation_id": "CONV-DEMO-0014",
+      "ticket_id": "TKT-DEMO-2026-0014",
+      "sender": "student",
+      "content": "Em muốn xin giấy xác nhận đang học để hoàn thiện hồ sơ nhận tài trợ nghiên cứu; nơi nhận là Quỹ nghiên cứu mẫu N.",
+      "created_at": "2026-09-13T12:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0014-02",
+      "conversation_id": "CONV-DEMO-0014",
+      "ticket_id": "TKT-DEMO-2026-0014",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-13T12:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0014-04",
+      "conversation_id": "CONV-DEMO-0014",
+      "ticket_id": "TKT-DEMO-2026-0014",
+      "sender": "officer",
+      "content": "Cán bộ đã tiếp nhận và đang kiểm tra yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-13T12:02:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0015-01",
+      "conversation_id": "CONV-DEMO-0015",
+      "ticket_id": "TKT-DEMO-2026-0015",
+      "sender": "student",
+      "content": "Em muốn xin giấy xác nhận đang học để đăng ký chương trình trao đổi; nơi nhận là Trường đối tác mẫu O.",
+      "created_at": "2026-09-14T13:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0015-02",
+      "conversation_id": "CONV-DEMO-0015",
+      "ticket_id": "TKT-DEMO-2026-0015",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-14T13:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0015-04",
+      "conversation_id": "CONV-DEMO-0015",
+      "ticket_id": "TKT-DEMO-2026-0015",
+      "sender": "officer",
+      "content": "Cán bộ đã tiếp nhận và đang kiểm tra yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-14T13:02:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0015-03",
+      "conversation_id": "CONV-DEMO-0015",
+      "ticket_id": "TKT-DEMO-2026-0015",
+      "sender": "officer",
+      "content": "Cán bộ đã tiếp nhận, xem xét và hoàn tất yêu cầu mô phỏng này.",
+      "created_at": "2026-09-14T15:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0016-01",
+      "conversation_id": "CONV-DEMO-0016",
+      "ticket_id": "TKT-DEMO-2026-0016",
+      "sender": "student",
+      "content": "Em muốn xin giấy xác nhận đang học để làm thủ tục miễn giảm phí; nơi nhận là Cơ quan hỗ trợ mẫu P.",
+      "created_at": "2026-09-15T09:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0016-02",
+      "conversation_id": "CONV-DEMO-0016",
+      "ticket_id": "TKT-DEMO-2026-0016",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-15T09:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0017-01",
+      "conversation_id": "CONV-DEMO-0017",
+      "ticket_id": "TKT-DEMO-2026-0017",
+      "sender": "student",
+      "content": "Em muốn xin giấy xác nhận đang học để bổ sung hồ sơ tuyển dụng bán thời gian; nơi nhận là Doanh nghiệp mẫu Q.",
+      "created_at": "2026-09-16T10:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0017-02",
+      "conversation_id": "CONV-DEMO-0017",
+      "ticket_id": "TKT-DEMO-2026-0017",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-16T10:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0017-04",
+      "conversation_id": "CONV-DEMO-0017",
+      "ticket_id": "TKT-DEMO-2026-0017",
+      "sender": "officer",
+      "content": "Cán bộ đã tiếp nhận và đang kiểm tra yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-16T10:02:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0018-01",
+      "conversation_id": "CONV-DEMO-0018",
+      "ticket_id": "TKT-DEMO-2026-0018",
+      "sender": "student",
+      "content": "Em muốn xin giấy xác nhận đang học để xác nhận để tham gia hội thảo; nơi nhận là Ban tổ chức mẫu R.",
+      "created_at": "2026-09-17T11:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0018-02",
+      "conversation_id": "CONV-DEMO-0018",
+      "ticket_id": "TKT-DEMO-2026-0018",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-17T11:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0018-04",
+      "conversation_id": "CONV-DEMO-0018",
+      "ticket_id": "TKT-DEMO-2026-0018",
+      "sender": "officer",
+      "content": "Cán bộ đã tiếp nhận và đang kiểm tra yêu cầu cấp giấy xác nhận.",
+      "created_at": "2026-09-17T11:02:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0019-01",
+      "conversation_id": "CONV-DEMO-0019",
+      "ticket_id": "TKT-DEMO-2026-0019",
+      "sender": "student",
+      "content": "Em thấy điểm tổng kết môn học mẫu A trên cổng khác với phiếu đã được trả; nhờ cán bộ kiểm tra.",
+      "created_at": "2026-09-18T12:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0019-02",
+      "conversation_id": "CONV-DEMO-0019",
+      "ticket_id": "TKT-DEMO-2026-0019",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu và chuyển đến cán bộ phụ trách.",
+      "created_at": "2026-09-18T12:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0020-01",
+      "conversation_id": "CONV-DEMO-0020",
+      "ticket_id": "TKT-DEMO-2026-0020",
+      "sender": "student",
+      "content": "Em muốn đề nghị xem lại kết quả bài thi môn học mẫu B vì có thể thiếu một trang bài làm.",
+      "created_at": "2026-09-19T13:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0020-02",
+      "conversation_id": "CONV-DEMO-0020",
+      "ticket_id": "TKT-DEMO-2026-0020",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu và chuyển đến cán bộ phụ trách.",
+      "created_at": "2026-09-19T13:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0020-03",
+      "conversation_id": "CONV-DEMO-0020",
+      "ticket_id": "TKT-DEMO-2026-0020",
+      "sender": "officer",
+      "content": "Cán bộ đã tiếp nhận, xem xét và hoàn tất yêu cầu mô phỏng này.",
+      "created_at": "2026-09-19T15:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0021-01",
+      "conversation_id": "CONV-DEMO-0021",
+      "ticket_id": "TKT-DEMO-2026-0021",
+      "sender": "student",
+      "content": "Kết quả phúc tra môn học mẫu C chưa được cập nhật như thông báo em đã nhận.",
+      "created_at": "2026-09-20T09:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0021-02",
+      "conversation_id": "CONV-DEMO-0021",
+      "ticket_id": "TKT-DEMO-2026-0021",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu và chuyển đến cán bộ phụ trách.",
+      "created_at": "2026-09-20T09:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0022-01",
+      "conversation_id": "CONV-DEMO-0022",
+      "ticket_id": "TKT-DEMO-2026-0022",
+      "sender": "student",
+      "content": "Em thấy một học phần bị ghi thiếu tín chỉ sau khi kết quả được công bố.",
+      "created_at": "2026-09-21T10:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0022-02",
+      "conversation_id": "CONV-DEMO-0022",
+      "ticket_id": "TKT-DEMO-2026-0022",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu và chuyển đến cán bộ phụ trách.",
+      "created_at": "2026-09-21T10:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0023-01",
+      "conversation_id": "CONV-DEMO-0023",
+      "ticket_id": "TKT-DEMO-2026-0023",
+      "sender": "student",
+      "content": "Em cần cán bộ xem lại quyết định học vụ vì dữ liệu học phần mẫu D có thể bị nhầm.",
+      "created_at": "2026-09-22T11:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0023-02",
+      "conversation_id": "CONV-DEMO-0023",
+      "ticket_id": "TKT-DEMO-2026-0023",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu và chuyển đến cán bộ phụ trách.",
+      "created_at": "2026-09-22T11:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0024-01",
+      "conversation_id": "CONV-DEMO-0024",
+      "ticket_id": "TKT-DEMO-2026-0024",
+      "sender": "student",
+      "content": "Điểm chuyên cần môn học mẫu E hiển thị khác với bản ghi em được xem tại lớp.",
+      "created_at": "2026-09-23T12:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0024-02",
+      "conversation_id": "CONV-DEMO-0024",
+      "ticket_id": "TKT-DEMO-2026-0024",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu và chuyển đến cán bộ phụ trách.",
+      "created_at": "2026-09-23T12:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0025-01",
+      "conversation_id": "CONV-DEMO-0025",
+      "ticket_id": "TKT-DEMO-2026-0025",
+      "sender": "student",
+      "content": "Em phản ánh kết quả học phần mẫu F bị gắn nhầm vào kỳ học khác.",
+      "created_at": "2026-09-24T13:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0025-02",
+      "conversation_id": "CONV-DEMO-0025",
+      "ticket_id": "TKT-DEMO-2026-0025",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu và chuyển đến cán bộ phụ trách.",
+      "created_at": "2026-09-24T13:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0025-03",
+      "conversation_id": "CONV-DEMO-0025",
+      "ticket_id": "TKT-DEMO-2026-0025",
+      "sender": "officer",
+      "content": "Cán bộ đã tiếp nhận, xem xét và hoàn tất yêu cầu mô phỏng này.",
+      "created_at": "2026-09-24T15:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0026-01",
+      "conversation_id": "CONV-DEMO-0026",
+      "ticket_id": "TKT-DEMO-2026-0026",
+      "sender": "student",
+      "content": "Em muốn được hướng dẫn nộp khiếu nại về kết quả thi môn học mẫu G.",
+      "created_at": "2026-09-25T09:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0026-02",
+      "conversation_id": "CONV-DEMO-0026",
+      "ticket_id": "TKT-DEMO-2026-0026",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu và chuyển đến cán bộ phụ trách.",
+      "created_at": "2026-09-25T09:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0027-01",
+      "conversation_id": "CONV-DEMO-0027",
+      "ticket_id": "TKT-DEMO-2026-0027",
+      "sender": "student",
+      "content": "Em đang rất căng thẳng vì chuyện học và muốn được cán bộ hỗ trợ liên hệ người phù hợp.",
+      "created_at": "2026-09-26T10:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0027-02",
+      "conversation_id": "CONV-DEMO-0027",
+      "ticket_id": "TKT-DEMO-2026-0027",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu và chuyển đến cán bộ phụ trách.",
+      "created_at": "2026-09-26T10:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0028-01",
+      "conversation_id": "CONV-DEMO-0028",
+      "ticket_id": "TKT-DEMO-2026-0028",
+      "sender": "student",
+      "content": "Em cần nói chuyện riêng với người phụ trách hỗ trợ sinh viên về tình trạng hiện nay.",
+      "created_at": "2026-09-27T11:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0028-02",
+      "conversation_id": "CONV-DEMO-0028",
+      "ticket_id": "TKT-DEMO-2026-0028",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu và chuyển đến cán bộ phụ trách.",
+      "created_at": "2026-09-27T11:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0029-01",
+      "conversation_id": "CONV-DEMO-0029",
+      "ticket_id": "TKT-DEMO-2026-0029",
+      "sender": "student",
+      "content": "Em gặp khó khăn tinh thần kéo dài và muốn được hướng dẫn tìm hỗ trợ trong trường.",
+      "created_at": "2026-09-28T12:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0029-02",
+      "conversation_id": "CONV-DEMO-0029",
+      "ticket_id": "TKT-DEMO-2026-0029",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu và chuyển đến cán bộ phụ trách.",
+      "created_at": "2026-09-28T12:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0030-01",
+      "conversation_id": "CONV-DEMO-0030",
+      "ticket_id": "TKT-DEMO-2026-0030",
+      "sender": "student",
+      "content": "Em muốn được cán bộ liên hệ lại về một vấn đề sức khỏe tinh thần nhạy cảm.",
+      "created_at": "2026-09-29T13:00:00+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0030-02",
+      "conversation_id": "CONV-DEMO-0030",
+      "ticket_id": "TKT-DEMO-2026-0030",
+      "sender": "system",
+      "content": "Đã ghi nhận yêu cầu và chuyển đến cán bộ phụ trách.",
+      "created_at": "2026-09-29T13:00:05+07:00"
+    },
+    {
+      "id": "MSG-DEMO-0030-03",
+      "conversation_id": "CONV-DEMO-0030",
+      "ticket_id": "TKT-DEMO-2026-0030",
+      "sender": "officer",
+      "content": "Cán bộ đã tiếp nhận, xem xét và hoàn tất yêu cầu mô phỏng này.",
+      "created_at": "2026-09-29T15:00:00+07:00"
+    }
+  ],
+  "audit_entries": [
+    {
+      "id": "AUD-DEMO-0001-01",
+      "ticket_id": "TKT-DEMO-2026-0001",
+      "actor_id": "SV-DEMO-001",
+      "actor_type": "student",
+      "action": "create",
+      "from_status": null,
+      "to_status": "open",
+      "request_id": "REQ-DEMO-0001",
+      "created_at": "2026-08-31T09:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0002-01",
+      "ticket_id": "TKT-DEMO-2026-0002",
+      "actor_id": "SV-DEMO-002",
+      "actor_type": "student",
+      "action": "create",
+      "from_status": null,
+      "to_status": "open",
+      "request_id": "REQ-DEMO-0002",
+      "created_at": "2026-09-01T10:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0002-02",
+      "ticket_id": "TKT-DEMO-2026-0002",
+      "actor_id": "OF-DEMO-03",
+      "actor_type": "officer",
+      "action": "respond",
+      "from_status": "open",
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0002-H",
+      "created_at": "2026-09-01T10:02:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0003-01",
+      "ticket_id": "TKT-DEMO-2026-0003",
+      "actor_id": "SV-DEMO-003",
+      "actor_type": "student",
+      "action": "create",
+      "from_status": null,
+      "to_status": "open",
+      "request_id": "REQ-DEMO-0003",
+      "created_at": "2026-09-02T11:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0003-02",
+      "ticket_id": "TKT-DEMO-2026-0003",
+      "actor_id": "OF-DEMO-01",
+      "actor_type": "officer",
+      "action": "respond",
+      "from_status": "open",
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0003-H",
+      "created_at": "2026-09-02T11:02:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0004-01",
+      "ticket_id": "TKT-DEMO-2026-0004",
+      "actor_id": "SV-DEMO-004",
+      "actor_type": "student",
+      "action": "create",
+      "from_status": null,
+      "to_status": "open",
+      "request_id": "REQ-DEMO-0004",
+      "created_at": "2026-09-03T12:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0005-01",
+      "ticket_id": "TKT-DEMO-2026-0005",
+      "actor_id": "SV-DEMO-005",
+      "actor_type": "student",
+      "action": "create",
+      "from_status": null,
+      "to_status": "open",
+      "request_id": "REQ-DEMO-0005",
+      "created_at": "2026-09-04T13:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0005-02",
+      "ticket_id": "TKT-DEMO-2026-0005",
+      "actor_id": "OF-DEMO-01",
+      "actor_type": "officer",
+      "action": "respond",
+      "from_status": "open",
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0005-H",
+      "created_at": "2026-09-04T13:02:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0005-03",
+      "ticket_id": "TKT-DEMO-2026-0005",
+      "actor_id": "OF-DEMO-01",
+      "actor_type": "officer",
+      "action": "resolve",
+      "from_status": "pending_officer",
+      "to_status": "resolved",
+      "request_id": "REQ-DEMO-0005-R",
+      "created_at": "2026-09-04T15:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0006-01",
+      "ticket_id": "TKT-DEMO-2026-0006",
+      "actor_id": "SV-DEMO-006",
+      "actor_type": "student",
+      "action": "create",
+      "from_status": null,
+      "to_status": "open",
+      "request_id": "REQ-DEMO-0006",
+      "created_at": "2026-09-05T09:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0006-02",
+      "ticket_id": "TKT-DEMO-2026-0006",
+      "actor_id": "OF-DEMO-03",
+      "actor_type": "officer",
+      "action": "respond",
+      "from_status": "open",
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0006-H",
+      "created_at": "2026-09-05T09:02:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0007-01",
+      "ticket_id": "TKT-DEMO-2026-0007",
+      "actor_id": "SV-DEMO-007",
+      "actor_type": "student",
+      "action": "create",
+      "from_status": null,
+      "to_status": "open",
+      "request_id": "REQ-DEMO-0007",
+      "created_at": "2026-09-06T10:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0008-01",
+      "ticket_id": "TKT-DEMO-2026-0008",
+      "actor_id": "SV-DEMO-008",
+      "actor_type": "student",
+      "action": "create",
+      "from_status": null,
+      "to_status": "open",
+      "request_id": "REQ-DEMO-0008",
+      "created_at": "2026-09-07T11:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0008-02",
+      "ticket_id": "TKT-DEMO-2026-0008",
+      "actor_id": "OF-DEMO-03",
+      "actor_type": "officer",
+      "action": "respond",
+      "from_status": "open",
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0008-H",
+      "created_at": "2026-09-07T11:02:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0009-01",
+      "ticket_id": "TKT-DEMO-2026-0009",
+      "actor_id": "SV-DEMO-009",
+      "actor_type": "student",
+      "action": "create",
+      "from_status": null,
+      "to_status": "open",
+      "request_id": "REQ-DEMO-0009",
+      "created_at": "2026-09-08T12:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0009-02",
+      "ticket_id": "TKT-DEMO-2026-0009",
+      "actor_id": "OF-DEMO-01",
+      "actor_type": "officer",
+      "action": "respond",
+      "from_status": "open",
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0009-H",
+      "created_at": "2026-09-08T12:02:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0010-01",
+      "ticket_id": "TKT-DEMO-2026-0010",
+      "actor_id": "SV-DEMO-010",
+      "actor_type": "student",
+      "action": "create",
+      "from_status": null,
+      "to_status": "open",
+      "request_id": "REQ-DEMO-0010",
+      "created_at": "2026-09-09T13:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0010-02",
+      "ticket_id": "TKT-DEMO-2026-0010",
+      "actor_id": "OF-DEMO-03",
+      "actor_type": "officer",
+      "action": "respond",
+      "from_status": "open",
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0010-H",
+      "created_at": "2026-09-09T13:02:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0010-03",
+      "ticket_id": "TKT-DEMO-2026-0010",
+      "actor_id": "OF-DEMO-03",
+      "actor_type": "officer",
+      "action": "resolve",
+      "from_status": "pending_officer",
+      "to_status": "resolved",
+      "request_id": "REQ-DEMO-0010-R",
+      "created_at": "2026-09-09T15:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0011-01",
+      "ticket_id": "TKT-DEMO-2026-0011",
+      "actor_id": "SV-DEMO-011",
+      "actor_type": "student",
+      "action": "create",
+      "from_status": null,
+      "to_status": "open",
+      "request_id": "REQ-DEMO-0011",
+      "created_at": "2026-09-10T09:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0011-02",
+      "ticket_id": "TKT-DEMO-2026-0011",
+      "actor_id": "OF-DEMO-01",
+      "actor_type": "officer",
+      "action": "respond",
+      "from_status": "open",
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0011-H",
+      "created_at": "2026-09-10T09:02:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0012-01",
+      "ticket_id": "TKT-DEMO-2026-0012",
+      "actor_id": "SV-DEMO-012",
+      "actor_type": "student",
+      "action": "create",
+      "from_status": null,
+      "to_status": "open",
+      "request_id": "REQ-DEMO-0012",
+      "created_at": "2026-09-11T10:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0012-02",
+      "ticket_id": "TKT-DEMO-2026-0012",
+      "actor_id": "OF-DEMO-03",
+      "actor_type": "officer",
+      "action": "respond",
+      "from_status": "open",
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0012-H",
+      "created_at": "2026-09-11T10:02:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0013-01",
+      "ticket_id": "TKT-DEMO-2026-0013",
+      "actor_id": "SV-DEMO-013",
+      "actor_type": "student",
+      "action": "create",
+      "from_status": null,
+      "to_status": "open",
+      "request_id": "REQ-DEMO-0013",
+      "created_at": "2026-09-12T11:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0014-01",
+      "ticket_id": "TKT-DEMO-2026-0014",
+      "actor_id": "SV-DEMO-014",
+      "actor_type": "student",
+      "action": "create",
+      "from_status": null,
+      "to_status": "open",
+      "request_id": "REQ-DEMO-0014",
+      "created_at": "2026-09-13T12:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0014-02",
+      "ticket_id": "TKT-DEMO-2026-0014",
+      "actor_id": "OF-DEMO-03",
+      "actor_type": "officer",
+      "action": "respond",
+      "from_status": "open",
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0014-H",
+      "created_at": "2026-09-13T12:02:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0015-01",
+      "ticket_id": "TKT-DEMO-2026-0015",
+      "actor_id": "SV-DEMO-015",
+      "actor_type": "student",
+      "action": "create",
+      "from_status": null,
+      "to_status": "open",
+      "request_id": "REQ-DEMO-0015",
+      "created_at": "2026-09-14T13:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0015-02",
+      "ticket_id": "TKT-DEMO-2026-0015",
+      "actor_id": "OF-DEMO-01",
+      "actor_type": "officer",
+      "action": "respond",
+      "from_status": "open",
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0015-H",
+      "created_at": "2026-09-14T13:02:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0015-03",
+      "ticket_id": "TKT-DEMO-2026-0015",
+      "actor_id": "OF-DEMO-01",
+      "actor_type": "officer",
+      "action": "resolve",
+      "from_status": "pending_officer",
+      "to_status": "resolved",
+      "request_id": "REQ-DEMO-0015-R",
+      "created_at": "2026-09-14T15:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0016-01",
+      "ticket_id": "TKT-DEMO-2026-0016",
+      "actor_id": "SV-DEMO-016",
+      "actor_type": "student",
+      "action": "create",
+      "from_status": null,
+      "to_status": "open",
+      "request_id": "REQ-DEMO-0016",
+      "created_at": "2026-09-15T09:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0017-01",
+      "ticket_id": "TKT-DEMO-2026-0017",
+      "actor_id": "SV-DEMO-017",
+      "actor_type": "student",
+      "action": "create",
+      "from_status": null,
+      "to_status": "open",
+      "request_id": "REQ-DEMO-0017",
+      "created_at": "2026-09-16T10:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0017-02",
+      "ticket_id": "TKT-DEMO-2026-0017",
+      "actor_id": "OF-DEMO-01",
+      "actor_type": "officer",
+      "action": "respond",
+      "from_status": "open",
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0017-H",
+      "created_at": "2026-09-16T10:02:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0018-01",
+      "ticket_id": "TKT-DEMO-2026-0018",
+      "actor_id": "SV-DEMO-018",
+      "actor_type": "student",
+      "action": "create",
+      "from_status": null,
+      "to_status": "open",
+      "request_id": "REQ-DEMO-0018",
+      "created_at": "2026-09-17T11:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0018-02",
+      "ticket_id": "TKT-DEMO-2026-0018",
+      "actor_id": "OF-DEMO-03",
+      "actor_type": "officer",
+      "action": "respond",
+      "from_status": "open",
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0018-H",
+      "created_at": "2026-09-17T11:02:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0019-01",
+      "ticket_id": "TKT-DEMO-2026-0019",
+      "actor_id": null,
+      "actor_type": "system",
+      "action": "handover",
+      "from_status": null,
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0019",
+      "created_at": "2026-09-18T12:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0020-01",
+      "ticket_id": "TKT-DEMO-2026-0020",
+      "actor_id": null,
+      "actor_type": "system",
+      "action": "handover",
+      "from_status": null,
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0020",
+      "created_at": "2026-09-19T13:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0020-03",
+      "ticket_id": "TKT-DEMO-2026-0020",
+      "actor_id": "OF-DEMO-03",
+      "actor_type": "officer",
+      "action": "resolve",
+      "from_status": "pending_officer",
+      "to_status": "resolved",
+      "request_id": "REQ-DEMO-0020-R",
+      "created_at": "2026-09-19T15:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0021-01",
+      "ticket_id": "TKT-DEMO-2026-0021",
+      "actor_id": null,
+      "actor_type": "system",
+      "action": "handover",
+      "from_status": null,
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0021",
+      "created_at": "2026-09-20T09:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0022-01",
+      "ticket_id": "TKT-DEMO-2026-0022",
+      "actor_id": null,
+      "actor_type": "system",
+      "action": "handover",
+      "from_status": null,
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0022",
+      "created_at": "2026-09-21T10:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0023-01",
+      "ticket_id": "TKT-DEMO-2026-0023",
+      "actor_id": null,
+      "actor_type": "system",
+      "action": "handover",
+      "from_status": null,
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0023",
+      "created_at": "2026-09-22T11:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0024-01",
+      "ticket_id": "TKT-DEMO-2026-0024",
+      "actor_id": null,
+      "actor_type": "system",
+      "action": "handover",
+      "from_status": null,
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0024",
+      "created_at": "2026-09-23T12:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0025-01",
+      "ticket_id": "TKT-DEMO-2026-0025",
+      "actor_id": null,
+      "actor_type": "system",
+      "action": "handover",
+      "from_status": null,
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0025",
+      "created_at": "2026-09-24T13:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0025-03",
+      "ticket_id": "TKT-DEMO-2026-0025",
+      "actor_id": "OF-DEMO-01",
+      "actor_type": "officer",
+      "action": "resolve",
+      "from_status": "pending_officer",
+      "to_status": "resolved",
+      "request_id": "REQ-DEMO-0025-R",
+      "created_at": "2026-09-24T15:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0026-01",
+      "ticket_id": "TKT-DEMO-2026-0026",
+      "actor_id": null,
+      "actor_type": "system",
+      "action": "handover",
+      "from_status": null,
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0026",
+      "created_at": "2026-09-25T09:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0027-01",
+      "ticket_id": "TKT-DEMO-2026-0027",
+      "actor_id": null,
+      "actor_type": "system",
+      "action": "handover",
+      "from_status": null,
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0027",
+      "created_at": "2026-09-26T10:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0028-01",
+      "ticket_id": "TKT-DEMO-2026-0028",
+      "actor_id": null,
+      "actor_type": "system",
+      "action": "handover",
+      "from_status": null,
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0028",
+      "created_at": "2026-09-27T11:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0029-01",
+      "ticket_id": "TKT-DEMO-2026-0029",
+      "actor_id": null,
+      "actor_type": "system",
+      "action": "handover",
+      "from_status": null,
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0029",
+      "created_at": "2026-09-28T12:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0030-01",
+      "ticket_id": "TKT-DEMO-2026-0030",
+      "actor_id": null,
+      "actor_type": "system",
+      "action": "handover",
+      "from_status": null,
+      "to_status": "pending_officer",
+      "request_id": "REQ-DEMO-0030",
+      "created_at": "2026-09-29T13:00:00+07:00"
+    },
+    {
+      "id": "AUD-DEMO-0030-03",
+      "ticket_id": "TKT-DEMO-2026-0030",
+      "actor_id": "OF-DEMO-02",
+      "actor_type": "officer",
+      "action": "resolve",
+      "from_status": "pending_officer",
+      "to_status": "resolved",
+      "request_id": "REQ-DEMO-0030-R",
+      "created_at": "2026-09-29T15:00:00+07:00"
+    }
+  ]
+}

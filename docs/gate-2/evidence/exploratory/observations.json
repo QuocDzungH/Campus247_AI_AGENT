@@ -1,0 +1,4034 @@
+{
+  "operator": "Codex",
+  "execution": "Interactive exploratory browser review: individual steps directed through Playwright REPL; not a human tester and not a batch suite",
+  "agentMode": "stub",
+  "ragMode": "stub",
+  "frontendMode": "api",
+  "viewport": "1280x800",
+  "browser": "152.0.7977.64",
+  "sourceCommit": "26236f1",
+  "sourceDirty": true,
+  "note": "Final M05 observation uses StudentRequestsPage hydration fix over the source commit; previous reload failure retained.",
+  "cases": [
+    {
+      "id": "M01",
+      "at": "2026-10-04T13:23:21.760Z",
+      "input": "Quy trình xin giấy xác nhận sinh viên?",
+      "url": "http://127.0.0.1:18100/student/assistant",
+      "ui": "Đến nội dung chính\nCampus 24/7\nDịch vụ sinh viên\nTrợ lý học vụ\nHồ sơ của tôi\nSV\nSinh viên mẫu 001\nDEMO-001\nTrợ lý học vụ\n\nMột khung chat cho khiếu nại và xin giấy xác nhận\n\nCuộc trò chuyện\nĐang hỗ trợ: Dịch vụ sinh viên\nXin giấy xác nhận cần thông tin gì?\nKhiếu nại điểm thi thế nào?\n\nBạn:\nQuy trình xin giấy xác nhận sinh viên?\n\nTrợ lý học vụ\n\nTrợ lý:\nKho tài liệu hiện tại chưa đủ căn cứ để trả lời câu hỏi này.\n\nCâu hỏi cho trợ lý\nEnter để gửi · Shift + Enter xuống dòng\n\nTrợ lý hướng dẫn thủ tục từ nguồn VinUni. Bạn kiểm tra thông tin và xác nhận trước khi nộp hồ sơ."
+    },
+    {
+      "id": "M03",
+      "at": "2026-10-04T13:23:35.968Z",
+      "input": "Tôi muốn xin giấy xác nhận sinh viên.",
+      "url": "http://127.0.0.1:18100/student/assistant",
+      "ui": "Đến nội dung chính\nCampus 24/7\nDịch vụ sinh viên\nTrợ lý học vụ\nHồ sơ của tôi\nSV\nSinh viên mẫu 001\nDEMO-001\nTrở về\nXin giấy xác nhận trong hội thoại\n\nMột khung chat cho khiếu nại và xin giấy xác nhận\n\nCuộc trò chuyện\nThu gọn trợ lý\nTrợ lý học vụ\nĐang hỗ trợ: Dịch vụ sinh viên\nXin giấy xác nhận cần thông tin gì?\nKhiếu nại điểm thi thế nào?\n\nBạn:\nTôi muốn xin giấy xác nhận sinh viên.\n\nTrợ lý học vụ\n\nTrợ lý:\nBạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).\n\nCâu hỏi cho trợ lý\nEnter để gửi · Shift + Enter xuống dòng\n\nTrợ lý hướng dẫn thủ tục từ nguồn VinUni. Bạn kiểm tra thông tin và xác nhận trước khi nộp hồ sơ.\n\nKiểm tra thông tin trước khi nộp\n\nXin giấy xác nhận sinh viên · phiên bản 1\n\nCòn thiếu\nLoại đơn\nKhiếu nại\nXin giấy xác nhận sinh viên\n\nThông tin sinh viên đã xác minh từ hồ sơ\n\nTừ hồ sơ tài khoản\nHọ và tên SV\nSinh viên mẫu 001\nMã số sinh viên (MSSV)\nDEMO-001\nKhóa học / Lớp sinh hoạt\n—\nKhoa quản lý chuyên môn\nKhoa mô phỏng\n\nPhần bên dưới là dữ liệu bạn kê khai, chưa được hệ thống xác minh.\n\nMục đích\nNơi nhận\nCách nhận\nBản điện tử (PDF)\nBản giấy đóng dấu\n\nCòn thiếu: Mục đích xin giấy, Cơ quan/đơn vị nhận, Hình thức nhận\n\nPreview chưa đủ mục đích, nơi nhận và cách nhận.\n\nCập nhật preview\nNộp yêu cầu (Submit 1)\n\nChỉ tạo ticket sau khi bạn xác nhận gửi. Trợ lý không gửi hộ và không tự kết luận vụ việc."
+    },
+    {
+      "id": "M02",
+      "at": "2026-10-04T13:24:59.976Z",
+      "input": "Bổ sung mục đích, nơi nhận và digital_pdf vào preview M03; review và xác nhận Submit 1",
+      "ticketCode": "TKT-2026-0005",
+      "url": "http://127.0.0.1:18100/student/assistant",
+      "ui": "Đến nội dung chính\nCampus 24/7\nDịch vụ sinh viên\nTrợ lý học vụ\nHồ sơ của tôi\nSV\nSinh viên mẫu 001\nDEMO-001\nTrở về\nXin giấy xác nhận trong hội thoại\n\nMã hồ sơ: TKT-2026-0005\n\nCuộc trò chuyện\nThu gọn trợ lý\nTrợ lý học vụ\nĐang hỗ trợ: Dịch vụ sinh viên\nXin giấy xác nhận cần thông tin gì?\nKhiếu nại điểm thi thế nào?\n\nBạn:\nTôi muốn xin giấy xác nhận sinh viên.\n\nTrợ lý học vụ\n\nTrợ lý:\nBạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).\n\nCâu hỏi cho trợ lý\nEnter để gửi · Shift + Enter xuống dòng\n\nTrợ lý hướng dẫn thủ tục từ nguồn VinUni. Bạn kiểm tra thông tin và xác nhận trước khi nộp hồ sơ.\n\nĐã nộp yêu cầu\n\nTKT-2026-0005\n\nTicket đã vào hệ thống. Bước này không phát hành giấy xác nhận. Theo dõi phản hồi của cán bộ trong Yêu cầu của tôi.\n\nMở Yêu cầu của tôi"
+    },
+    {
+      "id": "M04-before",
+      "at": "2026-10-04T13:25:16.085Z",
+      "input": "Tôi muốn khiếu nại điểm môn Cơ sở dữ liệu vì điểm bài thi chưa đúng.",
+      "url": "http://127.0.0.1:18100/student/assistant",
+      "ui": "Đến nội dung chính\nCampus 24/7\nDịch vụ sinh viên\nTrợ lý học vụ\nHồ sơ của tôi\nSV\nSinh viên mẫu 001\nDEMO-001\nTrở về\nKhiếu nại trong hội thoại\n\nMột khung chat cho khiếu nại và xin giấy xác nhận\n\nCuộc trò chuyện\nThu gọn trợ lý\nTrợ lý học vụ\nĐang hỗ trợ: Dịch vụ sinh viên\nXin giấy xác nhận cần thông tin gì?\nKhiếu nại điểm thi thế nào?\n\nBạn:\nTôi muốn khiếu nại điểm môn Cơ sở dữ liệu vì điểm bài thi chưa đúng.\n\nTrợ lý học vụ\n\nTrợ lý:\nBạn hãy kiểm tra thông tin trước khi gửi.\n\nCâu hỏi cho trợ lý\nEnter để gửi · Shift + Enter xuống dòng\n\nTrợ lý hướng dẫn thủ tục từ nguồn VinUni. Bạn kiểm tra thông tin và xác nhận trước khi nộp hồ sơ.\n\nKiểm tra thông tin trước khi nộp\n\nKhiếu nại · Điểm học phần · phiên bản 1\n\nĐủ dữ liệu\nLoại đơn\nKhiếu nại\nXin giấy xác nhận sinh viên\n\nThông tin sinh viên đã xác minh từ hồ sơ\n\nTừ hồ sơ tài khoản\nHọ và tên SV\nSinh viên mẫu 001\nMã số sinh viên (MSSV)\nDEMO-001\nKhóa học / Lớp sinh hoạt\n—\nKhoa quản lý chuyên môn\nKhoa mô phỏng\n\nPhần bên dưới là dữ liệu bạn kê khai, chưa được hệ thống xác minh.\n\nNội dung khiếu nại\nĐiểm học phần\nNội dung khác\nMôn học / học phần\nMã học phần (không bắt buộc)\nLoại điểm đang khiếu nại (không bắt buộc)\nChưa nêu\nĐiểm thi cuối kỳ\nĐiểm giữa kỳ\nĐiểm tổng kết học phần\nLoại điểm khác\nNội dung khiếu nại\nKết quả mong muốn (không bắt buộc)\nMinh chứng (kê khai) (không bắt buộc)\nCập nhật preview\nNộp yêu cầu (Submit 1)\n\nChỉ tạo ticket sau khi bạn xác nhận gửi. Trợ lý không gửi hộ và không tự kết luận vụ việc."
+    },
+    {
+      "id": "M04-after",
+      "at": "2026-10-04T13:25:30.891Z",
+      "url": "http://127.0.0.1:18100/student/assistant",
+      "ui": "Đến nội dung chính\nCampus 24/7\nDịch vụ sinh viên\nTrợ lý học vụ\nHồ sơ của tôi\nSV\nSinh viên mẫu 001\nDEMO-001\nTrở về\nChờ cán bộ xử lý\n\nMã hồ sơ: TKT-2026-0006\n\nCuộc trò chuyện\nThu gọn trợ lý\nTrợ lý học vụ\nĐang hỗ trợ: Dịch vụ sinh viên\n\nTrợ lý AI đã khóa. Tin nhắn tiếp theo được chuyển tới cán bộ; không khóa toàn bộ ô soạn thảo.\n\nXin giấy xác nhận cần thông tin gì?\nKhiếu nại điểm thi thế nào?\n\nBạn:\nTôi muốn khiếu nại điểm môn Cơ sở dữ liệu vì điểm bài thi chưa đúng.\n\nTrợ lý học vụ\n\nTrợ lý:\nBạn hãy kiểm tra thông tin trước khi gửi.\n\nCâu hỏi cho trợ lý\nEnter để gửi · Shift + Enter xuống dòng\n\nTrợ lý hướng dẫn thủ tục từ nguồn VinUni. Bạn kiểm tra thông tin và xác nhận trước khi nộp hồ sơ.\n\nĐã gửi cán bộ xử lý\n\nĐơn đã vào hàng chờ cán bộ. Bạn vẫn có thể gửi thông tin bổ sung trong chat; trợ lý không tự kết luận hay hứa sửa điểm.\n\nMã hồ sơ: TKT-2026-0006\n\nMở Yêu cầu của tôi"
+    },
+    {
+      "id": "M05-brief",
+      "at": "2026-10-04T13:25:47.774Z",
+      "ticketCode": "TKT-2026-0005",
+      "url": "http://127.0.0.1:18100/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88",
+      "ui": "Đến nội dung chính\nCampus 24/7\nHàng chờ hồ sơ\nRà soát học phần\nCB\nCán bộ mẫu 01\nOF-DEMO-01\nQuay lại hàng chờ\n\nTKT-2026-0005 · Giấy xác nhận sinh viên\n\nXin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước\n\nSinh viên mẫu 001 · DEMO-001 · Chưa có dữ liệu\n\nNộp 20:24 04/10/2026 · Cán bộ phụ trách: Cán bộ mẫu 01 · Trạng thái tiếp nhận: Chờ tiếp nhận\n\nMới tiếp nhận\nTiếp nhận hồ sơ\n\nQuy trình cert-process-v1 · mẫu student_certificate_vn v1\n\nTrang chỉ đọc dữ liệu đã lưu. Không tự nhận ca, gửi tin, phát hành hay chạy lại AI.\n\nNhận ca\nBạn đã nhận xử lý hồ sơ này.\nAI chuẩn bị hồ sơ\nTải lại hồ sơ\n\nXin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước\n\nXử lý thủ công (không gắn bản tóm tắt AI). Dùng khi bản tóm tắt chưa sẵn sàng, đã cũ, hoặc bạn chủ động không gắn AI.\nAI hỗ trợ xử lý hồ sơ\n\nBản tóm tắt đã có được hiển thị ngay, không cần nhận ca mới để đọc.\n\nChạy lại\nBản tóm tắt hồ sơ\n\nĐã có bản tóm tắt · lần 2\n\nMỤC TIÊU SINH VIÊN\n\nXin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước\n\nBỐI CẢNH VÀ DỮ KIỆN\n\nTên sinh viên: Sinh viên mẫu 001\n\nHồ sơ sinh viên · Chưa xác minh\n\nMã số sinh viên: DEMO-001\n\nHồ sơ sinh viên · Chưa xác minh\n\nTHIẾU / MÂU THUẪN\n\nKhông có mục thiếu do agent ghi nhận\n\nPHÂN LOẠI VÀ LÝ DO ƯU TIÊN\n\nMức ưu tiên đề xuất: Bình thường\n\nVIỆC CÁN BỘ NÊN LÀM TIẾP\n\nĐọc bản tóm tắt, đối chiếu minh chứng, xác nhận các việc bắt buộc, rồi mới gửi phản hồi hoặc tạo tài liệu khi đủ điều kiện.\n\nCẢNH BÁO TỪ AI\n\nKhông có cảnh báo từ bản tóm tắt.\n\nVIỆC AI GỢI Ý (KHÔNG BẮT BUỘC)\nKiểm tra tình trạng học tập\nNHÁP PHẢN HỒI\n\nPhòng đã tiếp nhận yêu cầu. Cán bộ sẽ phản hồi sau khi kiểm tra hồ sơ.\n\nNGUỒN\n\nChưa có dữ liệu\n\nThông tin kỹ thuật\nKết quả đối soát tự động của hệ thống\n\nHệ thống tra cứu các nguồn đã kết nối. Cán bộ xem bằng chứng rồi xác nhận đạt hoặc không đạt.\n\nBắt đầu kiểm tra\n\nChưa chạy kiểm tra cho hồ sơ này. Các tiêu chí sẽ hiện sau khi bắt đầu kiểm tra.\n\nCác việc cần kiểm tra\n\nCán bộ xác nhận từng việc đã hoàn thành trước khi xử lý kết quả.\n\nViệc bắt buộc của quy trình\nĐối chiếu họ tên / MSSV với hồ sơ nguồn\nBắt buộc · Quy trình\nKiểm tra mục đích, nơi nhận và cách nhận\nBắt buộc · Quy trình\nXem kết quả đối soát và ghi nhận bằng chứng\nBắt buộc · Quy trình\nĐơn sinh viên đã gửi\n\nTKT-2026-0005 · Sinh viên mẫu 001 · Giấy xác nhận sinh viên · 0 tệp\n\nXin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước\n\nXem đơn gốc\nLịch sử tiếp nhận và xử lý hồ sơ\n\n5 mục\n\nSinh viên đã gửi đơn\n\nSinh viên mẫu 001 · Sinh viên · 20:24 04/10/2026\n\nChi tiết kỹ thuật\n\nAI đã hoàn tất bản tóm tắt hồ sơ\n\nHệ thống · Hệ thống · 20:24 04/10/2026\n\nChi tiết kỹ thuật\n\nCán bộ đã nhận xử lý\n\nCán bộ mẫu 01 · Cán bộ · 20:25 04/10/2026\n\nChi tiết kỹ thuật\n\nĐã yêu cầu AI chuẩn bị hồ sơ\n\nCán bộ mẫu 01 · Cán bộ · 20:25 04/10/2026\n\nChi tiết kỹ thuật\n\nAI đã hoàn tất bản tóm tắt hồ sơ\n\nHệ thống · Hệ thống · 20:25 04/10/2026\n\nChi tiết kỹ thuật\n\nBản duyệt phát hành\n\nBản giấy xác nhận\nTin nhắn phản hồi\nGiấy xác nhận sinh viên\n\nBản nháp hệ thống, chưa ký số, chưa phải giấy chính thức.\n\nChỉnh sửa nội dung\nIn A4\nMở bản xem trước lớn\n\nVinUniversity\n\nPhòng Đào tạo\n\nGIẤY XÁC NHẬN SINH VIÊN\n\nBản nháp · chưa phát hành\n\nNhà trường xác nhận sinh viên Sinh viên mẫu 001, mã số sinh viên DEMO-001, khoa Khoa mô phỏng.\n\nMục đích\n\nNộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước\n\nCơ quan/đơn vị nhận\n\nNgân hàng Chính sách Xã hội\n\nHồ sơ: TKT-2026-0005\nNgười có thẩm quyền ký\n\nChưa có chữ ký số.\n\nCán bộ soạn: Cán bộ mẫu 01\n\nChưa ký số. Không sử dụng như giấy có giá trị chính thức.\n\nPhê duyệt và phát hành\nCòn việc bắt buộc chưa xác nhận: Đối chiếu họ tên / MSSV với hồ sơ nguồn, Kiểm tra mục đích, nơi nhận và cách nhận, Xem kết quả đối soát và ghi nhận bằng chứng\nChưa chạy kiểm tra: Đối chiếu danh tính\nChưa chạy kiểm tra: Đầy đủ bản khai\nChưa chạy kiểm tra: Tình trạng học tập\n\nBản tóm tắt hồ sơ đã sẵn sàng. Kiểm tra rồi mới gửi phản hồi hoặc phát hành.\n\nLịch sử trao đổi với sinh viên\n\n2 tin\n\nSinh viên\n20:23 04/10/2026\n\nTôi muốn xin giấy xác nhận sinh viên.\n\nTrợ lý học vụ\n20:23 04/10/2026\n\nBạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu)."
+    },
+    {
+      "id": "M05-officer",
+      "at": "2026-10-04T13:26:43.946Z",
+      "ticketCode": "TKT-2026-0005",
+      "url": "http://127.0.0.1:18100/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88",
+      "ui": "Đến nội dung chính\nCampus 24/7\nHàng chờ hồ sơ\nRà soát học phần\nCB\nCán bộ mẫu 01\nOF-DEMO-01\nQuay lại hàng chờ\n\nTKT-2026-0005 · Giấy xác nhận sinh viên\n\nXin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước\n\nSinh viên mẫu 001 · DEMO-001 · Chưa có dữ liệu\n\nNộp 20:24 04/10/2026 · Cán bộ phụ trách: Cán bộ mẫu 01 · Trạng thái tiếp nhận: Đã hoàn tất\n\nHoàn tất\nTiếp nhận hồ sơ\n\nQuy trình cert-process-v1 · mẫu student_certificate_vn v1\n\nTrang chỉ đọc dữ liệu đã lưu. Không tự nhận ca, gửi tin, phát hành hay chạy lại AI.\n\nNhận ca\nHồ sơ đã đóng, không nhận xử lý thêm.\nChạy lại AI\nHồ sơ đã đóng.\nTải lại hồ sơ\n\nXin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước\n\nXử lý thủ công (không gắn bản tóm tắt AI). Dùng khi bản tóm tắt chưa sẵn sàng, đã cũ, hoặc bạn chủ động không gắn AI.\nAI hỗ trợ xử lý hồ sơ\n\nBản tóm tắt đã có được hiển thị ngay, không cần nhận ca mới để đọc.\n\nTạo hồ sơ AI\nHồ sơ đã đóng.\nBản tóm tắt hồ sơ\n\nBản tóm tắt đã cũ vì hồ sơ vừa thay đổi · lần 2 · hồ sơ đã đổi sau bản tóm tắt này\n\nMỤC TIÊU SINH VIÊN\n\nXin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước\n\nBỐI CẢNH VÀ DỮ KIỆN\n\nTên sinh viên: Sinh viên mẫu 001\n\nHồ sơ sinh viên · Chưa xác minh\n\nMã số sinh viên: DEMO-001\n\nHồ sơ sinh viên · Chưa xác minh\n\nTHIẾU / MÂU THUẪN\n\nKhông có mục thiếu do agent ghi nhận\n\nPHÂN LOẠI VÀ LÝ DO ƯU TIÊN\n\nMức ưu tiên đề xuất: Bình thường\n\nVIỆC CÁN BỘ NÊN LÀM TIẾP\n\nĐọc bản tóm tắt, đối chiếu minh chứng, xác nhận các việc bắt buộc, rồi mới gửi phản hồi hoặc tạo tài liệu khi đủ điều kiện.\n\nCẢNH BÁO TỪ AI\n\nKhông có cảnh báo từ bản tóm tắt.\n\nVIỆC AI GỢI Ý (KHÔNG BẮT BUỘC)\nKiểm tra tình trạng học tập\nNHÁP PHẢN HỒI\n\nPhòng đã tiếp nhận yêu cầu. Cán bộ sẽ phản hồi sau khi kiểm tra hồ sơ.\n\nNGUỒN\n\nChưa có dữ liệu\n\nThông tin kỹ thuật\nKết quả đối soát tự động của hệ thống\n\nHệ thống tra cứu các nguồn đã kết nối. Cán bộ xem bằng chứng rồi xác nhận đạt hoặc không đạt.\n\nBắt đầu kiểm tra\nHồ sơ đã đóng nên không chạy kiểm tra mới.\n\nHồ sơ đã đóng nên không chạy kiểm tra mới.\n\nChưa chạy kiểm tra cho hồ sơ này. Các tiêu chí sẽ hiện sau khi bắt đầu kiểm tra.\n\nCác việc cần kiểm tra\n\nCán bộ xác nhận từng việc đã hoàn thành trước khi xử lý kết quả.\n\nViệc bắt buộc của quy trình\nĐối chiếu họ tên / MSSV với hồ sơ nguồn\nBắt buộc · Quy trình\nHồ sơ đã đóng, không sửa checklist.\nKiểm tra mục đích, nơi nhận và cách nhận\nBắt buộc · Quy trình\nHồ sơ đã đóng, không sửa checklist.\nXem kết quả đối soát và ghi nhận bằng chứng\nBắt buộc · Quy trình\nHồ sơ đã đóng, không sửa checklist.\nĐơn sinh viên đã gửi\n\nTKT-2026-0005 · Sinh viên mẫu 001 · Giấy xác nhận sinh viên · 0 tệp\n\nXin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước\n\nXem đơn gốc\nLịch sử tiếp nhận và xử lý hồ sơ\n\n6 mục\n\nSinh viên đã gửi đơn\n\nSinh viên mẫu 001 · Sinh viên · 20:24 04/10/2026\n\nChi tiết kỹ thuật\n\nAI đã hoàn tất bản tóm tắt hồ sơ\n\nHệ thống · Hệ thống · 20:24 04/10/2026\n\nChi tiết kỹ thuật\n\nCán bộ đã nhận xử lý\n\nCán bộ mẫu 01 · Cán bộ · 20:25 04/10/2026\n\nChi tiết kỹ thuật\n\nĐã yêu cầu AI chuẩn bị hồ sơ\n\nCán bộ mẫu 01 · Cán bộ · 20:25 04/10/2026\n\nChi tiết kỹ thuật\n\nAI đã hoàn tất bản tóm tắt hồ sơ\n\nHệ thống · Hệ thống · 20:25 04/10/2026\n\nChi tiết kỹ thuật\n\nĐã hoàn tất xử lý hồ sơ\n\nCán bộ mẫu 01 · Cán bộ · 20:26 04/10/2026\n\nChi tiết kỹ thuật\n\nBản duyệt phát hành\n\nBản giấy xác nhận\nTin nhắn phản hồi\nKết quả xử lý\n\nHồ sơ đã hoàn tất. Xem kết quả trong trao đổi và nhật ký; không thực hiện lại thao tác đóng hồ sơ.\n\nĐã hoàn tất xử lý hồ sơ. Thao tác này không phát hành tài liệu.\n\nLịch sử trao đổi với sinh viên\n\n3 tin\n\nSinh viên\n20:23 04/10/2026\n\nTôi muốn xin giấy xác nhận sinh viên.\n\nTrợ lý học vụ\n20:23 04/10/2026\n\nBạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).\n\nCán bộ\n20:26 04/10/2026\n\nĐã kiểm tra hồ sơ Gate 2 theo từng bước và hoàn tất yêu cầu. Đây là phản hồi thử nghiệm, không phát hành giấy chính thức."
+    },
+    {
+      "id": "M05-reload-before-fix",
+      "at": "2026-10-04T13:31:22.485Z",
+      "ticketCode": "TKT-2026-0005",
+      "url": "http://127.0.0.1:18100/my-requests?q=TKT-2026-0005&ticket=tkt_667b653d9e4a4291a4c99dec6f597f88",
+      "ui": "Đi đến nội dung hồ sơ\nCampus 24/7\nDịch vụ sinh viên\nTrợ lý học vụ\nHồ sơ của tôi\nSV\nSinh viên mẫu 001\nDEMO-001\nHồ sơ của tôi\nTạo yêu cầu\n\nTìm hồ sơ đã nộp, xem việc cần làm và theo dõi phản hồi.\n\nDanh sách hồ sơ (7)\nTìm theo mã hoặc nội dung yêu cầu\nTất cả\nMới nộp\nĐang xử lý\nCần bổ sung\nHoàn tất\nLọc theo loại yêu cầu\n\n1 hồ sơ phù hợp\n\nXóa bộ lọc\nHoàn tất\nXin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước\n\nYêu cầu giấy xác nhận\n\nTKT-2026-0005\n\nNộp: 20:24 04/10/2026\n\nXem chi tiết\nQuay lại danh sách\nHoàn tất\nYêu cầu giấy xác nhận\nXin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước\n\nMã hồ sơ: TKT-2026-0005\n\nNgày nộp: 20:24 04/10/2026\n\nBước xử lý hồ sơ đã kết thúc. Xem kết quả bên dưới; trạng thái này không tự xác nhận giấy đã phát hành.\n\nViệc bạn cần làm\n\nĐọc kết quả xử lý và phản hồi của cán bộ.\n\nXem kết quả xử lý\n\nThời gian xử lý: chưa có thời hạn được cán bộ xác nhận cho hồ sơ này.\n\nThời gian tham khảo: 2–3 ngày làm việc, cao điểm tới 5 ngày. Cán bộ xác nhận thời gian cụ thể khi tiếp nhận.\n\nPhản hồi gần nhất của cán bộ\n\nChưa có phản hồi của cán bộ trong hồ sơ này.\n\nKết quả xử lý\n\nXem tình trạng tài liệu bên dưới. Hồ sơ hoàn tất không đồng nghĩa tài liệu đã được phát hành.\n\nTài liệu kết quả\n\nTài liệu chính thức chưa được cung cấp trong hồ sơ này. Bạn sẽ nhận thông báo khi có kết quả.\n\nCách nhận đã khai: Bản điện tử. Hãy theo dõi phản hồi của cán bộ.\n\nTiến trình hồ sơ\n1\nĐã ghi nhận hồ sơ· Đã qua\n2\nCán bộ xử lý· Đã qua\n3\nKết quả xử lý· Hiện tại\nTrao đổi với trợ lý học vụ\n\nChưa có hội thoại trên hồ sơ này.\n\nTin nhắn về hồ sơ TKT-2026-0005\n\nTin nhắn được gửi vào hồ sơ; không phải yêu cầu mới.\n\nGửi tin nhắn\nThông tin bạn đã khai\n⌄\nHỏi trợ lý",
+      "finding": "Resolved status but officer reply and thread disappear after reload while API returns three messages"
+    },
+    {
+      "id": "M05-student-after-fix",
+      "at": "2026-10-04T13:32:20.070Z",
+      "ticketCode": "TKT-2026-0005",
+      "url": "http://127.0.0.1:18100/my-requests?q=TKT-2026-0005&ticket=tkt_667b653d9e4a4291a4c99dec6f597f88",
+      "ui": "Đi đến nội dung hồ sơ\nCampus 24/7\nDịch vụ sinh viên\nTrợ lý học vụ\nHồ sơ của tôi\nSV\nSinh viên mẫu 001\nDEMO-001\nHồ sơ của tôi\nTạo yêu cầu\n\nTìm hồ sơ đã nộp, xem việc cần làm và theo dõi phản hồi.\n\nDanh sách hồ sơ (8)\nTìm theo mã hoặc nội dung yêu cầu\nTất cả\nMới nộp\nĐang xử lý\nCần bổ sung\nHoàn tất\nLọc theo loại yêu cầu\n\n1 hồ sơ phù hợp\n\nXóa bộ lọc\nHoàn tất\nXin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước\n\nYêu cầu giấy xác nhận\n\nTKT-2026-0005\n\nNộp: 20:24 04/10/2026\n\nXem chi tiết\nQuay lại danh sách\nHoàn tất\nYêu cầu giấy xác nhận\nXin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước\n\nMã hồ sơ: TKT-2026-0005\n\nNgày nộp: 20:24 04/10/2026\n\nBước xử lý hồ sơ đã kết thúc. Xem kết quả bên dưới; trạng thái này không tự xác nhận giấy đã phát hành.\n\nViệc bạn cần làm\n\nĐọc kết quả xử lý và phản hồi của cán bộ.\n\nXem kết quả xử lý\n\nThời gian xử lý: chưa có thời hạn được cán bộ xác nhận cho hồ sơ này.\n\nThời gian tham khảo: 2–3 ngày làm việc, cao điểm tới 5 ngày. Cán bộ xác nhận thời gian cụ thể khi tiếp nhận.\n\nPhản hồi gần nhất của cán bộ\n\nĐã kiểm tra hồ sơ Gate 2 theo từng bước và hoàn tất yêu cầu. Đây là phản hồi thử nghiệm, không phát hành giấy chính thức.\n\nKết quả xử lý\n\nXem tình trạng tài liệu bên dưới. Hồ sơ hoàn tất không đồng nghĩa tài liệu đã được phát hành.\n\nTài liệu kết quả\n\nTài liệu chính thức chưa được cung cấp trong hồ sơ này. Bạn sẽ nhận thông báo khi có kết quả.\n\nCách nhận đã khai: Bản điện tử. Hãy theo dõi phản hồi của cán bộ.\n\nTiến trình hồ sơ\n1\nĐã ghi nhận hồ sơ· Đã qua\n2\nCán bộ xử lý· Đã qua\n3\nKết quả xử lý· Hiện tại\nHội thoại hồ sơ\n\nBạn\n\n20:23 04/10/2026\n\nTôi muốn xin giấy xác nhận sinh viên.\n\nTrợ lý học vụ\n\n20:23 04/10/2026\n\nBạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).\n\nCán bộ · Cán bộ\n\n20:26 04/10/2026\n\nĐã kiểm tra hồ sơ Gate 2 theo từng bước và hoàn tất yêu cầu. Đây là phản hồi thử nghiệm, không phát hành giấy chính thức.\n\nTin nhắn về hồ sơ TKT-2026-0005\n\nTin nhắn được gửi vào hồ sơ; không phải yêu cầu mới.\n\nGửi tin nhắn\nThông tin bạn đã khai\n⌄\nHỏi trợ lý"
+    }
+  ],
+  "network": [
+    {
+      "url": "http://127.0.0.1:18011/api/v1/conversations/conv_95078696b47440fd82546fe140640f43/messages",
+      "status": 200,
+      "body": {
+        "conversation_id": "conv_95078696b47440fd82546fe140640f43",
+        "user_message_id": "msg_ebbfa17db2fa4b0a84405ba12bdb19c4",
+        "route": "L1",
+        "outcome": "insufficient_evidence",
+        "reply": {
+          "id": "msg_33e8521ed53b4e7baf9b17a03c6bf780",
+          "conversation_id": "conv_95078696b47440fd82546fe140640f43",
+          "ticket_id": null,
+          "sender": "assistant",
+          "content": "Kho tài liệu hiện tại chưa đủ căn cứ để trả lời câu hỏi này.",
+          "created_at": "2026-10-04T13:23:21.629304Z"
+        },
+        "citations": [],
+        "preview": null,
+        "ticket": null,
+        "conversation_state": {
+          "status": "active",
+          "ai_response_locked": false,
+          "handover_status": "none"
+        }
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/conversations/conv_f4ab8f5326e949c98a4e24c0d03ec626/messages",
+      "status": 200,
+      "body": {
+        "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+        "user_message_id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+        "route": "L2",
+        "outcome": "collecting",
+        "reply": {
+          "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+          "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+          "ticket_id": null,
+          "sender": "assistant",
+          "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+          "created_at": "2026-10-04T13:23:35.778677Z"
+        },
+        "citations": [],
+        "preview": {
+          "service_type": "student_certificate",
+          "fields": {
+            "purpose": null,
+            "destination_org": null,
+            "receive_method": null,
+            "complaint_subtype": null,
+            "course": null,
+            "course_code": null,
+            "assessment": null,
+            "description": null,
+            "requested_outcome": null,
+            "evidence": null,
+            "extras": {}
+          },
+          "missing_fields": [
+            "purpose",
+            "destination_org",
+            "receive_method"
+          ],
+          "invalid_fields": [],
+          "id": "prv_31b60a1bf60f4961af42455e43a5e082",
+          "version": 1,
+          "can_submit": false,
+          "expires_at": "2026-10-04T13:53:35.778677Z"
+        },
+        "ticket": null,
+        "conversation_state": {
+          "status": "active",
+          "ai_response_locked": false,
+          "handover_status": "none"
+        }
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/previews/prv_31b60a1bf60f4961af42455e43a5e082",
+      "status": 200,
+      "body": {
+        "service_type": "student_certificate",
+        "fields": {
+          "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "destination_org": "Ngân hàng Chính sách Xã hội",
+          "receive_method": "digital_pdf",
+          "complaint_subtype": null,
+          "course": null,
+          "course_code": null,
+          "assessment": null,
+          "description": null,
+          "requested_outcome": null,
+          "evidence": null,
+          "extras": {}
+        },
+        "missing_fields": [],
+        "invalid_fields": [],
+        "id": "prv_31b60a1bf60f4961af42455e43a5e082",
+        "version": 2,
+        "can_submit": true,
+        "expires_at": "2026-10-04T13:53:58.275192Z"
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets",
+      "status": 201,
+      "body": {
+        "ticket": {
+          "id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "code": "TKT-2026-0005",
+          "status": "open",
+          "priority": "normal",
+          "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+          "student_id": "SV-DEMO-001",
+          "category": "action",
+          "service_type": "student_certificate",
+          "priority_reasons": [],
+          "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "request_data": {
+            "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "destination_org": "Ngân hàng Chính sách Xã hội",
+            "receive_method": "digital_pdf",
+            "complaint_subtype": null,
+            "course": null,
+            "course_code": null,
+            "assessment": null,
+            "description": null,
+            "requested_outcome": null,
+            "evidence": null,
+            "extras": {}
+          },
+          "handover_reason": null,
+          "assigned_officer_id": null,
+          "revision": 1,
+          "created_at": "2026-10-04T13:24:59.826600Z",
+          "updated_at": "2026-10-04T13:24:59.826600Z",
+          "student_name": "Sinh viên mẫu 001",
+          "student_mssv": "DEMO-001"
+        },
+        "brief_status": "pending"
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "ticket": {
+          "id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "code": "TKT-2026-0005",
+          "status": "open",
+          "priority": "normal",
+          "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+          "student_id": "SV-DEMO-001",
+          "category": "action",
+          "service_type": "student_certificate",
+          "priority_reasons": [],
+          "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "request_data": {
+            "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "destination_org": "Ngân hàng Chính sách Xã hội",
+            "receive_method": "digital_pdf",
+            "complaint_subtype": null,
+            "course": null,
+            "course_code": null,
+            "assessment": null,
+            "description": null,
+            "requested_outcome": null,
+            "evidence": null,
+            "extras": {}
+          },
+          "handover_reason": null,
+          "assigned_officer_id": null,
+          "revision": 1,
+          "created_at": "2026-10-04T13:24:59.826600Z",
+          "updated_at": "2026-10-04T13:24:59.826600Z",
+          "student_name": "Sinh viên mẫu 001",
+          "student_mssv": "DEMO-001"
+        },
+        "messages": {
+          "items": [
+            {
+              "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "student",
+              "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+              "created_at": "2026-10-04T13:23:35.774836Z"
+            },
+            {
+              "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "assistant",
+              "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+              "created_at": "2026-10-04T13:23:35.778677Z"
+            }
+          ],
+          "total": 2,
+          "page": 1,
+          "page_size": 100
+        },
+        "attachments": [],
+        "workspace": {
+          "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "revision": 1,
+          "officer_draft": null,
+          "checklist": []
+        },
+        "verifications": [],
+        "student_profile": {
+          "user_id": "SV-DEMO-001",
+          "full_name": "Sinh viên mẫu 001",
+          "mssv": "DEMO-001",
+          "email": null,
+          "faculty": "Khoa mô phỏng",
+          "major": null,
+          "cohort": "DEMO-2026",
+          "class_year": null,
+          "student_status": null,
+          "verification_status": "unverified",
+          "source": null,
+          "source_imported_at": null,
+          "verified_at": null,
+          "is_demo": true
+        },
+        "assigned_officer": null,
+        "process": {
+          "service_type": "student_certificate",
+          "label": "Giấy xác nhận sinh viên",
+          "process_version": "cert-process-v1",
+          "issues_document": true,
+          "template_id": "student_certificate_vn",
+          "template_version": "v1",
+          "template_status": "approved",
+          "validity_days": null,
+          "requires_academic_status": true,
+          "requires_financial_clearance": false,
+          "required_criteria": [
+            "identity_match",
+            "form_completeness"
+          ],
+          "issue_required_criteria": [
+            "identity_match",
+            "form_completeness",
+            "academic_status"
+          ],
+          "planned_checklist": [
+            {
+              "id": "chk_identity",
+              "label": "Đối chiếu họ tên / MSSV với hồ sơ nguồn",
+              "required": true
+            },
+            {
+              "id": "chk_form",
+              "label": "Kiểm tra mục đích, nơi nhận và cách nhận",
+              "required": true
+            },
+            {
+              "id": "chk_evidence",
+              "label": "Xem kết quả đối soát và ghi nhận bằng chứng",
+              "required": true
+            }
+          ]
+        },
+        "document_draft": null,
+        "issued_document": null,
+        "supplements": [],
+        "evidence_fingerprint": null,
+        "institution": {
+          "name": "VinUniversity",
+          "unit": "Phòng Đào tạo"
+        }
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/messages?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "student",
+            "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+            "created_at": "2026-10-04T13:23:35.774836Z"
+          },
+          {
+            "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "assistant",
+            "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+            "created_at": "2026-10-04T13:23:35.778677Z"
+          }
+        ],
+        "total": 2,
+        "page": 1,
+        "page_size": 100
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/conversations/conv_7fb1faf68e904c08b1db76db651a33ab/messages",
+      "status": 200,
+      "body": {
+        "conversation_id": "conv_7fb1faf68e904c08b1db76db651a33ab",
+        "user_message_id": "msg_17f71cabdfb34a1183c75619d2c234b5",
+        "route": "L2",
+        "outcome": "preview_ready",
+        "reply": {
+          "id": "msg_15b20b4f20c54c969788094fc22f5ab4",
+          "conversation_id": "conv_7fb1faf68e904c08b1db76db651a33ab",
+          "ticket_id": null,
+          "sender": "assistant",
+          "content": "Bạn hãy kiểm tra thông tin trước khi gửi.",
+          "created_at": "2026-10-04T13:25:15.973097Z"
+        },
+        "citations": [],
+        "preview": {
+          "service_type": "academic_complaint",
+          "fields": {
+            "purpose": null,
+            "destination_org": null,
+            "receive_method": null,
+            "complaint_subtype": "grade_appeal",
+            "course": "Cơ sở dữ liệu",
+            "course_code": null,
+            "assessment": null,
+            "description": "điểm bài thi chưa đúng",
+            "requested_outcome": null,
+            "evidence": null,
+            "extras": {}
+          },
+          "missing_fields": [],
+          "invalid_fields": [],
+          "id": "prv_01d30a4ffeb84395b7692dff177350f1",
+          "version": 1,
+          "can_submit": true,
+          "expires_at": "2026-10-04T13:55:15.973097Z"
+        },
+        "ticket": null,
+        "conversation_state": {
+          "status": "active",
+          "ai_response_locked": false,
+          "handover_status": "none"
+        }
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "ticket": {
+          "id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "code": "TKT-2026-0005",
+          "status": "open",
+          "priority": "normal",
+          "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+          "student_id": "SV-DEMO-001",
+          "category": "action",
+          "service_type": "student_certificate",
+          "priority_reasons": [],
+          "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "request_data": {
+            "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "destination_org": "Ngân hàng Chính sách Xã hội",
+            "receive_method": "digital_pdf",
+            "complaint_subtype": null,
+            "course": null,
+            "course_code": null,
+            "assessment": null,
+            "description": null,
+            "requested_outcome": null,
+            "evidence": null,
+            "extras": {}
+          },
+          "handover_reason": null,
+          "assigned_officer_id": null,
+          "revision": 1,
+          "created_at": "2026-10-04T13:24:59.826600Z",
+          "updated_at": "2026-10-04T13:24:59.826600Z",
+          "student_name": "Sinh viên mẫu 001",
+          "student_mssv": "DEMO-001"
+        },
+        "messages": {
+          "items": [
+            {
+              "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "student",
+              "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+              "created_at": "2026-10-04T13:23:35.774836Z"
+            },
+            {
+              "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "assistant",
+              "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+              "created_at": "2026-10-04T13:23:35.778677Z"
+            }
+          ],
+          "total": 2,
+          "page": 1,
+          "page_size": 100
+        },
+        "attachments": [],
+        "workspace": {
+          "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "revision": 1,
+          "officer_draft": null,
+          "checklist": []
+        },
+        "verifications": [],
+        "student_profile": {
+          "user_id": "SV-DEMO-001",
+          "full_name": "Sinh viên mẫu 001",
+          "mssv": "DEMO-001",
+          "email": null,
+          "faculty": "Khoa mô phỏng",
+          "major": null,
+          "cohort": "DEMO-2026",
+          "class_year": null,
+          "student_status": null,
+          "verification_status": "unverified",
+          "source": null,
+          "source_imported_at": null,
+          "verified_at": null,
+          "is_demo": true
+        },
+        "assigned_officer": null,
+        "process": {
+          "service_type": "student_certificate",
+          "label": "Giấy xác nhận sinh viên",
+          "process_version": "cert-process-v1",
+          "issues_document": true,
+          "template_id": "student_certificate_vn",
+          "template_version": "v1",
+          "template_status": "approved",
+          "validity_days": null,
+          "requires_academic_status": true,
+          "requires_financial_clearance": false,
+          "required_criteria": [
+            "identity_match",
+            "form_completeness"
+          ],
+          "issue_required_criteria": [
+            "identity_match",
+            "form_completeness",
+            "academic_status"
+          ],
+          "planned_checklist": [
+            {
+              "id": "chk_identity",
+              "label": "Đối chiếu họ tên / MSSV với hồ sơ nguồn",
+              "required": true
+            },
+            {
+              "id": "chk_form",
+              "label": "Kiểm tra mục đích, nơi nhận và cách nhận",
+              "required": true
+            },
+            {
+              "id": "chk_evidence",
+              "label": "Xem kết quả đối soát và ghi nhận bằng chứng",
+              "required": true
+            }
+          ]
+        },
+        "document_draft": null,
+        "issued_document": null,
+        "supplements": [],
+        "evidence_fingerprint": null,
+        "institution": {
+          "name": "VinUniversity",
+          "unit": "Phòng Đào tạo"
+        }
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/officer/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/audit?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "aud_3d1dbf207f46483db303a87eedf4b38e",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": "SV-DEMO-001",
+            "actor_type": "student",
+            "action": "create",
+            "from_status": null,
+            "to_status": "open",
+            "request_id": "req_2fd83d879f404a6d9a4b1abd46bb5ae7",
+            "details": null,
+            "created_at": "2026-10-04T13:24:59.826600Z",
+            "actor_name": "Sinh viên mẫu 001"
+          },
+          {
+            "id": "aud_293ad823191c4d1ea943bd2ca37b193d",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": null,
+            "actor_type": "system",
+            "action": "brief_ready",
+            "from_status": "open",
+            "to_status": "open",
+            "request_id": "job_50c67aedfef848b58353fe7bdd34c794",
+            "details": null,
+            "created_at": "2026-10-04T13:24:59.890094Z",
+            "actor_name": null
+          }
+        ],
+        "total": 2,
+        "page": 1,
+        "page_size": 100
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/messages?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "student",
+            "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+            "created_at": "2026-10-04T13:23:35.774836Z"
+          },
+          {
+            "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "assistant",
+            "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+            "created_at": "2026-10-04T13:23:35.778677Z"
+          }
+        ],
+        "total": 2,
+        "page": 1,
+        "page_size": 100
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/officer/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/brief",
+      "status": 200,
+      "body": {
+        "status": "ready",
+        "current_ticket_revision": 1,
+        "brief_version": 1,
+        "source_ticket_revision": 1,
+        "artifact": {
+          "brief": {
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "source_ticket_revision": 1,
+            "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "facts": [
+              {
+                "key": "student_name",
+                "value": "Sinh viên mẫu 001",
+                "source_type": "profile",
+                "source_id": "SV-DEMO-001",
+                "verification_status": "unverified"
+              },
+              {
+                "key": "mssv",
+                "value": "DEMO-001",
+                "source_type": "profile",
+                "source_id": "SV-DEMO-001",
+                "verification_status": "unverified"
+              }
+            ],
+            "missing_items": [],
+            "checklist": [
+              {
+                "id": "check_profile",
+                "label": "Kiểm tra tình trạng học tập",
+                "checked": false
+              }
+            ],
+            "suggested_priority": "normal",
+            "priority_reasons": [],
+            "draft_reply": "Phòng đã tiếp nhận yêu cầu. Cán bộ sẽ phản hồi sau khi kiểm tra hồ sơ.",
+            "citations": [],
+            "warnings": [],
+            "quality_status": "pass"
+          },
+          "brief_version": 1,
+          "source_ticket_revision": 1,
+          "model_name": "stub-agent",
+          "prompt_version": "1",
+          "template_version": "1",
+          "index_version": null,
+          "created_at": "2026-10-04T13:24:59.887983Z"
+        },
+        "error": null
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/officer/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/claim",
+      "status": 200,
+      "body": {
+        "ticket": {
+          "id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "code": "TKT-2026-0005",
+          "status": "open",
+          "priority": "normal",
+          "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+          "student_id": "SV-DEMO-001",
+          "category": "action",
+          "service_type": "student_certificate",
+          "priority_reasons": [],
+          "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "request_data": {
+            "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "destination_org": "Ngân hàng Chính sách Xã hội",
+            "receive_method": "digital_pdf",
+            "complaint_subtype": null,
+            "course": null,
+            "course_code": null,
+            "assessment": null,
+            "description": null,
+            "requested_outcome": null,
+            "evidence": null,
+            "extras": {}
+          },
+          "handover_reason": null,
+          "assigned_officer_id": "OF-DEMO-01",
+          "revision": 2,
+          "created_at": "2026-10-04T13:24:59.826600Z",
+          "updated_at": "2026-10-04T13:25:45.127982Z",
+          "student_name": "Sinh viên mẫu 001",
+          "student_mssv": "DEMO-001"
+        },
+        "audit_id": "aud_28276d3e3981468bb049b467760a0266"
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "ticket": {
+          "id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "code": "TKT-2026-0005",
+          "status": "open",
+          "priority": "normal",
+          "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+          "student_id": "SV-DEMO-001",
+          "category": "action",
+          "service_type": "student_certificate",
+          "priority_reasons": [],
+          "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "request_data": {
+            "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "destination_org": "Ngân hàng Chính sách Xã hội",
+            "receive_method": "digital_pdf",
+            "complaint_subtype": null,
+            "course": null,
+            "course_code": null,
+            "assessment": null,
+            "description": null,
+            "requested_outcome": null,
+            "evidence": null,
+            "extras": {}
+          },
+          "handover_reason": null,
+          "assigned_officer_id": "OF-DEMO-01",
+          "revision": 2,
+          "created_at": "2026-10-04T13:24:59.826600Z",
+          "updated_at": "2026-10-04T13:25:45.127982Z",
+          "student_name": "Sinh viên mẫu 001",
+          "student_mssv": "DEMO-001"
+        },
+        "messages": {
+          "items": [
+            {
+              "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "student",
+              "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+              "created_at": "2026-10-04T13:23:35.774836Z"
+            },
+            {
+              "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "assistant",
+              "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+              "created_at": "2026-10-04T13:23:35.778677Z"
+            }
+          ],
+          "total": 2,
+          "page": 1,
+          "page_size": 100
+        },
+        "attachments": [],
+        "workspace": {
+          "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "revision": 2,
+          "officer_draft": null,
+          "checklist": [
+            {
+              "id": "chk_identity",
+              "label": "Đối chiếu họ tên / MSSV với hồ sơ nguồn",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            },
+            {
+              "id": "chk_form",
+              "label": "Kiểm tra mục đích, nơi nhận và cách nhận",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            },
+            {
+              "id": "chk_evidence",
+              "label": "Xem kết quả đối soát và ghi nhận bằng chứng",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            }
+          ]
+        },
+        "verifications": [],
+        "student_profile": {
+          "user_id": "SV-DEMO-001",
+          "full_name": "Sinh viên mẫu 001",
+          "mssv": "DEMO-001",
+          "email": null,
+          "faculty": "Khoa mô phỏng",
+          "major": null,
+          "cohort": "DEMO-2026",
+          "class_year": null,
+          "student_status": null,
+          "verification_status": "unverified",
+          "source": null,
+          "source_imported_at": null,
+          "verified_at": null,
+          "is_demo": true
+        },
+        "assigned_officer": {
+          "id": "OF-DEMO-01",
+          "role": "officer",
+          "name": "Cán bộ mẫu 01",
+          "username": null,
+          "email": null,
+          "account_status": "active"
+        },
+        "process": {
+          "service_type": "student_certificate",
+          "label": "Giấy xác nhận sinh viên",
+          "process_version": "cert-process-v1",
+          "issues_document": true,
+          "template_id": "student_certificate_vn",
+          "template_version": "v1",
+          "template_status": "approved",
+          "validity_days": null,
+          "requires_academic_status": true,
+          "requires_financial_clearance": false,
+          "required_criteria": [
+            "identity_match",
+            "form_completeness"
+          ],
+          "issue_required_criteria": [
+            "identity_match",
+            "form_completeness",
+            "academic_status"
+          ],
+          "planned_checklist": [
+            {
+              "id": "chk_identity",
+              "label": "Đối chiếu họ tên / MSSV với hồ sơ nguồn",
+              "required": true
+            },
+            {
+              "id": "chk_form",
+              "label": "Kiểm tra mục đích, nơi nhận và cách nhận",
+              "required": true
+            },
+            {
+              "id": "chk_evidence",
+              "label": "Xem kết quả đối soát và ghi nhận bằng chứng",
+              "required": true
+            }
+          ]
+        },
+        "document_draft": {
+          "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "version": 1,
+          "template_id": "student_certificate_vn",
+          "template_version": "v1",
+          "template_status": "approved",
+          "status": "draft",
+          "student_snapshot": {
+            "full_name": "Sinh viên mẫu 001",
+            "mssv": "DEMO-001",
+            "class_year": null,
+            "major": null,
+            "faculty": "Khoa mô phỏng",
+            "student_status": null,
+            "verification_status": "unverified",
+            "source": null
+          },
+          "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "destination_org": "Ngân hàng Chính sách Xã hội",
+          "notes": null,
+          "valid_until": null,
+          "authored_by": "OF-DEMO-01",
+          "approved_by": null,
+          "content_hash": null,
+          "updated_at": "2026-10-04T13:25:45.131285+00:00"
+        },
+        "issued_document": null,
+        "supplements": [],
+        "evidence_fingerprint": null,
+        "institution": {
+          "name": "VinUniversity",
+          "unit": "Phòng Đào tạo"
+        }
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/officer/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/audit?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "aud_3d1dbf207f46483db303a87eedf4b38e",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": "SV-DEMO-001",
+            "actor_type": "student",
+            "action": "create",
+            "from_status": null,
+            "to_status": "open",
+            "request_id": "req_2fd83d879f404a6d9a4b1abd46bb5ae7",
+            "details": null,
+            "created_at": "2026-10-04T13:24:59.826600Z",
+            "actor_name": "Sinh viên mẫu 001"
+          },
+          {
+            "id": "aud_293ad823191c4d1ea943bd2ca37b193d",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": null,
+            "actor_type": "system",
+            "action": "brief_ready",
+            "from_status": "open",
+            "to_status": "open",
+            "request_id": "job_50c67aedfef848b58353fe7bdd34c794",
+            "details": null,
+            "created_at": "2026-10-04T13:24:59.890094Z",
+            "actor_name": null
+          },
+          {
+            "id": "aud_28276d3e3981468bb049b467760a0266",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": "OF-DEMO-01",
+            "actor_type": "officer",
+            "action": "claim",
+            "from_status": "open",
+            "to_status": "open",
+            "request_id": "req_6b79a7e94c8f40368203376bff9ecf5c",
+            "details": null,
+            "created_at": "2026-10-04T13:25:45.127982Z",
+            "actor_name": "Cán bộ mẫu 01"
+          }
+        ],
+        "total": 3,
+        "page": 1,
+        "page_size": 100
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/messages?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "student",
+            "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+            "created_at": "2026-10-04T13:23:35.774836Z"
+          },
+          {
+            "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "assistant",
+            "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+            "created_at": "2026-10-04T13:23:35.778677Z"
+          }
+        ],
+        "total": 2,
+        "page": 1,
+        "page_size": 100
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/officer/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/brief",
+      "status": 200,
+      "body": {
+        "status": "stale",
+        "current_ticket_revision": 2,
+        "brief_version": 1,
+        "source_ticket_revision": 1,
+        "artifact": {
+          "brief": {
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "source_ticket_revision": 1,
+            "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "facts": [
+              {
+                "key": "student_name",
+                "value": "Sinh viên mẫu 001",
+                "source_type": "profile",
+                "source_id": "SV-DEMO-001",
+                "verification_status": "unverified"
+              },
+              {
+                "key": "mssv",
+                "value": "DEMO-001",
+                "source_type": "profile",
+                "source_id": "SV-DEMO-001",
+                "verification_status": "unverified"
+              }
+            ],
+            "missing_items": [],
+            "checklist": [
+              {
+                "id": "check_profile",
+                "label": "Kiểm tra tình trạng học tập",
+                "checked": false
+              }
+            ],
+            "suggested_priority": "normal",
+            "priority_reasons": [],
+            "draft_reply": "Phòng đã tiếp nhận yêu cầu. Cán bộ sẽ phản hồi sau khi kiểm tra hồ sơ.",
+            "citations": [],
+            "warnings": [],
+            "quality_status": "pass"
+          },
+          "brief_version": 1,
+          "source_ticket_revision": 1,
+          "model_name": "stub-agent",
+          "prompt_version": "1",
+          "template_version": "1",
+          "index_version": null,
+          "created_at": "2026-10-04T13:24:59.887983Z"
+        },
+        "error": null
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/officer/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/prepare",
+      "status": 202,
+      "body": {
+        "job_id": "job_91ad572e7ba94ef1ab36f69c9a0f3f02",
+        "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+        "source_ticket_revision": 2,
+        "status": "pending"
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/officer/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/brief",
+      "status": 200,
+      "body": {
+        "status": "stale",
+        "current_ticket_revision": 2,
+        "brief_version": 1,
+        "source_ticket_revision": 1,
+        "artifact": {
+          "brief": {
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "source_ticket_revision": 1,
+            "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "facts": [
+              {
+                "key": "student_name",
+                "value": "Sinh viên mẫu 001",
+                "source_type": "profile",
+                "source_id": "SV-DEMO-001",
+                "verification_status": "unverified"
+              },
+              {
+                "key": "mssv",
+                "value": "DEMO-001",
+                "source_type": "profile",
+                "source_id": "SV-DEMO-001",
+                "verification_status": "unverified"
+              }
+            ],
+            "missing_items": [],
+            "checklist": [
+              {
+                "id": "check_profile",
+                "label": "Kiểm tra tình trạng học tập",
+                "checked": false
+              }
+            ],
+            "suggested_priority": "normal",
+            "priority_reasons": [],
+            "draft_reply": "Phòng đã tiếp nhận yêu cầu. Cán bộ sẽ phản hồi sau khi kiểm tra hồ sơ.",
+            "citations": [],
+            "warnings": [],
+            "quality_status": "pass"
+          },
+          "brief_version": 1,
+          "source_ticket_revision": 1,
+          "model_name": "stub-agent",
+          "prompt_version": "1",
+          "template_version": "1",
+          "index_version": null,
+          "created_at": "2026-10-04T13:24:59.887983Z"
+        },
+        "error": null
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/officer/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/brief",
+      "status": 200,
+      "body": {
+        "status": "ready",
+        "current_ticket_revision": 2,
+        "brief_version": 2,
+        "source_ticket_revision": 2,
+        "artifact": {
+          "brief": {
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "source_ticket_revision": 2,
+            "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "facts": [
+              {
+                "key": "student_name",
+                "value": "Sinh viên mẫu 001",
+                "source_type": "profile",
+                "source_id": "SV-DEMO-001",
+                "verification_status": "unverified"
+              },
+              {
+                "key": "mssv",
+                "value": "DEMO-001",
+                "source_type": "profile",
+                "source_id": "SV-DEMO-001",
+                "verification_status": "unverified"
+              }
+            ],
+            "missing_items": [],
+            "checklist": [
+              {
+                "id": "check_profile",
+                "label": "Kiểm tra tình trạng học tập",
+                "checked": false
+              }
+            ],
+            "suggested_priority": "normal",
+            "priority_reasons": [],
+            "draft_reply": "Phòng đã tiếp nhận yêu cầu. Cán bộ sẽ phản hồi sau khi kiểm tra hồ sơ.",
+            "citations": [],
+            "warnings": [],
+            "quality_status": "pass"
+          },
+          "brief_version": 2,
+          "source_ticket_revision": 2,
+          "model_name": "stub-agent",
+          "prompt_version": "1",
+          "template_version": "1",
+          "index_version": null,
+          "created_at": "2026-10-04T13:25:45.982694Z"
+        },
+        "error": null
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "ticket": {
+          "id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "code": "TKT-2026-0005",
+          "status": "open",
+          "priority": "normal",
+          "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+          "student_id": "SV-DEMO-001",
+          "category": "action",
+          "service_type": "student_certificate",
+          "priority_reasons": [],
+          "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "request_data": {
+            "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "destination_org": "Ngân hàng Chính sách Xã hội",
+            "receive_method": "digital_pdf",
+            "complaint_subtype": null,
+            "course": null,
+            "course_code": null,
+            "assessment": null,
+            "description": null,
+            "requested_outcome": null,
+            "evidence": null,
+            "extras": {}
+          },
+          "handover_reason": null,
+          "assigned_officer_id": "OF-DEMO-01",
+          "revision": 2,
+          "created_at": "2026-10-04T13:24:59.826600Z",
+          "updated_at": "2026-10-04T13:25:45.127982Z",
+          "student_name": "Sinh viên mẫu 001",
+          "student_mssv": "DEMO-001"
+        },
+        "messages": {
+          "items": [
+            {
+              "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "student",
+              "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+              "created_at": "2026-10-04T13:23:35.774836Z"
+            },
+            {
+              "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "assistant",
+              "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+              "created_at": "2026-10-04T13:23:35.778677Z"
+            }
+          ],
+          "total": 2,
+          "page": 1,
+          "page_size": 100
+        },
+        "attachments": [],
+        "workspace": {
+          "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "revision": 2,
+          "officer_draft": null,
+          "checklist": [
+            {
+              "id": "chk_identity",
+              "label": "Đối chiếu họ tên / MSSV với hồ sơ nguồn",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            },
+            {
+              "id": "chk_form",
+              "label": "Kiểm tra mục đích, nơi nhận và cách nhận",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            },
+            {
+              "id": "chk_evidence",
+              "label": "Xem kết quả đối soát và ghi nhận bằng chứng",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            }
+          ]
+        },
+        "verifications": [],
+        "student_profile": {
+          "user_id": "SV-DEMO-001",
+          "full_name": "Sinh viên mẫu 001",
+          "mssv": "DEMO-001",
+          "email": null,
+          "faculty": "Khoa mô phỏng",
+          "major": null,
+          "cohort": "DEMO-2026",
+          "class_year": null,
+          "student_status": null,
+          "verification_status": "unverified",
+          "source": null,
+          "source_imported_at": null,
+          "verified_at": null,
+          "is_demo": true
+        },
+        "assigned_officer": {
+          "id": "OF-DEMO-01",
+          "role": "officer",
+          "name": "Cán bộ mẫu 01",
+          "username": null,
+          "email": null,
+          "account_status": "active"
+        },
+        "process": {
+          "service_type": "student_certificate",
+          "label": "Giấy xác nhận sinh viên",
+          "process_version": "cert-process-v1",
+          "issues_document": true,
+          "template_id": "student_certificate_vn",
+          "template_version": "v1",
+          "template_status": "approved",
+          "validity_days": null,
+          "requires_academic_status": true,
+          "requires_financial_clearance": false,
+          "required_criteria": [
+            "identity_match",
+            "form_completeness"
+          ],
+          "issue_required_criteria": [
+            "identity_match",
+            "form_completeness",
+            "academic_status"
+          ],
+          "planned_checklist": [
+            {
+              "id": "chk_identity",
+              "label": "Đối chiếu họ tên / MSSV với hồ sơ nguồn",
+              "required": true
+            },
+            {
+              "id": "chk_form",
+              "label": "Kiểm tra mục đích, nơi nhận và cách nhận",
+              "required": true
+            },
+            {
+              "id": "chk_evidence",
+              "label": "Xem kết quả đối soát và ghi nhận bằng chứng",
+              "required": true
+            }
+          ]
+        },
+        "document_draft": {
+          "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "version": 1,
+          "template_id": "student_certificate_vn",
+          "template_version": "v1",
+          "template_status": "approved",
+          "status": "draft",
+          "student_snapshot": {
+            "full_name": "Sinh viên mẫu 001",
+            "mssv": "DEMO-001",
+            "class_year": null,
+            "major": null,
+            "faculty": "Khoa mô phỏng",
+            "student_status": null,
+            "verification_status": "unverified",
+            "source": null
+          },
+          "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "destination_org": "Ngân hàng Chính sách Xã hội",
+          "notes": null,
+          "valid_until": null,
+          "authored_by": "OF-DEMO-01",
+          "approved_by": null,
+          "content_hash": null,
+          "updated_at": "2026-10-04T13:25:45.131285+00:00"
+        },
+        "issued_document": null,
+        "supplements": [],
+        "evidence_fingerprint": null,
+        "institution": {
+          "name": "VinUniversity",
+          "unit": "Phòng Đào tạo"
+        }
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/officer/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/audit?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "aud_3d1dbf207f46483db303a87eedf4b38e",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": "SV-DEMO-001",
+            "actor_type": "student",
+            "action": "create",
+            "from_status": null,
+            "to_status": "open",
+            "request_id": "req_2fd83d879f404a6d9a4b1abd46bb5ae7",
+            "details": null,
+            "created_at": "2026-10-04T13:24:59.826600Z",
+            "actor_name": "Sinh viên mẫu 001"
+          },
+          {
+            "id": "aud_293ad823191c4d1ea943bd2ca37b193d",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": null,
+            "actor_type": "system",
+            "action": "brief_ready",
+            "from_status": "open",
+            "to_status": "open",
+            "request_id": "job_50c67aedfef848b58353fe7bdd34c794",
+            "details": null,
+            "created_at": "2026-10-04T13:24:59.890094Z",
+            "actor_name": null
+          },
+          {
+            "id": "aud_28276d3e3981468bb049b467760a0266",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": "OF-DEMO-01",
+            "actor_type": "officer",
+            "action": "claim",
+            "from_status": "open",
+            "to_status": "open",
+            "request_id": "req_6b79a7e94c8f40368203376bff9ecf5c",
+            "details": null,
+            "created_at": "2026-10-04T13:25:45.127982Z",
+            "actor_name": "Cán bộ mẫu 01"
+          },
+          {
+            "id": "aud_fb2707bdce3f421aac816856ce5227fb",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": "OF-DEMO-01",
+            "actor_type": "officer",
+            "action": "prepare",
+            "from_status": "open",
+            "to_status": "open",
+            "request_id": "req_32cffc8bccf6432e83b9371939b63706",
+            "details": {
+              "job_id": "job_91ad572e7ba94ef1ab36f69c9a0f3f02",
+              "source_revision": 2
+            },
+            "created_at": "2026-10-04T13:25:45.280577Z",
+            "actor_name": "Cán bộ mẫu 01"
+          },
+          {
+            "id": "aud_93b4cb54e03b48619a9fc74bc0a568f0",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": null,
+            "actor_type": "system",
+            "action": "brief_ready",
+            "from_status": "open",
+            "to_status": "open",
+            "request_id": "job_91ad572e7ba94ef1ab36f69c9a0f3f02",
+            "details": null,
+            "created_at": "2026-10-04T13:25:45.984068Z",
+            "actor_name": null
+          }
+        ],
+        "total": 5,
+        "page": 1,
+        "page_size": 100
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/messages?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "student",
+            "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+            "created_at": "2026-10-04T13:23:35.774836Z"
+          },
+          {
+            "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "assistant",
+            "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+            "created_at": "2026-10-04T13:23:35.778677Z"
+          }
+        ],
+        "total": 2,
+        "page": 1,
+        "page_size": 100
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/officer/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/brief",
+      "status": 200,
+      "body": {
+        "status": "ready",
+        "current_ticket_revision": 2,
+        "brief_version": 2,
+        "source_ticket_revision": 2,
+        "artifact": {
+          "brief": {
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "source_ticket_revision": 2,
+            "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "facts": [
+              {
+                "key": "student_name",
+                "value": "Sinh viên mẫu 001",
+                "source_type": "profile",
+                "source_id": "SV-DEMO-001",
+                "verification_status": "unverified"
+              },
+              {
+                "key": "mssv",
+                "value": "DEMO-001",
+                "source_type": "profile",
+                "source_id": "SV-DEMO-001",
+                "verification_status": "unverified"
+              }
+            ],
+            "missing_items": [],
+            "checklist": [
+              {
+                "id": "check_profile",
+                "label": "Kiểm tra tình trạng học tập",
+                "checked": false
+              }
+            ],
+            "suggested_priority": "normal",
+            "priority_reasons": [],
+            "draft_reply": "Phòng đã tiếp nhận yêu cầu. Cán bộ sẽ phản hồi sau khi kiểm tra hồ sơ.",
+            "citations": [],
+            "warnings": [],
+            "quality_status": "pass"
+          },
+          "brief_version": 2,
+          "source_ticket_revision": 2,
+          "model_name": "stub-agent",
+          "prompt_version": "1",
+          "template_version": "1",
+          "index_version": null,
+          "created_at": "2026-10-04T13:25:45.982694Z"
+        },
+        "error": null
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "ticket": {
+          "id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "code": "TKT-2026-0005",
+          "status": "open",
+          "priority": "normal",
+          "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+          "student_id": "SV-DEMO-001",
+          "category": "action",
+          "service_type": "student_certificate",
+          "priority_reasons": [],
+          "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "request_data": {
+            "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "destination_org": "Ngân hàng Chính sách Xã hội",
+            "receive_method": "digital_pdf",
+            "complaint_subtype": null,
+            "course": null,
+            "course_code": null,
+            "assessment": null,
+            "description": null,
+            "requested_outcome": null,
+            "evidence": null,
+            "extras": {}
+          },
+          "handover_reason": null,
+          "assigned_officer_id": "OF-DEMO-01",
+          "revision": 2,
+          "created_at": "2026-10-04T13:24:59.826600Z",
+          "updated_at": "2026-10-04T13:25:45.127982Z",
+          "student_name": "Sinh viên mẫu 001",
+          "student_mssv": "DEMO-001"
+        },
+        "messages": {
+          "items": [
+            {
+              "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "student",
+              "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+              "created_at": "2026-10-04T13:23:35.774836Z"
+            },
+            {
+              "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "assistant",
+              "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+              "created_at": "2026-10-04T13:23:35.778677Z"
+            }
+          ],
+          "total": 2,
+          "page": 1,
+          "page_size": 100
+        },
+        "attachments": [],
+        "workspace": {
+          "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "revision": 2,
+          "officer_draft": null,
+          "checklist": [
+            {
+              "id": "chk_identity",
+              "label": "Đối chiếu họ tên / MSSV với hồ sơ nguồn",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            },
+            {
+              "id": "chk_form",
+              "label": "Kiểm tra mục đích, nơi nhận và cách nhận",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            },
+            {
+              "id": "chk_evidence",
+              "label": "Xem kết quả đối soát và ghi nhận bằng chứng",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            }
+          ]
+        },
+        "verifications": [],
+        "student_profile": {
+          "user_id": "SV-DEMO-001",
+          "full_name": "Sinh viên mẫu 001",
+          "mssv": "DEMO-001",
+          "email": null,
+          "faculty": "Khoa mô phỏng",
+          "major": null,
+          "cohort": "DEMO-2026",
+          "class_year": null,
+          "student_status": null,
+          "verification_status": "unverified",
+          "source": null,
+          "source_imported_at": null,
+          "verified_at": null,
+          "is_demo": true
+        },
+        "assigned_officer": {
+          "id": "OF-DEMO-01",
+          "role": "officer",
+          "name": "Cán bộ mẫu 01",
+          "username": null,
+          "email": null,
+          "account_status": "active"
+        },
+        "process": {
+          "service_type": "student_certificate",
+          "label": "Giấy xác nhận sinh viên",
+          "process_version": "cert-process-v1",
+          "issues_document": true,
+          "template_id": "student_certificate_vn",
+          "template_version": "v1",
+          "template_status": "approved",
+          "validity_days": null,
+          "requires_academic_status": true,
+          "requires_financial_clearance": false,
+          "required_criteria": [
+            "identity_match",
+            "form_completeness"
+          ],
+          "issue_required_criteria": [
+            "identity_match",
+            "form_completeness",
+            "academic_status"
+          ],
+          "planned_checklist": [
+            {
+              "id": "chk_identity",
+              "label": "Đối chiếu họ tên / MSSV với hồ sơ nguồn",
+              "required": true
+            },
+            {
+              "id": "chk_form",
+              "label": "Kiểm tra mục đích, nơi nhận và cách nhận",
+              "required": true
+            },
+            {
+              "id": "chk_evidence",
+              "label": "Xem kết quả đối soát và ghi nhận bằng chứng",
+              "required": true
+            }
+          ]
+        },
+        "document_draft": {
+          "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "version": 1,
+          "template_id": "student_certificate_vn",
+          "template_version": "v1",
+          "template_status": "approved",
+          "status": "draft",
+          "student_snapshot": {
+            "full_name": "Sinh viên mẫu 001",
+            "mssv": "DEMO-001",
+            "class_year": null,
+            "major": null,
+            "faculty": "Khoa mô phỏng",
+            "student_status": null,
+            "verification_status": "unverified",
+            "source": null
+          },
+          "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "destination_org": "Ngân hàng Chính sách Xã hội",
+          "notes": null,
+          "valid_until": null,
+          "authored_by": "OF-DEMO-01",
+          "approved_by": null,
+          "content_hash": null,
+          "updated_at": "2026-10-04T13:25:45.131285+00:00"
+        },
+        "issued_document": null,
+        "supplements": [],
+        "evidence_fingerprint": null,
+        "institution": {
+          "name": "VinUniversity",
+          "unit": "Phòng Đào tạo"
+        }
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/officer/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/audit?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "aud_3d1dbf207f46483db303a87eedf4b38e",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": "SV-DEMO-001",
+            "actor_type": "student",
+            "action": "create",
+            "from_status": null,
+            "to_status": "open",
+            "request_id": "req_2fd83d879f404a6d9a4b1abd46bb5ae7",
+            "details": null,
+            "created_at": "2026-10-04T13:24:59.826600Z",
+            "actor_name": "Sinh viên mẫu 001"
+          },
+          {
+            "id": "aud_293ad823191c4d1ea943bd2ca37b193d",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": null,
+            "actor_type": "system",
+            "action": "brief_ready",
+            "from_status": "open",
+            "to_status": "open",
+            "request_id": "job_50c67aedfef848b58353fe7bdd34c794",
+            "details": null,
+            "created_at": "2026-10-04T13:24:59.890094Z",
+            "actor_name": null
+          },
+          {
+            "id": "aud_28276d3e3981468bb049b467760a0266",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": "OF-DEMO-01",
+            "actor_type": "officer",
+            "action": "claim",
+            "from_status": "open",
+            "to_status": "open",
+            "request_id": "req_6b79a7e94c8f40368203376bff9ecf5c",
+            "details": null,
+            "created_at": "2026-10-04T13:25:45.127982Z",
+            "actor_name": "Cán bộ mẫu 01"
+          },
+          {
+            "id": "aud_fb2707bdce3f421aac816856ce5227fb",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": "OF-DEMO-01",
+            "actor_type": "officer",
+            "action": "prepare",
+            "from_status": "open",
+            "to_status": "open",
+            "request_id": "req_32cffc8bccf6432e83b9371939b63706",
+            "details": {
+              "job_id": "job_91ad572e7ba94ef1ab36f69c9a0f3f02",
+              "source_revision": 2
+            },
+            "created_at": "2026-10-04T13:25:45.280577Z",
+            "actor_name": "Cán bộ mẫu 01"
+          },
+          {
+            "id": "aud_93b4cb54e03b48619a9fc74bc0a568f0",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": null,
+            "actor_type": "system",
+            "action": "brief_ready",
+            "from_status": "open",
+            "to_status": "open",
+            "request_id": "job_91ad572e7ba94ef1ab36f69c9a0f3f02",
+            "details": null,
+            "created_at": "2026-10-04T13:25:45.984068Z",
+            "actor_name": null
+          }
+        ],
+        "total": 5,
+        "page": 1,
+        "page_size": 100
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/messages?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "student",
+            "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+            "created_at": "2026-10-04T13:23:35.774836Z"
+          },
+          {
+            "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "assistant",
+            "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+            "created_at": "2026-10-04T13:23:35.778677Z"
+          }
+        ],
+        "total": 2,
+        "page": 1,
+        "page_size": 100
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/officer/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/brief",
+      "status": 200,
+      "body": {
+        "status": "ready",
+        "current_ticket_revision": 2,
+        "brief_version": 2,
+        "source_ticket_revision": 2,
+        "artifact": {
+          "brief": {
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "source_ticket_revision": 2,
+            "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "facts": [
+              {
+                "key": "student_name",
+                "value": "Sinh viên mẫu 001",
+                "source_type": "profile",
+                "source_id": "SV-DEMO-001",
+                "verification_status": "unverified"
+              },
+              {
+                "key": "mssv",
+                "value": "DEMO-001",
+                "source_type": "profile",
+                "source_id": "SV-DEMO-001",
+                "verification_status": "unverified"
+              }
+            ],
+            "missing_items": [],
+            "checklist": [
+              {
+                "id": "check_profile",
+                "label": "Kiểm tra tình trạng học tập",
+                "checked": false
+              }
+            ],
+            "suggested_priority": "normal",
+            "priority_reasons": [],
+            "draft_reply": "Phòng đã tiếp nhận yêu cầu. Cán bộ sẽ phản hồi sau khi kiểm tra hồ sơ.",
+            "citations": [],
+            "warnings": [],
+            "quality_status": "pass"
+          },
+          "brief_version": 2,
+          "source_ticket_revision": 2,
+          "model_name": "stub-agent",
+          "prompt_version": "1",
+          "template_version": "1",
+          "index_version": null,
+          "created_at": "2026-10-04T13:25:45.982694Z"
+        },
+        "error": null
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "ticket": {
+          "id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "code": "TKT-2026-0005",
+          "status": "open",
+          "priority": "normal",
+          "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+          "student_id": "SV-DEMO-001",
+          "category": "action",
+          "service_type": "student_certificate",
+          "priority_reasons": [],
+          "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "request_data": {
+            "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "destination_org": "Ngân hàng Chính sách Xã hội",
+            "receive_method": "digital_pdf",
+            "complaint_subtype": null,
+            "course": null,
+            "course_code": null,
+            "assessment": null,
+            "description": null,
+            "requested_outcome": null,
+            "evidence": null,
+            "extras": {}
+          },
+          "handover_reason": null,
+          "assigned_officer_id": "OF-DEMO-01",
+          "revision": 2,
+          "created_at": "2026-10-04T13:24:59.826600Z",
+          "updated_at": "2026-10-04T13:25:45.127982Z",
+          "student_name": "Sinh viên mẫu 001",
+          "student_mssv": "DEMO-001"
+        },
+        "messages": {
+          "items": [
+            {
+              "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "student",
+              "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+              "created_at": "2026-10-04T13:23:35.774836Z"
+            },
+            {
+              "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "assistant",
+              "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+              "created_at": "2026-10-04T13:23:35.778677Z"
+            }
+          ],
+          "total": 2,
+          "page": 1,
+          "page_size": 100
+        },
+        "attachments": [],
+        "workspace": {
+          "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "revision": 2,
+          "officer_draft": null,
+          "checklist": [
+            {
+              "id": "chk_identity",
+              "label": "Đối chiếu họ tên / MSSV với hồ sơ nguồn",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            },
+            {
+              "id": "chk_form",
+              "label": "Kiểm tra mục đích, nơi nhận và cách nhận",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            },
+            {
+              "id": "chk_evidence",
+              "label": "Xem kết quả đối soát và ghi nhận bằng chứng",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            }
+          ]
+        },
+        "verifications": [],
+        "student_profile": {
+          "user_id": "SV-DEMO-001",
+          "full_name": "Sinh viên mẫu 001",
+          "mssv": "DEMO-001",
+          "email": null,
+          "faculty": "Khoa mô phỏng",
+          "major": null,
+          "cohort": "DEMO-2026",
+          "class_year": null,
+          "student_status": null,
+          "verification_status": "unverified",
+          "source": null,
+          "source_imported_at": null,
+          "verified_at": null,
+          "is_demo": true
+        },
+        "assigned_officer": {
+          "id": "OF-DEMO-01",
+          "role": "officer",
+          "name": "Cán bộ mẫu 01",
+          "username": null,
+          "email": null,
+          "account_status": "active"
+        },
+        "process": {
+          "service_type": "student_certificate",
+          "label": "Giấy xác nhận sinh viên",
+          "process_version": "cert-process-v1",
+          "issues_document": true,
+          "template_id": "student_certificate_vn",
+          "template_version": "v1",
+          "template_status": "approved",
+          "validity_days": null,
+          "requires_academic_status": true,
+          "requires_financial_clearance": false,
+          "required_criteria": [
+            "identity_match",
+            "form_completeness"
+          ],
+          "issue_required_criteria": [
+            "identity_match",
+            "form_completeness",
+            "academic_status"
+          ],
+          "planned_checklist": [
+            {
+              "id": "chk_identity",
+              "label": "Đối chiếu họ tên / MSSV với hồ sơ nguồn",
+              "required": true
+            },
+            {
+              "id": "chk_form",
+              "label": "Kiểm tra mục đích, nơi nhận và cách nhận",
+              "required": true
+            },
+            {
+              "id": "chk_evidence",
+              "label": "Xem kết quả đối soát và ghi nhận bằng chứng",
+              "required": true
+            }
+          ]
+        },
+        "document_draft": {
+          "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "version": 1,
+          "template_id": "student_certificate_vn",
+          "template_version": "v1",
+          "template_status": "approved",
+          "status": "draft",
+          "student_snapshot": {
+            "full_name": "Sinh viên mẫu 001",
+            "mssv": "DEMO-001",
+            "class_year": null,
+            "major": null,
+            "faculty": "Khoa mô phỏng",
+            "student_status": null,
+            "verification_status": "unverified",
+            "source": null
+          },
+          "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "destination_org": "Ngân hàng Chính sách Xã hội",
+          "notes": null,
+          "valid_until": null,
+          "authored_by": "OF-DEMO-01",
+          "approved_by": null,
+          "content_hash": null,
+          "updated_at": "2026-10-04T13:25:45.131285+00:00"
+        },
+        "issued_document": null,
+        "supplements": [],
+        "evidence_fingerprint": null,
+        "institution": {
+          "name": "VinUniversity",
+          "unit": "Phòng Đào tạo"
+        }
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/officer/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/audit?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "aud_3d1dbf207f46483db303a87eedf4b38e",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": "SV-DEMO-001",
+            "actor_type": "student",
+            "action": "create",
+            "from_status": null,
+            "to_status": "open",
+            "request_id": "req_2fd83d879f404a6d9a4b1abd46bb5ae7",
+            "details": null,
+            "created_at": "2026-10-04T13:24:59.826600Z",
+            "actor_name": "Sinh viên mẫu 001"
+          },
+          {
+            "id": "aud_293ad823191c4d1ea943bd2ca37b193d",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": null,
+            "actor_type": "system",
+            "action": "brief_ready",
+            "from_status": "open",
+            "to_status": "open",
+            "request_id": "job_50c67aedfef848b58353fe7bdd34c794",
+            "details": null,
+            "created_at": "2026-10-04T13:24:59.890094Z",
+            "actor_name": null
+          },
+          {
+            "id": "aud_28276d3e3981468bb049b467760a0266",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": "OF-DEMO-01",
+            "actor_type": "officer",
+            "action": "claim",
+            "from_status": "open",
+            "to_status": "open",
+            "request_id": "req_6b79a7e94c8f40368203376bff9ecf5c",
+            "details": null,
+            "created_at": "2026-10-04T13:25:45.127982Z",
+            "actor_name": "Cán bộ mẫu 01"
+          },
+          {
+            "id": "aud_fb2707bdce3f421aac816856ce5227fb",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": "OF-DEMO-01",
+            "actor_type": "officer",
+            "action": "prepare",
+            "from_status": "open",
+            "to_status": "open",
+            "request_id": "req_32cffc8bccf6432e83b9371939b63706",
+            "details": {
+              "job_id": "job_91ad572e7ba94ef1ab36f69c9a0f3f02",
+              "source_revision": 2
+            },
+            "created_at": "2026-10-04T13:25:45.280577Z",
+            "actor_name": "Cán bộ mẫu 01"
+          },
+          {
+            "id": "aud_93b4cb54e03b48619a9fc74bc0a568f0",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": null,
+            "actor_type": "system",
+            "action": "brief_ready",
+            "from_status": "open",
+            "to_status": "open",
+            "request_id": "job_91ad572e7ba94ef1ab36f69c9a0f3f02",
+            "details": null,
+            "created_at": "2026-10-04T13:25:45.984068Z",
+            "actor_name": null
+          }
+        ],
+        "total": 5,
+        "page": 1,
+        "page_size": 100
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/messages?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "student",
+            "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+            "created_at": "2026-10-04T13:23:35.774836Z"
+          },
+          {
+            "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "assistant",
+            "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+            "created_at": "2026-10-04T13:23:35.778677Z"
+          }
+        ],
+        "total": 2,
+        "page": 1,
+        "page_size": 100
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/officer/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/brief",
+      "status": 200,
+      "body": {
+        "status": "ready",
+        "current_ticket_revision": 2,
+        "brief_version": 2,
+        "source_ticket_revision": 2,
+        "artifact": {
+          "brief": {
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "source_ticket_revision": 2,
+            "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "facts": [
+              {
+                "key": "student_name",
+                "value": "Sinh viên mẫu 001",
+                "source_type": "profile",
+                "source_id": "SV-DEMO-001",
+                "verification_status": "unverified"
+              },
+              {
+                "key": "mssv",
+                "value": "DEMO-001",
+                "source_type": "profile",
+                "source_id": "SV-DEMO-001",
+                "verification_status": "unverified"
+              }
+            ],
+            "missing_items": [],
+            "checklist": [
+              {
+                "id": "check_profile",
+                "label": "Kiểm tra tình trạng học tập",
+                "checked": false
+              }
+            ],
+            "suggested_priority": "normal",
+            "priority_reasons": [],
+            "draft_reply": "Phòng đã tiếp nhận yêu cầu. Cán bộ sẽ phản hồi sau khi kiểm tra hồ sơ.",
+            "citations": [],
+            "warnings": [],
+            "quality_status": "pass"
+          },
+          "brief_version": 2,
+          "source_ticket_revision": 2,
+          "model_name": "stub-agent",
+          "prompt_version": "1",
+          "template_version": "1",
+          "index_version": null,
+          "created_at": "2026-10-04T13:25:45.982694Z"
+        },
+        "error": null
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "ticket": {
+          "id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "code": "TKT-2026-0005",
+          "status": "open",
+          "priority": "normal",
+          "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+          "student_id": "SV-DEMO-001",
+          "category": "action",
+          "service_type": "student_certificate",
+          "priority_reasons": [],
+          "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "request_data": {
+            "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "destination_org": "Ngân hàng Chính sách Xã hội",
+            "receive_method": "digital_pdf",
+            "complaint_subtype": null,
+            "course": null,
+            "course_code": null,
+            "assessment": null,
+            "description": null,
+            "requested_outcome": null,
+            "evidence": null,
+            "extras": {}
+          },
+          "handover_reason": null,
+          "assigned_officer_id": "OF-DEMO-01",
+          "revision": 2,
+          "created_at": "2026-10-04T13:24:59.826600Z",
+          "updated_at": "2026-10-04T13:25:45.127982Z",
+          "student_name": "Sinh viên mẫu 001",
+          "student_mssv": "DEMO-001"
+        },
+        "messages": {
+          "items": [
+            {
+              "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "student",
+              "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+              "created_at": "2026-10-04T13:23:35.774836Z"
+            },
+            {
+              "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "assistant",
+              "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+              "created_at": "2026-10-04T13:23:35.778677Z"
+            }
+          ],
+          "total": 2,
+          "page": 1,
+          "page_size": 100
+        },
+        "attachments": [],
+        "workspace": {
+          "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "revision": 2,
+          "officer_draft": null,
+          "checklist": [
+            {
+              "id": "chk_identity",
+              "label": "Đối chiếu họ tên / MSSV với hồ sơ nguồn",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            },
+            {
+              "id": "chk_form",
+              "label": "Kiểm tra mục đích, nơi nhận và cách nhận",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            },
+            {
+              "id": "chk_evidence",
+              "label": "Xem kết quả đối soát và ghi nhận bằng chứng",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            }
+          ]
+        },
+        "verifications": [],
+        "student_profile": {
+          "user_id": "SV-DEMO-001",
+          "full_name": "Sinh viên mẫu 001",
+          "mssv": "DEMO-001",
+          "email": null,
+          "faculty": "Khoa mô phỏng",
+          "major": null,
+          "cohort": "DEMO-2026",
+          "class_year": null,
+          "student_status": null,
+          "verification_status": "unverified",
+          "source": null,
+          "source_imported_at": null,
+          "verified_at": null,
+          "is_demo": true
+        },
+        "assigned_officer": {
+          "id": "OF-DEMO-01",
+          "role": "officer",
+          "name": "Cán bộ mẫu 01",
+          "username": null,
+          "email": null,
+          "account_status": "active"
+        },
+        "process": {
+          "service_type": "student_certificate",
+          "label": "Giấy xác nhận sinh viên",
+          "process_version": "cert-process-v1",
+          "issues_document": true,
+          "template_id": "student_certificate_vn",
+          "template_version": "v1",
+          "template_status": "approved",
+          "validity_days": null,
+          "requires_academic_status": true,
+          "requires_financial_clearance": false,
+          "required_criteria": [
+            "identity_match",
+            "form_completeness"
+          ],
+          "issue_required_criteria": [
+            "identity_match",
+            "form_completeness",
+            "academic_status"
+          ],
+          "planned_checklist": [
+            {
+              "id": "chk_identity",
+              "label": "Đối chiếu họ tên / MSSV với hồ sơ nguồn",
+              "required": true
+            },
+            {
+              "id": "chk_form",
+              "label": "Kiểm tra mục đích, nơi nhận và cách nhận",
+              "required": true
+            },
+            {
+              "id": "chk_evidence",
+              "label": "Xem kết quả đối soát và ghi nhận bằng chứng",
+              "required": true
+            }
+          ]
+        },
+        "document_draft": {
+          "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "version": 1,
+          "template_id": "student_certificate_vn",
+          "template_version": "v1",
+          "template_status": "approved",
+          "status": "draft",
+          "student_snapshot": {
+            "full_name": "Sinh viên mẫu 001",
+            "mssv": "DEMO-001",
+            "class_year": null,
+            "major": null,
+            "faculty": "Khoa mô phỏng",
+            "student_status": null,
+            "verification_status": "unverified",
+            "source": null
+          },
+          "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "destination_org": "Ngân hàng Chính sách Xã hội",
+          "notes": null,
+          "valid_until": null,
+          "authored_by": "OF-DEMO-01",
+          "approved_by": null,
+          "content_hash": null,
+          "updated_at": "2026-10-04T13:25:45.131285+00:00"
+        },
+        "issued_document": null,
+        "supplements": [],
+        "evidence_fingerprint": null,
+        "institution": {
+          "name": "VinUniversity",
+          "unit": "Phòng Đào tạo"
+        }
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/officer/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/audit?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "aud_3d1dbf207f46483db303a87eedf4b38e",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": "SV-DEMO-001",
+            "actor_type": "student",
+            "action": "create",
+            "from_status": null,
+            "to_status": "open",
+            "request_id": "req_2fd83d879f404a6d9a4b1abd46bb5ae7",
+            "details": null,
+            "created_at": "2026-10-04T13:24:59.826600Z",
+            "actor_name": "Sinh viên mẫu 001"
+          },
+          {
+            "id": "aud_293ad823191c4d1ea943bd2ca37b193d",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": null,
+            "actor_type": "system",
+            "action": "brief_ready",
+            "from_status": "open",
+            "to_status": "open",
+            "request_id": "job_50c67aedfef848b58353fe7bdd34c794",
+            "details": null,
+            "created_at": "2026-10-04T13:24:59.890094Z",
+            "actor_name": null
+          },
+          {
+            "id": "aud_28276d3e3981468bb049b467760a0266",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": "OF-DEMO-01",
+            "actor_type": "officer",
+            "action": "claim",
+            "from_status": "open",
+            "to_status": "open",
+            "request_id": "req_6b79a7e94c8f40368203376bff9ecf5c",
+            "details": null,
+            "created_at": "2026-10-04T13:25:45.127982Z",
+            "actor_name": "Cán bộ mẫu 01"
+          },
+          {
+            "id": "aud_fb2707bdce3f421aac816856ce5227fb",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": "OF-DEMO-01",
+            "actor_type": "officer",
+            "action": "prepare",
+            "from_status": "open",
+            "to_status": "open",
+            "request_id": "req_32cffc8bccf6432e83b9371939b63706",
+            "details": {
+              "job_id": "job_91ad572e7ba94ef1ab36f69c9a0f3f02",
+              "source_revision": 2
+            },
+            "created_at": "2026-10-04T13:25:45.280577Z",
+            "actor_name": "Cán bộ mẫu 01"
+          },
+          {
+            "id": "aud_93b4cb54e03b48619a9fc74bc0a568f0",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": null,
+            "actor_type": "system",
+            "action": "brief_ready",
+            "from_status": "open",
+            "to_status": "open",
+            "request_id": "job_91ad572e7ba94ef1ab36f69c9a0f3f02",
+            "details": null,
+            "created_at": "2026-10-04T13:25:45.984068Z",
+            "actor_name": null
+          }
+        ],
+        "total": 5,
+        "page": 1,
+        "page_size": 100
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/messages?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "student",
+            "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+            "created_at": "2026-10-04T13:23:35.774836Z"
+          },
+          {
+            "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "assistant",
+            "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+            "created_at": "2026-10-04T13:23:35.778677Z"
+          }
+        ],
+        "total": 2,
+        "page": 1,
+        "page_size": 100
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/officer/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/brief",
+      "status": 200,
+      "body": {
+        "status": "ready",
+        "current_ticket_revision": 2,
+        "brief_version": 2,
+        "source_ticket_revision": 2,
+        "artifact": {
+          "brief": {
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "source_ticket_revision": 2,
+            "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "facts": [
+              {
+                "key": "student_name",
+                "value": "Sinh viên mẫu 001",
+                "source_type": "profile",
+                "source_id": "SV-DEMO-001",
+                "verification_status": "unverified"
+              },
+              {
+                "key": "mssv",
+                "value": "DEMO-001",
+                "source_type": "profile",
+                "source_id": "SV-DEMO-001",
+                "verification_status": "unverified"
+              }
+            ],
+            "missing_items": [],
+            "checklist": [
+              {
+                "id": "check_profile",
+                "label": "Kiểm tra tình trạng học tập",
+                "checked": false
+              }
+            ],
+            "suggested_priority": "normal",
+            "priority_reasons": [],
+            "draft_reply": "Phòng đã tiếp nhận yêu cầu. Cán bộ sẽ phản hồi sau khi kiểm tra hồ sơ.",
+            "citations": [],
+            "warnings": [],
+            "quality_status": "pass"
+          },
+          "brief_version": 2,
+          "source_ticket_revision": 2,
+          "model_name": "stub-agent",
+          "prompt_version": "1",
+          "template_version": "1",
+          "index_version": null,
+          "created_at": "2026-10-04T13:25:45.982694Z"
+        },
+        "error": null
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/officer/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/actions",
+      "status": 200,
+      "body": {
+        "ticket": {
+          "id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "code": "TKT-2026-0005",
+          "status": "resolved",
+          "priority": "normal",
+          "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+          "student_id": "SV-DEMO-001",
+          "category": "action",
+          "service_type": "student_certificate",
+          "priority_reasons": [],
+          "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "request_data": {
+            "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "destination_org": "Ngân hàng Chính sách Xã hội",
+            "receive_method": "digital_pdf",
+            "complaint_subtype": null,
+            "course": null,
+            "course_code": null,
+            "assessment": null,
+            "description": null,
+            "requested_outcome": null,
+            "evidence": null,
+            "extras": {}
+          },
+          "handover_reason": null,
+          "assigned_officer_id": "OF-DEMO-01",
+          "revision": 3,
+          "created_at": "2026-10-04T13:24:59.826600Z",
+          "updated_at": "2026-10-04T13:26:43.652886Z",
+          "student_name": "Sinh viên mẫu 001",
+          "student_mssv": "DEMO-001"
+        },
+        "message": {
+          "id": "msg_bcfbba95a3934ab6823f8dcdf2fce212",
+          "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+          "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "sender": "officer",
+          "content": "Đã kiểm tra hồ sơ Gate 2 theo từng bước và hoàn tất yêu cầu. Đây là phản hồi thử nghiệm, không phát hành giấy chính thức.",
+          "created_at": "2026-10-04T13:26:43.652886Z"
+        },
+        "audit_id": "aud_a10eed51e007414f9ea3e78fb61d34b4"
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "ticket": {
+          "id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "code": "TKT-2026-0005",
+          "status": "resolved",
+          "priority": "normal",
+          "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+          "student_id": "SV-DEMO-001",
+          "category": "action",
+          "service_type": "student_certificate",
+          "priority_reasons": [],
+          "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "request_data": {
+            "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "destination_org": "Ngân hàng Chính sách Xã hội",
+            "receive_method": "digital_pdf",
+            "complaint_subtype": null,
+            "course": null,
+            "course_code": null,
+            "assessment": null,
+            "description": null,
+            "requested_outcome": null,
+            "evidence": null,
+            "extras": {}
+          },
+          "handover_reason": null,
+          "assigned_officer_id": "OF-DEMO-01",
+          "revision": 3,
+          "created_at": "2026-10-04T13:24:59.826600Z",
+          "updated_at": "2026-10-04T13:26:43.652886Z",
+          "student_name": "Sinh viên mẫu 001",
+          "student_mssv": "DEMO-001"
+        },
+        "messages": {
+          "items": [
+            {
+              "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "student",
+              "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+              "created_at": "2026-10-04T13:23:35.774836Z"
+            },
+            {
+              "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "assistant",
+              "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+              "created_at": "2026-10-04T13:23:35.778677Z"
+            },
+            {
+              "id": "msg_bcfbba95a3934ab6823f8dcdf2fce212",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "officer",
+              "content": "Đã kiểm tra hồ sơ Gate 2 theo từng bước và hoàn tất yêu cầu. Đây là phản hồi thử nghiệm, không phát hành giấy chính thức.",
+              "created_at": "2026-10-04T13:26:43.652886Z"
+            }
+          ],
+          "total": 3,
+          "page": 1,
+          "page_size": 100
+        },
+        "attachments": [],
+        "workspace": {
+          "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "revision": 3,
+          "officer_draft": "Đã kiểm tra hồ sơ Gate 2 theo từng bước và hoàn tất yêu cầu. Đây là phản hồi thử nghiệm, không phát hành giấy chính thức.",
+          "checklist": [
+            {
+              "id": "chk_identity",
+              "label": "Đối chiếu họ tên / MSSV với hồ sơ nguồn",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            },
+            {
+              "id": "chk_form",
+              "label": "Kiểm tra mục đích, nơi nhận và cách nhận",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            },
+            {
+              "id": "chk_evidence",
+              "label": "Xem kết quả đối soát và ghi nhận bằng chứng",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            }
+          ]
+        },
+        "verifications": [],
+        "student_profile": {
+          "user_id": "SV-DEMO-001",
+          "full_name": "Sinh viên mẫu 001",
+          "mssv": "DEMO-001",
+          "email": null,
+          "faculty": "Khoa mô phỏng",
+          "major": null,
+          "cohort": "DEMO-2026",
+          "class_year": null,
+          "student_status": null,
+          "verification_status": "unverified",
+          "source": null,
+          "source_imported_at": null,
+          "verified_at": null,
+          "is_demo": true
+        },
+        "assigned_officer": {
+          "id": "OF-DEMO-01",
+          "role": "officer",
+          "name": "Cán bộ mẫu 01",
+          "username": null,
+          "email": null,
+          "account_status": "active"
+        },
+        "process": {
+          "service_type": "student_certificate",
+          "label": "Giấy xác nhận sinh viên",
+          "process_version": "cert-process-v1",
+          "issues_document": true,
+          "template_id": "student_certificate_vn",
+          "template_version": "v1",
+          "template_status": "approved",
+          "validity_days": null,
+          "requires_academic_status": true,
+          "requires_financial_clearance": false,
+          "required_criteria": [
+            "identity_match",
+            "form_completeness"
+          ],
+          "issue_required_criteria": [
+            "identity_match",
+            "form_completeness",
+            "academic_status"
+          ],
+          "planned_checklist": [
+            {
+              "id": "chk_identity",
+              "label": "Đối chiếu họ tên / MSSV với hồ sơ nguồn",
+              "required": true
+            },
+            {
+              "id": "chk_form",
+              "label": "Kiểm tra mục đích, nơi nhận và cách nhận",
+              "required": true
+            },
+            {
+              "id": "chk_evidence",
+              "label": "Xem kết quả đối soát và ghi nhận bằng chứng",
+              "required": true
+            }
+          ]
+        },
+        "document_draft": {
+          "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "version": 1,
+          "template_id": "student_certificate_vn",
+          "template_version": "v1",
+          "template_status": "approved",
+          "status": "draft",
+          "student_snapshot": {
+            "full_name": "Sinh viên mẫu 001",
+            "mssv": "DEMO-001",
+            "class_year": null,
+            "major": null,
+            "faculty": "Khoa mô phỏng",
+            "student_status": null,
+            "verification_status": "unverified",
+            "source": null
+          },
+          "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "destination_org": "Ngân hàng Chính sách Xã hội",
+          "notes": null,
+          "valid_until": null,
+          "authored_by": "OF-DEMO-01",
+          "approved_by": null,
+          "content_hash": null,
+          "updated_at": "2026-10-04T13:25:45.131285+00:00"
+        },
+        "issued_document": null,
+        "supplements": [],
+        "evidence_fingerprint": null,
+        "institution": {
+          "name": "VinUniversity",
+          "unit": "Phòng Đào tạo"
+        }
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/officer/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/audit?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "aud_3d1dbf207f46483db303a87eedf4b38e",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": "SV-DEMO-001",
+            "actor_type": "student",
+            "action": "create",
+            "from_status": null,
+            "to_status": "open",
+            "request_id": "req_2fd83d879f404a6d9a4b1abd46bb5ae7",
+            "details": null,
+            "created_at": "2026-10-04T13:24:59.826600Z",
+            "actor_name": "Sinh viên mẫu 001"
+          },
+          {
+            "id": "aud_293ad823191c4d1ea943bd2ca37b193d",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": null,
+            "actor_type": "system",
+            "action": "brief_ready",
+            "from_status": "open",
+            "to_status": "open",
+            "request_id": "job_50c67aedfef848b58353fe7bdd34c794",
+            "details": null,
+            "created_at": "2026-10-04T13:24:59.890094Z",
+            "actor_name": null
+          },
+          {
+            "id": "aud_28276d3e3981468bb049b467760a0266",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": "OF-DEMO-01",
+            "actor_type": "officer",
+            "action": "claim",
+            "from_status": "open",
+            "to_status": "open",
+            "request_id": "req_6b79a7e94c8f40368203376bff9ecf5c",
+            "details": null,
+            "created_at": "2026-10-04T13:25:45.127982Z",
+            "actor_name": "Cán bộ mẫu 01"
+          },
+          {
+            "id": "aud_fb2707bdce3f421aac816856ce5227fb",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": "OF-DEMO-01",
+            "actor_type": "officer",
+            "action": "prepare",
+            "from_status": "open",
+            "to_status": "open",
+            "request_id": "req_32cffc8bccf6432e83b9371939b63706",
+            "details": {
+              "job_id": "job_91ad572e7ba94ef1ab36f69c9a0f3f02",
+              "source_revision": 2
+            },
+            "created_at": "2026-10-04T13:25:45.280577Z",
+            "actor_name": "Cán bộ mẫu 01"
+          },
+          {
+            "id": "aud_93b4cb54e03b48619a9fc74bc0a568f0",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": null,
+            "actor_type": "system",
+            "action": "brief_ready",
+            "from_status": "open",
+            "to_status": "open",
+            "request_id": "job_91ad572e7ba94ef1ab36f69c9a0f3f02",
+            "details": null,
+            "created_at": "2026-10-04T13:25:45.984068Z",
+            "actor_name": null
+          },
+          {
+            "id": "aud_a10eed51e007414f9ea3e78fb61d34b4",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "actor_id": "OF-DEMO-01",
+            "actor_type": "officer",
+            "action": "resolve",
+            "from_status": "open",
+            "to_status": "resolved",
+            "request_id": "req_c32a98281ac941cdb067e149d5e0e6c4",
+            "details": null,
+            "created_at": "2026-10-04T13:26:43.652886Z",
+            "actor_name": "Cán bộ mẫu 01"
+          }
+        ],
+        "total": 6,
+        "page": 1,
+        "page_size": 100
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/messages?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "student",
+            "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+            "created_at": "2026-10-04T13:23:35.774836Z"
+          },
+          {
+            "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "assistant",
+            "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+            "created_at": "2026-10-04T13:23:35.778677Z"
+          },
+          {
+            "id": "msg_bcfbba95a3934ab6823f8dcdf2fce212",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "officer",
+            "content": "Đã kiểm tra hồ sơ Gate 2 theo từng bước và hoàn tất yêu cầu. Đây là phản hồi thử nghiệm, không phát hành giấy chính thức.",
+            "created_at": "2026-10-04T13:26:43.652886Z"
+          }
+        ],
+        "total": 3,
+        "page": 1,
+        "page_size": 100
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/officer/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/brief",
+      "status": 200,
+      "body": {
+        "status": "stale",
+        "current_ticket_revision": 3,
+        "brief_version": 2,
+        "source_ticket_revision": 2,
+        "artifact": {
+          "brief": {
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "source_ticket_revision": 2,
+            "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "facts": [
+              {
+                "key": "student_name",
+                "value": "Sinh viên mẫu 001",
+                "source_type": "profile",
+                "source_id": "SV-DEMO-001",
+                "verification_status": "unverified"
+              },
+              {
+                "key": "mssv",
+                "value": "DEMO-001",
+                "source_type": "profile",
+                "source_id": "SV-DEMO-001",
+                "verification_status": "unverified"
+              }
+            ],
+            "missing_items": [],
+            "checklist": [
+              {
+                "id": "check_profile",
+                "label": "Kiểm tra tình trạng học tập",
+                "checked": false
+              }
+            ],
+            "suggested_priority": "normal",
+            "priority_reasons": [],
+            "draft_reply": "Phòng đã tiếp nhận yêu cầu. Cán bộ sẽ phản hồi sau khi kiểm tra hồ sơ.",
+            "citations": [],
+            "warnings": [],
+            "quality_status": "pass"
+          },
+          "brief_version": 2,
+          "source_ticket_revision": 2,
+          "model_name": "stub-agent",
+          "prompt_version": "1",
+          "template_version": "1",
+          "index_version": null,
+          "created_at": "2026-10-04T13:25:45.982694Z"
+        },
+        "error": null
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "ticket": {
+          "id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "code": "TKT-2026-0005",
+          "status": "resolved",
+          "priority": "normal",
+          "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+          "student_id": "SV-DEMO-001",
+          "category": "action",
+          "service_type": "student_certificate",
+          "priority_reasons": [],
+          "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "request_data": {
+            "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "destination_org": "Ngân hàng Chính sách Xã hội",
+            "receive_method": "digital_pdf",
+            "complaint_subtype": null,
+            "course": null,
+            "course_code": null,
+            "assessment": null,
+            "description": null,
+            "requested_outcome": null,
+            "evidence": null,
+            "extras": {}
+          },
+          "handover_reason": null,
+          "assigned_officer_id": "OF-DEMO-01",
+          "revision": 3,
+          "created_at": "2026-10-04T13:24:59.826600Z",
+          "updated_at": "2026-10-04T13:26:43.652886Z",
+          "student_name": "Sinh viên mẫu 001",
+          "student_mssv": "DEMO-001"
+        },
+        "messages": {
+          "items": [
+            {
+              "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "student",
+              "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+              "created_at": "2026-10-04T13:23:35.774836Z"
+            },
+            {
+              "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "assistant",
+              "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+              "created_at": "2026-10-04T13:23:35.778677Z"
+            },
+            {
+              "id": "msg_bcfbba95a3934ab6823f8dcdf2fce212",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "officer",
+              "content": "Đã kiểm tra hồ sơ Gate 2 theo từng bước và hoàn tất yêu cầu. Đây là phản hồi thử nghiệm, không phát hành giấy chính thức.",
+              "created_at": "2026-10-04T13:26:43.652886Z"
+            }
+          ],
+          "total": 3,
+          "page": 1,
+          "page_size": 100
+        },
+        "attachments": [],
+        "workspace": {
+          "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "revision": 3,
+          "officer_draft": "Đã kiểm tra hồ sơ Gate 2 theo từng bước và hoàn tất yêu cầu. Đây là phản hồi thử nghiệm, không phát hành giấy chính thức.",
+          "checklist": [
+            {
+              "id": "chk_identity",
+              "label": "Đối chiếu họ tên / MSSV với hồ sơ nguồn",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            },
+            {
+              "id": "chk_form",
+              "label": "Kiểm tra mục đích, nơi nhận và cách nhận",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            },
+            {
+              "id": "chk_evidence",
+              "label": "Xem kết quả đối soát và ghi nhận bằng chứng",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            }
+          ]
+        },
+        "verifications": [],
+        "student_profile": {
+          "user_id": "SV-DEMO-001",
+          "full_name": "Sinh viên mẫu 001",
+          "mssv": "DEMO-001",
+          "email": null,
+          "faculty": "Khoa mô phỏng",
+          "major": null,
+          "cohort": "DEMO-2026",
+          "class_year": null,
+          "student_status": null,
+          "verification_status": "unverified",
+          "source": null,
+          "source_imported_at": null,
+          "verified_at": null,
+          "is_demo": true
+        },
+        "assigned_officer": {
+          "id": "OF-DEMO-01",
+          "role": "officer",
+          "name": "Cán bộ mẫu 01",
+          "username": null,
+          "email": null,
+          "account_status": "active"
+        },
+        "process": {
+          "service_type": "student_certificate",
+          "label": "Giấy xác nhận sinh viên",
+          "process_version": "cert-process-v1",
+          "issues_document": true,
+          "template_id": "student_certificate_vn",
+          "template_version": "v1",
+          "template_status": "approved",
+          "validity_days": null,
+          "requires_academic_status": true,
+          "requires_financial_clearance": false,
+          "required_criteria": [
+            "identity_match",
+            "form_completeness"
+          ],
+          "issue_required_criteria": [
+            "identity_match",
+            "form_completeness",
+            "academic_status"
+          ],
+          "planned_checklist": [
+            {
+              "id": "chk_identity",
+              "label": "Đối chiếu họ tên / MSSV với hồ sơ nguồn",
+              "required": true
+            },
+            {
+              "id": "chk_form",
+              "label": "Kiểm tra mục đích, nơi nhận và cách nhận",
+              "required": true
+            },
+            {
+              "id": "chk_evidence",
+              "label": "Xem kết quả đối soát và ghi nhận bằng chứng",
+              "required": true
+            }
+          ]
+        },
+        "document_draft": {
+          "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "version": 1,
+          "template_id": "student_certificate_vn",
+          "template_version": "v1",
+          "template_status": "approved",
+          "status": "draft",
+          "student_snapshot": {
+            "full_name": "Sinh viên mẫu 001",
+            "mssv": "DEMO-001",
+            "class_year": null,
+            "major": null,
+            "faculty": "Khoa mô phỏng",
+            "student_status": null,
+            "verification_status": "unverified",
+            "source": null
+          },
+          "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "destination_org": "Ngân hàng Chính sách Xã hội",
+          "notes": null,
+          "valid_until": null,
+          "authored_by": "OF-DEMO-01",
+          "approved_by": null,
+          "content_hash": null,
+          "updated_at": "2026-10-04T13:25:45.131285+00:00"
+        },
+        "issued_document": null,
+        "supplements": [],
+        "evidence_fingerprint": null,
+        "institution": {
+          "name": "VinUniversity",
+          "unit": "Phòng Đào tạo"
+        }
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/messages?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "student",
+            "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+            "created_at": "2026-10-04T13:23:35.774836Z"
+          },
+          {
+            "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "assistant",
+            "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+            "created_at": "2026-10-04T13:23:35.778677Z"
+          },
+          {
+            "id": "msg_bcfbba95a3934ab6823f8dcdf2fce212",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "officer",
+            "content": "Đã kiểm tra hồ sơ Gate 2 theo từng bước và hoàn tất yêu cầu. Đây là phản hồi thử nghiệm, không phát hành giấy chính thức.",
+            "created_at": "2026-10-04T13:26:43.652886Z"
+          }
+        ],
+        "total": 3,
+        "page": 1,
+        "page_size": 100
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "ticket": {
+          "id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "code": "TKT-2026-0005",
+          "status": "resolved",
+          "priority": "normal",
+          "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+          "student_id": "SV-DEMO-001",
+          "category": "action",
+          "service_type": "student_certificate",
+          "priority_reasons": [],
+          "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "request_data": {
+            "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "destination_org": "Ngân hàng Chính sách Xã hội",
+            "receive_method": "digital_pdf",
+            "complaint_subtype": null,
+            "course": null,
+            "course_code": null,
+            "assessment": null,
+            "description": null,
+            "requested_outcome": null,
+            "evidence": null,
+            "extras": {}
+          },
+          "handover_reason": null,
+          "assigned_officer_id": "OF-DEMO-01",
+          "revision": 3,
+          "created_at": "2026-10-04T13:24:59.826600Z",
+          "updated_at": "2026-10-04T13:26:43.652886Z",
+          "student_name": "Sinh viên mẫu 001",
+          "student_mssv": "DEMO-001"
+        },
+        "messages": {
+          "items": [
+            {
+              "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "student",
+              "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+              "created_at": "2026-10-04T13:23:35.774836Z"
+            },
+            {
+              "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "assistant",
+              "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+              "created_at": "2026-10-04T13:23:35.778677Z"
+            },
+            {
+              "id": "msg_bcfbba95a3934ab6823f8dcdf2fce212",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "officer",
+              "content": "Đã kiểm tra hồ sơ Gate 2 theo từng bước và hoàn tất yêu cầu. Đây là phản hồi thử nghiệm, không phát hành giấy chính thức.",
+              "created_at": "2026-10-04T13:26:43.652886Z"
+            }
+          ],
+          "total": 3,
+          "page": 1,
+          "page_size": 100
+        },
+        "attachments": [],
+        "workspace": {
+          "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "revision": 3,
+          "officer_draft": "Đã kiểm tra hồ sơ Gate 2 theo từng bước và hoàn tất yêu cầu. Đây là phản hồi thử nghiệm, không phát hành giấy chính thức.",
+          "checklist": [
+            {
+              "id": "chk_identity",
+              "label": "Đối chiếu họ tên / MSSV với hồ sơ nguồn",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            },
+            {
+              "id": "chk_form",
+              "label": "Kiểm tra mục đích, nơi nhận và cách nhận",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            },
+            {
+              "id": "chk_evidence",
+              "label": "Xem kết quả đối soát và ghi nhận bằng chứng",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            }
+          ]
+        },
+        "verifications": [],
+        "student_profile": {
+          "user_id": "SV-DEMO-001",
+          "full_name": "Sinh viên mẫu 001",
+          "mssv": "DEMO-001",
+          "email": null,
+          "faculty": "Khoa mô phỏng",
+          "major": null,
+          "cohort": "DEMO-2026",
+          "class_year": null,
+          "student_status": null,
+          "verification_status": "unverified",
+          "source": null,
+          "source_imported_at": null,
+          "verified_at": null,
+          "is_demo": true
+        },
+        "assigned_officer": {
+          "id": "OF-DEMO-01",
+          "role": "officer",
+          "name": "Cán bộ mẫu 01",
+          "username": null,
+          "email": null,
+          "account_status": "active"
+        },
+        "process": {
+          "service_type": "student_certificate",
+          "label": "Giấy xác nhận sinh viên",
+          "process_version": "cert-process-v1",
+          "issues_document": true,
+          "template_id": "student_certificate_vn",
+          "template_version": "v1",
+          "template_status": "approved",
+          "validity_days": null,
+          "requires_academic_status": true,
+          "requires_financial_clearance": false,
+          "required_criteria": [
+            "identity_match",
+            "form_completeness"
+          ],
+          "issue_required_criteria": [
+            "identity_match",
+            "form_completeness",
+            "academic_status"
+          ],
+          "planned_checklist": [
+            {
+              "id": "chk_identity",
+              "label": "Đối chiếu họ tên / MSSV với hồ sơ nguồn",
+              "required": true
+            },
+            {
+              "id": "chk_form",
+              "label": "Kiểm tra mục đích, nơi nhận và cách nhận",
+              "required": true
+            },
+            {
+              "id": "chk_evidence",
+              "label": "Xem kết quả đối soát và ghi nhận bằng chứng",
+              "required": true
+            }
+          ]
+        },
+        "document_draft": {
+          "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "version": 1,
+          "template_id": "student_certificate_vn",
+          "template_version": "v1",
+          "template_status": "approved",
+          "status": "draft",
+          "student_snapshot": {
+            "full_name": "Sinh viên mẫu 001",
+            "mssv": "DEMO-001",
+            "class_year": null,
+            "major": null,
+            "faculty": "Khoa mô phỏng",
+            "student_status": null,
+            "verification_status": "unverified",
+            "source": null
+          },
+          "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "destination_org": "Ngân hàng Chính sách Xã hội",
+          "notes": null,
+          "valid_until": null,
+          "authored_by": "OF-DEMO-01",
+          "approved_by": null,
+          "content_hash": null,
+          "updated_at": "2026-10-04T13:25:45.131285+00:00"
+        },
+        "issued_document": null,
+        "supplements": [],
+        "evidence_fingerprint": null,
+        "institution": {
+          "name": "VinUniversity",
+          "unit": "Phòng Đào tạo"
+        }
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/messages?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "student",
+            "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+            "created_at": "2026-10-04T13:23:35.774836Z"
+          },
+          {
+            "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "assistant",
+            "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+            "created_at": "2026-10-04T13:23:35.778677Z"
+          },
+          {
+            "id": "msg_bcfbba95a3934ab6823f8dcdf2fce212",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "officer",
+            "content": "Đã kiểm tra hồ sơ Gate 2 theo từng bước và hoàn tất yêu cầu. Đây là phản hồi thử nghiệm, không phát hành giấy chính thức.",
+            "created_at": "2026-10-04T13:26:43.652886Z"
+          }
+        ],
+        "total": 3,
+        "page": 1,
+        "page_size": 100
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "ticket": {
+          "id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "code": "TKT-2026-0005",
+          "status": "resolved",
+          "priority": "normal",
+          "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+          "student_id": "SV-DEMO-001",
+          "category": "action",
+          "service_type": "student_certificate",
+          "priority_reasons": [],
+          "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "request_data": {
+            "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "destination_org": "Ngân hàng Chính sách Xã hội",
+            "receive_method": "digital_pdf",
+            "complaint_subtype": null,
+            "course": null,
+            "course_code": null,
+            "assessment": null,
+            "description": null,
+            "requested_outcome": null,
+            "evidence": null,
+            "extras": {}
+          },
+          "handover_reason": null,
+          "assigned_officer_id": "OF-DEMO-01",
+          "revision": 3,
+          "created_at": "2026-10-04T13:24:59.826600Z",
+          "updated_at": "2026-10-04T13:26:43.652886Z",
+          "student_name": "Sinh viên mẫu 001",
+          "student_mssv": "DEMO-001"
+        },
+        "messages": {
+          "items": [
+            {
+              "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "student",
+              "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+              "created_at": "2026-10-04T13:23:35.774836Z"
+            },
+            {
+              "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "assistant",
+              "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+              "created_at": "2026-10-04T13:23:35.778677Z"
+            },
+            {
+              "id": "msg_bcfbba95a3934ab6823f8dcdf2fce212",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "officer",
+              "content": "Đã kiểm tra hồ sơ Gate 2 theo từng bước và hoàn tất yêu cầu. Đây là phản hồi thử nghiệm, không phát hành giấy chính thức.",
+              "created_at": "2026-10-04T13:26:43.652886Z"
+            }
+          ],
+          "total": 3,
+          "page": 1,
+          "page_size": 100
+        },
+        "attachments": [],
+        "workspace": {
+          "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "revision": 3,
+          "officer_draft": "Đã kiểm tra hồ sơ Gate 2 theo từng bước và hoàn tất yêu cầu. Đây là phản hồi thử nghiệm, không phát hành giấy chính thức.",
+          "checklist": [
+            {
+              "id": "chk_identity",
+              "label": "Đối chiếu họ tên / MSSV với hồ sơ nguồn",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            },
+            {
+              "id": "chk_form",
+              "label": "Kiểm tra mục đích, nơi nhận và cách nhận",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            },
+            {
+              "id": "chk_evidence",
+              "label": "Xem kết quả đối soát và ghi nhận bằng chứng",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            }
+          ]
+        },
+        "verifications": [],
+        "student_profile": {
+          "user_id": "SV-DEMO-001",
+          "full_name": "Sinh viên mẫu 001",
+          "mssv": "DEMO-001",
+          "email": null,
+          "faculty": "Khoa mô phỏng",
+          "major": null,
+          "cohort": "DEMO-2026",
+          "class_year": null,
+          "student_status": null,
+          "verification_status": "unverified",
+          "source": null,
+          "source_imported_at": null,
+          "verified_at": null,
+          "is_demo": true
+        },
+        "assigned_officer": {
+          "id": "OF-DEMO-01",
+          "role": "officer",
+          "name": "Cán bộ mẫu 01",
+          "username": null,
+          "email": null,
+          "account_status": "active"
+        },
+        "process": {
+          "service_type": "student_certificate",
+          "label": "Giấy xác nhận sinh viên",
+          "process_version": "cert-process-v1",
+          "issues_document": true,
+          "template_id": "student_certificate_vn",
+          "template_version": "v1",
+          "template_status": "approved",
+          "validity_days": null,
+          "requires_academic_status": true,
+          "requires_financial_clearance": false,
+          "required_criteria": [
+            "identity_match",
+            "form_completeness"
+          ],
+          "issue_required_criteria": [
+            "identity_match",
+            "form_completeness",
+            "academic_status"
+          ],
+          "planned_checklist": [
+            {
+              "id": "chk_identity",
+              "label": "Đối chiếu họ tên / MSSV với hồ sơ nguồn",
+              "required": true
+            },
+            {
+              "id": "chk_form",
+              "label": "Kiểm tra mục đích, nơi nhận và cách nhận",
+              "required": true
+            },
+            {
+              "id": "chk_evidence",
+              "label": "Xem kết quả đối soát và ghi nhận bằng chứng",
+              "required": true
+            }
+          ]
+        },
+        "document_draft": {
+          "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "version": 1,
+          "template_id": "student_certificate_vn",
+          "template_version": "v1",
+          "template_status": "approved",
+          "status": "draft",
+          "student_snapshot": {
+            "full_name": "Sinh viên mẫu 001",
+            "mssv": "DEMO-001",
+            "class_year": null,
+            "major": null,
+            "faculty": "Khoa mô phỏng",
+            "student_status": null,
+            "verification_status": "unverified",
+            "source": null
+          },
+          "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "destination_org": "Ngân hàng Chính sách Xã hội",
+          "notes": null,
+          "valid_until": null,
+          "authored_by": "OF-DEMO-01",
+          "approved_by": null,
+          "content_hash": null,
+          "updated_at": "2026-10-04T13:25:45.131285+00:00"
+        },
+        "issued_document": null,
+        "supplements": [],
+        "evidence_fingerprint": null,
+        "institution": {
+          "name": "VinUniversity",
+          "unit": "Phòng Đào tạo"
+        }
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/messages?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "student",
+            "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+            "created_at": "2026-10-04T13:23:35.774836Z"
+          },
+          {
+            "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "assistant",
+            "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+            "created_at": "2026-10-04T13:23:35.778677Z"
+          },
+          {
+            "id": "msg_bcfbba95a3934ab6823f8dcdf2fce212",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "officer",
+            "content": "Đã kiểm tra hồ sơ Gate 2 theo từng bước và hoàn tất yêu cầu. Đây là phản hồi thử nghiệm, không phát hành giấy chính thức.",
+            "created_at": "2026-10-04T13:26:43.652886Z"
+          }
+        ],
+        "total": 3,
+        "page": 1,
+        "page_size": 100
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "ticket": {
+          "id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "code": "TKT-2026-0005",
+          "status": "resolved",
+          "priority": "normal",
+          "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+          "student_id": "SV-DEMO-001",
+          "category": "action",
+          "service_type": "student_certificate",
+          "priority_reasons": [],
+          "summary": "Xin giấy xác nhận sinh viên để Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "request_data": {
+            "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+            "destination_org": "Ngân hàng Chính sách Xã hội",
+            "receive_method": "digital_pdf",
+            "complaint_subtype": null,
+            "course": null,
+            "course_code": null,
+            "assessment": null,
+            "description": null,
+            "requested_outcome": null,
+            "evidence": null,
+            "extras": {}
+          },
+          "handover_reason": null,
+          "assigned_officer_id": "OF-DEMO-01",
+          "revision": 3,
+          "created_at": "2026-10-04T13:24:59.826600Z",
+          "updated_at": "2026-10-04T13:26:43.652886Z",
+          "student_name": "Sinh viên mẫu 001",
+          "student_mssv": "DEMO-001"
+        },
+        "messages": {
+          "items": [
+            {
+              "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "student",
+              "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+              "created_at": "2026-10-04T13:23:35.774836Z"
+            },
+            {
+              "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "assistant",
+              "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+              "created_at": "2026-10-04T13:23:35.778677Z"
+            },
+            {
+              "id": "msg_bcfbba95a3934ab6823f8dcdf2fce212",
+              "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+              "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+              "sender": "officer",
+              "content": "Đã kiểm tra hồ sơ Gate 2 theo từng bước và hoàn tất yêu cầu. Đây là phản hồi thử nghiệm, không phát hành giấy chính thức.",
+              "created_at": "2026-10-04T13:26:43.652886Z"
+            }
+          ],
+          "total": 3,
+          "page": 1,
+          "page_size": 100
+        },
+        "attachments": [],
+        "workspace": {
+          "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "revision": 3,
+          "officer_draft": "Đã kiểm tra hồ sơ Gate 2 theo từng bước và hoàn tất yêu cầu. Đây là phản hồi thử nghiệm, không phát hành giấy chính thức.",
+          "checklist": [
+            {
+              "id": "chk_identity",
+              "label": "Đối chiếu họ tên / MSSV với hồ sơ nguồn",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            },
+            {
+              "id": "chk_form",
+              "label": "Kiểm tra mục đích, nơi nhận và cách nhận",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            },
+            {
+              "id": "chk_evidence",
+              "label": "Xem kết quả đối soát và ghi nhận bằng chứng",
+              "checked": false,
+              "required": true,
+              "source": "process",
+              "description": null,
+              "checked_by": null,
+              "checked_at": null,
+              "note": null,
+              "source_version": "cert-process-v1"
+            }
+          ]
+        },
+        "verifications": [],
+        "student_profile": {
+          "user_id": "SV-DEMO-001",
+          "full_name": "Sinh viên mẫu 001",
+          "mssv": "DEMO-001",
+          "email": null,
+          "faculty": "Khoa mô phỏng",
+          "major": null,
+          "cohort": "DEMO-2026",
+          "class_year": null,
+          "student_status": null,
+          "verification_status": "unverified",
+          "source": null,
+          "source_imported_at": null,
+          "verified_at": null,
+          "is_demo": true
+        },
+        "assigned_officer": {
+          "id": "OF-DEMO-01",
+          "role": "officer",
+          "name": "Cán bộ mẫu 01",
+          "username": null,
+          "email": null,
+          "account_status": "active"
+        },
+        "process": {
+          "service_type": "student_certificate",
+          "label": "Giấy xác nhận sinh viên",
+          "process_version": "cert-process-v1",
+          "issues_document": true,
+          "template_id": "student_certificate_vn",
+          "template_version": "v1",
+          "template_status": "approved",
+          "validity_days": null,
+          "requires_academic_status": true,
+          "requires_financial_clearance": false,
+          "required_criteria": [
+            "identity_match",
+            "form_completeness"
+          ],
+          "issue_required_criteria": [
+            "identity_match",
+            "form_completeness",
+            "academic_status"
+          ],
+          "planned_checklist": [
+            {
+              "id": "chk_identity",
+              "label": "Đối chiếu họ tên / MSSV với hồ sơ nguồn",
+              "required": true
+            },
+            {
+              "id": "chk_form",
+              "label": "Kiểm tra mục đích, nơi nhận và cách nhận",
+              "required": true
+            },
+            {
+              "id": "chk_evidence",
+              "label": "Xem kết quả đối soát và ghi nhận bằng chứng",
+              "required": true
+            }
+          ]
+        },
+        "document_draft": {
+          "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+          "version": 1,
+          "template_id": "student_certificate_vn",
+          "template_version": "v1",
+          "template_status": "approved",
+          "status": "draft",
+          "student_snapshot": {
+            "full_name": "Sinh viên mẫu 001",
+            "mssv": "DEMO-001",
+            "class_year": null,
+            "major": null,
+            "faculty": "Khoa mô phỏng",
+            "student_status": null,
+            "verification_status": "unverified",
+            "source": null
+          },
+          "purpose": "Nộp hồ sơ vay vốn ngân hàng — kiểm tra Gate 2 từng bước",
+          "destination_org": "Ngân hàng Chính sách Xã hội",
+          "notes": null,
+          "valid_until": null,
+          "authored_by": "OF-DEMO-01",
+          "approved_by": null,
+          "content_hash": null,
+          "updated_at": "2026-10-04T13:25:45.131285+00:00"
+        },
+        "issued_document": null,
+        "supplements": [],
+        "evidence_fingerprint": null,
+        "institution": {
+          "name": "VinUniversity",
+          "unit": "Phòng Đào tạo"
+        }
+      }
+    },
+    {
+      "url": "http://127.0.0.1:18011/api/v1/tickets/tkt_667b653d9e4a4291a4c99dec6f597f88/messages?page=1&page_size=100",
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "msg_2070aebc129d44af8c65a62ecdfc5556",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "student",
+            "content": "Tôi muốn xin giấy xác nhận sinh viên.",
+            "created_at": "2026-10-04T13:23:35.774836Z"
+          },
+          {
+            "id": "msg_6c35d9c9a6604be4b1d4e7887c473528",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "assistant",
+            "content": "Bạn cho biết mục đích, nơi nhận và cách nhận giấy (bản điện tử hoặc bản giấy đóng dấu).",
+            "created_at": "2026-10-04T13:23:35.778677Z"
+          },
+          {
+            "id": "msg_bcfbba95a3934ab6823f8dcdf2fce212",
+            "conversation_id": "conv_f4ab8f5326e949c98a4e24c0d03ec626",
+            "ticket_id": "tkt_667b653d9e4a4291a4c99dec6f597f88",
+            "sender": "officer",
+            "content": "Đã kiểm tra hồ sơ Gate 2 theo từng bước và hoàn tất yêu cầu. Đây là phản hồi thử nghiệm, không phát hành giấy chính thức.",
+            "created_at": "2026-10-04T13:26:43.652886Z"
+          }
+        ],
+        "total": 3,
+        "page": 1,
+        "page_size": 100
+      }
+    }
+  ],
+  "network_note": "Selected preview/intake and inspected ticket responses only; unrelated list/seed bootstrap responses omitted. Auth responses were never recorded."
+}

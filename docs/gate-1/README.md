@@ -18,7 +18,7 @@ Tài liệu nền tảng bổ sung: [BRD — Yêu cầu nghiệp vụ Campus 24/
 | **2** | **Product Requirement Document (PRD)** | [02-prd.md](02-prd.md) | Đặng Quang Huy *(phối hợp Vinh & Dũng)* |  Đã hoàn thành |
 | **3** | **Wireframe & UI Flow** | [03-ui-flow.md](03-ui-flow.md) & [Assets](assets/) | Dương Xuân Vinh | Sẵn sàng bàn giao |
 | **4** | **AI Log Setup** | [ai-logs/README.md](../../ai-logs/README.md) & [Template](../../ai-logs/template.md) | Hoàng Quốc Dũng | Đã thiết lập |
-| ⭐ | **Phân công Nhiệm vụ** | [Phan-cong-nhiem-vu.md](Phan-cong-nhiem-vu.md) | Cả nhóm (4 thành viên) | Hoàn tất |
+| ⭐ | **Phân công Nhiệm vụ** | [Phan-cong-nhiem-vu.md](../Phan-cong-nhiem-vu.md) | Cả nhóm (4 thành viên) | Hoàn tất |
 
 ---
 

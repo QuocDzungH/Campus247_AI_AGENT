@@ -1,0 +1,3561 @@
+{
+  "preview": "http://127.0.0.1:3136",
+  "main": 129,
+  "supplemental": 19,
+  "visual": 9,
+  "total": 157,
+  "cases": [
+    {
+      "run": "browser-04",
+      "id": "QA04-fast-no-remember-5-runs",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/dashboard",
+      "details": {
+        "repeat": 5,
+        "reloadSignsOut": true
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "QA01-two-tabs-conflict-and-draft-recovery",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-007",
+      "details": {
+        "committedBytesPreserved": true,
+        "draftPreservedAfterRefresh": true
+      },
+      "evidence": "evidence/stale-response.png"
+    },
+    {
+      "run": "browser-04",
+      "id": "QA07-return-url-scroll-focus",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/dashboard?type=lookup&status=active&page=1",
+      "details": {
+        "saved": {
+          "url": "/dashboard?type=lookup&status=active&page=1",
+          "scrollY": 200,
+          "focusId": "queue-ticket-QA-TKT-010"
+        }
+      },
+      "evidence": "evidence/queue-return.png"
+    },
+    {
+      "run": "browser-04",
+      "id": "QA10-filter-back-forward-and-last-page",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/dashboard?q=&status=active&priority=all&type=lookup&page=1",
+      "details": {}
+    },
+    {
+      "run": "browser-04",
+      "id": "QA08-QA11-audit-actor-and-full-date",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "audit": {
+          "id": "aud-mupd7k5m-1",
+          "timestamp": "2026-10-01T10:02:02.314Z",
+          "actorName": "ThS. Trần Thu Hà (OF001)",
+          "actorRole": "officer",
+          "action": "Cán bộ gửi yêu cầu bổ sung hồ sơ",
+          "details": "[Campus 24/7] Yêu cầu bổ sung hồ sơ đề nghị công nhận học phần: Vật lý đại cương 1 (PHY102) · QA audit actual supplement request"
+        }
+      },
+      "evidence": "evidence/supplement-audit.png"
+    },
+    {
+      "run": "browser-04",
+      "id": "quota-send-retains-text-and-retries",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-010",
+      "details": {}
+    },
+    {
+      "run": "browser-04",
+      "id": "keyboard-dialog-loop-escape-return",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-006",
+      "details": {}
+    },
+    {
+      "run": "browser-04",
+      "id": "draft-save-reload-and-ticket-isolation",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-017",
+      "details": {
+        "savedDraft": {
+          "OF001": "QA saved private OF001 draft"
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-1366-light-/login",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/login",
+      "details": {
+        "viewport": {
+          "w": 1366,
+          "h": 768
+        },
+        "width": 1366,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-1366-light-/dashboard",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/dashboard",
+      "details": {
+        "viewport": {
+          "w": 1366,
+          "h": 768
+        },
+        "width": 1366,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-1366-light-/tickets/QA-TKT-006",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 1366,
+          "h": 768
+        },
+        "width": 1366,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-1366-light-/reviews",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews",
+      "details": {
+        "viewport": {
+          "w": 1366,
+          "h": 768
+        },
+        "width": 1366,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-1366-light-/reviews/REV-2026-003",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 1366,
+          "h": 768
+        },
+        "width": 1366,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-1366-light-response",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 1366,
+          "h": 768
+        },
+        "width": 1366,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 347,
+              "y": 243.625,
+              "width": 672,
+              "height": 280.75,
+              "top": 243.625,
+              "right": 1019,
+              "bottom": 524.375,
+              "left": 347
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 279,
+            "clientHeight": 279
+          }
+        ]
+      },
+      "evidence": "evidence/response-dialog-light.png"
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-1366-light-edit",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 1366,
+          "h": 768
+        },
+        "width": 1366,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 395,
+              "y": 158.5,
+              "width": 576,
+              "height": 451,
+              "top": 158.5,
+              "right": 971,
+              "bottom": 609.5,
+              "left": 395
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 449,
+            "clientHeight": 449
+          }
+        ]
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-1366-light-supplement",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 1366,
+          "h": 768
+        },
+        "width": 1366,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 347,
+              "y": 144.5,
+              "width": 672,
+              "height": 479,
+              "top": 144.5,
+              "right": 1019,
+              "bottom": 623.5,
+              "left": 347
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 477,
+            "clientHeight": 477
+          }
+        ]
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-1366-light-finalize",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/QA-REV-READY",
+      "details": {
+        "viewport": {
+          "w": 1366,
+          "h": 768
+        },
+        "width": 1366,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 347,
+              "y": 104.5,
+              "width": 672,
+              "height": 559,
+              "top": 104.5,
+              "right": 1019,
+              "bottom": 663.5,
+              "left": 347
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 557,
+            "clientHeight": 557
+          }
+        ]
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "QA06-long-1366-light",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-LONG",
+      "details": {
+        "viewport": {
+          "w": 1366,
+          "h": 768
+        },
+        "width": 1366,
+        "dpr": 1,
+        "dialogs": []
+      },
+      "evidence": "evidence/long-content.png"
+    },
+    {
+      "run": "browser-04",
+      "id": "page-1366-dark-/login",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/login",
+      "details": {
+        "viewport": {
+          "w": 1366,
+          "h": 768
+        },
+        "width": 1366,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-1366-dark-/dashboard",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/dashboard",
+      "details": {
+        "viewport": {
+          "w": 1366,
+          "h": 768
+        },
+        "width": 1366,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-1366-dark-/tickets/QA-TKT-006",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 1366,
+          "h": 768
+        },
+        "width": 1366,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-1366-dark-/reviews",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews",
+      "details": {
+        "viewport": {
+          "w": 1366,
+          "h": 768
+        },
+        "width": 1366,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-1366-dark-/reviews/REV-2026-003",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 1366,
+          "h": 768
+        },
+        "width": 1366,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-1366-dark-response",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 1366,
+          "h": 768
+        },
+        "width": 1366,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 347,
+              "y": 243.625,
+              "width": 672,
+              "height": 280.75,
+              "top": 243.625,
+              "right": 1019,
+              "bottom": 524.375,
+              "left": 347
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 279,
+            "clientHeight": 279
+          }
+        ]
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-1366-dark-edit",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 1366,
+          "h": 768
+        },
+        "width": 1366,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 395,
+              "y": 158.5,
+              "width": 576,
+              "height": 451,
+              "top": 158.5,
+              "right": 971,
+              "bottom": 609.5,
+              "left": 395
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 449,
+            "clientHeight": 449
+          }
+        ]
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-1366-dark-supplement",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 1366,
+          "h": 768
+        },
+        "width": 1366,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 347,
+              "y": 144.5,
+              "width": 672,
+              "height": 479,
+              "top": 144.5,
+              "right": 1019,
+              "bottom": 623.5,
+              "left": 347
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 477,
+            "clientHeight": 477
+          }
+        ]
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-1366-dark-finalize",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/QA-REV-READY",
+      "details": {
+        "viewport": {
+          "w": 1366,
+          "h": 768
+        },
+        "width": 1366,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 347,
+              "y": 104.5,
+              "width": 672,
+              "height": 559,
+              "top": 104.5,
+              "right": 1019,
+              "bottom": 663.5,
+              "left": 347
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 557,
+            "clientHeight": 557
+          }
+        ]
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "QA06-long-1366-dark",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-LONG",
+      "details": {
+        "viewport": {
+          "w": 1366,
+          "h": 768
+        },
+        "width": 1366,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-1920-light-/login",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/login",
+      "details": {
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "width": 1920,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-1920-light-/dashboard",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/dashboard",
+      "details": {
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "width": 1920,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-1920-light-/tickets/QA-TKT-006",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "width": 1920,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-1920-light-/reviews",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews",
+      "details": {
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "width": 1920,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-1920-light-/reviews/REV-2026-003",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "width": 1920,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-1920-light-response",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "width": 1920,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 624,
+              "y": 399.625,
+              "width": 672,
+              "height": 280.75,
+              "top": 399.625,
+              "right": 1296,
+              "bottom": 680.375,
+              "left": 624
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 279,
+            "clientHeight": 279
+          }
+        ]
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-1920-light-edit",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "width": 1920,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 672,
+              "y": 314.5,
+              "width": 576,
+              "height": 451,
+              "top": 314.5,
+              "right": 1248,
+              "bottom": 765.5,
+              "left": 672
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 449,
+            "clientHeight": 449
+          }
+        ]
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-1920-light-supplement",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "width": 1920,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 624,
+              "y": 300.5,
+              "width": 672,
+              "height": 479,
+              "top": 300.5,
+              "right": 1296,
+              "bottom": 779.5,
+              "left": 624
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 477,
+            "clientHeight": 477
+          }
+        ]
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-1920-light-finalize",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/QA-REV-READY",
+      "details": {
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "width": 1920,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 624,
+              "y": 260.5,
+              "width": 672,
+              "height": 559,
+              "top": 260.5,
+              "right": 1296,
+              "bottom": 819.5,
+              "left": 624
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 557,
+            "clientHeight": 557
+          }
+        ]
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "QA06-long-1920-light",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-LONG",
+      "details": {
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "width": 1920,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-1920-dark-/login",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/login",
+      "details": {
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "width": 1920,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-1920-dark-/dashboard",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/dashboard",
+      "details": {
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "width": 1920,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-1920-dark-/tickets/QA-TKT-006",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "width": 1920,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-1920-dark-/reviews",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews",
+      "details": {
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "width": 1920,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-1920-dark-/reviews/REV-2026-003",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "width": 1920,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-1920-dark-response",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "width": 1920,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 624,
+              "y": 399.625,
+              "width": 672,
+              "height": 280.75,
+              "top": 399.625,
+              "right": 1296,
+              "bottom": 680.375,
+              "left": 624
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 279,
+            "clientHeight": 279
+          }
+        ]
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-1920-dark-edit",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "width": 1920,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 672,
+              "y": 314.5,
+              "width": 576,
+              "height": 451,
+              "top": 314.5,
+              "right": 1248,
+              "bottom": 765.5,
+              "left": 672
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 449,
+            "clientHeight": 449
+          }
+        ]
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-1920-dark-supplement",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "width": 1920,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 624,
+              "y": 300.5,
+              "width": 672,
+              "height": 479,
+              "top": 300.5,
+              "right": 1296,
+              "bottom": 779.5,
+              "left": 624
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 477,
+            "clientHeight": 477
+          }
+        ]
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-1920-dark-finalize",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/QA-REV-READY",
+      "details": {
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "width": 1920,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 624,
+              "y": 260.5,
+              "width": 672,
+              "height": 559,
+              "top": 260.5,
+              "right": 1296,
+              "bottom": 819.5,
+              "left": 624
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 557,
+            "clientHeight": 557
+          }
+        ]
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "QA06-long-1920-dark",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-LONG",
+      "details": {
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "width": 1920,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-390-light-/login",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/login",
+      "details": {
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "width": 390,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-390-light-/dashboard",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/dashboard",
+      "details": {
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "width": 390,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-390-light-/tickets/QA-TKT-006",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "width": 390,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-390-light-/reviews",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews",
+      "details": {
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "width": 390,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-390-light-/reviews/REV-2026-003",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "width": 390,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-390-light-response",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "width": 390,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 16,
+              "y": 261.625,
+              "width": 358,
+              "height": 320.75,
+              "top": 261.625,
+              "right": 374,
+              "bottom": 582.375,
+              "left": 16
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 319,
+            "clientHeight": 319
+          }
+        ]
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-390-light-edit",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "width": 390,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 16,
+              "y": 196.5,
+              "width": 358,
+              "height": 451,
+              "top": 196.5,
+              "right": 374,
+              "bottom": 647.5,
+              "left": 16
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 449,
+            "clientHeight": 449
+          }
+        ]
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-390-light-supplement",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "width": 390,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 16,
+              "y": 172.5,
+              "width": 358,
+              "height": 499,
+              "top": 172.5,
+              "right": 374,
+              "bottom": 671.5,
+              "left": 16
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 497,
+            "clientHeight": 497
+          }
+        ]
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-390-light-finalize",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/QA-REV-READY",
+      "details": {
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "width": 390,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 16,
+              "y": 112.5,
+              "width": 358,
+              "height": 619,
+              "top": 112.5,
+              "right": 374,
+              "bottom": 731.5,
+              "left": 16
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 617,
+            "clientHeight": 617
+          }
+        ]
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "QA06-long-390-light",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-LONG",
+      "details": {
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "width": 390,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-390-dark-/login",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/login",
+      "details": {
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "width": 390,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-390-dark-/dashboard",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/dashboard",
+      "details": {
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "width": 390,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-390-dark-/tickets/QA-TKT-006",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "width": 390,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-390-dark-/reviews",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews",
+      "details": {
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "width": 390,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "page-390-dark-/reviews/REV-2026-003",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "width": 390,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-390-dark-response",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "width": 390,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 16,
+              "y": 261.625,
+              "width": 358,
+              "height": 320.75,
+              "top": 261.625,
+              "right": 374,
+              "bottom": 582.375,
+              "left": 16
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 319,
+            "clientHeight": 319
+          }
+        ]
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-390-dark-edit",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "width": 390,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 16,
+              "y": 196.5,
+              "width": 358,
+              "height": 451,
+              "top": 196.5,
+              "right": 374,
+              "bottom": 647.5,
+              "left": 16
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 449,
+            "clientHeight": 449
+          }
+        ]
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-390-dark-supplement",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "width": 390,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 16,
+              "y": 172.5,
+              "width": 358,
+              "height": 499,
+              "top": 172.5,
+              "right": 374,
+              "bottom": 671.5,
+              "left": 16
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 497,
+            "clientHeight": 497
+          }
+        ]
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "dialog-390-dark-finalize",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/QA-REV-READY",
+      "details": {
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "width": 390,
+        "dpr": 1,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 16,
+              "y": 112.5,
+              "width": 358,
+              "height": 619,
+              "top": 112.5,
+              "right": 374,
+              "bottom": 731.5,
+              "left": 16
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 617,
+            "clientHeight": 617
+          }
+        ]
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "QA06-long-390-dark",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-LONG",
+      "details": {
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "width": 390,
+        "dpr": 1,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-1.25-light-/login",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/login",
+      "details": {
+        "viewport": {
+          "w": 1093,
+          "h": 614
+        },
+        "width": 1093,
+        "dpr": 1.25,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-1.25-light-/dashboard",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/dashboard",
+      "details": {
+        "viewport": {
+          "w": 1093,
+          "h": 614
+        },
+        "width": 1093,
+        "dpr": 1.25,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-1.25-light-/tickets/QA-TKT-006",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 1093,
+          "h": 614
+        },
+        "width": 1093,
+        "dpr": 1.25,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-1.25-light-/reviews",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews",
+      "details": {
+        "viewport": {
+          "w": 1093,
+          "h": 614
+        },
+        "width": 1093,
+        "dpr": 1.25,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-1.25-light-/reviews/REV-2026-003",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 1093,
+          "h": 614
+        },
+        "width": 1093,
+        "dpr": 1.25,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-1.25-light-response",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 1093,
+          "h": 614
+        },
+        "width": 1093,
+        "dpr": 1.25,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 210.40000915527344,
+              "y": 167.02500915527344,
+              "width": 672,
+              "height": 280.3500061035156,
+              "top": 167.02500915527344,
+              "right": 882.4000091552734,
+              "bottom": 447.37501525878906,
+              "left": 210.40000915527344
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 279,
+            "clientHeight": 279
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 743.5125122070312,
+          "y": 378.57501220703125,
+          "width": 114.0875015258789,
+          "height": 44,
+          "top": 378.57501220703125,
+          "right": 857.6000137329102,
+          "bottom": 422.57501220703125,
+          "left": 743.5125122070312
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-1.25-light-edit",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 1093,
+          "h": 614
+        },
+        "width": 1093,
+        "dpr": 1.25,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 258.3999938964844,
+              "y": 82.4000015258789,
+              "width": 576,
+              "height": 449.6000061035156,
+              "top": 82.4000015258789,
+              "right": 834.3999938964844,
+              "bottom": 532.0000076293945,
+              "left": 258.3999938964844
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 448,
+            "clientHeight": 448
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 685.8624877929688,
+          "y": 463.20001220703125,
+          "width": 123.73750305175781,
+          "height": 44,
+          "top": 463.20001220703125,
+          "right": 809.5999908447266,
+          "bottom": 507.20001220703125,
+          "left": 685.8624877929688
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-1.25-light-supplement",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 1093,
+          "h": 614
+        },
+        "width": 1093,
+        "dpr": 1.25,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 210.40000915527344,
+              "y": 68.4000015258789,
+              "width": 672,
+              "height": 477.6000061035156,
+              "top": 68.4000015258789,
+              "right": 882.4000091552734,
+              "bottom": 546.0000076293945,
+              "left": 210.40000915527344
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 476,
+            "clientHeight": 476
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 695.7625122070312,
+          "y": 477.20001220703125,
+          "width": 161.83750915527344,
+          "height": 44,
+          "top": 477.20001220703125,
+          "right": 857.6000213623047,
+          "bottom": 521.2000122070312,
+          "left": 695.7625122070312
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-1.25-light-finalize",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/QA-REV-READY",
+      "details": {
+        "viewport": {
+          "w": 1093,
+          "h": 614
+        },
+        "width": 1093,
+        "dpr": 1.25,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 210.40000915527344,
+              "y": 28.399999618530273,
+              "width": 672,
+              "height": 557.6000366210938,
+              "top": 28.399999618530273,
+              "right": 882.4000091552734,
+              "bottom": 586.000036239624,
+              "left": 210.40000915527344
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 556,
+            "clientHeight": 556
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 691.3375244140625,
+          "y": 517.2000122070312,
+          "width": 166.2624969482422,
+          "height": 44,
+          "top": 517.2000122070312,
+          "right": 857.6000213623047,
+          "bottom": 561.2000122070312,
+          "left": 691.3375244140625
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-1.25-dark-/login",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/login",
+      "details": {
+        "viewport": {
+          "w": 1093,
+          "h": 614
+        },
+        "width": 1093,
+        "dpr": 1.25,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-1.25-dark-/dashboard",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/dashboard",
+      "details": {
+        "viewport": {
+          "w": 1093,
+          "h": 614
+        },
+        "width": 1093,
+        "dpr": 1.25,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-1.25-dark-/tickets/QA-TKT-006",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 1093,
+          "h": 614
+        },
+        "width": 1093,
+        "dpr": 1.25,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-1.25-dark-/reviews",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews",
+      "details": {
+        "viewport": {
+          "w": 1093,
+          "h": 614
+        },
+        "width": 1093,
+        "dpr": 1.25,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-1.25-dark-/reviews/REV-2026-003",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 1093,
+          "h": 614
+        },
+        "width": 1093,
+        "dpr": 1.25,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-1.25-dark-response",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 1093,
+          "h": 614
+        },
+        "width": 1093,
+        "dpr": 1.25,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 210.40000915527344,
+              "y": 167.02500915527344,
+              "width": 672,
+              "height": 280.3500061035156,
+              "top": 167.02500915527344,
+              "right": 882.4000091552734,
+              "bottom": 447.37501525878906,
+              "left": 210.40000915527344
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 279,
+            "clientHeight": 279
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 743.5125122070312,
+          "y": 378.57501220703125,
+          "width": 114.0875015258789,
+          "height": 44,
+          "top": 378.57501220703125,
+          "right": 857.6000137329102,
+          "bottom": 422.57501220703125,
+          "left": 743.5125122070312
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-1.25-dark-edit",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 1093,
+          "h": 614
+        },
+        "width": 1093,
+        "dpr": 1.25,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 258.3999938964844,
+              "y": 82.4000015258789,
+              "width": 576,
+              "height": 449.6000061035156,
+              "top": 82.4000015258789,
+              "right": 834.3999938964844,
+              "bottom": 532.0000076293945,
+              "left": 258.3999938964844
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 448,
+            "clientHeight": 448
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 685.8624877929688,
+          "y": 463.20001220703125,
+          "width": 123.73750305175781,
+          "height": 44,
+          "top": 463.20001220703125,
+          "right": 809.5999908447266,
+          "bottom": 507.20001220703125,
+          "left": 685.8624877929688
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-1.25-dark-supplement",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 1093,
+          "h": 614
+        },
+        "width": 1093,
+        "dpr": 1.25,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 210.40000915527344,
+              "y": 68.4000015258789,
+              "width": 672,
+              "height": 477.6000061035156,
+              "top": 68.4000015258789,
+              "right": 882.4000091552734,
+              "bottom": 546.0000076293945,
+              "left": 210.40000915527344
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 476,
+            "clientHeight": 476
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 695.7625122070312,
+          "y": 477.20001220703125,
+          "width": 161.83750915527344,
+          "height": 44,
+          "top": 477.20001220703125,
+          "right": 857.6000213623047,
+          "bottom": 521.2000122070312,
+          "left": 695.7625122070312
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-1.25-dark-finalize",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/QA-REV-READY",
+      "details": {
+        "viewport": {
+          "w": 1093,
+          "h": 614
+        },
+        "width": 1093,
+        "dpr": 1.25,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 210.40000915527344,
+              "y": 28.399999618530273,
+              "width": 672,
+              "height": 557.6000366210938,
+              "top": 28.399999618530273,
+              "right": 882.4000091552734,
+              "bottom": 586.000036239624,
+              "left": 210.40000915527344
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 556,
+            "clientHeight": 556
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 691.3375244140625,
+          "y": 517.2000122070312,
+          "width": 166.2624969482422,
+          "height": 44,
+          "top": 517.2000122070312,
+          "right": 857.6000213623047,
+          "bottom": 561.2000122070312,
+          "left": 691.3375244140625
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-1.5-light-/login",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/login",
+      "details": {
+        "viewport": {
+          "w": 911,
+          "h": 512
+        },
+        "width": 911,
+        "dpr": 1.5,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-1.5-light-/dashboard",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/dashboard",
+      "details": {
+        "viewport": {
+          "w": 911,
+          "h": 512
+        },
+        "width": 911,
+        "dpr": 1.5,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-1.5-light-/tickets/QA-TKT-006",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 911,
+          "h": 512
+        },
+        "width": 911,
+        "dpr": 1.5,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-1.5-light-/reviews",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews",
+      "details": {
+        "viewport": {
+          "w": 911,
+          "h": 512
+        },
+        "width": 911,
+        "dpr": 1.5,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-1.5-light-/reviews/REV-2026-003",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 911,
+          "h": 512
+        },
+        "width": 911,
+        "dpr": 1.5,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-1.5-light-response",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 911,
+          "h": 512
+        },
+        "width": 911,
+        "dpr": 1.5,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 119.33333587646484,
+              "y": 115.95833587646484,
+              "width": 672,
+              "height": 280.0833435058594,
+              "top": 115.95833587646484,
+              "right": 791.3333358764648,
+              "bottom": 396.0416793823242,
+              "left": 119.33333587646484
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 279,
+            "clientHeight": 279
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 652.5833740234375,
+          "y": 327.375,
+          "width": 114.08333587646484,
+          "height": 44,
+          "top": 327.375,
+          "right": 766.6667098999023,
+          "bottom": 371.375,
+          "left": 652.5833740234375
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-1.5-light-edit",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 911,
+          "h": 512
+        },
+        "width": 911,
+        "dpr": 1.5,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 167.33334350585938,
+              "y": 31.33333396911621,
+              "width": 576,
+              "height": 449.3333435058594,
+              "top": 31.33333396911621,
+              "right": 743.3333435058594,
+              "bottom": 480.6666774749756,
+              "left": 167.33334350585938
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 448,
+            "clientHeight": 448
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 594.9271240234375,
+          "y": 412,
+          "width": 123.73958587646484,
+          "height": 44,
+          "top": 412,
+          "right": 718.6667098999023,
+          "bottom": 456,
+          "left": 594.9271240234375
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-1.5-light-supplement",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 911,
+          "h": 512
+        },
+        "width": 911,
+        "dpr": 1.5,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 119.33333587646484,
+              "y": 17.33333396911621,
+              "width": 672,
+              "height": 477.3333435058594,
+              "top": 17.33333396911621,
+              "right": 791.3333358764648,
+              "bottom": 494.6666774749756,
+              "left": 119.33333587646484
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 476,
+            "clientHeight": 476
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 604.8229370117188,
+          "y": 426,
+          "width": 161.84375,
+          "height": 44,
+          "top": 426,
+          "right": 766.6666870117188,
+          "bottom": 470,
+          "left": 604.8229370117188
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-1.5-light-finalize",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/QA-REV-READY",
+      "details": {
+        "viewport": {
+          "w": 911,
+          "h": 512
+        },
+        "width": 911,
+        "dpr": 1.5,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 119.33333587646484,
+              "y": 16,
+              "width": 672,
+              "height": 480,
+              "top": 16,
+              "right": 791.3333358764648,
+              "bottom": 496,
+              "left": 119.33333587646484
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 556,
+            "clientHeight": 479
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 600.40625,
+          "y": 427.3333435058594,
+          "width": 166.2604217529297,
+          "height": 44,
+          "top": 427.3333435058594,
+          "right": 766.6666717529297,
+          "bottom": 471.3333435058594,
+          "left": 600.40625
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-1.5-dark-/login",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/login",
+      "details": {
+        "viewport": {
+          "w": 911,
+          "h": 512
+        },
+        "width": 911,
+        "dpr": 1.5,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-1.5-dark-/dashboard",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/dashboard",
+      "details": {
+        "viewport": {
+          "w": 911,
+          "h": 512
+        },
+        "width": 911,
+        "dpr": 1.5,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-1.5-dark-/tickets/QA-TKT-006",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 911,
+          "h": 512
+        },
+        "width": 911,
+        "dpr": 1.5,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-1.5-dark-/reviews",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews",
+      "details": {
+        "viewport": {
+          "w": 911,
+          "h": 512
+        },
+        "width": 911,
+        "dpr": 1.5,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-1.5-dark-/reviews/REV-2026-003",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 911,
+          "h": 512
+        },
+        "width": 911,
+        "dpr": 1.5,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-1.5-dark-response",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 911,
+          "h": 512
+        },
+        "width": 911,
+        "dpr": 1.5,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 119.33333587646484,
+              "y": 115.95833587646484,
+              "width": 672,
+              "height": 280.0833435058594,
+              "top": 115.95833587646484,
+              "right": 791.3333358764648,
+              "bottom": 396.0416793823242,
+              "left": 119.33333587646484
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 279,
+            "clientHeight": 279
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 652.5833740234375,
+          "y": 327.375,
+          "width": 114.08333587646484,
+          "height": 44,
+          "top": 327.375,
+          "right": 766.6667098999023,
+          "bottom": 371.375,
+          "left": 652.5833740234375
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-1.5-dark-edit",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 911,
+          "h": 512
+        },
+        "width": 911,
+        "dpr": 1.5,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 167.33334350585938,
+              "y": 31.33333396911621,
+              "width": 576,
+              "height": 449.3333435058594,
+              "top": 31.33333396911621,
+              "right": 743.3333435058594,
+              "bottom": 480.6666774749756,
+              "left": 167.33334350585938
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 448,
+            "clientHeight": 448
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 594.9271240234375,
+          "y": 412,
+          "width": 123.73958587646484,
+          "height": 44,
+          "top": 412,
+          "right": 718.6667098999023,
+          "bottom": 456,
+          "left": 594.9271240234375
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-1.5-dark-supplement",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 911,
+          "h": 512
+        },
+        "width": 911,
+        "dpr": 1.5,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 119.33333587646484,
+              "y": 17.33333396911621,
+              "width": 672,
+              "height": 477.3333435058594,
+              "top": 17.33333396911621,
+              "right": 791.3333358764648,
+              "bottom": 494.6666774749756,
+              "left": 119.33333587646484
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 476,
+            "clientHeight": 476
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 604.8229370117188,
+          "y": 426,
+          "width": 161.84375,
+          "height": 44,
+          "top": 426,
+          "right": 766.6666870117188,
+          "bottom": 470,
+          "left": 604.8229370117188
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-1.5-dark-finalize",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/QA-REV-READY",
+      "details": {
+        "viewport": {
+          "w": 911,
+          "h": 512
+        },
+        "width": 911,
+        "dpr": 1.5,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 119.33333587646484,
+              "y": 16,
+              "width": 672,
+              "height": 480,
+              "top": 16,
+              "right": 791.3333358764648,
+              "bottom": 496,
+              "left": 119.33333587646484
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 556,
+            "clientHeight": 479
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 600.40625,
+          "y": 427.3333435058594,
+          "width": 166.2604217529297,
+          "height": 44,
+          "top": 427.3333435058594,
+          "right": 766.6666717529297,
+          "bottom": 471.3333435058594,
+          "left": 600.40625
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-2-light-/login",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/login",
+      "details": {
+        "viewport": {
+          "w": 683,
+          "h": 384
+        },
+        "width": 683,
+        "dpr": 2,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-2-light-/dashboard",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/dashboard",
+      "details": {
+        "viewport": {
+          "w": 683,
+          "h": 384
+        },
+        "width": 683,
+        "dpr": 2,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-2-light-/tickets/QA-TKT-006",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 683,
+          "h": 384
+        },
+        "width": 683,
+        "dpr": 2,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-2-light-/reviews",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews",
+      "details": {
+        "viewport": {
+          "w": 683,
+          "h": 384
+        },
+        "width": 683,
+        "dpr": 2,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-2-light-/reviews/REV-2026-003",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 683,
+          "h": 384
+        },
+        "width": 683,
+        "dpr": 2,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-2-light-response",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 683,
+          "h": 384
+        },
+        "width": 683,
+        "dpr": 2,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 16,
+              "y": 51.625,
+              "width": 651,
+              "height": 280.75,
+              "top": 51.625,
+              "right": 667,
+              "bottom": 332.375,
+              "left": 16
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 279,
+            "clientHeight": 279
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 527.9140625,
+          "y": 263.375,
+          "width": 114.0859375,
+          "height": 44,
+          "top": 263.375,
+          "right": 642,
+          "bottom": 307.375,
+          "left": 527.9140625
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-2-light-edit",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 683,
+          "h": 384
+        },
+        "width": 683,
+        "dpr": 2,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 53.5,
+              "y": 16,
+              "width": 576,
+              "height": 352,
+              "top": 16,
+              "right": 629.5,
+              "bottom": 368,
+              "left": 53.5
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 449,
+            "clientHeight": 350
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 480.765625,
+          "y": 299,
+          "width": 123.734375,
+          "height": 44,
+          "top": 299,
+          "right": 604.5,
+          "bottom": 343,
+          "left": 480.765625
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-2-light-supplement",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 683,
+          "h": 384
+        },
+        "width": 683,
+        "dpr": 2,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 16,
+              "y": 16,
+              "width": 651,
+              "height": 352,
+              "top": 16,
+              "right": 667,
+              "bottom": 368,
+              "left": 16
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 477,
+            "clientHeight": 350
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 480.1640625,
+          "y": 299,
+          "width": 161.8359375,
+          "height": 44,
+          "top": 299,
+          "right": 642,
+          "bottom": 343,
+          "left": 480.1640625
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-2-light-finalize",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/QA-REV-READY",
+      "details": {
+        "viewport": {
+          "w": 683,
+          "h": 384
+        },
+        "width": 683,
+        "dpr": 2,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 16,
+              "y": 16,
+              "width": 651,
+              "height": 352,
+              "top": 16,
+              "right": 667,
+              "bottom": 368,
+              "left": 16
+            },
+            "background": "rgb(255, 255, 255)",
+            "scrollHeight": 557,
+            "clientHeight": 350
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 475.7421875,
+          "y": 299,
+          "width": 166.2578125,
+          "height": 44,
+          "top": 299,
+          "right": 642,
+          "bottom": 343,
+          "left": 475.7421875
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-2-dark-/login",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/login",
+      "details": {
+        "viewport": {
+          "w": 683,
+          "h": 384
+        },
+        "width": 683,
+        "dpr": 2,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-2-dark-/dashboard",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/dashboard",
+      "details": {
+        "viewport": {
+          "w": 683,
+          "h": 384
+        },
+        "width": 683,
+        "dpr": 2,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-2-dark-/tickets/QA-TKT-006",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 683,
+          "h": 384
+        },
+        "width": 683,
+        "dpr": 2,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-2-dark-/reviews",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews",
+      "details": {
+        "viewport": {
+          "w": 683,
+          "h": 384
+        },
+        "width": 683,
+        "dpr": 2,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-2-dark-/reviews/REV-2026-003",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 683,
+          "h": 384
+        },
+        "width": 683,
+        "dpr": 2,
+        "dialogs": []
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-2-dark-response",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "viewport": {
+          "w": 683,
+          "h": 384
+        },
+        "width": 683,
+        "dpr": 2,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 16,
+              "y": 51.625,
+              "width": 651,
+              "height": 280.75,
+              "top": 51.625,
+              "right": 667,
+              "bottom": 332.375,
+              "left": 16
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 279,
+            "clientHeight": 279
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 527.9140625,
+          "y": 263.375,
+          "width": 114.0859375,
+          "height": 44,
+          "top": 263.375,
+          "right": 642,
+          "bottom": 307.375,
+          "left": 527.9140625
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-2-dark-edit",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 683,
+          "h": 384
+        },
+        "width": 683,
+        "dpr": 2,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 53.5,
+              "y": 16,
+              "width": 576,
+              "height": 352,
+              "top": 16,
+              "right": 629.5,
+              "bottom": 368,
+              "left": 53.5
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 449,
+            "clientHeight": 350
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 480.765625,
+          "y": 299,
+          "width": 123.734375,
+          "height": 44,
+          "top": 299,
+          "right": 604.5,
+          "bottom": 343,
+          "left": 480.765625
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-2-dark-supplement",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/REV-2026-003",
+      "details": {
+        "viewport": {
+          "w": 683,
+          "h": 384
+        },
+        "width": 683,
+        "dpr": 2,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 16,
+              "y": 16,
+              "width": 651,
+              "height": 352,
+              "top": 16,
+              "right": 667,
+              "bottom": 368,
+              "left": 16
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 477,
+            "clientHeight": 350
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 480.1640625,
+          "y": 299,
+          "width": 161.8359375,
+          "height": 44,
+          "top": 299,
+          "right": 642,
+          "bottom": 343,
+          "left": 480.1640625
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "zoom-dialog-2-dark-finalize",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/reviews/QA-REV-READY",
+      "details": {
+        "viewport": {
+          "w": 683,
+          "h": 384
+        },
+        "width": 683,
+        "dpr": 2,
+        "dialogs": [
+          {
+            "rect": {
+              "x": 16,
+              "y": 16,
+              "width": 651,
+              "height": 352,
+              "top": 16,
+              "right": 667,
+              "bottom": 368,
+              "left": 16
+            },
+            "background": "oklch(0.208 0.042 265.755)",
+            "scrollHeight": 557,
+            "clientHeight": 350
+          }
+        ],
+        "actionRectAfterFocus": {
+          "x": 475.7421875,
+          "y": 299,
+          "width": 166.2578125,
+          "height": 44,
+          "top": 299,
+          "right": 642,
+          "bottom": 343,
+          "left": 475.7421875
+        }
+      }
+    },
+    {
+      "run": "browser-04",
+      "id": "chrome-keyboard-response",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/tickets/QA-TKT-015",
+      "details": {}
+    },
+    {
+      "run": "browser-04",
+      "id": "QA09-storage-retry-without-reset-or-hydration-error",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/dashboard?qa-deny=1",
+      "details": {
+        "bytesPreserved": true
+      },
+      "evidence": "evidence/storage-retry.png"
+    },
+    {
+      "run": "browser-04",
+      "id": "student-login-create-list-detail-and-supplement-file",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/my-requests?review=REV-2026-003",
+      "details": {
+        "ticketId": "TKT-mupdc9l1-1",
+        "fileByteMatch": true
+      },
+      "evidence": "evidence/student-supplement.png"
+    },
+    {
+      "run": "browser-04",
+      "id": "student-denied-staff-route",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/student",
+      "details": {}
+    },
+    {
+      "run": "browser-04",
+      "id": "ticket-respond-supplement-complete-reload-no-issuance",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-012",
+      "details": {},
+      "evidence": "evidence/ticket-completed.png"
+    },
+    {
+      "run": "browser-04",
+      "id": "review-edit-required-note-source-actor-reload",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/REV-2026-003",
+      "details": {}
+    },
+    {
+      "run": "browser-04",
+      "id": "review-finalize-validation-audit-closed-guard",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/QA-REV-READY",
+      "details": {},
+      "evidence": "evidence/review-completed.png"
+    },
+    {
+      "run": "supplemental-02",
+      "id": "completion-1366-light",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "rect": {
+          "x": 347,
+          "y": 243.625,
+          "width": 672,
+          "height": 280.75,
+          "top": 243.625,
+          "right": 1019,
+          "bottom": 524.375,
+          "left": 347
+        },
+        "viewport": {
+          "w": 1366,
+          "h": 768
+        },
+        "scrollWidth": 1366,
+        "background": "rgb(255, 255, 255)",
+        "actionRect": {
+          "x": 872.53125,
+          "y": 455.375,
+          "width": 121.46875,
+          "height": 44,
+          "top": 455.375,
+          "right": 994,
+          "bottom": 499.375,
+          "left": 872.53125
+        }
+      }
+    },
+    {
+      "run": "supplemental-02",
+      "id": "completion-1366-dark",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "rect": {
+          "x": 347,
+          "y": 243.625,
+          "width": 672,
+          "height": 280.75,
+          "top": 243.625,
+          "right": 1019,
+          "bottom": 524.375,
+          "left": 347
+        },
+        "viewport": {
+          "w": 1366,
+          "h": 768
+        },
+        "scrollWidth": 1366,
+        "background": "oklch(0.208 0.042 265.755)",
+        "actionRect": {
+          "x": 872.53125,
+          "y": 455.375,
+          "width": 121.46875,
+          "height": 44,
+          "top": 455.375,
+          "right": 994,
+          "bottom": 499.375,
+          "left": 872.53125
+        }
+      }
+    },
+    {
+      "run": "supplemental-02",
+      "id": "completion-1920-light",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "rect": {
+          "x": 624,
+          "y": 399.625,
+          "width": 672,
+          "height": 280.75,
+          "top": 399.625,
+          "right": 1296,
+          "bottom": 680.375,
+          "left": 624
+        },
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "scrollWidth": 1920,
+        "background": "rgb(255, 255, 255)",
+        "actionRect": {
+          "x": 1149.53125,
+          "y": 611.375,
+          "width": 121.46875,
+          "height": 44,
+          "top": 611.375,
+          "right": 1271,
+          "bottom": 655.375,
+          "left": 1149.53125
+        }
+      }
+    },
+    {
+      "run": "supplemental-02",
+      "id": "completion-1920-dark",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "rect": {
+          "x": 624,
+          "y": 399.625,
+          "width": 672,
+          "height": 280.75,
+          "top": 399.625,
+          "right": 1296,
+          "bottom": 680.375,
+          "left": 624
+        },
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "scrollWidth": 1920,
+        "background": "oklch(0.208 0.042 265.755)",
+        "actionRect": {
+          "x": 1149.53125,
+          "y": 611.375,
+          "width": 121.46875,
+          "height": 44,
+          "top": 611.375,
+          "right": 1271,
+          "bottom": 655.375,
+          "left": 1149.53125
+        }
+      }
+    },
+    {
+      "run": "supplemental-02",
+      "id": "completion-390-light",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "rect": {
+          "x": 16,
+          "y": 250.25,
+          "width": 358,
+          "height": 343.5,
+          "top": 250.25,
+          "right": 374,
+          "bottom": 593.75,
+          "left": 16
+        },
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "scrollWidth": 390,
+        "background": "rgb(255, 255, 255)",
+        "actionRect": {
+          "x": 227.53125,
+          "y": 524.75,
+          "width": 121.46875,
+          "height": 44,
+          "top": 524.75,
+          "right": 349,
+          "bottom": 568.75,
+          "left": 227.53125
+        }
+      },
+      "evidence": "evidence/mobile-completion.png"
+    },
+    {
+      "run": "supplemental-02",
+      "id": "completion-390-dark",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "rect": {
+          "x": 16,
+          "y": 250.25,
+          "width": 358,
+          "height": 343.5,
+          "top": 250.25,
+          "right": 374,
+          "bottom": 593.75,
+          "left": 16
+        },
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "scrollWidth": 390,
+        "background": "oklch(0.208 0.042 265.755)",
+        "actionRect": {
+          "x": 227.53125,
+          "y": 524.75,
+          "width": 121.46875,
+          "height": 44,
+          "top": 524.75,
+          "right": 349,
+          "bottom": 568.75,
+          "left": 227.53125
+        }
+      }
+    },
+    {
+      "run": "supplemental-02",
+      "id": "draft-stale-tab-preserves-newer-draft-and-unsaved-text",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-020",
+      "details": {},
+      "evidence": "evidence/stale-draft.png"
+    },
+    {
+      "run": "supplemental-02",
+      "id": "review-stale-supplement-does-not-overwrite-newer-finding",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/REV-2026-001",
+      "details": {},
+      "evidence": "evidence/stale-review.png"
+    },
+    {
+      "run": "supplemental-02",
+      "id": "citation-doc-version-page-and-keyboard-scroller",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/REV-2026-001",
+      "details": {
+        "citationsChecked": 7
+      },
+      "evidence": "evidence/source-keyboard.png"
+    },
+    {
+      "run": "supplemental-02",
+      "id": "review-guard-QA-REV-VERSION",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/QA-REV-VERSION",
+      "details": {}
+    },
+    {
+      "run": "supplemental-02",
+      "id": "review-guard-QA-REV-MANDATORY",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/QA-REV-MANDATORY",
+      "details": {}
+    },
+    {
+      "run": "supplemental-02",
+      "id": "review-guard-QA-REV-MISSING",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/reviews/QA-REV-MISSING",
+      "details": {}
+    },
+    {
+      "run": "supplemental-02",
+      "id": "missing-binary-file-reports-error",
+      "status": "Pass",
+      "browser": "Edge",
+      "route": "/tickets/QA-TKT-LONG",
+      "details": {}
+    },
+    {
+      "run": "supplemental-02",
+      "id": "completion-zoom-1.25-light",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "rect": {
+          "x": 210.40000915527344,
+          "y": 167.02500915527344,
+          "width": 672,
+          "height": 280.3500061035156,
+          "top": 167.02500915527344,
+          "right": 882.4000091552734,
+          "bottom": 447.37501525878906,
+          "left": 210.40000915527344
+        },
+        "viewport": {
+          "w": 1093,
+          "h": 614
+        },
+        "scrollWidth": 1093,
+        "background": "rgb(255, 255, 255)",
+        "actionRect": {
+          "x": 736.1375122070312,
+          "y": 378.57501220703125,
+          "width": 121.4625015258789,
+          "height": 44,
+          "top": 378.57501220703125,
+          "right": 857.6000137329102,
+          "bottom": 422.57501220703125,
+          "left": 736.1375122070312
+        }
+      }
+    },
+    {
+      "run": "supplemental-02",
+      "id": "completion-zoom-1.25-dark",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "rect": {
+          "x": 210.40000915527344,
+          "y": 167.02500915527344,
+          "width": 672,
+          "height": 280.3500061035156,
+          "top": 167.02500915527344,
+          "right": 882.4000091552734,
+          "bottom": 447.37501525878906,
+          "left": 210.40000915527344
+        },
+        "viewport": {
+          "w": 1093,
+          "h": 614
+        },
+        "scrollWidth": 1093,
+        "background": "oklch(0.208 0.042 265.755)",
+        "actionRect": {
+          "x": 736.1375122070312,
+          "y": 378.57501220703125,
+          "width": 121.4625015258789,
+          "height": 44,
+          "top": 378.57501220703125,
+          "right": 857.6000137329102,
+          "bottom": 422.57501220703125,
+          "left": 736.1375122070312
+        }
+      }
+    },
+    {
+      "run": "supplemental-02",
+      "id": "completion-zoom-1.5-light",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "rect": {
+          "x": 119.33333587646484,
+          "y": 115.95833587646484,
+          "width": 672,
+          "height": 280.0833435058594,
+          "top": 115.95833587646484,
+          "right": 791.3333358764648,
+          "bottom": 396.0416793823242,
+          "left": 119.33333587646484
+        },
+        "viewport": {
+          "w": 911,
+          "h": 512
+        },
+        "scrollWidth": 911,
+        "background": "rgb(255, 255, 255)",
+        "actionRect": {
+          "x": 645.1979370117188,
+          "y": 327.375,
+          "width": 121.46875,
+          "height": 44,
+          "top": 327.375,
+          "right": 766.6666870117188,
+          "bottom": 371.375,
+          "left": 645.1979370117188
+        }
+      }
+    },
+    {
+      "run": "supplemental-02",
+      "id": "completion-zoom-1.5-dark",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "rect": {
+          "x": 119.33333587646484,
+          "y": 115.95833587646484,
+          "width": 672,
+          "height": 280.0833435058594,
+          "top": 115.95833587646484,
+          "right": 791.3333358764648,
+          "bottom": 396.0416793823242,
+          "left": 119.33333587646484
+        },
+        "viewport": {
+          "w": 911,
+          "h": 512
+        },
+        "scrollWidth": 911,
+        "background": "oklch(0.208 0.042 265.755)",
+        "actionRect": {
+          "x": 645.1979370117188,
+          "y": 327.375,
+          "width": 121.46875,
+          "height": 44,
+          "top": 327.375,
+          "right": 766.6666870117188,
+          "bottom": 371.375,
+          "left": 645.1979370117188
+        }
+      }
+    },
+    {
+      "run": "supplemental-02",
+      "id": "completion-zoom-2-light",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "rect": {
+          "x": 16,
+          "y": 51.625,
+          "width": 651,
+          "height": 280.75,
+          "top": 51.625,
+          "right": 667,
+          "bottom": 332.375,
+          "left": 16
+        },
+        "viewport": {
+          "w": 683,
+          "h": 384
+        },
+        "scrollWidth": 683,
+        "background": "rgb(255, 255, 255)",
+        "actionRect": {
+          "x": 520.53125,
+          "y": 263.375,
+          "width": 121.46875,
+          "height": 44,
+          "top": 263.375,
+          "right": 642,
+          "bottom": 307.375,
+          "left": 520.53125
+        }
+      }
+    },
+    {
+      "run": "supplemental-02",
+      "id": "completion-zoom-2-dark",
+      "status": "Pass",
+      "browser": "Chrome",
+      "route": "/tickets/QA-TKT-006",
+      "details": {
+        "rect": {
+          "x": 16,
+          "y": 51.625,
+          "width": 651,
+          "height": 280.75,
+          "top": 51.625,
+          "right": 667,
+          "bottom": 332.375,
+          "left": 16
+        },
+        "viewport": {
+          "w": 683,
+          "h": 384
+        },
+        "scrollWidth": 683,
+        "background": "oklch(0.208 0.042 265.755)",
+        "actionRect": {
+          "x": 520.53125,
+          "y": 263.375,
+          "width": 121.46875,
+          "height": 44,
+          "top": 263.375,
+          "right": 642,
+          "bottom": 307.375,
+          "left": 520.53125
+        }
+      }
+    },
+    {
+      "run": "visual-recheck-02",
+      "id": "metadata-contrast-light-/dashboard",
+      "status": "Pass",
+      "browser": "Chrome",
+      "details": {
+        "minimumRatio": 7.121010448529396
+      }
+    },
+    {
+      "run": "visual-recheck-02",
+      "id": "metadata-contrast-light-/tickets/QA-TKT-006",
+      "status": "Pass",
+      "browser": "Chrome",
+      "details": {
+        "minimumRatio": 7.121010448529396
+      }
+    },
+    {
+      "run": "visual-recheck-02",
+      "id": "metadata-contrast-light-/reviews",
+      "status": "Pass",
+      "browser": "Chrome",
+      "details": {
+        "minimumRatio": 7.121010448529396
+      }
+    },
+    {
+      "run": "visual-recheck-02",
+      "id": "metadata-contrast-light-/reviews/REV-2026-003",
+      "status": "Pass",
+      "browser": "Chrome",
+      "details": {
+        "minimumRatio": 6.944313303139621
+      }
+    },
+    {
+      "run": "visual-recheck-02",
+      "id": "metadata-contrast-dark-/dashboard",
+      "status": "Pass",
+      "browser": "Chrome",
+      "details": {
+        "minimumRatio": 5.756876310322897
+      }
+    },
+    {
+      "run": "visual-recheck-02",
+      "id": "metadata-contrast-dark-/tickets/QA-TKT-006",
+      "status": "Pass",
+      "browser": "Chrome",
+      "details": {
+        "minimumRatio": 7.0231069221951214
+      }
+    },
+    {
+      "run": "visual-recheck-02",
+      "id": "metadata-contrast-dark-/reviews",
+      "status": "Pass",
+      "browser": "Chrome",
+      "details": {
+        "minimumRatio": 5.756876310322897
+      }
+    },
+    {
+      "run": "visual-recheck-02",
+      "id": "metadata-contrast-dark-/reviews/REV-2026-003",
+      "status": "Pass",
+      "browser": "Chrome",
+      "details": {
+        "minimumRatio": 5.756876310322897
+      }
+    },
+    {
+      "run": "visual-recheck-02",
+      "id": "completion-200-cdp",
+      "status": "Pass",
+      "browser": "Chrome",
+      "details": {}
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "ok": true,
+  "mode": "mock",
+  "steps": [
+    "assistant-toggle-keeps-header-content-and-scroll-position-at-six-widths",
+    "send-with-enter-and-copy-answer",
+    "desktop-sidebar-search-collapse-keeps-draft-and-history-selection",
+    "new-chat-on-navigation-and-reload-history-kept",
+    "new-chat-keeps-unsent-question",
+    "drawer-continues-same-conversation",
+    "form-intent-opens-on-repeated-entry",
+    "mobile-history-dialog-focus-escape-new-chat-form-tabs-and-multiline",
+    "light-dark-desktop-tablet-mobile-fit",
+    "assistant-toggle-keeps-layout-in-dark-mode"
+  ],
+  "screenshots": "frontend/verification/assistant-sidebar-20261006",
+  "browserErrors": []
+}

@@ -1,0 +1,32 @@
+"""Isolated sample graph (analyze → respond). Production intake uses CampusAgent."""
+
+from langgraph.graph import END, StateGraph
+
+from campus247.agents.nodes.example_node import SampleAgentState, analyze_node, respond_node
+
+AgentState = SampleAgentState
+
+
+def should_continue(state: AgentState) -> str:
+    """Route based on whether an error occurred during analysis."""
+    if state.get("error"):
+        return END
+    return "respond"
+
+
+def build_graph() -> StateGraph:
+    graph = StateGraph(AgentState)
+
+    # Add nodes
+    graph.add_node("analyze", analyze_node)
+    graph.add_node("respond", respond_node)
+
+    # Add edges
+    graph.set_entry_point("analyze")
+    graph.add_conditional_edges("analyze", should_continue)
+    graph.add_edge("respond", END)
+
+    return graph.compile()
+
+
+agent = build_graph()
