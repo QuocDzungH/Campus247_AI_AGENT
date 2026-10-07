@@ -193,7 +193,7 @@ export function StudentRequestsPage() {
   return <div className="thoughtstream-theme min-h-screen bg-[var(--ts-bg)] text-[var(--ts-text-primary)]">
     <a href="#requests-main" className="sr-only z-50 bg-[var(--ts-text-primary)] p-3 text-[var(--ts-bg)] focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Đi đến nội dung hồ sơ</a>
     <Navbar />
-    <main id="requests-main" tabIndex={-1} className="mx-auto w-full max-w-[1280px] px-4 pb-20 pt-8 sm:px-6 sm:pt-10 lg:px-8">
+    <main id="requests-main" tabIndex={-1} className="mx-auto w-full max-w-[1440px] px-4 pb-20 pt-8 sm:px-6 sm:pt-10 lg:px-8">
       <header className="mb-6 flex flex-wrap items-start justify-between gap-4 sm:mb-8 sm:gap-5">
         <div>
           <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[var(--ts-text-secondary)]">Theo dõi yêu cầu học vụ</p>

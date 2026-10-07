@@ -48,19 +48,23 @@ export default function LookupPage() {
 
   if (submission) return <SubmissionSuccess localOnly={dataConfig?.mode === "mock"} title={dataConfig?.mode === "mock" ? "Đã lưu câu hỏi" : "Đã gửi câu hỏi"} ticketId={submission.ticketId} ticketCode={submission.ticketCode}>Bạn có thể mở Hồ sơ của tôi để xem lại câu hỏi và theo dõi phản hồi.</SubmissionSuccess>;
 
-  return <div className="mx-auto max-w-[800px]">
-    <Link href="/student" className={`${secondaryButton} -ml-4 mb-5`}><ArrowLeft className="h-4 w-4" />Trang dịch vụ</Link>
-    <h1 className="font-serif text-2xl font-bold tracking-tight text-[#1C1917] sm:text-[32px] dark:text-[#FAFAF9]">Tra cứu quy chế</h1>
-    <p className="mt-3 text-base text-[#57534E] dark:text-[#D6D3D1]">Nhập câu hỏi để tìm hướng dẫn và nguồn tham khảo.</p>
-    <p className="mt-2 text-sm text-[#57534E] dark:text-[#A8A29E]">Tra cứu hướng dẫn về tài liệu học vụ và khiếu nại điểm. Với các chính sách khác, xem cổng chính sách VinUni hoặc gửi câu hỏi cho cán bộ.</p>
-    <a href={VINUNI_SOURCES.policies} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-[#78716C] underline dark:text-[#A8A29E]">Mở cổng chính sách VinUni</a>
-    <form onSubmit={handleSearch} className="mt-6">
-      <label htmlFor="lookup-question" className="mb-2 block text-sm font-semibold uppercase tracking-wider text-[#57534E] dark:text-[#A8A29E]">Bạn muốn tìm hiểu điều gì?</label>
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <input id="lookup-question" value={lookupQuery} onChange={(event) => setLookupQuery(event.target.value)} maxLength={2000} required placeholder="Ví dụ: Xin giấy xác nhận cần thông tin gì?" className={`${fieldClass} min-w-0 flex-1`} />
-        <button type="submit" className={primaryButton}><Search className="h-4 w-4" />Tra cứu</button>
-      </div>
-    </form>
+  return <div className="w-full">
+    <Link href="/student" className={`${secondaryButton} mb-5`}><ArrowLeft className="h-4 w-4" />Trang dịch vụ</Link>
+    <header className="mb-6">
+      <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[var(--ts-text-secondary)]">Sổ tay sinh viên</p>
+      <h1 className="font-serif text-[32px] font-semibold leading-tight tracking-tight sm:text-[40px] text-[#1C1917] dark:text-[#FAFAF9]">Tra cứu quy chế</h1>
+      <p className="mt-3 text-sm leading-6 text-[var(--ts-text-secondary)] max-w-[720px]">Nhập câu hỏi để tìm hướng dẫn, quy định đào tạo và nguồn tham khảo chính thức của VinUni.</p>
+    </header>
+    <div className="max-w-[800px]">
+      <p className="text-sm text-[#57534E] dark:text-[#A8A29E]">Tra cứu hướng dẫn về tài liệu học vụ và khiếu nại điểm. Với các chính sách khác, xem cổng chính sách VinUni hoặc gửi câu hỏi cho cán bộ.</p>
+      <a href={VINUNI_SOURCES.policies} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-[#78716C] underline dark:text-[#A8A29E]">Mở cổng chính sách VinUni</a>
+      <form onSubmit={handleSearch} className="mt-6">
+        <label htmlFor="lookup-question" className="mb-2 block text-sm font-semibold uppercase tracking-wider text-[#57534E] dark:text-[#A8A29E]">Bạn muốn tìm hiểu điều gì?</label>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <input id="lookup-question" value={lookupQuery} onChange={(event) => setLookupQuery(event.target.value)} maxLength={2000} required placeholder="Ví dụ: Xin giấy xác nhận cần thông tin gì?" className={`${fieldClass} min-w-0 flex-1`} />
+          <button type="submit" className={primaryButton}><Search className="h-4 w-4" />Tra cứu</button>
+        </div>
+      </form>
     {!result && <div className="mt-5 flex flex-wrap gap-2" aria-label="Câu hỏi gợi ý">
       {["Xin giấy xác nhận cần thông tin gì?", "Cách nhận bản điện tử?", "Khiếu nại điểm thi thế nào?"].map((question) => <button type="button" key={question} onClick={() => search(question)} className={`${secondaryButton} border border-[#D6D3D1] bg-[#FAFAF9] text-xs font-semibold uppercase tracking-wider text-[#57534E] hover:bg-[#F5F5F4] dark:border-[#44403C] dark:bg-[#1C1917] dark:text-[#D6D3D1]`}>{question}</button>)}
     </div>}
@@ -75,6 +79,7 @@ export default function LookupPage() {
         {result.reply.action && <Link href={result.reply.action.href} className={`${secondaryButton} -ml-4 mt-3`}>{result.reply.action.label}<ArrowRight className="h-4 w-4" /></Link>}
       </div> : <button type="button" onClick={() => setConfirmQuestion(result.question)} className={`${secondaryButton} mt-5 border border-[#D6D3D1] dark:border-[#44403C]`}>Gửi câu hỏi cho cán bộ<ArrowRight className="h-4 w-4" /></button>}
     </section>}
+    </div>
     <AccessibleDialog open={confirmQuestion !== null} onClose={() => setConfirmQuestion(null)} labelledBy="lookup-confirm-title" className="max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-none border border-[#E7E5E4] bg-[#FAFAF9] p-6 sm:p-8 dark:border-[#2E2A27] dark:bg-[#1C1917]">
       <h2 id="lookup-confirm-title" className="font-serif text-xl font-bold text-[#1C1917] dark:text-[#FAFAF9]">Kiểm tra câu hỏi trước khi gửi</h2>
       <label htmlFor="support-topic" className="mb-2 mt-4 block text-xs font-semibold uppercase tracking-wider text-[#57534E] dark:text-[#A8A29E]">Chủ đề</label>

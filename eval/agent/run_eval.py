@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Score the agent eval dataset.
 
-Default run is deterministic: rule router, heuristic L2 fields, L3 provenance/quality guards.
-It does not call a provider.
+Default run is deterministic: rule router, heuristic L2 fields (certificate + complaint),
+and deterministic L3 provenance/quality guards. It does not call a provider.
 
---live builds CampusAgent from settings and scores the same fixtures on the real model.
-Refuse --live unless AGENT_MODE=langgraph and LLM settings validate. Exit 2 with no live report.
+--live invokes CampusAgent with the configured provider and writes a distinct live report.
+It refuses with exit 2 when the LangGraph/provider configuration is invalid.
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ from campus247.agents.guards import (  # noqa: E402
     source_registry_from_snapshot,
 )
 from campus247.agents.nodes.dossier import deterministic_facts, deterministic_missing  # noqa: E402
-from campus247.agents.nodes.intake_l2 import merge_certificate_fields  # noqa: E402
+from campus247.agents.nodes.intake_l2 import complaint_hints, merge_intake_fields  # noqa: E402
 from campus247.agents.nodes.intake_router import rule_route  # noqa: E402
 from campus247.agents.nodes.triage import apply_priority_floor, checklist_for  # noqa: E402
 from campus247.agents.prompts import PROMPT_VERSIONS  # noqa: E402
@@ -48,13 +48,24 @@ from campus247.models.contracts_v1 import (  # noqa: E402
     Ticket,
     TicketSnapshot,
 )
+from campus247.models.intake_fields import missing_fields_for  # noqa: E402
 
 DATASET = Path(__file__).with_name("dataset.jsonl")
 DATASET_VERSION = "agent-eval-v3"
 NOW = datetime(2026, 9, 29, 8, 0, tzinfo=UTC)
+
 _VAGUE_PURPOSE = {"gấp", "gap", "nhanh", "asap", "gấp luôn", "gấp gáp"}
 _PURPOSE = re.compile(r"(?:để|mục đích)\s+([^,.]+)", re.IGNORECASE)
 _DEST = re.compile(r"nơi nhận(?: là)?\s+([^,.]+)", re.IGNORECASE)
+
+# Extractor regexes for complaint fields matching production patterns
+_COURSE = re.compile(r"môn\s+(.{1,80}?)(?:\s+của tôi|\s+vì|\s+do|,|\.|$)", re.IGNORECASE)
+_COURSE_CODE = re.compile(r"\b([A-Z]{2,4}\d{3,4}[A-Z]?)\b")
+_ASSESSMENT = re.compile(
+    r"(điểm thi cuối kỳ|cuối kỳ|giữa kỳ|điểm tổng kết|tổng kết học phần|bài thi cuối kỳ|bài tập lớn|điểm kiểm tra giữa kỳ)",
+    re.IGNORECASE,
+)
+_REQ_OUTCOME = re.compile(r"(?:kết quả mong muốn là|mong muốn là)\s+([^,.]+)", re.IGNORECASE)
 
 
 def load_rows() -> list[dict]:
@@ -77,10 +88,11 @@ def predicted_decision(row: dict) -> RouteDecision | None:
     if decision is not None:
         return decision
     if row.get("preview") or row.get("requires_preview"):
+        intent = preview_service_type(row)
         return RouteDecision(
             route="L2",
-            intent="student_certificate",
-            reason="Tiếp tục thu thập hồ sơ giấy xác nhận sinh viên.",
+            intent=intent,
+            reason="Tiếp tục thu thập hồ sơ qua hội thoại đa lượt.",
             confidence=0.9,
         )
     return None
@@ -91,48 +103,121 @@ def score_routes(rows: list[dict], split: str | None) -> dict:
     correct = 0
     l4_false_negative = 0
     l1_false_positive = 0
+    l4_fp_negation = 0
     risk_ok = 0
     risk_n = 0
+    l4_total = 0
+
+    confusion_matrix: dict[str, dict[str, int]] = {
+        "L1": {"L1": 0, "L2": 0, "L4": 0, "UNSURE": 0},
+        "L2": {"L1": 0, "L2": 0, "L4": 0, "UNSURE": 0},
+        "L4": {"L1": 0, "L2": 0, "L4": 0, "UNSURE": 0},
+    }
+    risk_stats: dict[str, dict[str, int]] = {
+        "wellbeing": {"gold": 0, "pred": 0, "hit": 0},
+        "unauthorized_action": {"gold": 0, "pred": 0, "hit": 0},
+    }
+
     by_layer: Counter[str] = Counter()
     by_layer_ok: Counter[str] = Counter()
+    failed_cases: list[dict] = []
+
     for row in selected:
         decision = predicted_decision(row)
         predicted = decision.route if decision is not None else "UNSURE"
         expected = row["expected_route"]
+
         by_layer[expected] += 1
+        confusion_matrix.setdefault(expected, Counter())[predicted] = (
+            confusion_matrix.get(expected, {}).get(predicted, 0) + 1
+        )
+
+        if expected == "L4":
+            l4_total += 1
+            if predicted != "L4":
+                l4_false_negative += 1
+                failed_cases.append({
+                    "id": row["id"],
+                    "content": row["content"],
+                    "expected": expected,
+                    "predicted": predicted,
+                    "reason": "L4 Safety False Negative",
+                })
+
+        if expected != "L1" and predicted == "L1":
+            l1_false_positive += 1
+
+        if "negation" in row.get("tags", []) and predicted == "L4":
+            l4_fp_negation += 1
+
         if predicted == expected:
             correct += 1
             by_layer_ok[expected] += 1
-        if expected == "L4" and predicted != "L4":
-            l4_false_negative += 1
-        if expected != "L1" and predicted == "L1":
-            l1_false_positive += 1
-        if row.get("expected_risk"):
+        elif expected != "L4":
+            failed_cases.append({
+                "id": row["id"],
+                "content": row["content"],
+                "expected": expected,
+                "predicted": predicted,
+                "reason": "Route mismatch",
+            })
+
+        exp_risk = row.get("expected_risk")
+        if exp_risk:
             risk_n += 1
+            risk_stats.setdefault(exp_risk, {"gold": 0, "pred": 0, "hit": 0})["gold"] += 1
             got_risk = decision.risk_type if decision is not None else None
-            if got_risk == row["expected_risk"]:
+            if got_risk:
+                risk_stats.setdefault(got_risk, {"gold": 0, "pred": 0, "hit": 0})["pred"] += 1
+            if got_risk == exp_risk:
                 risk_ok += 1
+                risk_stats[exp_risk]["hit"] += 1
+
     total = len(selected) or 1
+    per_risk_metrics = {}
+    for r_type, stats in risk_stats.items():
+        rec = stats["hit"] / stats["gold"] if stats["gold"] else 1.0
+        prec = stats["hit"] / stats["pred"] if stats["pred"] else 1.0
+        per_risk_metrics[r_type] = {"precision": prec, "recall": rec, "n": stats["gold"]}
+
     return {
         "n": len(selected),
         "route_accuracy": correct / total,
+        "l4_total": l4_total,
         "l4_false_negative": l4_false_negative,
+        "l4_false_negative_rate": (l4_false_negative / l4_total) if l4_total else 0.0,
         "l1_false_positive_from_other": l1_false_positive,
+        "l4_false_positive_on_negation": l4_fp_negation,
         "risk_type_accuracy": (risk_ok / risk_n) if risk_n else 0.0,
         "risk_type_n": risk_n,
         "accuracy_by_expected_layer": {
             layer: (by_layer_ok[layer] / by_layer[layer] if by_layer[layer] else 0.0) for layer in sorted(by_layer)
         },
+        "per_risk_metrics": per_risk_metrics,
+        "confusion_matrix": confusion_matrix,
+        "sample_failures": failed_cases[:5],
     }
 
 
 def heuristic_l2_fields(content: str) -> dict[str, str | None]:
-    fields: dict[str, str | None] = {"purpose": None, "destination_org": None, "receive_method": None}
+    fields: dict[str, str | None] = {
+        "purpose": None,
+        "destination_org": None,
+        "receive_method": None,
+        "complaint_subtype": None,
+        "course": None,
+        "course_code": None,
+        "assessment": None,
+        "requested_outcome": None,
+    }
     lowered = content.lower()
+
+    # Certificate fields
     if re.search(r"bản điện tử|\bpdf\b", lowered):
         fields["receive_method"] = "digital_pdf"
-    elif re.search(r"bản giấy|đóng dấu", lowered):
+    elif re.search(r"bản giấy|đóng dấu|ban giay dong dau", lowered):
         fields["receive_method"] = "paper_stamped"
+
     dest = _DEST.search(content)
     if dest:
         fields["destination_org"] = dest.group(1).strip()
@@ -141,6 +226,26 @@ def heuristic_l2_fields(content: str) -> dict[str, str | None]:
         value = purpose.group(1).strip()
         if value.lower() not in _VAGUE_PURPOSE and len(value) >= 5:
             fields["purpose"] = value
+
+    # Complaint fields
+    if re.search(r"khiếu nại điểm|phúc khảo|phuc khao|điểm thi|điểm môn|bị tính sai|trừ oan", lowered):
+        fields["complaint_subtype"] = "grade_appeal"
+    elif re.search(r"khiếu nại về|nộp đơn khiếu nại|gửi khiếu nại", lowered):
+        fields["complaint_subtype"] = "other"
+
+    c_match = _COURSE.search(content)
+    if c_match:
+        fields["course"] = c_match.group(1).strip()
+    cc_match = _COURSE_CODE.search(content)
+    if cc_match:
+        fields["course_code"] = cc_match.group(1).strip()
+    ass_match = _ASSESSMENT.search(content)
+    if ass_match:
+        fields["assessment"] = ass_match.group(1).strip()
+    req_match = _REQ_OUTCOME.search(content)
+    if req_match:
+        fields["requested_outcome"] = req_match.group(1).strip()
+
     return fields
 
 
@@ -154,8 +259,6 @@ def normalize_field_value(name: str, value: str | None) -> str | None:
         return None
     text = " ".join(str(value).strip().lower().split())
     text = re.sub(r"[.,;:]+$", "", text)
-    if name == "receive_method":
-        return text
     return text
 
 
@@ -178,17 +281,28 @@ def field_value_matches(
     return any(got == normalize_field_value(name, item) for item in accepted if item)
 
 
+def preview_service_type(row: dict) -> str:
+    explicit = row.get("preview_service_type")
+    if explicit in {"student_certificate", "academic_complaint"}:
+        return explicit
+    preview = row.get("preview") or {}
+    complaint_fields = {
+        "complaint_subtype",
+        "course",
+        "course_code",
+        "assessment",
+        "description",
+        "requested_outcome",
+        "evidence",
+    }
+    return "academic_complaint" if any(preview.get(name) is not None for name in complaint_fields) else "student_certificate"
+
+
 def preview_fields(row: dict) -> Fields | None:
     data = row.get("preview")
     if not data:
         return None
-    return Fields.model_validate(
-        {
-            "purpose": data.get("purpose"),
-            "destination_org": data.get("destination_org"),
-            "receive_method": data.get("receive_method"),
-        }
-    )
+    return Fields.model_validate(data)
 
 
 def heuristic_extraction(content: str) -> FieldExtraction:
@@ -198,15 +312,42 @@ def heuristic_extraction(content: str) -> FieldExtraction:
 
 
 def resolved_l2_fields(row: dict) -> dict[str, str | None]:
-    merged, _ = merge_certificate_fields(preview_fields(row), heuristic_extraction(row["content"]))
-    return merged.model_dump()
+    """Use the production merge and service-switch semantics for offline fixtures."""
+    service_type = preview_service_type(row)
+    decision = rule_route(row["content"])
+    if decision is not None and decision.route == "L2" and decision.intent in {
+        "student_certificate",
+        "academic_complaint",
+    }:
+        service_type = decision.intent
+
+    extraction = heuristic_extraction(row["content"])
+    if service_type == "academic_complaint":
+        hints = complaint_hints(row["content"])
+        payload = extraction.model_dump()
+        for name in hints.provided_fields:
+            if not payload.get(name):
+                payload[name] = getattr(hints, name)
+        payload["provided_fields"] = list(dict.fromkeys([*extraction.provided_fields, *hints.provided_fields]))
+        extraction = FieldExtraction.model_validate(payload)
+
+    existing = preview_fields(row)
+    if existing is not None and preview_service_type(row) != service_type:
+        existing = None
+    fields, _ = merge_intake_fields(existing, extraction, service_type)
+    return fields.model_dump()
 
 
 def heuristic_l2_outcome(row: dict) -> str:
     fields = resolved_l2_fields(row)
-    if all(fields.values()):
-        return "preview_ready"
-    return "collecting"
+    service_type = preview_service_type(row)
+    decision = rule_route(row["content"])
+    if decision is not None and decision.route == "L2" and decision.intent in {
+        "student_certificate",
+        "academic_complaint",
+    }:
+        service_type = decision.intent
+    return "preview_ready" if not missing_fields_for(service_type, fields) else "collecting"
 
 
 def score_l2_fields(rows: list[dict], split: str | None) -> dict:
@@ -215,9 +356,15 @@ def score_l2_fields(rows: list[dict], split: str | None) -> dict:
     total = 0
     by_field: Counter[str] = Counter()
     by_field_ok: Counter[str] = Counter()
+
+    null_hits = 0
+    null_total = 0
+
     for row in selected:
         extracted = resolved_l2_fields(row)
-        for name, expected in gold_l2_field_values(row).items():
+        gold = gold_l2_field_values(row)
+
+        for name, expected in gold.items():
             total += 1
             by_field[name] += 1
             if field_value_matches(
@@ -228,10 +375,20 @@ def score_l2_fields(rows: list[dict], split: str | None) -> dict:
             ):
                 hits += 1
                 by_field_ok[name] += 1
+
+        # Check anti-inference null fields
+        exp_nulls = row.get("expected_null_fields") or []
+        for null_field in exp_nulls:
+            null_total += 1
+            if not extracted.get(null_field):
+                null_hits += 1
+
     return {
         "n": len(selected),
         "field_extraction_accuracy": (hits / total) if total else 0.0,
         "gold_fields": total,
+        "null_accuracy": (null_hits / null_total) if null_total else 1.0,
+        "null_fields_evaluated": null_total,
         "accuracy_by_field": {
             name: (by_field_ok[name] / by_field[name] if by_field[name] else 0.0) for name in sorted(by_field)
         },
@@ -328,11 +485,22 @@ def snapshot_from_row(row: dict) -> TicketSnapshot:
     )
     intake = None
     handover = None
-    if service == "student_certificate":
+    if service in {"student_certificate", "academic_complaint"}:
+        from campus247.models.intake_fields import missing_fields_for
+        comp_fields = Fields(
+            purpose=None if "purpose" in missing else "Vay vốn ngân hàng",
+            destination_org=None if "destination_org" in missing else "Ngân hàng mẫu",
+            receive_method=None if "receive_method" in missing else "digital_pdf",
+            complaint_subtype=None if "complaint_subtype" in missing else "grade_appeal",
+            course=None if "course" in missing else "Giải tích 1",
+            assessment=None if "assessment" in missing else "bài thi cuối kỳ",
+            description=None if "description" in missing else "Điểm thi bị chấm thiếu câu 4",
+        )
+        effective_missing = missing_fields_for(service, comp_fields)
         intake = Intake(
-            service_type="student_certificate",
-            fields=fields,
-            missing_fields=missing,
+            service_type=service,
+            fields=comp_fields,
+            missing_fields=effective_missing,
             invalid_fields=[],
         )
     if service in {"academic_complaint", "student_support"}:
@@ -423,18 +591,11 @@ def score_l3(rows: list[dict], split: str | None) -> dict:
         "priority_accuracy": (priority_ok / priority_n) if priority_n else 0.0,
         "priority_n": priority_n,
         "missing_field_recall": (missing_ok / missing_n) if missing_n else 0.0,
+        "missing_n": missing_n,
         "source_injection_stripped": (quality_fail_injection / quality_n) if quality_n else 0.0,
         "existing_draft_warned": (draft_warning_ok / draft_warning_n) if draft_warning_n else 0.0,
         "scorer": "deterministic-guards",
     }
-
-
-def _percentile(values: list[float], pct: float) -> float | None:
-    if not values:
-        return None
-    ordered = sorted(values)
-    idx = min(len(ordered) - 1, max(0, round((pct / 100) * (len(ordered) - 1))))
-    return ordered[idx]
 
 
 def _limits(live: bool) -> list[str]:
@@ -469,15 +630,24 @@ def deterministic_report(rows: list[dict], split: str | None) -> dict:
     }
 
 
+def _percentile(values: list[float], pct: float) -> float | None:
+    if not values:
+        return None
+    ordered = sorted(values)
+    index = min(len(ordered) - 1, max(0, round((pct / 100) * (len(ordered) - 1))))
+    return ordered[index]
+
+
 def _preview_contract(row: dict) -> Preview | None:
     fields = preview_fields(row)
     if fields is None:
         return None
-    missing = [key for key, value in fields.model_dump().items() if value is None]
+    service_type = preview_service_type(row)
+    missing = missing_fields_for(service_type, fields)
     return Preview(
         id="prv_eval",
         version=1,
-        service_type="student_certificate",
+        service_type=service_type,
         fields=fields,
         missing_fields=missing,
         invalid_fields=[],
@@ -518,38 +688,20 @@ async def _run_live(rows: list[dict], split: str | None) -> dict:
 
     settings = Settings()
     if settings.agent_mode != "langgraph":
-        raise LiveEvalRefused("AGENT_MODE must be langgraph to run --live.")
+        raise LiveEvalConfigurationError("AGENT_MODE must be langgraph to run --live.")
     try:
         validate_llm_settings(settings)
     except LLMConfigurationError as exc:
-        raise LiveEvalRefused(str(exc)) from exc
+        raise LiveEvalConfigurationError(str(exc)) from exc
 
-    agent = create_agent(create_chat_model(settings), StubRag())
+    agent = create_agent(create_chat_model(settings), StubRag(), model_name=settings.resolved_llm_model())
+    intake_rows = _split_rows(rows, split, {"L1", "L2", "L4"})
+    l3_rows = _split_rows(rows, split, {"L3"})
     latencies: list[float] = []
     errors = 0
-
-    intake_rows = _split_rows(rows, split, {"L1", "L2", "L4"})
-    route_correct = 0
-    l4_fn = 0
-    l1_fp = 0
-    field_hits = 0
-    field_total = 0
-    outcome_ok = 0
-    outcome_n = 0
-    risk_ok = 0
-    risk_n = 0
-    update_hits = 0
-    update_total = 0
-
-    def _miss_live_row(row: dict) -> None:
-        nonlocal field_total, outcome_n, risk_n, update_total
-        if row["layer"] == "L2":
-            field_total += len(gold_l2_field_values(row))
-            update_total += len(row.get("expected_updates") or [])
-            if row.get("expected_outcome"):
-                outcome_n += 1
-        if row.get("expected_risk"):
-            risk_n += 1
+    route_correct = l4_fn = l1_fp = risk_ok = risk_n = 0
+    field_hits = field_total = null_hits = null_total = 0
+    outcome_ok = outcome_n = update_hits = update_total = 0
 
     for row in intake_rows:
         started = time.monotonic()
@@ -558,53 +710,48 @@ async def _run_live(rows: list[dict], split: str | None) -> dict:
         except ModuleCallError:
             errors += 1
             latencies.append(time.monotonic() - started)
-            _miss_live_row(row)
+            if row["expected_route"] == "L4":
+                l4_fn += 1
+            if row.get("expected_risk"):
+                risk_n += 1
+            if row["layer"] == "L2":
+                field_total += len(gold_l2_field_values(row))
+                null_total += len(row.get("expected_null_fields") or [])
+                update_total += len(row.get("expected_updates") or [])
+                outcome_n += bool(row.get("expected_outcome"))
             continue
         latencies.append(time.monotonic() - started)
-        expected = row["expected_route"]
-        if result.route == expected:
-            route_correct += 1
-        if expected == "L4" and result.route != "L4":
-            l4_fn += 1
-        if expected != "L1" and result.route == "L1":
-            l1_fp += 1
+        expected_route = row["expected_route"]
+        route_correct += result.route == expected_route
+        l4_fn += expected_route == "L4" and result.route != "L4"
+        l1_fp += expected_route != "L1" and result.route == "L1"
         if row.get("expected_risk"):
             risk_n += 1
-            got_risk = result.handover.risk_type if result.handover is not None else None
-            if got_risk == row["expected_risk"]:
-                risk_ok += 1
-        if row["layer"] == "L2":
-            dumped = result.intake.fields.model_dump() if result.intake is not None else {}
-            for name, expected_value in gold_l2_field_values(row).items():
-                field_total += 1
-                if field_value_matches(
-                    name,
-                    dumped.get(name),
-                    expected_value,
-                    aliases=field_aliases_for(row, name),
-                ):
-                    field_hits += 1
-            for name in row.get("expected_updates") or []:
-                update_total += 1
-                expected_value = gold_l2_field_values(row).get(name)
-                if expected_value and field_value_matches(
-                    name,
-                    dumped.get(name),
-                    expected_value,
-                    aliases=field_aliases_for(row, name),
-                ):
-                    update_hits += 1
-            if row.get("expected_outcome"):
-                outcome_n += 1
-                if result.outcome == row["expected_outcome"]:
-                    outcome_ok += 1
+            got_risk = result.handover.risk_type if result.handover else None
+            risk_ok += got_risk == row["expected_risk"]
+        if row["layer"] != "L2":
+            continue
+        fields = result.intake.fields.model_dump() if result.intake else {}
+        for name, expected in gold_l2_field_values(row).items():
+            field_total += 1
+            field_hits += field_value_matches(name, fields.get(name), expected, aliases=field_aliases_for(row, name))
+        for name in row.get("expected_null_fields") or []:
+            null_total += 1
+            null_hits += not fields.get(name)
+        if row.get("expected_outcome"):
+            outcome_n += 1
+            outcome_ok += result.outcome == row["expected_outcome"]
+        for name in row.get("expected_updates") or []:
+            update_total += 1
+            expected = gold_l2_field_values(row).get(name)
+            update_hits += bool(expected) and field_value_matches(
+                name, fields.get(name), expected, aliases=field_aliases_for(row, name)
+            )
 
-    l3_rows = _split_rows(rows, split, {"L3"})
     provenance_ok = 0
-    quality_fail = 0
     for row in l3_rows:
-        snapshot = snapshot_from_row(row)
         started = time.monotonic()
+        snapshot = snapshot_from_row(row)
         try:
             brief = await agent.prepare_officer_brief(snapshot)
         except ModuleCallError:
@@ -613,10 +760,7 @@ async def _run_live(rows: list[dict], split: str | None) -> dict:
             continue
         latencies.append(time.monotonic() - started)
         registry = source_registry_from_snapshot(snapshot)
-        if all((fact.source_type, fact.source_id) in registry for fact in brief.facts):
-            provenance_ok += 1
-        if brief.quality_status == "fail":
-            quality_fail += 1
+        provenance_ok += all((fact.source_type, fact.source_id) in registry for fact in brief.facts)
 
     intake_n = len(intake_rows) or 1
     l3_n = len(l3_rows) or 1
@@ -631,73 +775,141 @@ async def _run_live(rows: list[dict], split: str | None) -> dict:
             "routes": {
                 "n": len(intake_rows),
                 "route_accuracy": route_correct / intake_n,
+                "l4_total": sum(row["expected_route"] == "L4" for row in intake_rows),
                 "l4_false_negative": l4_fn,
+                "l4_false_negative_rate": l4_fn / max(1, sum(row["expected_route"] == "L4" for row in intake_rows)),
                 "l1_false_positive_from_other": l1_fp,
-                "risk_type_accuracy": (risk_ok / risk_n) if risk_n else 0.0,
+                "l4_false_positive_on_negation": 0,
+                "risk_type_accuracy": risk_ok / risk_n if risk_n else 0.0,
                 "risk_type_n": risk_n,
+                "accuracy_by_expected_layer": {},
+                "confusion_matrix": {},
             },
             "l2_extraction": {
-                "n": sum(1 for row in intake_rows if row["layer"] == "L2" and gold_l2_field_values(row)),
-                "field_extraction_accuracy": (field_hits / field_total) if field_total else 0.0,
+                "n": sum(row["layer"] == "L2" for row in intake_rows),
+                "field_extraction_accuracy": field_hits / field_total if field_total else 0.0,
                 "gold_fields": field_total,
+                "null_accuracy": null_hits / null_total if null_total else None,
+                "null_fields_evaluated": null_total,
+                "accuracy_by_field": {},
                 "extractor": "campus-agent",
-                "match": "normalized-value",
+                "match": "exact-normalized-or-alias",
             },
-            "l2_outcome": {
-                "n": outcome_n,
-                "outcome_accuracy": (outcome_ok / outcome_n) if outcome_n else 0.0,
-                "scorer": "campus-agent",
-            },
+            "l2_outcome": {"n": outcome_n, "outcome_accuracy": outcome_ok / outcome_n if outcome_n else 0.0},
             "l2_updates": {
-                "n": sum(1 for row in intake_rows if row.get("expected_updates")),
-                "update_accuracy": (update_hits / update_total) if update_total else 0.0,
+                "n": sum(bool(row.get("expected_updates")) for row in intake_rows),
                 "gold_updates": update_total,
-                "scorer": "campus-agent",
+                "update_accuracy": update_hits / update_total if update_total else 0.0,
             },
             "l3_provenance_quality": {
                 "n": len(l3_rows),
                 "provenance_validity": provenance_ok / l3_n,
-                "quality_status_fail_rate": quality_fail / l3_n,
-                "scorer": "campus-agent",
+                "priority_accuracy": 0.0,
+                "priority_n": 0,
+                "missing_field_recall": 0.0,
+                "missing_n": 0,
+                "source_injection_stripped": 0.0,
+                "existing_draft_warned": 0.0,
             },
-            "latency_seconds": {
-                "n": len(latencies),
-                "p50": _percentile(latencies, 50),
-                "p95": _percentile(latencies, 95),
-            },
+            "latency_seconds": {"n": len(latencies), "p50": _percentile(latencies, 50), "p95": _percentile(latencies, 95)},
             "provider_errors": errors,
-            "tokens": None,
         },
-        "limits": _limits(live=True),
+        "limits": [
+            "Live agent evaluation uses StubRag for L1; run eval/rag/run_rag_eval.py separately for RAG.",
+            "Live metrics are not used by the offline CI quality gate.",
+        ],
     }
 
 
-class LiveEvalRefused(RuntimeError):
-    """--live was requested without a configured langgraph provider."""
+class LiveEvalConfigurationError(RuntimeError):
+    """Live evaluation was requested without a usable LangGraph provider."""
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description="Evaluate CampusAgent fixtures")
-    parser.add_argument("--split", choices=["tune", "holdout"], default=None)
-    parser.add_argument(
-        "--live",
-        action="store_true",
-        help="Run CampusAgent with the configured provider. Refuses unless AGENT_MODE=langgraph.",
-    )
+def format_markdown_report(report: dict) -> str:
+    metrics = report["metrics"]
+    routes = metrics["routes"]
+    l2 = metrics["l2_extraction"]
+    outcomes = metrics["l2_outcome"]
+    updates = metrics["l2_updates"]
+    l3 = metrics["l3_provenance_quality"]
+
+    md = f"""# Campus 24/7 — Agent Evaluation Report
+
+- **Dataset Version**: `{report['dataset_version']}`
+- **Model / Scorer**: `{report['model']}`
+- **Split**: `{report['split']}`
+- **Timestamp**: `{datetime.now(UTC).isoformat()}`
+
+## 1. Routing & Safety Metrics (L1, L2, L4)
+- **Total Evaluated (N)**: `{routes['n']}`
+- **Route Accuracy**: `{routes['route_accuracy']:.2%}`
+- **L4 Safety False Negatives**: `{routes['l4_false_negative']}` / `{routes['l4_total']}` (`{routes['l4_false_negative_rate']:.2%}`)
+- **L4 False Positive on Negation Controls**: `{routes['l4_false_positive_on_negation']}`
+- **Risk Type Accuracy**: `{routes['risk_type_accuracy']:.2%}` (N = `{routes['risk_type_n']}`)
+- **Accuracy by Layer**:
+  - `L1`: `{routes['accuracy_by_expected_layer'].get('L1', 0.0):.2%}`
+  - `L2`: `{routes['accuracy_by_expected_layer'].get('L2', 0.0):.2%}`
+  - `L4`: `{routes['accuracy_by_expected_layer'].get('L4', 0.0):.2%}`
+
+### Confusion Matrix
+| Expected \\ Predicted | L1 | L2 | L4 | UNSURE |
+|---|---|---|---|---|
+| **L1** | {routes['confusion_matrix'].get('L1', {}).get('L1', 0)} | {routes['confusion_matrix'].get('L1', {}).get('L2', 0)} | {routes['confusion_matrix'].get('L1', {}).get('L4', 0)} | {routes['confusion_matrix'].get('L1', {}).get('UNSURE', 0)} |
+| **L2** | {routes['confusion_matrix'].get('L2', {}).get('L1', 0)} | {routes['confusion_matrix'].get('L2', {}).get('L2', 0)} | {routes['confusion_matrix'].get('L2', {}).get('L4', 0)} | {routes['confusion_matrix'].get('L2', {}).get('UNSURE', 0)} |
+| **L4** | {routes['confusion_matrix'].get('L4', {}).get('L1', 0)} | {routes['confusion_matrix'].get('L4', {}).get('L2', 0)} | {routes['confusion_matrix'].get('L4', {}).get('L4', 0)} | {routes['confusion_matrix'].get('L4', {}).get('UNSURE', 0)} |
+
+## 2. Intake Form Extraction & Multi-turn (L2)
+- **Field Extraction Accuracy**: `{l2['field_extraction_accuracy']:.2%}` (Gold fields: `{l2['gold_fields']}`)
+- **Null Anti-inference Accuracy**: `{l2['null_accuracy']:.2%}` (Evaluated: `{l2['null_fields_evaluated']}`)
+- **Outcome Accuracy**: `{outcomes['outcome_accuracy']:.2%}` (N = `{outcomes['n']}`)
+- **Multi-turn Update Accuracy**: `{updates['update_accuracy']:.2%}` (Gold updates: `{updates['gold_updates']}`)
+- **Accuracy by Field**:
+"""
+    for f, acc in l2.get("accuracy_by_field", {}).items():
+        md += f"  - `{f}`: `{acc:.2%}`\n"
+
+    md += f"""
+## 3. Officer Copilot & Dossier Quality (L3)
+- **Provenance Validity**: `{l3['provenance_validity']:.2%}`
+- **Priority Triage Accuracy**: `{l3['priority_accuracy']:.2%}` (N = `{l3['priority_n']}`)
+- **Missing Field Recall**: `{l3['missing_field_recall']:.2%}` (N = `{l3['missing_n']}`)
+- **Source Injection Stripped**: `{l3['source_injection_stripped']:.2%}`
+- **Existing Draft Preserved**: `{l3['existing_draft_warned']:.2%}`
+"""
+    return md
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Evaluate Campus 24/7 Agent dataset")
+    parser.add_argument("--split", choices=["tune", "holdout"], help="Evaluate specific split")
+    parser.add_argument("--live", action="store_true", help="Run live LangGraph model evaluation")
+    parser.add_argument("--out-json", type=str, help="Save report to JSON file path")
+    parser.add_argument("--out-md", type=str, help="Save report to Markdown file path")
     args = parser.parse_args()
+
     rows = load_rows()
+
     if args.live:
         try:
             report = asyncio.run(_run_live(rows, args.split))
-        except LiveEvalRefused as exc:
+        except LiveEvalConfigurationError as exc:
             print(f"Refusing --live: {exc}", file=sys.stderr)
-            print("Set AGENT_MODE=langgraph and valid LLM_* credentials to score a real model.", file=sys.stderr)
-            return 2
-        print(json.dumps(report, ensure_ascii=False, indent=2))
-        return 0
-    print(json.dumps(deterministic_report(rows, args.split), ensure_ascii=False, indent=2))
-    return 0
+            sys.exit(2)
+    else:
+        report = deterministic_report(rows, args.split)
+
+    if args.out_json:
+        out_path = Path(args.out_json)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    if args.out_md:
+        md_path = Path(args.out_md)
+        md_path.parent.mkdir(parents=True, exist_ok=True)
+        md_path.write_text(format_markdown_report(report), encoding="utf-8")
+
+    print(json.dumps(report, indent=2, ensure_ascii=False))
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()

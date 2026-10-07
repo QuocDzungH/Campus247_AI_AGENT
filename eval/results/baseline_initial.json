@@ -1,0 +1,69 @@
+{
+  "dataset_version": "agent-eval-v3",
+  "prompt_versions": {
+    "intake_router": "intake-router-v2",
+    "intake_l2": "intake-l2-extract-v2",
+    "intake_l4": "intake-l4-v1",
+    "officer": "officer-brief-v1",
+    "dossier": "officer-dossier-v2",
+    "triage": "officer-triage-v8",
+    "drafter": "officer-drafter-v2"
+  },
+  "model": "rule-router+heuristics",
+  "split": "all",
+  "runs": 1,
+  "metrics": {
+    "routes": {
+      "n": 25,
+      "route_accuracy": 0.88,
+      "l4_false_negative": 3,
+      "l1_false_positive_from_other": 0,
+      "risk_type_accuracy": 0.6666666666666666,
+      "risk_type_n": 9,
+      "accuracy_by_expected_layer": {
+        "L1": 1.0,
+        "L2": 1.0,
+        "L4": 0.6666666666666666
+      }
+    },
+    "l2_extraction": {
+      "n": 7,
+      "field_extraction_accuracy": 1.0,
+      "gold_fields": 10,
+      "accuracy_by_field": {
+        "destination_org": 1.0,
+        "purpose": 1.0,
+        "receive_method": 1.0
+      },
+      "extractor": "deterministic-heuristic",
+      "match": "exact-normalized-or-alias"
+    },
+    "l2_outcome": {
+      "n": 7,
+      "outcome_accuracy": 0.5714285714285714,
+      "scorer": "deterministic-heuristic"
+    },
+    "l2_updates": {
+      "n": 3,
+      "update_accuracy": 1.0,
+      "gold_updates": 3,
+      "scorer": "deterministic-heuristic"
+    },
+    "l3_provenance_quality": {
+      "n": 10,
+      "provenance_validity": 1.0,
+      "priority_accuracy": 1.0,
+      "priority_n": 6,
+      "missing_field_recall": 1.0,
+      "source_injection_stripped": 1.0,
+      "existing_draft_warned": 1.0,
+      "scorer": "deterministic-guards"
+    }
+  },
+  "limits": [
+    "Do not claim 100% safety from this sample.",
+    "Report model, prompt version, dataset version, n, and number of runs.",
+    "Default eval scores deterministic routing, L2 field heuristics, and L3 guards.",
+    "It does not call a live LLM."
+  ]
+}

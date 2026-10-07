@@ -1,0 +1,47 @@
+{
+  "dataset_version": "rag-eval-v1",
+  "index_version": "vinuni-hybrid-21a68b99259e",
+  "mode": "offline-pipeline-fake-embedding+bm25",
+  "timestamp": "2026-10-07T09:28:38.855598+00:00",
+  "total_cases": 18,
+  "splits_count": {
+    "holdout": 18
+  },
+  "groups_count": {
+    "in_domain": 12,
+    "out_of_domain": 4,
+    "boundary": 2
+  },
+  "execution_errors": 0,
+  "metrics": {
+    "retrieval": {
+      "in_domain_n": 12,
+      "recall@3": 0.25,
+      "recall@5": 0.4166666666666667,
+      "precision@5": 0.25,
+      "mrr": 0.2916666666666667
+    },
+    "citations": {
+      "total_citations_evaluated": 15,
+      "citation_validity_rate": 1.0,
+      "citation_support_rate": 0.06666666666666667,
+      "citation_support_n": 15
+    },
+    "abstention_safety": {
+      "ood_total": 4,
+      "ood_abstention_accuracy": 0.5,
+      "in_domain_total": 12,
+      "false_abstention_rate": 0.5833333333333334
+    },
+    "latency": {
+      "p50_seconds": 0.00208428800033289,
+      "p95_seconds": 0.005083579000711325,
+      "mean_seconds": 0.0025315403890999733
+    }
+  },
+  "limits": [
+    "Offline mode uses the production PipelineRag with deterministic hashed embeddings, BM25, and RRF.",
+    "Semantic dense retrieval requires live Gemini API key and GEMINI_EMBEDDING_MODEL.",
+    "Abstention is scored from RagPort.answer_question(), never from an RRF score threshold."
+  ]
+}

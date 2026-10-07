@@ -2,13 +2,21 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { RefreshCw, Search, Clock, AlertTriangle } from "lucide-react";
+import { RefreshCw, Search, Clock, AlertTriangle, CheckCircle2, GraduationCap, Scale, Wrench, FileCheck2, LayoutDashboard } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { filterTickets, ticketQueueTypeLabel, ticketTypeLabels } from "@/lib/staff-policy";
 import { formatDate } from "@/lib/format-date";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { StaffShell, staffButton, staffField, staffSurface } from "./StaffShell";
 import { queuePosition, rememberQueuePosition } from "./queue-navigation";
+
+function getTicketCategoryIcon(ticket: { type: string; title?: string }) {
+  const text = `${ticket.type} ${ticket.title || ""}`.toLowerCase();
+  if (text.includes("khiếu nại") || text.includes("phúc khảo") || text.includes("complaint") || text.includes("điểm thi")) return Scale;
+  if (text.includes("máy chiếu") || text.includes("cơ sở") || text.includes("facility") || text.includes("hỏng")) return Wrench;
+  if (text.includes("công nhận") || text.includes("học phần") || text.includes("recognition")) return GraduationCap;
+  return FileCheck2;
+}
 
 export function StaffQueue() {
   const { tickets, reloadData, currentUser } = useStore();
@@ -40,7 +48,8 @@ export function StaffQueue() {
     setFilters(value);
     const p = new URLSearchParams();
     Object.entries(value).forEach(([key, val]) => p.set(key, String(val)));
-    const url = `/dashboard?${p}`;
+    const path = typeof window !== "undefined" ? window.location.pathname : "/queue";
+    const url = `${path}?${p}`;
     if (url !== window.location.pathname + window.location.search) {
       if (Object.keys(next).length === 1 && "q" in next) window.history.replaceState(null, "", url);
       else window.history.pushState(null, "", url);
@@ -57,7 +66,8 @@ export function StaffQueue() {
     if (filters.page !== page) {
       const params = new URLSearchParams(window.location.search);
       params.set("page", String(page));
-      window.history.replaceState(null, "", `/dashboard?${params}`);
+      const path = typeof window !== "undefined" ? window.location.pathname : "/queue";
+      window.history.replaceState(null, "", `${path}?${params}`);
     }
   }, [hydrated, filters.page, page]);
 
@@ -86,24 +96,25 @@ export function StaffQueue() {
     }
   }
 
-  const unresolvedCount = tickets.filter((t) => t.status !== "resolved").length;
+  const allCount = tickets.length;
+  const openCount = tickets.filter((t) => t.status === "open").length;
   const highPriorityCount = tickets.filter((t) => t.status !== "resolved" && t.priority === "high").length;
   const resolvedCount = tickets.filter((t) => t.status === "resolved").length;
 
   return (
     <StaffShell>
-      <header className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--ts-border-subtle)] pb-4">
+      <header className="mb-6 flex flex-wrap items-start justify-between gap-4 sm:mb-8 sm:gap-5">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 mb-2">
             <span className="h-2 w-2 rounded-full bg-[#10B981]" />
-            <span className="font-mono text-xs uppercase tracking-wider text-[#78716C] dark:text-[#A8A29E]">
+            <span className="text-xs font-semibold uppercase tracking-widest text-[#78716C] dark:text-[#A8A29E]">
               Bàn làm việc cán bộ · VinUni Registrar
             </span>
           </div>
-          <h1 className="mt-1 font-serif text-2xl font-normal tracking-tight text-[#1C1917] dark:text-[#FAFAF9]">
+          <h1 className="font-serif text-[32px] font-semibold leading-tight tracking-tight sm:text-[40px] text-[#1C1917] dark:text-[#FAFAF9]">
             Hàng chờ hồ sơ
           </h1>
-          <p className="mt-0.5 text-xs text-[#57534E] dark:text-[#D6D3D1]">
+          <p className="mt-3 text-sm leading-6 text-[var(--ts-text-secondary)]">
             Tiếp nhận, kiểm tra dữ liệu và phản hồi kết quả cho sinh viên.
           </p>
         </div>
@@ -125,48 +136,76 @@ export function StaffQueue() {
         </div>
       </header>
 
-      <div className="mb-4 flex flex-wrap items-center gap-2" role="group" aria-label="Phạm vi hàng chờ">
+      <div
+        role="group"
+        aria-label="Phạm vi hàng chờ"
+        className="mb-6 grid grid-cols-2 rounded-sm border border-[#E7E5E4] bg-[#FFFFFF] dark:border-[#292524] dark:bg-[#1C1917] sm:mb-8 sm:grid-cols-4"
+      >
         {[
-          { label: "Chưa hoàn tất", count: unresolvedCount, status: "active", priority: "all" },
-          { label: "Ưu tiên cao", count: highPriorityCount, status: "active", priority: "high", isHigh: true },
-          { label: "Đã hoàn tất", count: resolvedCount, status: "resolved", priority: "all" },
-        ].map((item) => {
+          { label: "Tất cả hồ sơ", count: allCount, status: "all", priority: "all", Icon: LayoutDashboard },
+          { label: "Mới tiếp nhận", count: openCount, status: "open", priority: "all", Icon: Clock },
+          { label: "Ưu tiên cao", count: highPriorityCount, status: "active", priority: "high", isHigh: true, Icon: AlertTriangle },
+          { label: "Đã hoàn tất", count: resolvedCount, status: "resolved", priority: "all", Icon: CheckCircle2 },
+        ].map((item, index) => {
           const active = filters.status === item.status && filters.priority === item.priority;
+          const isHighAlert = item.isHigh && item.count > 0;
+          const isZeroCompleted = item.status === "resolved" && item.count === 0;
+          const Icon = item.Icon;
           return (
             <button
               key={item.label}
+              type="button"
               aria-pressed={active}
               onClick={() => change({ status: item.status, priority: item.priority })}
-              className={`inline-flex min-h-10 items-center gap-2.5 rounded-sm border px-3.5 py-1.5 text-xs font-medium transition-all ${
-                active
-                  ? "border-[#78716C] bg-[#EFEDEB] text-[#1C1917] shadow-sm dark:border-[#A8A29E] dark:bg-[#292524] dark:text-[#FAFAF9]"
-                  : "border-[var(--ts-border-subtle)] bg-transparent text-[#57534E] hover:bg-[#F5F5F4] dark:text-[#D6D3D1] dark:hover:bg-[#292524]/60"
+              className={`group relative flex min-h-20 items-center justify-between gap-3 border-[#E7E5E4] p-4 text-left transition-all duration-150 hover:bg-[#F5F5F4] active:bg-[#E7E5E4] dark:border-[#292524] dark:hover:bg-[#23201D] sm:min-h-24 sm:p-5 ${
+                index < 2 ? "border-b sm:border-b-0" : ""
+              } ${index % 2 === 0 ? "border-r" : "sm:border-r"} ${index === 3 ? "sm:border-r-0" : ""} ${
+                active ? "bg-[#F5F5F4]/70 dark:bg-[#23201D]/70" : ""
+              } ${
+                isHighAlert ? "!border-amber-300 !bg-amber-50/60 dark:!border-amber-800/60 dark:!bg-amber-950/25" : ""
               }`}
             >
-              <span>{item.label}</span>
-              <span
-                className={`font-mono text-[11px] px-1.5 py-0.5 rounded-sm tabular-nums ${
-                  active
-                    ? "bg-[#D6D3D1] text-[#1C1917] dark:bg-[#44403C] dark:text-[#FAFAF9]"
-                    : item.isHigh && item.count > 0
-                    ? "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300"
-                    : "bg-[#E7E5E4] text-[#57534E] dark:bg-[#292524] dark:text-[#A8A29E]"
-                }`}
-              >
-                {item.count}
-              </span>
+              {active && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1C1917] dark:bg-[#FAFAF9]" aria-hidden="true" />
+              )}
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <p className={`text-[11px] font-semibold uppercase tracking-wider ${
+                    isHighAlert ? "text-amber-900 dark:text-amber-300" : "text-[#78716C] dark:text-[#A8A29E]"
+                  }`}>{item.label}</p>
+                  {isHighAlert && (
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500 ring-2 ring-amber-200 dark:ring-amber-900/50 animate-pulse" aria-hidden="true" />
+                  )}
+                </div>
+                <p className={`mt-2 font-serif text-3xl font-medium leading-none tabular-nums sm:text-4xl ${
+                  isHighAlert
+                    ? "text-amber-900 dark:text-amber-200 font-semibold"
+                    : isZeroCompleted
+                    ? "text-[#A8A29E] dark:text-[#78716C]"
+                    : "text-[#1C1917] dark:text-[#FAFAF9]"
+                }`}>{item.count}</p>
+              </div>
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border transition-colors ${
+                active
+                  ? "border-[#1C1917] bg-[#1C1917] text-[#FAFAF9] dark:border-[#FAFAF9] dark:bg-[#FAFAF9] dark:text-[#1C1917]"
+                  : isHighAlert
+                  ? "border-amber-300 bg-amber-100 text-amber-900 dark:border-amber-800/80 dark:bg-amber-900/40 dark:text-amber-200"
+                  : "border-[#E7E5E4] bg-[#FAFAF9] text-[#78716C] dark:border-[#2E2A27] dark:bg-[#201D1A] dark:text-[#A8A29E] group-hover:border-[#D6D3D1] dark:group-hover:border-[#383533]"
+              }`}>
+                <Icon className="h-4 w-4" aria-hidden="true" />
+              </div>
             </button>
           );
         })}
       </div>
 
       <section className={`${staffSurface} overflow-hidden shadow-xs`} aria-label="Danh sách hồ sơ">
-        <div className="grid gap-3 border-b border-[var(--ts-border-subtle)] p-3.5 md:grid-cols-[minmax(220px,1fr)_180px_170px_150px]">
+        <div className="grid gap-3 border-b border-[var(--ts-border-subtle)] p-3.5 md:grid-cols-[minmax(240px,1fr)_190px_180px_160px]">
           <label className="relative">
             <span className="sr-only">Tìm mã hồ sơ, tên, mã sinh viên</span>
-            <Search className="absolute left-3 top-3 h-4 w-4 text-[#78716C] dark:text-[#A8A29E]" />
+            <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-[#78716C] dark:text-[#A8A29E]" />
             <input
-              className={`${staffField} pl-9`}
+              className={`${staffField} min-h-11 pl-10`}
               value={filters.q}
               onChange={(e) => change({ q: e.target.value })}
               placeholder="Mã hồ sơ, tên, mã sinh viên…"
@@ -174,7 +213,7 @@ export function StaffQueue() {
           </label>
           <select
             aria-label="Loại yêu cầu"
-            className={staffField}
+            className={`${staffField} min-h-11`}
             value={filters.type}
             onChange={(e) => change({ type: e.target.value })}
           >
@@ -187,7 +226,7 @@ export function StaffQueue() {
           </select>
           <select
             aria-label="Trạng thái hồ sơ"
-            className={staffField}
+            className={`${staffField} min-h-11`}
             value={filters.status}
             onChange={(e) => change({ status: e.target.value })}
           >
@@ -199,7 +238,7 @@ export function StaffQueue() {
           </select>
           <select
             aria-label="Mức ưu tiên"
-            className={staffField}
+            className={`${staffField} min-h-11`}
             value={filters.priority}
             onChange={(e) => change({ priority: e.target.value })}
           >
@@ -238,23 +277,32 @@ export function StaffQueue() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--ts-border-subtle)]">
-              {visible.map((ticket) => (
+              {visible.map((ticket) => {
+                const CategoryIcon = getTicketCategoryIcon(ticket);
+                return (
                 <tr
                   key={ticket.id}
                   className="align-top transition-colors hover:bg-[#F5F5F4]/80 dark:hover:bg-[#292524]/50"
                 >
                   <td className="px-4 py-3.5">
-                    <Link
-                      id={`queue-ticket-${ticket.id}`}
-                      onClick={() => currentUser && rememberQueuePosition(currentUser.id, `queue-ticket-${ticket.id}`)}
-                      href={`/tickets/${encodeURIComponent(ticket.id)}`}
-                      className="inline-block max-w-[200px] break-all line-clamp-2 font-mono text-xs font-semibold text-[#1C1917] underline decoration-[#A8A29E] underline-offset-2 hover:decoration-[#1C1917] dark:text-[#FAFAF9] dark:decoration-[#78716C] dark:hover:decoration-[#FAFAF9]"
-                    >
-                      {ticket.code}
-                    </Link>
-                    <p className="mt-1 text-xs text-[#78716C] dark:text-[#A8A29E]">
-                      {ticketQueueTypeLabel(ticket)}
-                    </p>
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border border-[#E7E5E4] bg-[#F5F5F4] text-[#57534E] dark:border-[#383533] dark:bg-[#292524] dark:text-[#D6D3D1]">
+                        <CategoryIcon className="h-4.5 w-4.5" aria-hidden="true" />
+                      </span>
+                      <div className="min-w-0">
+                        <Link
+                          id={`queue-ticket-${ticket.id}`}
+                          onClick={() => currentUser && rememberQueuePosition(currentUser.id, `queue-ticket-${ticket.id}`)}
+                          href={`/tickets/${encodeURIComponent(ticket.id)}`}
+                          className="inline-block max-w-[200px] break-all line-clamp-1 font-mono text-xs font-semibold text-[#1C1917] underline decoration-[#A8A29E] underline-offset-2 hover:decoration-[#1C1917] dark:text-[#FAFAF9] dark:decoration-[#78716C] dark:hover:decoration-[#FAFAF9]"
+                        >
+                          {ticket.code}
+                        </Link>
+                        <p className="mt-0.5 text-xs text-[#78716C] dark:text-[#A8A29E]">
+                          {ticketQueueTypeLabel(ticket)}
+                        </p>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-4 py-3.5">
                     <p className="whitespace-nowrap font-medium text-[#1C1917] dark:text-[#FAFAF9]">
@@ -293,7 +341,8 @@ export function StaffQueue() {
                     {formatDate(ticket.createdAt, "Asia/Bangkok")}
                   </td>
                 </tr>
-              ))}
+              );
+            })}
             </tbody>
           </table>
         </div>

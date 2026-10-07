@@ -71,6 +71,11 @@ jobs:
         env:
           EDU14_TEST_DATABASE_URL: postgresql+psycopg://campus:campus@127.0.0.1:${{ job.services.postgres.ports['5432'] }}/campus24_pytest
 
+      - name: Run Benchmark Quality Gate (Offline)
+        working-directory: .
+        run: make benchmark
+
+
   frontend:
     runs-on: [self-hosted, linux]
     timeout-minutes: 20

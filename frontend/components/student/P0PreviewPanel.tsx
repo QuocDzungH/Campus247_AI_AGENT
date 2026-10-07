@@ -139,6 +139,7 @@ export function P0PreviewPanel() {
     if (!edit || edit.previewId !== preview.id) {
       setEdit({ previewId: preview.id, form: formFromPreview(preview) });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [preview?.id, preview?.version]);
 
   function changeForm(patch: Partial<FormState>) {
